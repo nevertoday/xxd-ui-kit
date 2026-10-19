@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
-    "@astrojs/react": "^6.0.1",
+    "@astrojs/react": "^7.1.0",
     "@cloudflare/kumo": "workspace:*",
     "@xxd/css": "workspace:*",
     "@xxd/extension": "workspace:*",
