@@ -6,7 +6,7 @@ import "../styles/toast.mini.css";
 import { a11y } from "./aria";
 import { Icon, type IconNode } from "./icon";
 import { Portal } from "./overlay";
-import { useXxd, type ToastItem } from "./provider";
+import { useToasts, useXxd, type ToastItem } from "./provider";
 import { cx, mods } from "./util";
 
 const TONE_ICON: Record<string, IconNode> = { success: Check, danger: CircleAlert, warning: TriangleAlert, info: Info };
@@ -33,10 +33,11 @@ function ToastView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
   );
 }
 
-/** 这一页的轻提示（XxdPage 里已经放了一个，不用自己放） */
-export function ToastRegion() {
-  const { toasts, dismissToast } = useXxd();
-  if (!toasts.length) return null;
+/** 这一页的轻提示（XxdPage 里已经放了一个，不用自己放）。页面栈里看不见的页面不画（active 为 false） */
+export function ToastRegion({ active = true }: { active?: boolean }) {
+  const toasts = useToasts();
+  const { dismissToast } = useXxd();
+  if (!active || !toasts.length) return null;
   return (
     <Portal>
       <View className="xxd-toast-region">

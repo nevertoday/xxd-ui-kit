@@ -129,6 +129,33 @@ for (const mode of MODES) {
 }
 console.log(`浮层：${OVERLAYS.length} 个 × ${MODES.length} 种外观`);
 
+/* ── 3b. 返回键先关浮层（MINI-REVIEW-PLAN S2）：打开面板，按浏览器的返回，面板关掉、还在这一页；再按一次才离开 ── */
+{
+  const { ctx, page, errors } = await open(MODES[0], "/pages/component/index?name=Sheet");
+  await page.goto(`${base}#/pages/index/index`);
+  await page.waitForTimeout(500);
+  await page.goto(`${base}#/pages/component/index?name=Sheet`);
+  await page.waitForTimeout(700);
+  await page.getByText("封面", { exact: true }).first().click();
+  await page.waitForTimeout(450);
+  if (!(await page.locator(".xxd-sheet.is-open").count())) fail("返回键", "面板没打开");
+  await page.goBack();
+  await page.waitForTimeout(500);
+  if (await page.locator(".xxd-sheet.is-open").count()) fail("返回键", "按返回以后面板还开着");
+  if (!page.url().includes("name=Sheet")) fail("返回键", `按返回直接离开了这一页：${page.url()}`);
+  // 点按钮关掉面板，不该多留一条历史：再按一次返回就回到首页
+  await page.getByText("封面", { exact: true }).first().click();
+  await page.waitForTimeout(450);
+  await page.locator(".xxd-sheet.is-open .xxd-btn[aria-label]").first().click();
+  await page.waitForTimeout(500);
+  await page.goBack();
+  await page.waitForTimeout(700);
+  if (page.url().includes("name=Sheet")) fail("返回键", "点按钮关掉面板以后，要按两次返回才离开");
+  for (const e of errors) fail("报错", `返回键：${e}`);
+  await ctx.close();
+  console.log("返回键：面板打开时按返回先关面板；点按钮关的不多留历史");
+}
+
 /* ── 4. 待办和外观：真的操作一遍 ── */
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 760 }, isMobile: true, hasTouch: true });

@@ -7,7 +7,9 @@ import type { ReactNode } from "react";
 import "../styles/sheet.mini.css";
 import { a11y } from "./aria";
 import { Button } from "./button";
-import { BackGuard, Portal, usePresence } from "./overlay";
+import { useDrag } from "./drag";
+import { InSheetCtx, useKeyboardHeight } from "./keyboard";
+import { BackGuard, Portal, useLayer, usePresence } from "./overlay";
 import { useXxd } from "./provider";
 import { cx, mods } from "./util";
 
@@ -22,30 +24,56 @@ export interface SheetProps {
   dismissible?: boolean;
   /** 面板底部固定的一排按钮 */
   footer?: ReactNode;
+  /** 按住顶上的把手和标题往下拖可以关，缺省跟着 dismissible */
+  draggable?: boolean;
   className?: string;
 }
 
-export function Sheet({ open, onOpenChange, title, children, closable = true, dismissible = true, footer, className }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, children, closable = true, dismissible = true, footer, draggable, className }: SheetProps) {
   const [mounted, shown] = usePresence(open, 200);
   const { t } = useXxd();
-  if (!mounted) return null;
   const close = () => onOpenChange(false);
+  const managed = useLayer(open, close);
+  // 键盘弹出时整个面板跟着升起来（面板里的输入框不再推页面，见 keyboard.ts）
+  const keyboard = useKeyboardHeight(open);
+  // 往下拖：拖过 96px 或者甩得够快就关（D28）
+  const canDrag = draggable ?? dismissible;
+  const drag = useDrag({
+    axis: "y",
+    base: () => 0,
+    clamp: (v) => Math.max(0, v),
+    disabled: !canDrag,
+    onEnd: (y, v) => {
+      if (y > 96 || v > 0.6) close();
+    },
+  });
+  if (!mounted) return null;
+  const style = [drag.pos != null ? `transform:translateY(${drag.pos}px)` : "", keyboard ? `--kb:${keyboard}px` : ""].filter(Boolean).join(";");
   return (
     <Portal>
-      <BackGuard open={open} onBack={close} />
+      {!managed && <BackGuard open={open} onBack={close} />}
       <View className={cx("xxd-scrim", mods({ open: shown }))} onClick={dismissible ? close : undefined} catchMove />
-      <View className={cx("xxd-sheet", mods({ open: shown }), className)} catchMove {...a11y({ role: "dialog", modal: true, label: typeof title === "string" ? title : undefined })}>
+      <View
+        className={cx("xxd-sheet", mods({ open: shown, dragging: drag.dragging, keyboard: keyboard > 0, draggable: canDrag }), className)}
+        style={style || undefined}
+        catchMove
+        {...a11y({ role: "dialog", modal: true, label: typeof title === "string" ? title : undefined })}
+      >
+        {/* 把手和标题：按住往下拖可以关 */}
+        <View className="xxd-sheet__grip" {...drag.handlers} {...a11y({ hidden: true })} />
         {(title != null || closable) && (
-          <View className="xxd-sheet__head">
+          <View className="xxd-sheet__head" {...drag.handlers}>
             <Text className="xxd-sheet__title">{title}</Text>
             {closable && <Button variant="ghost" size="sm" icon={X} label={t.close} onClick={close} />}
           </View>
         )}
         {/* 内容多了在面板里滚：用 scroll-view（Skyline 没有 overflow: auto） */}
-        <ScrollView className="xxd-sheet__body" scrollY enhanced showScrollbar={false}>
-          {children}
-        </ScrollView>
-        {footer != null && <View className="xxd-sheet__foot">{footer}</View>}
+        <InSheetCtx.Provider value>
+          <ScrollView className="xxd-sheet__body" scrollY enhanced showScrollbar={false}>
+            {children}
+          </ScrollView>
+          {footer != null && <View className="xxd-sheet__foot">{footer}</View>}
+        </InSheetCtx.Provider>
       </View>
     </Portal>
   );

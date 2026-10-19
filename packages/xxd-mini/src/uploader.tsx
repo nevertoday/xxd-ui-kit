@@ -26,14 +26,23 @@ export interface UploaderProps {
   onChange: (items: UploadItem[]) => void;
   /** 最多几张，缺省 9 */
   max?: number;
-  /** 上传一张：返回上传后的地址；onProgress 报进度（0–100） */
-  upload?: (path: string, onProgress: (percent: number) => void) => Promise<string>;
+  /**
+   * 上传一张：返回上传后的地址；onProgress 报进度（0–100）。
+   * 用户在上传中途移除这张图时会调 onAbort 登记的函数（比如 Taro.uploadFile 返回的 task.abort）。
+   */
+  upload?: (path: string, onProgress: (percent: number) => void, onAbort: (abort: () => void) => void) => Promise<string>;
+  /** 同时最多传几张，缺省 3（微信同时最多 10 个网络请求，别的请求也要用） */
+  concurrency?: number;
+  /** 单张最大字节数，超了不加进来并提示；缺省不限 */
+  maxSize?: number;
   columns?: number;
   className?: string;
 }
 
-export function Uploader({ value, onChange, max = 9, upload, columns = 3, className }: UploaderProps) {
-  const { t } = useXxd();
+const sizeText = (bytes: number) => (bytes >= 1048576 ? `${Math.round((bytes / 1048576) * 10) / 10} MB` : `${Math.round(bytes / 1024)} KB`);
+
+export function Uploader({ value, onChange, max = 9, upload, concurrency = 3, maxSize, columns = 3, className }: UploaderProps) {
+  const { t, toast } = useXxd();
   // 上传的回调会晚到：每次都基于最新的列表改（存在 ref 里），不会把刚删掉的又加回来
   const latest = useRef(value);
   latest.current = value;
@@ -43,16 +52,50 @@ export function Uploader({ value, onChange, max = 9, upload, columns = 3, classN
     latest.current = change ? list.map((i) => (i.id === id ? { ...i, ...change } : i)) : list.filter((i) => i.id !== id);
     onChange(latest.current);
   };
+  // 排队：同时最多 concurrency 张
+  const queue = useRef<UploadItem[]>([]);
+  const running = useRef(new Map<string, (() => void) | undefined>());
+  const pump = () => {
+    while (upload && running.current.size < concurrency && queue.current.length) {
+      const item = queue.current.shift()!;
+      if (!latest.current.some((i) => i.id === item.id)) continue;
+      running.current.set(item.id, undefined);
+      const done = () => {
+        running.current.delete(item.id);
+        pump();
+      };
+      upload(item.url, (p) => patch(item.id, { progress: p }), (abort) => running.current.has(item.id) && running.current.set(item.id, abort))
+        .then((url) => patch(item.id, { url, status: "done", progress: 100 }))
+        .catch(() => patch(item.id, { status: "error" }))
+        .finally(done);
+    }
+  };
   const run = (item: UploadItem) => {
     if (!upload) return;
-    upload(item.url, (p) => patch(item.id, { progress: p }))
-      .then((url) => patch(item.id, { url, status: "done", progress: 100 }))
-      .catch(() => patch(item.id, { status: "error" }));
+    queue.current.push(item);
+    pump();
+  };
+  const remove = (id: string) => {
+    // 正在传的：停掉，省流量
+    const abort = running.current.get(id);
+    if (running.current.has(id)) {
+      running.current.delete(id);
+      try {
+        abort?.();
+      } catch {
+        /* 已经传完了 */
+      }
+    }
+    queue.current = queue.current.filter((i) => i.id !== id);
+    patch(id, null);
+    pump();
   };
   const add = async () => {
     try {
-      const res = await chooseMedia({ count: max - value.length, mediaType: ["image"], sizeType: ["compressed"] });
-      const items: UploadItem[] = res.tempFiles.map((f) => ({ id: nextId("upload"), url: f.tempFilePath, status: upload ? "uploading" : "done", progress: 0 }));
+      const res = await chooseMedia({ count: max - latest.current.length, mediaType: ["image"], sizeType: ["compressed"] });
+      const ok = maxSize ? res.tempFiles.filter((f) => !(f.size > maxSize)) : res.tempFiles;
+      if (ok.length < res.tempFiles.length && maxSize) toast(t.tooLarge(sizeText(maxSize)), { tone: "warning" });
+      const items: UploadItem[] = ok.map((f) => ({ id: nextId("upload"), url: f.tempFilePath, status: upload ? "uploading" : "done", progress: 0 }));
       latest.current = [...latest.current, ...items];
       onChange(latest.current);
       items.forEach(run);
@@ -83,7 +126,7 @@ export function Uploader({ value, onChange, max = 9, upload, columns = 3, classN
               <Text>{t.retry}</Text>
             </View>
           )}
-          <View className="xxd-uploader__remove" hoverClass="is-hover" onClick={() => patch(item.id, null)} {...a11y({ role: "button", label: t.remove })}>
+          <View className="xxd-uploader__remove" hoverClass="is-hover" onClick={() => remove(item.id)} {...a11y({ role: "button", label: t.remove })}>
             <Icon icon={X} size={12} />
           </View>
         </View>

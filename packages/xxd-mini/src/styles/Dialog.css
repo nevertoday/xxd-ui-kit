@@ -16,6 +16,8 @@
 .xxd-overlay .xxd-dialog:not(.is-open) {
   opacity: 0;
   transform: translate(-50%, calc(-50% + 8px));
+  /* 收起动画的那 200ms 里不挡住下面的东西 */
+  pointer-events: none;
 }
 
 .xxd-overlay .xxd-dialog.is-open:not(.xxd-palette) {

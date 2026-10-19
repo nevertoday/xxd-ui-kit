@@ -74,5 +74,6 @@ ci/reports/
 
 # 小程序：@xxd/mini 的样式由 scripts/build-mini.mjs 生成；演示小程序的 H5 产物
 packages/xxd-mini/styles/
+packages/xxd-mini/test/.out/
 packages/xxd-mini-demo/dist-h5/
 .swc/

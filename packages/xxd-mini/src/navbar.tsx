@@ -2,9 +2,9 @@
 // 用小程序自带的导航栏就不需要它：XxdPage 会让自带导航栏跟着亮暗换颜色。
 import { View, Text } from "@tarojs/components";
 // 按名字导入 API：Taro 编 H5 时只改写它自己处理过的源码里的 Taro.xxx，组件库在 node_modules 里，默认导出上没有这些 API
-import { getCurrentPages, getMenuButtonBoundingClientRect, getSystemInfoSync, getWindowInfo, navigateBack, reLaunch } from "@tarojs/taro";
+import { getCurrentPages, getMenuButtonBoundingClientRect, getSystemInfoSync, getWindowInfo, navigateBack, offWindowResize, onWindowResize, reLaunch } from "@tarojs/taro";
 import { ChevronLeft } from "@xxd/icons/each";
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import "../styles/navbar.mini.css";
 import { a11y } from "./aria";
 import { Button } from "./button";
@@ -22,14 +22,21 @@ interface Capsule {
 /** 状态栏高度、胶囊按钮的位置（H5 里没有胶囊） */
 export function capsuleRect(): Capsule {
   if (IS_H5) return { top: 6, height: 32, right: 16, statusBar: 0 };
+  let statusBar = 20;
+  let width = 375;
   try {
     const win = (getWindowInfo?.() ?? getSystemInfoSync()) as { statusBarHeight?: number; windowWidth?: number; screenWidth?: number };
+    statusBar = win.statusBarHeight ?? 20;
+    width = win.windowWidth ?? win.screenWidth ?? 375;
     const rect = getMenuButtonBoundingClientRect();
-    const width = win.windowWidth ?? win.screenWidth ?? 375;
-    return { top: rect.top, height: rect.height, right: width - rect.left + 8, statusBar: win.statusBarHeight ?? 20 };
+    // 电脑版微信、冷启动的头几毫秒可能读到全 0：这时按状态栏估一个（胶囊 32 高、上下各留 4px、宽 87）
+    if (rect && rect.height > 0 && rect.top >= statusBar && rect.left > 0) {
+      return { top: rect.top, height: rect.height, right: width - rect.left + 8, statusBar };
+    }
   } catch {
-    return { top: 26, height: 32, right: 104, statusBar: 20 };
+    /* 用下面的估计值 */
   }
+  return { top: statusBar + 4, height: 32, right: Math.min(104, Math.round(width * 0.28)), statusBar };
 }
 
 export interface NavBarProps {
@@ -47,11 +54,22 @@ export interface NavBarProps {
 
 export function NavBar({ title, back, leading, trailing, divider = true, className }: NavBarProps) {
   const { t } = useXxd();
-  const rect = useMemo(capsuleRect, []);
+  const [rect, setRect] = useState(capsuleRect);
+  // 横屏、iPad 分屏、电脑版微信拖窗口：重新量
+  useEffect(() => {
+    if (IS_H5) return;
+    const fn = () => setRect(capsuleRect());
+    try {
+      onWindowResize?.(fn);
+      return () => offWindowResize?.(fn);
+    } catch {
+      return undefined;
+    }
+  }, []);
   const canBack = back === undefined ? !IS_H5 && getCurrentPages().length > 1 : Boolean(back);
   const onBack = typeof back === "function" ? back : () => navigateBack().catch(() => reLaunch({ url: "/pages/index/index" }));
   // 导航栏这一条的高度：胶囊上下各留同样的空
-  const barHeight = rect.height + (rect.top - rect.statusBar) * 2;
+  const barHeight = Math.max(rect.height + (rect.top - rect.statusBar) * 2, 40);
   return (
     <View className={cx("xxd-topbar", "xxd-navbar", divider && "is-divider", className)} style={`padding-top:${rect.statusBar}px;height:${rect.statusBar + barHeight}px;padding-right:${rect.right}px`} {...a11y({ role: "navigation" })}>
       {canBack && <Button variant="ghost" icon={ChevronLeft} label={t.back} onClick={onBack} className="xxd-navbar__back" />}

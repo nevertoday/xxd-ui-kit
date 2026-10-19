@@ -1,0 +1,14 @@
+// 测试用：Taro 的基础组件换成字符串宿主类型（react-test-renderer 会原样留着 props，事件直接调）
+export const View = "view";
+export const Text = "text";
+export const Button = "button";
+export const Input = "input";
+export const Textarea = "textarea";
+export const Image = "image";
+export const ScrollView = "scroll-view";
+export const RootPortal = "root-portal";
+export const PageContainer = "page-container";
+export const PickerView = "picker-view";
+export const PickerViewColumn = "picker-view-column";
+export const MovableArea = "movable-area";
+export const MovableView = "movable-view";

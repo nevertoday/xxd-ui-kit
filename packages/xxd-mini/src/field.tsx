@@ -1,8 +1,9 @@
 // 输入框：标签、说明、出错、字数。网页版的 .xxd-field / .xxd-input / .xxd-textarea。
 import { Input as TaroInput, Textarea as TaroTextarea, View, Text } from "@tarojs/components";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import "../styles/field.mini.css";
 import { a11y } from "./aria";
+import { useAdjustPosition } from "./keyboard";
 import { useXxd } from "./provider";
 import { cx, IS_H5, mods, nextId } from "./util";
 
@@ -69,6 +70,10 @@ interface InputBase {
   focus?: boolean;
   onConfirm?: (value: string) => void;
   onBlur?: (value: string) => void;
+  /** 键盘弹出时把页面往上推（微信缺省是）。底部面板里的输入框缺省 false，由面板自己跟着键盘升起来 */
+  adjustPosition?: boolean;
+  /** 输入框底部离键盘的距离（px） */
+  cursorSpacing?: number;
 }
 
 export interface InputProps extends InputBase {
@@ -88,13 +93,63 @@ function useValue(value: string | undefined, defaultValue: string | undefined, o
   return [current, set] as const;
 }
 
-function Counter({ length, max }: { length: number; max: number }) {
-  const { t } = useXxd();
-  return <Text className={cx("xxd-help", "is-counter", length > max && "is-over")}>{t.count(length, max)}</Text>;
+/** 按字算长度（一个表情算一个字，和看到的一致） */
+export const charCount = (v: string) => Array.from(v).length;
+
+/**
+ * 交给原生输入框的值：打字时不写回（写回会打断中文输入法的拼音、光标跳到最后），
+ * 只有外面改了值（清空、改写、截断）才写一次。返回 [给原生输入框的值, 原生输入框报上来的值记一下]。
+ */
+export function useNativeValue(current: string) {
+  const typed = useRef(current);
+  const [shown, setShown] = useState(current);
+  useEffect(() => {
+    if (current === typed.current) return;
+    const prev = typed.current;
+    typed.current = current;
+    if (shown !== current) {
+      setShown(current);
+      return;
+    }
+    // 交给原生的值没变过（比如从空打了几个字又被清空）：先对上输入框里实际的字，再写新值，Taro 才会真的写过去
+    setShown(prev);
+    const t = setTimeout(() => setShown(current), 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current]);
+  return [shown, (v: string) => (typed.current = v)] as const;
 }
 
-export function Input({ value, defaultValue, onValueChange, placeholder, disabled, invalid, maxLength, counter, label, className, type = "text", password, size, confirmType, focus, onConfirm, onBlur }: InputProps) {
+/**
+ * 字数上限：原生输入框放宽一个字，多出来时由这里截掉并提醒（粘贴一大段时不会悄悄没了一截）。
+ * 返回 [截好的值, 刚刚超过了没有]
+ */
+function useLimit(maxLength: number | undefined, counter: boolean | undefined) {
+  const { t, toast } = useXxd();
+  const [over, setOver] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const limit = (v: string) => {
+    if (maxLength == null || maxLength < 0 || charCount(v) <= maxLength) return v;
+    setOver(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setOver(false), 1600);
+    if (!counter) toast(t.tooLong(maxLength), { tone: "warning" });
+    return Array.from(v).slice(0, maxLength).join("");
+  };
+  return { limit, over, native: maxLength == null || maxLength < 0 ? -1 : maxLength + 1 };
+}
+
+function Counter({ length, max, over }: { length: number; max: number; over?: boolean }) {
+  const { t } = useXxd();
+  return <Text className={cx("xxd-help", "is-counter", (over || length > max) && "is-over")}>{t.count(length, max)}</Text>;
+}
+
+export function Input({ value, defaultValue, onValueChange, placeholder, disabled, invalid, maxLength, counter, label, className, type = "text", password, size, confirmType, focus, onConfirm, onBlur, adjustPosition: ownAdjust, cursorSpacing }: InputProps) {
+  const adjustPosition = useAdjustPosition(ownAdjust);
   const [current, set] = useValue(value, defaultValue, onValueChange);
+  const [shown, mark] = useNativeValue(current);
+  const { limit, over, native: nativeMax } = useLimit(maxLength, counter);
   const { name, native } = useInputName(label, placeholder);
   const [id] = useState(() => nextId("input"));
   return (
@@ -103,21 +158,26 @@ export function Input({ value, defaultValue, onValueChange, placeholder, disable
         id={id}
         className={cx("xxd-input", mods({ invalid, disabled, size: size === "md" ? undefined : size }), className)}
         placeholderClass="is-placeholder"
-        value={current}
+        value={shown}
         type={type}
         password={password}
         placeholder={placeholder}
         disabled={disabled || undefined}
-        maxlength={maxLength ?? -1}
+        maxlength={nativeMax}
         confirmType={confirmType}
         focus={focus}
-        onInput={(e) => set(e.detail.value)}
+        adjustPosition={adjustPosition}
+        cursorSpacing={cursorSpacing}
+        onInput={(e) => {
+          mark(e.detail.value);
+          set(limit(e.detail.value));
+        }}
         onConfirm={(e) => onConfirm?.(e.detail.value)}
         onBlur={(e) => onBlur?.(e.detail.value)}
         {...native}
         {...a11y({ label: name, disabled })}
       />
-      {counter && maxLength != null && <Counter length={current.length} max={maxLength} />}
+      {counter && maxLength != null && <Counter length={charCount(current)} max={maxLength} over={over} />}
     </>
   );
 }
@@ -128,8 +188,11 @@ export interface TextareaProps extends InputBase {
   rows?: number;
 }
 
-export function Textarea({ value, defaultValue, onValueChange, placeholder, disabled, invalid, maxLength, counter, label, className, autoHeight, rows = 3, focus, onConfirm, onBlur }: TextareaProps) {
+export function Textarea({ value, defaultValue, onValueChange, placeholder, disabled, invalid, maxLength, counter, label, className, autoHeight, rows = 3, focus, onConfirm, onBlur, adjustPosition: ownAdjust, cursorSpacing }: TextareaProps) {
+  const adjustPosition = useAdjustPosition(ownAdjust);
   const [current, set] = useValue(value, defaultValue, onValueChange);
+  const [shown, mark] = useNativeValue(current);
+  const { limit, over, native: nativeMax } = useLimit(maxLength, counter);
   const { name, native } = useInputName(label, placeholder);
   return (
     <>
@@ -137,19 +200,24 @@ export function Textarea({ value, defaultValue, onValueChange, placeholder, disa
         className={cx("xxd-textarea", mods({ invalid, disabled, autosize: autoHeight }), className)}
         placeholderClass="is-placeholder"
         style={autoHeight ? undefined : `height:${rows * 22 + 18}px`}
-        value={current}
+        value={shown}
         placeholder={placeholder}
         disabled={disabled || undefined}
-        maxlength={maxLength ?? -1}
+        maxlength={nativeMax}
         autoHeight={autoHeight}
         focus={focus}
-        onInput={(e) => set(e.detail.value)}
+        adjustPosition={adjustPosition}
+        cursorSpacing={cursorSpacing}
+        onInput={(e) => {
+          mark(e.detail.value);
+          set(limit(e.detail.value));
+        }}
         onConfirm={(e) => onConfirm?.(e.detail.value)}
         onBlur={(e) => onBlur?.(e.detail.value)}
         {...native}
         {...a11y({ label: name, disabled })}
       />
-      {counter && maxLength != null && <Counter length={current.length} max={maxLength} />}
+      {counter && maxLength != null && <Counter length={charCount(current)} max={maxLength} over={over} />}
     </>
   );
 }

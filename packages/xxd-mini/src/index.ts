@@ -1,6 +1,6 @@
 // @xxd/mini：小小东 UI 的小程序版（Taro + React）。docs/maintainers/MINIPROGRAM-PLAN.md
 // 每个组件自己带样式：用到哪个才打包哪个（package.json 的 sideEffects 只标了 CSS）。
-export { XxdProvider, useXxd, useToast, MINI_DEFAULTS, type XxdProviderProps, type XxdContext, type ToastOptions } from "./provider";
+export { XxdProvider, useXxd, useToast, useToasts, MINI_DEFAULTS, type XxdProviderProps, type XxdContext, type ToastOptions } from "./provider";
 export { XxdPage, type XxdPageProps } from "./page";
 export { resolveAppearance, systemTheme, readSettings, writeSettings, type Resolved, type Settings, type Theme } from "./appearance";
 export { a11y, ARIA_READY, type A11y } from "./aria";
@@ -8,7 +8,7 @@ export { LABELS, type Lang, type Labels } from "./labels";
 export { Icon, registerIcons, iconSvg, iconUri, ICON_SVG_ATTRS, type IconNode, type IconProps } from "./icon";
 export { Button, ButtonGroup, type ButtonProps } from "./button";
 export { Cell, CellGroup, type CellProps, type CellGroupProps } from "./cell";
-export { Field, Input, Textarea, type FieldProps, type InputProps, type TextareaProps } from "./field";
+export { Field, Input, Textarea, charCount, useNativeValue, type FieldProps, type InputProps, type TextareaProps } from "./field";
 export { Switch, Checkbox, Radio, RadioGroup, type SwitchProps, type CheckboxProps, type RadioProps, type RadioGroupProps } from "./choice";
 export { Segmented, type SegmentedProps } from "./segmented";
 export { Tabs, TabPanel, type TabsProps } from "./tabs";
@@ -19,8 +19,10 @@ export { NavBar, capsuleRect, type NavBarProps } from "./navbar";
 export { TabBar, type TabBarProps, type TabBarItem } from "./tabbar";
 export { Empty, Spinner, Loading, Skeleton, LoadBar, Badge, Dot, Avatar, Tag, Text, Stack, Cluster, Divider, Section, type EmptyProps, type BadgeProps, type AvatarProps, type TagProps, type TextProps } from "./display";
 export { Card, CardGrid, ImageGrid, type CardProps, type ImageGridProps } from "./card";
-export { usePresence, BackGuard, Portal } from "./overlay";
+export { usePresence, useLayer, BackGuard, Portal } from "./overlay";
 export { cx, mods } from "./util";
+export { useDrag, touchPoint, type DragOptions } from "./drag";
+export { useKeyboardHeight, useAdjustPosition } from "./keyboard";
 export type { XxdSettings } from "@xxd/tokens";
 export { Swatches, AppearanceSettings, type SwatchesProps, type AppearanceSettingsProps } from "./appearance-settings";
 export { SearchBar, type SearchBarProps } from "./searchbar";
@@ -28,7 +30,7 @@ export { LoadMore, type LoadMoreProps } from "./loadmore";
 export { Progress, type ProgressProps } from "./progress";
 export { Steps, type StepsProps } from "./steps";
 export { Collapse, type CollapseProps } from "./collapse";
-export { Swipe, type SwipeProps, type SwipeAction } from "./swipe";
+export { Swipe, SwipeGroup, type SwipeProps, type SwipeAction } from "./swipe";
 export { Picker, type PickerProps, type PickerOption } from "./picker";
 export { Uploader, type UploaderProps, type UploadItem } from "./uploader";
 export { Stat, Stats, type StatProps } from "./stat";
