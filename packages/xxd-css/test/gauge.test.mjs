@@ -2,11 +2,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import * as lib from "../src/js/gauge.js";
-import { gauge, gaugeOptionsFrom, initGauges, useGauge } from "../src/js/chart.js";
+import * as lib from "../src/js/viz.js";
+import { gauge, gaugeOptionsFrom, initGauges } from "../src/js/chart.js";
+import { useViz } from "../src/js/viz-dom.js";
 
 const { GAUGE_PAINT, arcPath, gaugeColors, gaugeModel, polar, withUnit, zoneOf } = lib;
-useGauge(lib);
+useViz(lib);
 
 const css = readFileSync(join(import.meta.dirname, "../src/css/chart.css"), "utf8");
 const paths = (svg) => [...svg.matchAll(/<path d="([^"]+)"[^>]*class="xxd-gauge__([\w-]+)"/g)].map((m) => ({ d: m[1], role: m[2] }));

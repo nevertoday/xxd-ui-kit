@@ -550,6 +550,78 @@
       ]
     },
     {
+      "name": "Bars",
+      "zh": "条形榜",
+      "en": "Bars",
+      "batch": 3,
+      "web": [
+        "Bars"
+      ],
+      "blocks": [
+        "xxd-bars"
+      ],
+      "summary": "少类目比较、排名：名字、条、数字一行，可以标一条重点、按单位切格、正负、漏斗。",
+      "summaryEn": "Rankings and a few categories: name, bar and number on one row, with a highlight, units, diverging bars or a funnel."
+    },
+    {
+      "name": "Proportion",
+      "zh": "构成条",
+      "en": "Proportion",
+      "batch": 3,
+      "web": [
+        "Proportion"
+      ],
+      "blocks": [
+        "xxd-proportion",
+        "xxd-legend",
+        "xxd-viz-empty"
+      ],
+      "summary": "一个整体分成几部分：一根横条按比例分段，图例写出数和百分比（加起来 100%）。",
+      "summaryEn": "One whole split into parts: a bar divided by share, with a legend of values and percentages that add up to 100%."
+    },
+    {
+      "name": "Waffle",
+      "zh": "百格图",
+      "en": "Waffle",
+      "batch": 3,
+      "web": [
+        "Waffle"
+      ],
+      "blocks": [
+        "xxd-waffle"
+      ],
+      "summary": "占比的单位图：10 × 10，1 格 = 1%，比饼图诚实。",
+      "summaryEn": "A unit chart for shares: 10 × 10, one cell = 1%, more honest than a pie."
+    },
+    {
+      "name": "Heatmap",
+      "zh": "热力格",
+      "en": "Heatmap",
+      "batch": 3,
+      "web": [
+        "Heatmap"
+      ],
+      "blocks": [
+        "xxd-heatmap"
+      ],
+      "summary": "越深越多：日历（每天一格）和矩阵（星期 × 时段），横着滚。",
+      "summaryEn": "Darker means more: a calendar (one cell a day) and a matrix (weekday × hour), scrolling sideways."
+    },
+    {
+      "name": "Dumbbell",
+      "zh": "前后对比",
+      "en": "Dumbbell",
+      "batch": 3,
+      "web": [
+        "Dumbbell"
+      ],
+      "blocks": [
+        "xxd-dumbbell"
+      ],
+      "summary": "类目级的前后对比：之前空心、之后实心，写出变化。",
+      "summaryEn": "Before and after per category: hollow before, solid after, with the change written out."
+    },
+    {
       "name": "BottomBar",
       "zh": "底部按钮条",
       "en": "BottomBar",

@@ -1,0 +1,9 @@
+/* 没有数据（网页版 .xxd-viz-empty 在构成条的样式里；用不到构成条的项目也要有这一行） */
+.xxd-viz-empty {
+  display: block;
+  grid-column: 1 / -1;
+  padding: var(--space-4) 0;
+  font-size: var(--text-sm);
+  text-align: center;
+  color: var(--muted);
+}

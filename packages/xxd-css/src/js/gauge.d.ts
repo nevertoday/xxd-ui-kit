@@ -31,6 +31,10 @@ export interface XxdGaugeOptions {
   /** 小数位（缺省最多一位） */
   decimals?: number;
   format?: (n: number) => string;
+  /** 填充从这个值往两边长（偏差、盈亏，比如 0）；缺省从最小值长 */
+  origin?: number | string;
+  /** 大数字缩写：「1.2万」「12K」 */
+  compact?: boolean;
   /** 目标线（一条或几条） */
   target?: number | string | readonly (number | string)[];
   /** 区段：只表意义；数值进了哪一段，填充换成那一段的颜色 */

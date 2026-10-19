@@ -9,6 +9,7 @@
 //   Xxd.watchChartTheme(chart, () => Xxd.chartOptions(myOption))   // 切主题 / 主色时自动重画
 
 import { getLocale } from "./i18n.js";
+import { missingViz, vizLib } from "./viz-dom.js";
 
 const read = (el, name, fallback) => {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
@@ -87,9 +88,15 @@ export function chartOptions(option = {}, { el, tokens } = {}) {
   const color = chartPalette(t).map(resolveColor);
   const series = (Array.isArray(option.series) ? option.series : option.series ? [option.series] : []).map((s, i) => {
     const c = color[i % color.length];
-    if (s.type === "line") return merge({ symbol: "none", lineStyle: { width: i === 0 ? 2 : 1.5, type: LINE_TYPES[i % LINE_TYPES.length] }, emphasis: { focus: "series" }, color: c }, s);
-    if (s.type === "bar") return merge({ barMaxWidth: 28, itemStyle: { borderRadius: 0 }, emphasis: { focus: "series" }, color: c }, s);
-    return merge({ color: c }, s);
+    // 参考线（平均、目标；CHART-TYPES-PLAN 8.1）：墨色实线 1px，字是次要色；不用虚线、不画两头的箭头
+    const markLine = s.markLine ? { markLine: merge({ symbol: "none", silent: true, lineStyle: { color: t.ink, width: 1, type: "solid" }, label: { color: t.muted, fontFamily: t.font, fontSize: 11 } }, s.markLine) } : {};
+    let base = { color: c };
+    // 面积：实色 8% 不透明，不用渐变
+    if (s.type === "line") base = { symbol: "none", lineStyle: { width: i === 0 ? 2 : 1.5, type: LINE_TYPES[i % LINE_TYPES.length] }, emphasis: { focus: "series" }, color: c, ...(s.areaStyle ? { areaStyle: { color: c, opacity: 0.08 } } : {}) };
+    else if (s.type === "bar") base = { barMaxWidth: 28, itemStyle: { borderRadius: 0 }, emphasis: { focus: "series" }, color: c };
+    // 散点：6px 实心点
+    else if (s.type === "scatter") base = { symbolSize: 6, itemStyle: { color: c, opacity: 1 }, emphasis: { focus: "series" } };
+    return merge({ ...base, ...markLine }, s);
   });
   return {
     ...option,
@@ -131,8 +138,9 @@ export function watchChartTheme(chart, build, { el = document.documentElement } 
  * 统计卡的迷你折线：返回 SVG 字符串（currentColor，跟着 .xxd-stat__spark 的颜色）。
  *   el.innerHTML = Xxd.sparkline([3, 5, 4, 8, 7, 9])
  */
-export function sparkline(values, { width = 120, height = 32, strokeWidth = 1.5, area = true } = {}) {
+export function sparkline(values, { width = 120, height = 32, strokeWidth = 1.5, area = true, type = "line" } = {}) {
   const nums = values.map(Number).filter((v) => Number.isFinite(v));
+  if (type === "bar") return sparkBars(nums, { width, height });
   if (nums.length < 2) return "";
   const min = Math.min(...nums);
   const max = Math.max(...nums);
@@ -144,48 +152,32 @@ export function sparkline(values, { width = 120, height = 32, strokeWidth = 1.5,
   return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" preserveAspectRatio="none" aria-hidden="true">${fill}<path d="${d}" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
 
-/** 声明式：<span class="xxd-stat__spark" data-spark="3,5,4,8,7,9"></span> */
+/**
+ * 迷你柱（CHART-TYPES-PLAN：每天一个数、看哪天多）：从 0 起，柱和柱之间留 1 个单位的缝；没有数的那天不画。
+ *   Xxd.sparkline([3, 0, 5, 8], { type: "bar" })；声明式 data-spark-type="bar"
+ */
+function sparkBars(nums, { width, height }) {
+  if (!nums.length) return "";
+  const max = Math.max(...nums, 0) || 1;
+  const step = width / nums.length;
+  const w = Math.max(1, step - 1);
+  const bars = nums.map((v, i) => {
+    const h = v > 0 ? Math.max(1, (v / max) * height) : 0;
+    return h ? `<rect x="${(i * step).toFixed(1)}" y="${(height - h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/>` : "";
+  });
+  return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" preserveAspectRatio="none" aria-hidden="true"><g fill="currentColor">${bars.join("")}</g></svg>`;
+}
+
+/** 声明式：<span class="xxd-stat__spark" data-spark="3,5,4,8,7,9"></span>（data-spark-type="bar" 画成柱） */
 export function initSparklines(root = document) {
   for (const el of root.querySelectorAll("[data-spark]")) {
     if (el.dataset.sparkDone) continue;
-    el.innerHTML = sparkline(el.dataset.spark.split(","));
+    el.innerHTML = sparkline(el.dataset.spark.split(","), { type: el.dataset.sparkType === "bar" ? "bar" : "line" });
     el.dataset.sparkDone = "1";
   }
 }
 
-/* ── 量表（GAUGE-PLAN G2）：几何在 gauge.js（三种实现共用），这里只管放进页面 ──
- * 几何那部分单独一个文件（3KB gzip），像图标一样按需加载，不用量表的页面不背：
- *   经典脚本：xxd.js 后面加 <script src="vendor/xxd/gauge.js"></script>（window.XxdGauge）
- *   ESM：     useGauge(await import("@xxd/css/gauge"))
- */
-let gaugeImpl = null;
-export function useGauge(lib) {
-  gaugeImpl = lib || null;
-}
-const gaugeLib = () => gaugeImpl ?? globalThis.XxdGauge ?? null;
-let warnedGauge = false;
-const missingGauge = () => {
-  if (!warnedGauge) console.warn('[xxd] 页面里有量表，但没有加载量表的几何：经典脚本在 xxd.js 后面加 gauge.js；ESM 里 useGauge(await import("@xxd/css/gauge"))');
-  warnedGauge = true;
-  return null;
-};
-
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-
-/** 量表的 HTML（除了根元素本身）：表盘（SVG + 指针 + 中间的字）、两端的刻度数、图例。React 版渲染同一个结构。 */
-export function gaugeInnerHtml(m, needleSvg = gaugeLib()?.needleSvg) {
-  const d = m.display;
-  const center = d
-    ? `<div class="xxd-gauge__center" aria-hidden="true"><span class="xxd-gauge__value">${esc(d.value)}${d.unit ? `<span class="xxd-gauge__unit">${esc(d.unit)}</span>` : ""}</span>${d.label ? `<span class="xxd-gauge__label">${esc(d.label)}</span>` : ""}${d.state ? `<span class="xxd-gauge__state" data-tone="${d.state.tone}">${esc(d.state.text)}</span>` : ""}</div>`
-    : "";
-  const pointer = m.needle ? needleSvg(m.needle, { viewBox: m.viewBox }) : "";
-  const ends = m.ends ? `<div class="xxd-gauge__ends" aria-hidden="true" style="--gauge-ends-x:${m.ends.x}%"><span class="xxd-gauge__min">${esc(m.ends.min)}</span><span class="xxd-gauge__max">${esc(m.ends.max)}</span></div>` : "";
-  const legend = m.legend.length
-    ? `<ul class="xxd-gauge__legend">${m.legend.map((l) => `<li class="xxd-gauge__item"><span class="xxd-gauge__key" data-part="${l.part}"></span><span class="xxd-gauge__name">${esc(l.label)}</span><span class="xxd-gauge__num">${esc(l.text)}</span></li>`).join("")}</ul>`
-    : "";
-  return `<div class="xxd-gauge__dial" style="--gauge-cx:${m.center.x}%;--gauge-cy:${m.center.y}%">${m.svg}${pointer}${center}</div>${ends}${legend}`;
-}
-
+/* ── 量表（GAUGE-PLAN G2）：几何在 gauge.js（三种实现共用），这里只管放进页面。几何从 dist/viz.js 来（见 viz-dom.js 的 useViz） ── */
 const GAUGE_ARIA = ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-valuetext"];
 
 /**
@@ -194,12 +186,12 @@ const GAUGE_ARIA = ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "
  * 有指针时只改指针的 transform（转过去有过渡），其余部分整个换掉。
  */
 export function gauge(el, options = {}) {
-  const lib = gaugeLib();
-  if (!lib) return missingGauge();
+  const lib = vizLib();
+  if (!lib) return missingViz();
   const m = lib.gaugeModel({ locale: getLocale(el), ...options });
   const turn = el.querySelector(".xxd-gauge__needle");
   const before = turn?.style.transform;
-  el.innerHTML = gaugeInnerHtml(m, lib.needleSvg);
+  el.innerHTML = lib.gaugeInnerHtml(m);
   el.classList.add("xxd-gauge");
   el.dataset.shape = m.shape;
   el.toggleAttribute("data-needle", Boolean(m.needle));
@@ -246,6 +238,8 @@ export function gaugeOptionsFrom(el) {
     unit: d.unit,
     label: d.label,
     decimals: d.decimals != null ? Number(d.decimals) : undefined,
+    compact: d.compact != null && d.compact !== "false",
+    origin: d.origin,
     target: numList(d.target),
     zones,
     ticks: d.ticks,

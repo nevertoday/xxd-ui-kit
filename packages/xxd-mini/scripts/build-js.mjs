@@ -15,8 +15,8 @@ const banner = "/* @xxd/mini — 小小东 UI 小程序版。Copyright (c) 2026 
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 const files = readdirSync(src).filter((f) => /\.tsx?$/.test(f) && !f.endsWith(".d.ts"));
-// 这些文件把依赖打进来（量表的几何来自 @xxd/css/gauge：用户项目不用装 @xxd/css，GAUGE-PLAN D40）
-const BUNDLED = new Set(["gauge-core.ts"]);
+// 这些文件把依赖打进来（量表的几何、图型的换算来自 @xxd/css/viz：用户项目不用装 @xxd/css，GAUGE-PLAN D40）
+const BUNDLED = new Set(["viz-core.ts"]);
 for (const f of files) {
   if (BUNDLED.has(f)) {
     await build({ entryPoints: [join(src, f)], outfile: join(dist, f.replace(/\.tsx?$/, ".js")), bundle: true, format: "esm", target: "es2018", banner: { js: banner }, legalComments: "none" });
@@ -31,7 +31,10 @@ for (const f of files) {
 // 类型
 const tsc = createRequire(join(root, "package.json")).resolve("typescript/bin/tsc");
 execFileSync(process.execPath, [tsc, "-p", join(root, "tsconfig.json")], { stdio: "inherit" });
-// gauge-core.d.ts 里的 export * from "@xxd/css/gauge" 换成那份类型本身（用户项目里没有 @xxd/css）
+// viz-core.d.ts 里的 export * from "@xxd/css/viz" 换成那份类型本身（用户项目里没有 @xxd/css）
 const require = createRequire(join(root, "package.json"));
-writeFileSync(join(dist, "gauge-core.d.ts"), readFileSync(join(dirname(require.resolve("@xxd/css/package.json")), "src/js/gauge.d.ts"), "utf8"));
+const cssJs = join(dirname(require.resolve("@xxd/css/package.json")), "src/js");
+// viz.d.ts 里的 export * from "./gauge" 指向量表几何的类型：dist 里 gauge.d.ts 是量表组件，几何的那份改名 viz-gauge.d.ts
+writeFileSync(join(dist, "viz-core.d.ts"), readFileSync(join(cssJs, "viz.d.ts"), "utf8").replace('from "./gauge"', 'from "./viz-gauge"'));
+writeFileSync(join(dist, "viz-gauge.d.ts"), readFileSync(join(cssJs, "gauge.d.ts"), "utf8"));
 console.log(`@xxd/mini JS：${files.length} 个文件 → dist/`);

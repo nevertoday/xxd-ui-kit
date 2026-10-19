@@ -182,4 +182,13 @@ export const principles = [
     dontMarkup: `<svg viewBox="-60 -60 120 104" width="140" height="122" role="img" aria-label="A glowing gauge with a green-to-red gradient"><defs><linearGradient id="pr-neon" x1="0" x2="1"><stop offset="0" stop-color="#22c55e"/><stop offset=".5" stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/></linearGradient><filter id="pr-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter></defs><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="12" stroke-linecap="round" filter="url(#pr-glow)" opacity=".7"/><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="10" stroke-linecap="round"/></svg>`,
     dontText: "A green-to-red gradient with a glow: the color has nothing to do with the value, so you cannot tell normal from over the limit; it is only decoration.",
   },
+  {
+    id: "countable",
+    title: "Show shares as cells you can count, not a pie",
+    ref: "§14",
+    doMarkup: `<div class="xxd-waffle" data-viz="waffle" style="width:100%;max-width:320px;--waffle-size:132px" data-label="Where new members come from" data-parts="Friends:46;Search:27;WeChat:18;Other:9"></div>`,
+    doText: "One cell = 1%: 46 cells against 27, and you can count the difference; the legend states the percentages.",
+    dontMarkup: `<svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="A pie with four slices and no numbers"><path d="M50 50L50.0 2.0A48 48 0 0 1 61.9 96.5Z" fill="#111111" stroke="#fff" stroke-width="1"/><path d="M50 50L61.9 96.5A48 48 0 0 1 2.4 56.0Z" fill="#898681" stroke="#fff" stroke-width="1"/><path d="M50 50L2.4 56.0A48 48 0 0 1 24.3 9.5Z" fill="#6d6b67" stroke="#fff" stroke-width="1"/><path d="M50 50L24.3 9.5A48 48 0 0 1 50.0 2.0Z" fill="#7e7b77" stroke="#fff" stroke-width="1"/></svg>`,
+    dontText: "Angles are hard to compare: you cannot see how far 46% is from 27%, and without numbers only the shape is left.",
+  },
 ];

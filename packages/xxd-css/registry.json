@@ -1623,7 +1623,7 @@
       "a11y": [
         "迷你折线是 aria-hidden 的装饰；变化要写成文字（↑ 12.4% 比上周），不能只靠颜色。"
       ],
-      "js": "el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // 或者 data-spark=\"3,5,4,8\" 再 Xxd.init()"
+      "js": "el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // 或者 data-spark=\"3,5,4,8\" 再 Xxd.init()\n// 迷你柱（每天一个数）：Xxd.sparkline(values, { type: \"bar\" }) 或 data-spark-type=\"bar\""
     },
     {
       "name": "Chart",
@@ -1635,7 +1635,15 @@
         "xxd-chart-card",
         "xxd-chart-card__head",
         "xxd-chart-card__title",
-        "xxd-chart-card__meta"
+        "xxd-chart-card__meta",
+        "xxd-chart-card__note",
+        "xxd-legend",
+        "xxd-legend__item",
+        "xxd-legend__key",
+        "xxd-legend__name",
+        "xxd-legend__num",
+        "xxd-legend__share",
+        "xxd-viz-empty"
       ],
       "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:16px;width:100%;max-width:720px\">\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">每天写入篇数</h3><span class=\"xxd-chart-card__meta\">最近 14 天</span></div>\n  <div class=\"xxd-chart\" id=\"chart-line\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">长文发布 14 天里一直在涨，从 42 篇到 96 篇；图片排序从 20 到 40。</p>\n</div>\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">各插件用户</h3></div>\n  <div class=\"xxd-chart\" id=\"chart-bar\" style=\"--chart-h:220px\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">批量存图用户最多（5,102），其次长文发布（2,410）。</p>\n</div>\n</div>\n<script>\n  if (window.echarts) {\n    const days = Array.from({ length: 14 }, (_, i) => `${i + 1}日`);\n    const line = echarts.init(document.getElementById(\"chart-line\"));\n    const lineOpt = () => Xxd.chartOptions({ legend: {}, xAxis: { type: \"category\", data: days, boundaryGap: false }, yAxis: { type: \"value\" }, series: [{ name: \"长文发布\", type: \"line\", data: [42, 48, 45, 60, 58, 66, 71, 69, 80, 78, 85, 90, 88, 96] }, { name: \"图片排序\", type: \"line\", data: [20, 22, 25, 24, 28, 27, 30, 33, 31, 35, 34, 36, 38, 40] }] });\n    line.setOption(lineOpt());\n    Xxd.watchChartTheme(line, lineOpt);\n    const bar = echarts.init(document.getElementById(\"chart-bar\"));\n    const barOpt = () => Xxd.chartOptions({ xAxis: { type: \"category\", data: [\"长文发布\", \"排序链接\", \"批量存图\", \"今日待办\"] }, yAxis: { type: \"value\" }, series: [{ type: \"bar\", data: [2410, 830, 5102, 312] }] });\n    bar.setOption(barOpt());\n    Xxd.watchChartTheme(bar, barOpt);\n    new ResizeObserver(() => { line.resize(); bar.resize(); }).observe(document.getElementById(\"chart-line\").parentElement.parentElement);\n  }\n</script>",
       "a11y": [
@@ -1685,12 +1693,7 @@
         "xxd-gauge__state",
         "xxd-gauge__ends",
         "xxd-gauge__min",
-        "xxd-gauge__max",
-        "xxd-gauge__legend",
-        "xxd-gauge__item",
-        "xxd-gauge__key",
-        "xxd-gauge__name",
-        "xxd-gauge__num"
+        "xxd-gauge__max"
       ],
       "attributes": {
         "data-gauge": "声明式：Xxd.init() 按下面这些 data-* 画出来；改了 data-* 再调一次 Xxd.initGauges()",
@@ -1706,7 +1709,9 @@
         "data-parts": "分段：图片:38;视频:22（每段自己的量，首尾相接）",
         "data-rings": "多环，最多 3 环：写作:3/5;阅读:40/60（每环自己的满额）",
         "data-size": "sm | lg：中间数字的字号",
-        "--gauge-size": "最大宽度（缺省 160px）；一排量表用 .xxd-gauges"
+        "--gauge-size": "最大宽度（缺省 160px）；一排量表用 .xxd-gauges",
+        "data-origin": "填充从这个值往两边长（偏差、盈亏，比如 0），原点画一道刻度",
+        "data-compact": "大数字缩写：「1.2万」「12K」"
       },
       "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-value=\"72\" data-unit=\"%\" data-label=\"空间已用\" data-target=\"80\" data-zones=\"80-90:warning,90:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-value=\"94\" data-unit=\"%\" data-label=\"本月额度\" data-target=\"80\" data-zones=\"80-90:warning,90:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-segments=\"8\" data-max=\"8\" data-value=\"5\" data-unit=\"杯\" data-label=\"今天喝水\"></div>\n</div>",
       "react": "Gauge",
@@ -1748,8 +1753,238 @@
         {
           "title": "尺寸",
           "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-size=\"sm\" style=\"--gauge-size:120px\" data-value=\"36\" data-unit=\"%\" data-label=\"小\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-value=\"36\" data-unit=\"%\" data-label=\"缺省\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-size=\"lg\" style=\"--gauge-size:220px\" data-value=\"36\" data-unit=\"%\" data-label=\"大\"></div>\n</div>"
+        },
+        {
+          "title": "从原点往两边长",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <div class=\"xxd-gauges\">\n    <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-50\" data-max=\"50\" data-origin=\"0\" data-value=\"-12\" data-unit=\"%\" data-label=\"比预算\"></div>\n    <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-50\" data-max=\"50\" data-origin=\"0\" data-value=\"18\" data-unit=\"%\" data-label=\"比上月\"></div>\n  </div>\n</div>"
         }
       ]
+    },
+    {
+      "name": "Bars",
+      "zh": "条形榜",
+      "category": "展示",
+      "classes": [
+        "xxd-bars",
+        "xxd-bars__item",
+        "xxd-bars__label",
+        "xxd-bars__track",
+        "xxd-bars__fill",
+        "xxd-bars__value",
+        "xxd-bars__note",
+        "xxd-bars__compare",
+        "xxd-bars__key",
+        "xxd-bars__swatch",
+        "xxd-bars__axis",
+        "xxd-bars__ticks",
+        "xxd-bars__tick"
+      ],
+      "attributes": {
+        "data-viz=\"bars\" + data-items": "声明式：「名字:数;名字:数」，Xxd.init() 画出来（要加载 viz.js）",
+        "data-highlight": "重点的名字（几个用逗号分开）：重点是主色，其余灰 9 级",
+        "data-step": "每格代表多少：条按单位切格（最多 60 格）",
+        "data-variant": "diverging | funnel | waterfall",
+        "data-unit / data-max / data-sort=\"false\"": "单位；满格的值（缺省是最大值）；不按大小排",
+        "data-rungs + --rungs": "手写 HTML 时按单位切格：--rungs 是满格时有几格",
+        "--value": "手写 HTML 时每行的比例（0–1；正负条 −1–1）",
+        "--bars-label": "名字那一栏的宽度（缺省 28%）",
+        "data-items: value/compare": "对照值（去年）：「长文发布:2410/1980」，主条下面一根细灰条，数字下面写出来",
+        "data-value-label / data-compare-label": "图例里主条、对照条的名字（「今年」「去年」）",
+        "data-mark + data-mark-label": "参考线（平均、目标）：横穿所有行的墨色细线，上面一行写「平均 1,800 人」",
+        "data-axis": "下面一行刻度数（取整到 1 / 2 / 5 × 10ⁿ），条后面是发丝网格线",
+        "data-total": "瀑布（data-variant=\"waterfall\"）里合计行的名字（逗号分开）：合计从 0 起、主色；其余是增减",
+        "data-compact": "大数字缩写：「1.2万」「12K」"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">批量存图的用户最多</h3><span class=\"xxd-chart-card__meta\">最近 30 天</span></div>\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-unit=\"人\" data-highlight=\"批量存图\" data-items=\"长文发布:2410;排序链接:830;批量存图:5102;今日待办:312\"></ol>\n  <p class=\"xxd-chart-card__note\">按插件统计的周活跃用户。</p>\n</div>\n</div>",
+      "react": "Bars",
+      "rules": [
+        "排名、少类目（≤ 12）用它；趋势用折线",
+        "条从 0 开始，长度和数成正比，不断轴",
+        "正负都是墨色，靠方向和「−」号分，不用红绿（涨跌不等于好坏）",
+        "瀑布的增减是灰 9 级、带 + / − 号，合计是主色；不用红绿",
+        "对照值只做背景：细灰条 + 数字下面一行字，主次靠粗细分",
+        "§14"
+      ],
+      "summary": "少类目比较、排名：名字在左、条在中、数字在右，按大小排。可以标一条重点（主色，其余是灰）；按单位切格；正负从中线往两边长；漏斗写出每一步留下多少；瀑布做增减分解。还能加对照值（去年）、参考线（平均）、刻度和旁注。条按最大值的比例，不画轨道。",
+      "a11y": [
+        "是一个有序列表：每行的字就是数据（名字、数、留下多少），读屏照念；条本身 aria-hidden",
+        "重点不只靠颜色：名字也变成正文色，标题写出结论",
+        "对照值、旁注写在数字下面（文字），读屏照念；图例和刻度那两行 aria-hidden（数据都在每行的字里）"
+      ],
+      "js": "Xxd.viz(el, \"bars\", [{ label: \"长文发布\", value: 2410 }, { label: \"批量存图\", value: 5102, highlight: true }], { unit: \"人\" })\n// 声明式：<ol class=\"xxd-bars\" data-viz=\"bars\" data-items=\"长文发布:2410;批量存图:5102\"></ol>\n// React：<Bars items={[{ label: \"长文发布\", value: 2410 }]} unit=\"人\" />",
+      "examples": [
+        {
+          "title": "按单位切格",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-step=\"1\" data-unit=\"篇\" data-items=\"周一:3;周二:5;周三:2;周四:6\" data-sort=\"false\"></ol>\n  <p class=\"xxd-chart-card__note\">1 格 = 1 篇</p>\n</div>"
+        },
+        {
+          "title": "正负",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"diverging\" data-unit=\"%\" data-items=\"海报:18;封面:6;笔记:-4;长图:-11\"></ol>\n</div>"
+        },
+        {
+          "title": "漏斗",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"funnel\" data-unit=\"人\" data-items=\"打开插件:12480;写过一篇:5210;开了会员:742\"></ol>\n</div>"
+        },
+        {
+          "title": "对照、参考线和刻度",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-unit=\"人\" data-axis data-mark=\"1800\" data-mark-label=\"平均\" data-value-label=\"今年\" data-compare-label=\"去年\" data-items=\"长文发布:2410/1980;排序链接:830/1020;批量存图:3102/2400;今日待办:312/0\"></ol>\n</div>"
+        },
+        {
+          "title": "瀑布",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"waterfall\" data-unit=\"万元\" data-total=\"毛收入,净收入\" data-items=\"毛收入:120;退款:-14;渠道分成:-22;补贴:6;净收入:90\"></ol>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Proportion",
+      "zh": "构成条",
+      "category": "展示",
+      "classes": [
+        "xxd-proportion",
+        "xxd-proportion__head",
+        "xxd-proportion__label",
+        "xxd-proportion__total",
+        "xxd-proportion__bar",
+        "xxd-proportion__part"
+      ],
+      "attributes": {
+        "data-viz=\"proportion\" + data-parts": "声明式：「名字:数;名字:数」（要加载 viz.js）",
+        "data-label / data-unit": "标题（上面一行，右边是合计）；单位",
+        "data-legend=\"false\"": "不画图例（几根并排时，只在最后一根下面画）",
+        "data-max": "几根并排时，条长按合计 ÷ max（既看构成也看总量）"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:480px\">\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-label=\"已用空间\" data-unit=\"GB\" data-parts=\"图片:38;视频:22;文档:9;其他:3\"></div>\n</div>",
+      "react": "Proportion",
+      "rules": [
+        "最多 5 段；更多的合并成「其他」",
+        "百分比用最大余数法取整，加起来正好 100%",
+        "颜色是图表的 5 种分类色，第一段是主色",
+        "§14"
+      ],
+      "summary": "一个整体分成几部分（≤ 5 段）：一根横条按比例分段，下面图例写名字、数和百分比（加起来正好 100%）。几根并排就是堆叠条。",
+      "a11y": [
+        "role=group + aria-label 是整句（「图片 53%，视频 31%……」）；条 aria-hidden，图例是文字"
+      ],
+      "js": "Xxd.viz(el, \"proportion\", [{ label: \"图片\", value: 38 }, { label: \"视频\", value: 22 }], { label: \"已用空间\", unit: \"GB\" })\n// React：<Proportion parts={[…]} label=\"已用空间\" unit=\"GB\" />",
+      "examples": [
+        {
+          "title": "几根并排",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:480px\">\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-legend=\"false\" data-label=\"华东\" data-unit=\"万元\" data-parts=\"会员:62;单篇:21;广告:9\"></div>\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-legend=\"false\" data-label=\"华南\" data-unit=\"万元\" data-parts=\"会员:41;单篇:30;广告:14\"></div>\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-label=\"华北\" data-unit=\"万元\" data-parts=\"会员:35;单篇:12;广告:18\"></div>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Waffle",
+      "zh": "百格图",
+      "category": "展示",
+      "classes": [
+        "xxd-waffle",
+        "xxd-waffle__grid",
+        "xxd-waffle__cell",
+        "xxd-waffle__side",
+        "xxd-waffle__note"
+      ],
+      "attributes": {
+        "data-viz=\"waffle\" + data-parts": "声明式：「名字:数;名字:数」（数可以是人数或百分比；要加载 viz.js）",
+        "data-cells": "格子数（缺省 100）",
+        "--waffle-size": "格子那一块的宽度（缺省 160px）"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:480px\">\n  <div class=\"xxd-waffle\" data-viz=\"waffle\" data-label=\"新会员从哪来\" data-parts=\"朋友推荐:46;搜索:27;公众号:18;其他:9\"></div>\n</div>",
+      "react": "Waffle",
+      "rules": [
+        "饼图的替代：只有占比、≤ 5 类时用它",
+        "格子数按最大余数法分，加起来正好 100 格，不凑假格子",
+        "单位写出来（「1 格 = 1%」）",
+        "§14"
+      ],
+      "summary": "占比的单位图：10 × 10，1 格 = 1%，旁边是图例和单位说明。只有几个百分比时比饼图诚实——能数。",
+      "a11y": [
+        "role=group + aria-label 是整句；格子 aria-hidden，图例写出百分比"
+      ],
+      "js": "Xxd.viz(el, \"waffle\", [{ label: \"朋友推荐\", value: 46 }, { label: \"搜索\", value: 27 }], { label: \"新会员从哪来\" })\n// React：<Waffle parts={[…]} label=\"新会员从哪来\" />"
+    },
+    {
+      "name": "Heatmap",
+      "zh": "热力格",
+      "category": "展示",
+      "classes": [
+        "xxd-heatmap",
+        "xxd-heatmap__body",
+        "xxd-heatmap__scroll",
+        "xxd-heatmap__frame",
+        "xxd-heatmap__months",
+        "xxd-heatmap__days",
+        "xxd-heatmap__grid",
+        "xxd-heatmap__cell",
+        "xxd-heatmap__scale",
+        "xxd-heatmap__matrix",
+        "xxd-heatmap__col",
+        "xxd-heatmap__row"
+      ],
+      "attributes": {
+        "data-viz=\"heatmap\" + data-values": "日历：JSON 的 {\"2026-03-02\": 5}（要加载 viz.js）",
+        "data-end / data-weeks": "最后一天（缺省今天）；显示几周（缺省 53）",
+        "data-variant=\"matrix\" + data-rows / data-cols / data-values": "矩阵：行名、列名用逗号分，数值一行一组用分号分",
+        "data-numbers": "矩阵格子里写数",
+        "--heat-cell": "日历格子大小（缺省 12px）"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:760px\">\n  <div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">工作日写得比周末多</h3><span class=\"xxd-chart-card__meta\">截至 10 月 19 日</span></div>\n  <div class=\"xxd-heatmap\" data-viz=\"heatmap\" data-end=\"2026-10-19\" data-unit=\"篇\" data-values='{\"2026-10-19\":2,\"2026-10-17\":1,\"2026-10-16\":1,\"2026-10-14\":1,\"2026-10-13\":1,\"2026-10-12\":6,\"2026-10-11\":1,\"2026-10-09\":1,\"2026-10-08\":6,\"2026-10-07\":2,\"2026-10-06\":2,\"2026-10-05\":2,\"2026-10-02\":2,\"2026-10-01\":2,\"2026-09-30\":1,\"2026-09-29\":2,\"2026-09-28\":6,\"2026-09-24\":2,\"2026-09-22\":2,\"2026-09-21\":3,\"2026-09-17\":1,\"2026-09-16\":6,\"2026-09-15\":4,\"2026-09-14\":9,\"2026-09-11\":4,\"2026-09-10\":4,\"2026-09-09\":9,\"2026-09-08\":1,\"2026-09-04\":3,\"2026-09-03\":9,\"2026-09-02\":6,\"2026-08-31\":9,\"2026-08-28\":2,\"2026-08-26\":2,\"2026-08-25\":9,\"2026-08-24\":9,\"2026-08-22\":2,\"2026-08-19\":6,\"2026-08-17\":6,\"2026-08-15\":2,\"2026-08-14\":2,\"2026-08-13\":2,\"2026-08-12\":1,\"2026-08-11\":4,\"2026-08-10\":4,\"2026-08-07\":1,\"2026-08-06\":6,\"2026-08-05\":6,\"2026-08-04\":6,\"2026-08-03\":1,\"2026-07-31\":1,\"2026-07-30\":2,\"2026-07-29\":4,\"2026-07-28\":1,\"2026-07-25\":3,\"2026-07-23\":9,\"2026-07-22\":9,\"2026-07-20\":9,\"2026-07-19\":2,\"2026-07-18\":4,\"2026-07-16\":2,\"2026-07-15\":2,\"2026-07-13\":2,\"2026-07-09\":1,\"2026-07-08\":3,\"2026-07-07\":2,\"2026-07-06\":2,\"2026-07-03\":2,\"2026-07-02\":2,\"2026-06-28\":9,\"2026-06-26\":1,\"2026-06-24\":2,\"2026-06-23\":4,\"2026-06-22\":4,\"2026-06-19\":2,\"2026-06-18\":4,\"2026-06-17\":1,\"2026-06-16\":4,\"2026-06-14\":1,\"2026-06-10\":2,\"2026-06-09\":4,\"2026-06-08\":6,\"2026-06-05\":2,\"2026-06-04\":2,\"2026-06-03\":9,\"2026-06-01\":9,\"2026-05-29\":2,\"2026-05-28\":1,\"2026-05-27\":2,\"2026-05-26\":2,\"2026-05-24\":3,\"2026-05-23\":2,\"2026-05-21\":6,\"2026-05-19\":4,\"2026-05-15\":2,\"2026-05-14\":1,\"2026-05-11\":2,\"2026-05-10\":9,\"2026-05-08\":1,\"2026-05-07\":9,\"2026-05-05\":1,\"2026-05-04\":3,\"2026-05-03\":1,\"2026-05-01\":1,\"2026-04-30\":2,\"2026-04-29\":9,\"2026-04-28\":9,\"2026-04-27\":2,\"2026-04-23\":2,\"2026-04-21\":1,\"2026-04-20\":4,\"2026-04-19\":2,\"2026-04-17\":3,\"2026-04-14\":4,\"2026-04-13\":2,\"2026-04-11\":1,\"2026-04-10\":9,\"2026-04-09\":2,\"2026-04-08\":6,\"2026-04-06\":6,\"2026-04-05\":4,\"2026-04-04\":4,\"2026-04-03\":9,\"2026-04-02\":1,\"2026-04-01\":3,\"2026-03-31\":1,\"2026-03-30\":2,\"2026-03-28\":3,\"2026-03-27\":2,\"2026-03-26\":2,\"2026-03-23\":3,\"2026-03-20\":9,\"2026-03-19\":1,\"2026-03-18\":2,\"2026-03-17\":1,\"2026-03-16\":1,\"2026-03-13\":2,\"2026-03-12\":1,\"2026-03-11\":4,\"2026-03-09\":3,\"2026-03-07\":2,\"2026-03-04\":2,\"2026-03-03\":3,\"2026-03-02\":2,\"2026-03-01\":2,\"2026-02-28\":1,\"2026-02-26\":1,\"2026-02-24\":2,\"2026-02-23\":2,\"2026-02-21\":6,\"2026-02-20\":6,\"2026-02-18\":2,\"2026-02-16\":2,\"2026-02-14\":1,\"2026-02-12\":3,\"2026-02-11\":1,\"2026-02-10\":6,\"2026-02-07\":2,\"2026-02-06\":1,\"2026-02-05\":2,\"2026-02-04\":1,\"2026-02-03\":4,\"2026-01-31\":3,\"2026-01-30\":2,\"2026-01-29\":6,\"2026-01-28\":3,\"2026-01-27\":2,\"2026-01-26\":1,\"2026-01-25\":1,\"2026-01-24\":1,\"2026-01-23\":3,\"2026-01-22\":2,\"2026-01-21\":2,\"2026-01-20\":6,\"2026-01-16\":2,\"2026-01-15\":6,\"2026-01-12\":1,\"2026-01-08\":2,\"2026-01-07\":1,\"2026-01-06\":4,\"2026-01-02\":1,\"2026-01-01\":2,\"2025-12-31\":1,\"2025-12-30\":1,\"2025-12-26\":1,\"2025-12-24\":1,\"2025-12-22\":2,\"2025-12-21\":9,\"2025-12-19\":9,\"2025-12-17\":1,\"2025-12-16\":2,\"2025-12-15\":2,\"2025-12-14\":3,\"2025-12-12\":9,\"2025-12-11\":3,\"2025-12-09\":2,\"2025-12-08\":3,\"2025-12-06\":9,\"2025-12-05\":1,\"2025-12-03\":3,\"2025-11-30\":9,\"2025-11-29\":9,\"2025-11-27\":2,\"2025-11-26\":1,\"2025-11-25\":3,\"2025-11-23\":3,\"2025-11-21\":2,\"2025-11-20\":9,\"2025-11-19\":2,\"2025-11-18\":9,\"2025-11-17\":6,\"2025-11-16\":2,\"2025-11-14\":1,\"2025-11-12\":4,\"2025-11-10\":2,\"2025-11-07\":4,\"2025-11-06\":6,\"2025-11-04\":4,\"2025-10-31\":1,\"2025-10-29\":2,\"2025-10-28\":3,\"2025-10-27\":4,\"2025-10-26\":4,\"2025-10-24\":1,\"2025-10-22\":2,\"2025-10-21\":1,\"2025-10-17\":3,\"2025-10-16\":2,\"2025-10-15\":6,\"2025-10-14\":3}'></div>\n  <p class=\"xxd-chart-card__note\">每格是一天，颜色越深写得越多。</p>\n</div>\n</div>",
+      "react": "Heatmap",
+      "rules": [
+        "只有 0 + 4 档：再多肉眼分不清",
+        "日历最近的一周在最右边，窄屏上横着滚、先滚到最右",
+        "§14"
+      ],
+      "summary": "越深越多：日历（一年 53 周 × 7 天，看哪天活跃）和矩阵（两个维度 × 数量，如星期 × 小时，格子里可以直接写数）。0 档加 4 档，墨色时是灰阶，有主色时是主色的色阶。",
+      "a11y": [
+        "格子是一张图（role=img），aria-label 是一句总结（「365 天里有 251 天有记录，合计 812 篇，最多一天 9 篇」）",
+        "横着滚的那一块是 role=region + aria-label + tabindex=0：键盘能聚焦到它，再用方向键左右滚",
+        "每格有 title（日期和数），鼠标停上去能看到；不依赖它",
+        "矩阵深的两档上的字用 --on-action，和底 ≥ 4.5:1"
+      ],
+      "js": "Xxd.viz(el, \"calendar\", { \"2026-10-18\": 3, \"2026-10-19\": 5 }, { end: \"2026-10-19\", unit: \"篇\" })\nXxd.viz(el, \"matrix\", { rows: [\"一\", \"二\"], cols: [\"9\", \"10\"], values: [[1, 4], [0, 8]] }, { numbers: true })\n// React：<Heatmap values={…} unit=\"篇\" /> 或 <Heatmap matrix={{ rows, cols, values }} numbers />",
+      "examples": [
+        {
+          "title": "矩阵",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:560px\">\n  <div class=\"xxd-heatmap\" data-viz=\"heatmap\" data-variant=\"matrix\" data-numbers data-label=\"哪个时段写得多\" data-rows=\"一,二,三,四,五,六,日\" data-cols=\"8,10,12,14,16,18,20,22\" data-values=\"2,6,4,5,7,3,9,4;1,5,6,4,6,4,8,5;2,7,5,6,8,3,10,6;1,6,4,5,7,4,9,5;3,8,6,7,9,5,6,2;0,1,2,3,2,4,5,3;0,1,1,2,3,5,7,4\"></div>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Dumbbell",
+      "zh": "前后对比",
+      "category": "展示",
+      "classes": [
+        "xxd-dumbbell",
+        "xxd-dumbbell__key",
+        "xxd-dumbbell__list",
+        "xxd-dumbbell__item",
+        "xxd-dumbbell__label",
+        "xxd-dumbbell__track",
+        "xxd-dumbbell__line",
+        "xxd-dumbbell__from",
+        "xxd-dumbbell__to",
+        "xxd-dumbbell__value",
+        "xxd-dumbbell__delta"
+      ],
+      "attributes": {
+        "data-viz=\"dumbbell\" + data-rows": "声明式：「名字:之前>之后;…」（要加载 viz.js）",
+        "data-from-label / data-to-label": "两个点的名字（缺省「之前」「之后」）",
+        "data-min / data-max / data-unit": "位置的范围（缺省是数据的范围）；单位"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:24px;width:100%;max-width:520px\">\n  <div class=\"xxd-dumbbell\" data-viz=\"dumbbell\" data-unit=\"分钟\" data-from-label=\"改版前\" data-to-label=\"改版后\" data-rows=\"写第一篇:14>6;配好图片:9>4;排好版:21>12;发出去:5>3\"></div>\n</div>",
+      "react": "Dumbbell",
+      "rules": [
+        "两个时点、≤ 8 个类目用它；更多时点用折线",
+        "语义上的点永远是圆（--r-circle）",
+        "§14"
+      ],
+      "summary": "类目级的前后对比（≤ 8 行）：一条细线连两个点，之前是空心圈、之后是实心点（主色），右边写「之前 → 之后」和变化。位置按数据的范围，不从 0 开始（比的是位置不是长度）。",
+      "a11y": [
+        "是一个有序列表：每行写「名字 之前 → 之后 变化」，读屏照念；点和线 aria-hidden",
+        "之前 / 之后不只靠颜色：一个空心、一个实心，上面有图例"
+      ],
+      "js": "Xxd.viz(el, \"dumbbell\", [{ label: \"写第一篇\", from: 14, to: 6 }], { unit: \"分钟\", fromLabel: \"改版前\", toLabel: \"改版后\" })\n// React：<Dumbbell rows={[…]} unit=\"分钟\" fromLabel=\"改版前\" toLabel=\"改版后\" />"
     }
   ]
 }

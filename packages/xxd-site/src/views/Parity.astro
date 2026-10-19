@@ -39,6 +39,8 @@ const PAIRS: [string, string, string][] = [
   ["badge", tr("徽标", "Badge"), `<span class="xxd-badge">${tr("草稿", "Draft")}</span>`],
   ["gauge", tr("量表（区段、目标）", "Gauge (zones, target)"), `<div class="xxd-gauge" data-gauge data-value="94" data-unit="%" data-label="${tr("本月额度", "Monthly quota")}" data-target="80" data-zones="80-90:warning,90:danger"></div>`],
   ["gauge-parts", tr("量表（分段）", "Gauge (parts)"), `<div class="xxd-gauge" data-gauge data-shape="ring" data-unit="GB" data-label="${tr("已用空间", "Storage used")}" data-parts="${tr("图片", "Images")}:38;${tr("视频", "Video")}:22"></div>`],
+  ["bars", tr("条形榜（重点）", "Bar list (highlight)"), `<ol class="xxd-bars" data-viz="bars" data-unit="${tr("人", "users")}" data-highlight="${tr("批量存图", "Image saver")}" data-items="${tr("长文发布", "Publisher")}:2410;${tr("批量存图", "Image saver")}:5102;${tr("今日待办", "Today")}:312"></ol>`],
+  ["proportion", tr("构成条", "Proportion bar"), `<div class="xxd-proportion" data-viz="proportion" data-label="${tr("已用空间", "Storage used")}" data-unit="GB" data-parts="${tr("图片", "Images")}:38;${tr("视频", "Video")}:22;${tr("文档", "Documents")}:9"></div>`],
   ["table", tr("表格", "Table"), `<div class="xxd-table-wrap"><table class="xxd-table"><thead><tr><th>${tr("插件", "Extension")}</th><th data-align="end">${tr("用户", "Users")}</th></tr></thead><tbody><tr><td>${tr("长文发布", "Long post")}</td><td data-align="end">2,410</td></tr></tbody></table></div>`],
 ];
 ---

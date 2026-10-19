@@ -344,3 +344,27 @@ test("量表：和网页版同一份几何；颜色从当前外观取、线头�
   assert.equal(gaugeModel({ value: 42 }).svgBody, web.gaugeModel({ value: 42 }).svgBody);
   v.unmount();
 });
+
+test("图型：和网页版同一份换算；条形榜每行的字就是数据；百格正好 100 格；热力格按周排", async () => {
+  const { Bars, Waffle, Heatmap, Dumbbell, barsModel } = mini;
+  const v = render(
+    app(
+      h(Bars, { unit: "人", items: [{ label: "a", value: 2000 }, { label: "b", value: 5000, highlight: true }], step: 1000 }),
+      h(Waffle, { label: "来源", parts: [{ label: "推荐", value: 2 }, { label: "搜索", value: 1 }] }),
+      h(Heatmap, { values: { "2026-10-19": 5 }, end: "2026-10-19", weeks: 4 }),
+      h(Dumbbell, { rows: [{ label: "写第一篇", from: 14, to: 6 }] }),
+    ),
+  );
+  await tick(10);
+  const bars = v.byClass("xxd-bars")[0];
+  assert.ok(cls(bars).includes("is-emphasis") && cls(bars).includes("is-rungs"));
+  assert.equal(bars.props.style, "--rungs:5");
+  assert.deepEqual(v.byClass("xxd-bars__item").map((n) => n.props.style), ["--value:1", "--value:0.4"]);
+  assert.equal(v.byClass("xxd-waffle__cell").length, 100);
+  assert.equal(v.byClass("xxd-waffle")[0].props.ariaLabel, "来源，推荐 67%，搜索 33%");
+  assert.equal(v.byClass("xxd-heatmap__grid")[0].children.length, 28);
+  assert.ok(cls(v.byClass("xxd-dumbbell__delta")[0]) !== undefined);
+  const web = await import("@xxd/css/viz");
+  assert.deepEqual(barsModel([{ label: "x", value: 3 }]), web.barsModel([{ label: "x", value: 3 }]));
+  v.unmount();
+});

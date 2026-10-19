@@ -1,6 +1,6 @@
 // 第三批组件的演示：手机上常用的（底部按钮条、数量加减、日期滚轮、结果页）
 import { View } from "@tarojs/components";
-import { BottomBar, Button, Cell, CellGroup, DatePicker, Gauge, Gauges, Result, Stack, Stepper, Text, useToast } from "@xxd/mini";
+import { Bars, BottomBar, Button, Cell, CellGroup, DatePicker, Dumbbell, Gauge, Gauges, Heatmap, Proportion, Result, Sparkline, Stack, Stepper, Text, useToast, Waffle } from "@xxd/mini";
 import { useState } from "react";
 import type { Demo } from "./types";
 
@@ -66,21 +66,67 @@ function GaugeDemo({ tr }: { tr: Tr }) {
       </Gauges>
       <Gauges>
         <Gauge shape="ring" segments={8} max={8} value={cups} unit={tr("杯", "glasses")} label={tr("今天喝水", "Water today")} />
-        <Gauge shape="half" needle ticks={10} value={64} unit="%" label={tr("CPU 负载", "CPU load")} zones={[{ from: 80, tone: "danger" }]} />
+        <Gauge shape="half" needle ticks={10} value={cups * 12} unit="%" label={tr("CPU 负载", "CPU load")} zones={[{ from: 80, tone: "danger" }]} />
       </Gauges>
       <CellGroup>
         <Cell title={tr("喝了几杯", "Glasses")} control={<Stepper value={cups} min={0} max={8} onValueChange={setCups} label={tr("喝了几杯", "Glasses")} />} />
       </CellGroup>
-      <Gauges>
-        <Gauge shape="ring" max={100} unit="GB" label={tr("已用空间", "Storage used")} parts={[{ label: tr("图片", "Images"), value: 38 }, { label: tr("视频", "Video"), value: 22 }, { label: tr("文档", "Documents"), value: 9 }]} />
-        <Gauge shape="ring" label={tr("本周目标", "This week")} rings={[{ label: tr("写作", "Writing"), value: 3, max: 5 }, { label: tr("阅读", "Reading"), value: 40, max: 60 }, { label: tr("运动", "Exercise"), value: 2, max: 4 }]} />
-      </Gauges>
     </Stack>
   );
 }
 
+// 热力格的演示数据：最近 20 周，工作日写得多（固定的伪随机，每次一样）
+function writingDays(end: string, weeks: number): Record<string, number> {
+  const out: Record<string, number> = {};
+  const t0 = Date.parse(`${end}T00:00:00Z`);
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < weeks * 7; i += 1) {
+    const t = t0 - i * 86400000;
+    const weekday = (new Date(t).getUTCDay() + 6) % 7 < 5;
+    if (rnd() < (weekday ? 0.72 : 0.35)) out[new Date(t).toISOString().slice(0, 10)] = [1, 1, 2, 2, 3, 4, 6, 9][Math.floor(rnd() * 8)];
+  }
+  return out;
+}
+
 export const BATCH3: Demo[] = [
   { name: "Gauge", render: (tr) => <GaugeDemo tr={tr} /> },
+  {
+    name: "Bars",
+    render: (tr) => (
+      <Stack gap={24}>
+        <Bars unit={tr("人", "users")} items={[{ label: tr("长文发布", "Publisher"), value: 2410 }, { label: tr("排序链接", "Link sorter"), value: 830 }, { label: tr("批量存图", "Image saver"), value: 5102, highlight: true }, { label: tr("今日待办", "Today"), value: 312 }]} />
+        <Bars variant="funnel" unit={tr("人", "people")} items={[{ label: tr("打开", "Opened"), value: 12480 }, { label: tr("写过一篇", "Wrote one"), value: 5210 }, { label: tr("开会员", "Joined"), value: 742 }]} />
+        <Bars variant="diverging" unit="%" items={[{ label: tr("海报", "Posters"), value: 18 }, { label: tr("封面", "Covers"), value: 6 }, { label: tr("笔记", "Notes"), value: -4 }, { label: tr("长图", "Long images"), value: -11 }]} />
+        <Sparkline type="bar" data={[3, 5, 0, 6, 2, 8, 4, 7, 0, 5, 9, 6, 3, 4]} height={28} />
+      </Stack>
+    ),
+  },
+  {
+    name: "Proportion",
+    render: (tr) => (
+      <Stack gap={20}>
+        <Proportion label={tr("已用空间", "Storage used")} unit="GB" parts={[{ label: tr("图片", "Images"), value: 38 }, { label: tr("视频", "Video"), value: 22 }, { label: tr("文档", "Documents"), value: 9 }, { label: tr("其他", "Other"), value: 3 }]} />
+      </Stack>
+    ),
+  },
+  {
+    name: "Waffle",
+    render: (tr) => <Waffle label={tr("新会员从哪来", "Where new members come from")} parts={[{ label: tr("朋友推荐", "Friends"), value: 46 }, { label: tr("搜索", "Search"), value: 27 }, { label: tr("公众号", "WeChat"), value: 18 }, { label: tr("其他", "Other"), value: 9 }]} />,
+  },
+  {
+    name: "Heatmap",
+    render: (tr) => (
+      <Stack gap={24}>
+        <Heatmap values={writingDays("2026-10-19", 20)} end="2026-10-19" weeks={20} unit={tr("篇", "posts")} />
+        <Heatmap numbers label={tr("哪个时段写得多", "When people write")} matrix={{ rows: tr("一,二,三,四,五", "Mon,Tue,Wed,Thu,Fri").split(","), cols: ["8", "12", "16", "20"], values: [[2, 4, 7, 9], [1, 6, 6, 8], [2, 5, 8, 10], [1, 4, 7, 9], [3, 6, 9, 6]] }} />
+      </Stack>
+    ),
+  },
+  {
+    name: "Dumbbell",
+    render: (tr) => <Dumbbell unit={tr("分钟", "min")} fromLabel={tr("改版前", "Before")} toLabel={tr("改版后", "After")} rows={[{ label: tr("写第一篇", "First post"), from: 14, to: 6 }, { label: tr("配好图片", "Images ready"), from: 9, to: 4 }, { label: tr("排好版", "Layout"), from: 21, to: 12 }]} />,
+  },
   { name: "BottomBar", bleed: true, render: (tr) => <BottomBarDemo tr={tr} /> },
   { name: "Stepper", bleed: true, render: (tr) => <StepperDemo tr={tr} /> },
   { name: "DatePicker", bleed: true, render: (tr) => <DatePickerDemo tr={tr} /> },

@@ -108,11 +108,21 @@ export declare function chartTokens(el?: Element): XxdChartTokens;
 export declare function chartPalette(tokens?: XxdChartTokens): string[];
 export declare function chartOptions<T extends Record<string, any>>(option?: T, options?: { el?: Element; tokens?: XxdChartTokens }): T & Record<string, any>;
 export declare function watchChartTheme(chart: { setOption(option: any, opts?: any): void }, build: () => any, options?: { el?: Element }): () => void;
-export declare function sparkline(values: (number | string)[], options?: { width?: number; height?: number; strokeWidth?: number; area?: boolean }): string;
+export declare function sparkline(values: (number | string)[], options?: { width?: number; height?: number; strokeWidth?: number; area?: boolean; type?: "line" | "bar" }): string;
 export declare function initSparklines(root?: ParentNode): void;
 export type { XxdGaugeOptions, XxdGaugeModel, XxdGaugeShape, XxdGaugeTone, XxdGaugeZone } from "./gauge";
-/** 量表的几何用哪份：ESM 项目 useGauge(await import("@xxd/css/gauge"))；经典脚本自动用 window.XxdGauge（dist/gauge.js）。 */
-export declare function useGauge(lib: typeof import("./gauge") | null): void;
+/** 量表的几何和图的换算用哪份：ESM 项目 useViz(await import("@xxd/css/viz"))；经典脚本自动用 window.XxdViz（dist/viz.js）。 */
+export declare function useViz(lib: typeof import("./viz") | null): void;
+export type { XxdBarsItem, XxdBarsOptions, XxdVizItem, XxdVizCommon, XxdCalendarOptions, XxdMatrixData, XxdDumbbellRow, XxdDumbbellOptions } from "./viz";
+/**
+ * 画一张图（或者数据变了重画）：Xxd.viz(el, "bars", [{ label, value }], { unit })。
+ * kind：bars | proportion | waffle | calendar | matrix | dumbbell。
+ */
+export declare function viz(el: Element, kind: "bars" | "proportion" | "waffle" | "calendar" | "matrix" | "dumbbell", data: unknown, options?: Record<string, unknown>): unknown;
+/** 元素上的 data-*（data-viz、data-items、data-parts、data-values…）→ [kind, data, options] */
+export declare function vizFrom(el: Element): [string | null, unknown?, Record<string, unknown>?];
+/** 声明式：[data-viz] 的元素都画出来（Xxd.init 会调用） */
+export declare function initViz(root?: ParentNode): void;
 /** 画一个量表（或者值变了重画）：el 是 .xxd-gauge。 */
 export declare function gauge(el: Element, options: import("./gauge").XxdGaugeOptions): import("./gauge").XxdGaugeModel;
 /** 元素上的 data-*（data-value、data-zones="70-90:warning,90:danger"、data-parts="图片:30;视频:20"、data-rings="写作:3/5"…）→ 选项 */

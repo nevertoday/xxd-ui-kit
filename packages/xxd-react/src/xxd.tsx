@@ -16,7 +16,7 @@ import {
 } from "react";
 import { Icon } from "@xxd/icons/react";
 import { ACCENT_PRESETS } from "@xxd/tokens";
-import { gaugeModel } from "@xxd/css/gauge";
+import { barsModel, calendarModel, dumbbellModel, gaugeModel, matrixModel, proportionModel, waffleModel } from "@xxd/css/viz";
 import { useXxdAppearance } from "./appearance";
 import { useXxdLocale } from "./locale";
 
@@ -495,6 +495,10 @@ export function Gauge({
   /** 小数位（缺省最多一位） */
   decimals?: number;
   format?: (n: number) => string;
+  /** 填充从这个值往两边长（偏差、盈亏，比如 0）；缺省从最小值长 */
+  origin?: number;
+  /** 大数字缩写：「1.2万」「12K」 */
+  compact?: boolean;
   /** 目标线（一条或几条） */
   target?: number | readonly number[];
   /** 区段，只表意义：数值进了哪一段，填充换成那一段的颜色，数字下面写出状态 */
@@ -559,17 +563,397 @@ export function Gauge({
         </div>
       )}
       {m.legend.length > 0 && (
-        <ul className="xxd-gauge__legend">
-          {m.legend.map((l, i) => (
-            <li key={i} className="xxd-gauge__item">
-              <span className="xxd-gauge__key" data-part={l.part} />
-              <span className="xxd-gauge__name">{l.label}</span>
-              <span className="xxd-gauge__num">{l.text}</span>
-            </li>
-          ))}
-        </ul>
+        <Legend items={m.legend.map((l) => ({ label: l.label, num: l.text, part: l.part }))} />
       )}
     </div>
   );
 }
 export type GaugeProps = Parameters<typeof Gauge>[0];
+
+/* ── 图型（CHART-TYPES-PLAN）：换算和 @xxd/css 的 Xxd.viz 是同一份（@xxd/css/viz），结构和类名也一样 ── */
+type VizText = { unit?: string; decimals?: number; compact?: boolean; format?: (n: number) => string };
+
+/** 图例：色块 · 名字 · 数字（· 占比） */
+function Legend({ items }: { items: { label: string; num: string; share?: string; part: number }[] }) {
+  return (
+    <ul className="xxd-legend">
+      {items.map((l, i) => (
+        <li key={i} className="xxd-legend__item">
+          <span className="xxd-legend__key" data-part={l.part} />
+          <span className="xxd-legend__name">{l.label}</span>
+          <span className="xxd-legend__num">{l.num}</span>
+          {l.share && <span className="xxd-legend__share">{l.share}</span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const HeatScale = ({ less, more }: { less: string; more: string }) => (
+  <div className="xxd-heatmap__scale" aria-hidden="true">
+    <span>{less}</span>
+    {[0, 1, 2, 3, 4].map((l) => (
+      <i key={l} className="xxd-heatmap__cell" data-level={l} />
+    ))}
+    <span>{more}</span>
+  </div>
+);
+
+const Empty = ({ text, as: Tag = "p" }: { text: string; as?: "p" | "li" }) => <Tag className="xxd-viz-empty">{text}</Tag>;
+
+/** 条形榜：少类目比较、排名、正负、漏斗、瀑布 */
+export function Bars({
+  items,
+  variant,
+  step,
+  max,
+  sort,
+  mark,
+  markLabel,
+  valueLabel,
+  compareLabel,
+  axis,
+  className,
+  style,
+  ...text
+}: {
+  /** 每行：名字、数；highlight 标重点（主色，其余灰）；compare 对照值（去年）；note 旁注；total 瀑布的合计行 */
+  items: readonly { label: string; value: number; highlight?: boolean; compare?: number; note?: string; total?: boolean }[];
+  /** plain（缺省，按大小排）| diverging（正负，从中线往两边）| funnel（漏斗，写出每一步留下多少）| waterfall（瀑布，增减分解） */
+  variant?: "plain" | "diverging" | "funnel" | "waterfall";
+  /** 每格代表多少：条按单位切格 */
+  step?: number;
+  /** 满格的值（缺省是最大值） */
+  max?: number;
+  /** false：不按大小排 */
+  sort?: boolean;
+  /** 参考线（平均、目标）的值 */
+  mark?: number;
+  /** 参考线的名字（「平均」） */
+  markLabel?: string;
+  /** 图例里主条的名字（「今年」） */
+  valueLabel?: string;
+  /** 图例里对照条的名字（「去年」） */
+  compareLabel?: string;
+  /** 下面一行刻度数，条后面是网格线 */
+  axis?: boolean;
+  unit?: string;
+  decimals?: number;
+  /** 大数字缩写：「1.2万」「12K」 */
+  compact?: boolean;
+  format?: (n: number) => string;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const { locale } = useXxdLocale();
+  const m = barsModel(items, { ...(text as VizText), variant, step, max, sort, mark, markLabel, valueLabel, compareLabel, axis, locale });
+  const vars = { ...(m.rungs ? { "--rungs": m.rungs } : {}), ...(m.axis ? { "--tick": m.axis.tick } : {}), ...(m.mark ? { "--mark": m.mark.at } : {}) };
+  const swatch = (kind: string, label: string) =>
+    label ? (
+      <span>
+        <span className="xxd-bars__swatch" data-kind={kind} />
+        {label}
+      </span>
+    ) : null;
+  return (
+    <ol
+      className={cx("xxd-bars", className)}
+      data-variant={m.variant === "plain" ? undefined : m.variant}
+      data-emphasis={flag(m.emphasis)}
+      data-rungs={flag(Boolean(m.rungs))}
+      data-axis={flag(Boolean(m.axis))}
+      data-marked={flag(Boolean(m.mark))}
+      style={{ ...style, ...vars } as CSSProperties}
+    >
+      {m.empty && <Empty as="li" text={m.empty} />}
+      {m.key && (
+        <li className="xxd-bars__key" aria-hidden="true">
+          {swatch("value", m.key.value)}
+          {swatch("compare", m.key.compare)}
+          {swatch("mark", m.key.mark)}
+        </li>
+      )}
+      {m.rows.map((r, i) => (
+        <li
+          key={i}
+          className="xxd-bars__item"
+          data-highlight={flag(r.highlight)}
+          data-total={flag(r.total)}
+          style={{ "--value": r.frac, ...(r.compareFrac != null ? { "--compare": r.compareFrac } : {}), ...(r.from != null ? { "--from": r.from, "--to": r.to } : {}) } as CSSProperties}
+        >
+          <span className="xxd-bars__label">{r.label}</span>
+          <span className="xxd-bars__track" aria-hidden="true">
+            <span className="xxd-bars__fill" />
+            {r.compareFrac != null && <span className="xxd-bars__compare" />}
+          </span>
+          <span className="xxd-bars__value">
+            {r.text}
+            {r.note && <span className="xxd-bars__note">{r.note}</span>}
+          </span>
+        </li>
+      ))}
+      {m.axis && (
+        <li className="xxd-bars__axis" aria-hidden="true">
+          <span className="xxd-bars__ticks">
+            {m.axis.ticks.map((t, i) => (
+              <span key={i} className="xxd-bars__tick" style={{ left: `${Math.round(t.at * 1000) / 10}%` }}>
+                {t.text}
+              </span>
+            ))}
+          </span>
+        </li>
+      )}
+    </ol>
+  );
+}
+
+/** 构成条：一个整体分成几部分（≤ 5 段） */
+export function Proportion({
+  parts,
+  label,
+  legend = true,
+  max,
+  className,
+  ...text
+}: {
+  parts: readonly { label: string; value: number }[];
+  /** 标题（上面一行，右边是合计），也是读屏念的名字 */
+  label?: string;
+  /** false：不画图例（几根并排时只在最后一根下面画） */
+  legend?: boolean;
+  /** 几根并排时，条长按合计 ÷ max（既看构成也看总量） */
+  max?: number;
+  unit?: string;
+  compact?: boolean;
+  decimals?: number;
+  format?: (n: number) => string;
+  className?: string;
+}) {
+  const { locale } = useXxdLocale();
+  const m = proportionModel(parts, { ...(text as VizText), label, max, locale });
+  if (m.empty)
+    return (
+      <div className={cx("xxd-proportion", className)}>
+        {label && (
+          <p className="xxd-proportion__head">
+            <span className="xxd-proportion__label">{label}</span>
+          </p>
+        )}
+        <Empty text={m.empty} />
+      </div>
+    );
+  return (
+    <div className={cx("xxd-proportion", className)} role="group" aria-label={m.label}>
+      {label && (
+        <p className="xxd-proportion__head">
+          <span className="xxd-proportion__label">{label}</span>
+          <span className="xxd-proportion__total">{m.totalText}</span>
+        </p>
+      )}
+      <div className="xxd-proportion__bar" aria-hidden="true" style={m.scale < 1 ? ({ "--scale": m.scale } as CSSProperties) : undefined}>
+        {m.parts.map((p) => (
+          <span key={p.part} className="xxd-proportion__part" data-part={p.part} style={{ "--v": p.share } as CSSProperties} />
+        ))}
+      </div>
+      {legend && <Legend items={m.parts.map((p) => ({ label: p.label, num: p.text, share: p.percent, part: p.part }))} />}
+    </div>
+  );
+}
+
+/** 百格图：10 × 10，1 格 = 1% */
+export function Waffle({
+  parts,
+  label,
+  cells,
+  className,
+  ...text
+}: {
+  /** 数可以是人数或百分比 */
+  parts: readonly { label: string; value: number }[];
+  /** 读屏念的名字 */
+  label?: string;
+  /** 格子数（缺省 100） */
+  cells?: number;
+  decimals?: number;
+  format?: (n: number) => string;
+  className?: string;
+}) {
+  const { locale } = useXxdLocale();
+  const m = waffleModel(parts, { ...(text as VizText), label, cells, locale });
+  if (m.empty)
+    return (
+      <div className={cx("xxd-waffle", className)}>
+        <Empty text={m.empty} />
+      </div>
+    );
+  return (
+    <div className={cx("xxd-waffle", className)} role="group" aria-label={m.label}>
+      <div className="xxd-waffle__grid" aria-hidden="true">
+        {m.cells.map((c, i) => (
+          <i key={i} className="xxd-waffle__cell" data-part={c >= 0 ? c : undefined} />
+        ))}
+      </div>
+      <div className="xxd-waffle__side">
+        <Legend items={m.parts.map((p) => ({ label: p.label, num: p.percent, part: p.part }))} />
+        <p className="xxd-waffle__note">{m.note}</p>
+      </div>
+    </div>
+  );
+}
+
+/** 热力格：日历（values）或矩阵（matrix） */
+export function Heatmap({
+  values,
+  end,
+  weeks,
+  matrix,
+  numbers,
+  label,
+  className,
+  ...text
+}: {
+  /** 日历：{ "2026-03-02": 5 } 或 [{ date, value }] */
+  values?: Record<string, number> | readonly { date: string; value: number }[];
+  /** 日历的最后一天（缺省今天） */
+  end?: string;
+  /** 日历显示几周（缺省 53） */
+  weeks?: number;
+  /** 矩阵：行名、列名、二维数值 */
+  matrix?: { rows: (string | number)[]; cols: (string | number)[]; values: (number | null | undefined)[][] };
+  /** 矩阵格子里写数 */
+  numbers?: boolean;
+  /** 读屏总结前面的名字 */
+  label?: string;
+  unit?: string;
+  decimals?: number;
+  /** 大数字缩写：「1.2万」「12K」 */
+  compact?: boolean;
+  format?: (n: number) => string;
+  className?: string;
+}) {
+  const { locale } = useXxdLocale();
+  const scroll = useRef<HTMLDivElement>(null);
+  const o = { ...(text as VizText), label, locale };
+  const cal = matrix ? null : calendarModel(values ?? {}, { ...o, end, weeks });
+  const mat = matrix ? matrixModel(matrix, o) : null;
+  // 日历：最近的一周在最右边；窄屏上先滚到最右
+  useEffect(() => {
+    if (cal && scroll.current) scroll.current.scrollLeft = scroll.current.scrollWidth;
+  }, [cal?.columns.length]);
+  if (mat?.empty)
+    return (
+      <div className={cx("xxd-heatmap", className)} data-variant="matrix">
+        <Empty text={mat.empty} />
+      </div>
+    );
+  if (mat)
+    return (
+      <div className={cx("xxd-heatmap", className)} data-variant="matrix">
+        <div className="xxd-heatmap__scroll" role="region" aria-label={mat.title} tabIndex={0}>
+          <div className="xxd-heatmap__matrix" role="img" aria-label={mat.label} style={{ "--cols": mat.cols.length } as CSSProperties}>
+            <span />
+            {mat.cols.map((c, j) => (
+              <span key={`c${j}`} className="xxd-heatmap__col">{c}</span>
+            ))}
+            {mat.rows.map((r, i) => [
+              <span key={`r${i}`} className="xxd-heatmap__row">{r}</span>,
+              ...mat.cells[i].map((c, j) => (
+                <i key={`${i}-${j}`} className="xxd-heatmap__cell" data-level={c.level} title={c.title}>
+                  {numbers ? c.text : null}
+                </i>
+              )),
+            ])}
+          </div>
+        </div>
+        <HeatScale less={mat.less} more={mat.more} />
+      </div>
+    );
+  const m = cal!;
+  return (
+    <div className={cx("xxd-heatmap", className)}>
+      <div className="xxd-heatmap__body">
+        <div className="xxd-heatmap__days" aria-hidden="true">
+          {m.weekdays.map((d, i) => (
+            <span key={i}>{i % 2 === 0 ? d : ""}</span>
+          ))}
+        </div>
+        <div className="xxd-heatmap__scroll" ref={scroll} role="region" aria-label={m.title} tabIndex={0}>
+          <div className="xxd-heatmap__frame" style={{ "--weeks": m.columns.length } as CSSProperties}>
+            <div className="xxd-heatmap__months" aria-hidden="true">
+              {m.months.map((x) => (
+                <span key={x.col} style={{ gridColumn: x.col + 1 }}>{x.text}</span>
+              ))}
+            </div>
+            <div className="xxd-heatmap__grid" role="img" aria-label={m.label}>
+              {m.columns.flat().map((c) => (
+                <i key={c.date} className="xxd-heatmap__cell" data-level={c.level < 0 ? "none" : c.level} title={c.title || undefined} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <HeatScale less={m.less} more={m.more} />
+    </div>
+  );
+}
+
+/** 前后对比：类目级的两个时点（≤ 8 行） */
+export function Dumbbell({
+  rows,
+  fromLabel,
+  toLabel,
+  min,
+  max,
+  className,
+  ...text
+}: {
+  rows: readonly { label: string; from: number; to: number }[];
+  /** 之前那个点的名字（缺省「之前」） */
+  fromLabel?: string;
+  /** 之后那个点的名字（缺省「之后」） */
+  toLabel?: string;
+  /** 位置的范围（缺省是数据的范围） */
+  min?: number;
+  max?: number;
+  unit?: string;
+  decimals?: number;
+  /** 大数字缩写：「1.2万」「12K」 */
+  compact?: boolean;
+  format?: (n: number) => string;
+  className?: string;
+}) {
+  const { locale } = useXxdLocale();
+  const m = dumbbellModel(rows, { ...(text as VizText), fromLabel, toLabel, min, max, locale });
+  if (m.empty)
+    return (
+      <div className={cx("xxd-dumbbell", className)}>
+        <Empty text={m.empty} />
+      </div>
+    );
+  return (
+    <div className={cx("xxd-dumbbell", className)}>
+      <p className="xxd-dumbbell__key">
+        <span className="xxd-dumbbell__from" />
+        {m.fromLabel}
+        <span className="xxd-dumbbell__to" />
+        {m.toLabel}
+      </p>
+      <ol className="xxd-dumbbell__list">
+        {m.rows.map((r, i) => (
+          <li key={i} className="xxd-dumbbell__item">
+            <span className="xxd-dumbbell__label">{r.label}</span>
+            <span className="xxd-dumbbell__track" aria-hidden="true" style={{ "--a": r.a, "--b": r.b, "--lo": Math.min(r.a, r.b), "--hi": Math.max(r.a, r.b) } as CSSProperties}>
+              <span className="xxd-dumbbell__line" />
+              <span className="xxd-dumbbell__from" />
+              <span className="xxd-dumbbell__to" />
+            </span>
+            <span className="xxd-dumbbell__value">
+              {r.fromText} → {r.toText}
+              <span className="xxd-dumbbell__delta">{r.delta}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}

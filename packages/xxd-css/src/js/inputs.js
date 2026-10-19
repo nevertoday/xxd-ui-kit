@@ -188,7 +188,8 @@ function cbOpen(wrap) {
   if (list.hidden) cbSetActive(input, list, null);
   // 筛选后的条数念出来（停下来 300ms 再念，不跟着每个字念）
   clearTimeout(wrap._announceTimer);
-  if (raw) wrap._announceTimer = setTimeout(() => announce(list.hidden ? t("commandEmpty", null, wrap) : t("resultsCount", { n: cbVisible(list).filter((o) => !o.hasAttribute("data-create")).length }, wrap), { within: wrap }), 300);
+  // 300ms 后才播报：那时组件已经不在页面上（关了、换页了）就不播，免得盖掉别处的播报
+  if (raw) wrap._announceTimer = setTimeout(() => wrap.isConnected && announce(list.hidden ? t("commandEmpty", null, wrap) : t("resultsCount", { n: cbVisible(list).filter((o) => !o.hasAttribute("data-create")).length }, wrap), { within: wrap }), 300);
   if (!list.hidden) {
     list.style.minWidth = `${input.offsetWidth}px`;
     place(input, list, { placement: "bottom-start", offset: 4 });
@@ -424,7 +425,7 @@ export function openCommandPalette({ items = [], placeholder = t("commandPlaceho
     else input.removeAttribute("aria-activedescendant");
     // 结果条数念出来（停下来 300ms 再念）
     clearTimeout(dialog._announceTimer);
-    if (input.value.trim()) dialog._announceTimer = setTimeout(() => announce(shown.length ? t("resultsCount", { n: shown.length }, dialog) : empty, { within: dialog }), 300);
+    if (input.value.trim()) dialog._announceTimer = setTimeout(() => dialog.isConnected && dialog.open !== false && announce(shown.length ? t("resultsCount", { n: shown.length }, dialog) : empty, { within: dialog }), 300);
   };
   const run = (i) => {
     const item = shown[i];

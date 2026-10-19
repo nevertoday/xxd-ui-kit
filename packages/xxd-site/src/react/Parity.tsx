@@ -1,7 +1,7 @@
 // 「两种实现对照」页的 React 一侧（设计师评审 V1）。每一对的 id 和 src/views/Parity.astro 里的 HTML 一侧一样；
 // audit 的「对照」一项按 [data-pair] 找到两边，比较尺寸、字号、字重、颜色、边、圆角、背景。
 import { useState, type JSX } from "react";
-import { Badge, Button, Checkbox, Gauge, Input, Radio, Select, Switch, Table, Tabs, XxdLocaleProvider } from "@xxd/react";
+import { Badge, Bars, Button, Checkbox, Gauge, Input, Proportion, Radio, Select, Switch, Table, Tabs, XxdLocaleProvider } from "@xxd/react";
 
 type Tr = (zh: string, en: string) => string;
 
@@ -54,6 +54,8 @@ export const REACT_PAIRS: Record<string, (tr: Tr) => JSX.Element> = {
   badge: (tr) => <Badge variant="secondary">{tr("草稿", "Draft")}</Badge>,
   gauge: (tr) => <Gauge value={94} unit="%" label={tr("本月额度", "Monthly quota")} target={80} zones={[{ from: 80, to: 90, tone: "warning" }, { from: 90, tone: "danger" }]} />,
   "gauge-parts": (tr) => <Gauge shape="ring" unit="GB" label={tr("已用空间", "Storage used")} parts={[{ label: tr("图片", "Images"), value: 38 }, { label: tr("视频", "Video"), value: 22 }]} />,
+  bars: (tr) => <Bars unit={tr("人", "users")} items={[{ label: tr("长文发布", "Publisher"), value: 2410 }, { label: tr("批量存图", "Image saver"), value: 5102, highlight: true }, { label: tr("今日待办", "Today"), value: 312 }]} />,
+  proportion: (tr) => <Proportion label={tr("已用空间", "Storage used")} unit="GB" parts={[{ label: tr("图片", "Images"), value: 38 }, { label: tr("视频", "Video"), value: 22 }, { label: tr("文档", "Documents"), value: 9 }]} />,
   table: (tr) => (
     <div className="overflow-x-auto rounded-xl border border-kumo-line bg-kumo-base">
     <Table>

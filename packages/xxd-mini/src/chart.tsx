@@ -109,9 +109,9 @@ export function Chart({ type = "line", series, labels, height = 160, title, meta
   );
 }
 
-/** 迷你折线（统计卡里的小趋势） */
-export function Sparkline({ data, height = 24, className }: { data: number[]; height?: number; className?: string }) {
+/** 迷你折线（统计卡里的小趋势）；type="bar" 是迷你柱（每天一个数，看哪天多） */
+export function Sparkline({ data, height = 24, type = "line", className }: { data: number[]; height?: number; type?: "line" | "bar"; className?: string }) {
   const { vars } = useXxd();
-  const svg = chartSvg({ type: "line", series: [{ name: "", data }], width: 96, height, colors: [vars["--muted"]], spark: true });
+  const svg = chartSvg({ type, series: [{ name: "", data }], width: 96, height, colors: [vars["--muted"]], spark: true });
   return <Image className={cx("xxd-sparkline", className)} style={`height:${height}px`} src={`data:image/svg+xml;base64,${base64(svg)}`} mode="scaleToFill" {...imgAlt("")} {...a11y({ hidden: true })} />;
 }

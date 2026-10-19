@@ -12,6 +12,8 @@ export const PARITY = {
   Badge: ["badge"],
   Table: ["table"],
   Gauge: ["gauge", "gauge-parts"],
+  Bars: ["bars"],
+  Proportion: ["proportion"],
   // 浮层不放在对照页上：audit 到组件页把两种实现各打开一次再比（scripts/parity.mjs 的 OVERLAYS）
   Dialog: [],
   Menu: [],

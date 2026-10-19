@@ -144,3 +144,6 @@ export function useToasts(): ToastItem[] {
 export function useToast() {
   return useXxd().toast;
 }
+
+/** 图的字（「留下」「1 格 =」「少 / 多」）跟着小程序的语言（CHART-TYPES-PLAN H5） */
+export const useVizLocale = () => (useXxd().lang === "en" ? "en" : "zh-CN");

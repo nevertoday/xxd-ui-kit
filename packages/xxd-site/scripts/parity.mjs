@@ -36,13 +36,26 @@ export const PARTS = {
     ["数字列", "td:last-child", "td:last-child", ["textAlign", "numeric"]],
     ["行线", "tbody tr", "tbody tr", ["rowLine"]],
   ],
+  // 条形榜、构成条（CHART-TYPES-PLAN H4）：比条的粗细、颜色和圆角，名字和数字的字
+  bars: [
+    ["重点的条", "[data-highlight] .xxd-bars__fill", "[data-highlight] .xxd-bars__fill", ["height", "background", "radius"]],
+    ["其余的条", ".xxd-bars__item:not([data-highlight]) .xxd-bars__fill", ".xxd-bars__item:not([data-highlight]) .xxd-bars__fill", ["background"]],
+    ["名字", ".xxd-bars__label", ".xxd-bars__label", ["fontSize", "color"]],
+    ["数字", ".xxd-bars__value", ".xxd-bars__value", ["fontSize", "fontWeight", "color", "numeric"]],
+  ],
+  proportion: [
+    ["第一段", ".xxd-proportion__part", ".xxd-proportion__part", ["height", "background"]],
+    ["第二段", ".xxd-proportion__part[data-part='1']", ".xxd-proportion__part[data-part='1']", ["background"]],
+    ["图例", ".xxd-legend__name", ".xxd-legend__name", ["fontSize", "color"]],
+    ["合计", ".xxd-proportion__total", ".xxd-proportion__total", ["fontSize", "color"]],
+  ],
   // 量表（GAUGE-PLAN G4）：两边都用 @xxd/css/gauge 画，比表盘大小、线的颜色和中间的字
   gauge: [
     ["表盘", ".xxd-gauge__dial", ".xxd-gauge__dial", ["width", "height"]],
     ["轨道", ".xxd-gauge__track", ".xxd-gauge__track", ["stroke", "cap"]],
     ["填充", "[class^=xxd-gauge__fill], [class^=xxd-gauge__part-0]", "[class^=xxd-gauge__fill], [class^=xxd-gauge__part-0]", ["stroke", "cap"]],
     ["数字", ".xxd-gauge__value", ".xxd-gauge__value", ["fontSize", "fontWeight", "color", "numeric"]],
-    ["标签", ".xxd-gauge__label, .xxd-gauge__name", ".xxd-gauge__label, .xxd-gauge__name", ["fontSize", "color"]],
+    ["标签", ".xxd-gauge__label, .xxd-legend__name", ".xxd-gauge__label, .xxd-legend__name", ["fontSize", "color"]],
   ],
 };
 

@@ -81,7 +81,14 @@
     /* 量表：轨道 GrayText，填充 Highlight，其余的线 CanvasText；分段、多环靠图例的文字分 */
     .xxd-gauge__svg,
     .xxd-gauge__pointer,
-    .xxd-gauge__key {
+    .xxd-legend__key,
+    .xxd-bars__fill,
+    .xxd-proportion__part,
+    .xxd-waffle__cell,
+    .xxd-heatmap__cell,
+    .xxd-dumbbell__line,
+    .xxd-dumbbell__from,
+    .xxd-dumbbell__to {
       forced-color-adjust: none;
     }
 
@@ -114,15 +121,51 @@
       fill: CanvasText;
     }
 
-    .xxd-gauge__key,
-    .xxd-gauge__key[data-part="2"],
-    .xxd-gauge__key[data-part="4"] {
+    /* 图（CHART-TYPES-PLAN）：分类只剩两种系统色，靠图例的文字分；热力用描边的有无和粗细分档 */
+    .xxd-legend__key,
+    .xxd-legend__key[data-part="2"],
+    .xxd-legend__key[data-part="4"],
+    .xxd-bars__fill,
+    .xxd-bars[data-emphasis] .xxd-bars__item[data-highlight] .xxd-bars__fill,
+    .xxd-proportion__part,
+    .xxd-proportion__part[data-part="2"],
+    .xxd-proportion__part[data-part="4"],
+    .xxd-waffle__cell[data-part],
+    .xxd-waffle__cell[data-part="2"],
+    .xxd-waffle__cell[data-part="4"],
+    .xxd-heatmap__cell[data-level="3"],
+    .xxd-heatmap__cell[data-level="4"],
+    .xxd-dumbbell__to {
       background: Highlight;
     }
 
-    .xxd-gauge__key[data-part="1"],
-    .xxd-gauge__key[data-part="3"] {
+    .xxd-legend__key[data-part="1"],
+    .xxd-legend__key[data-part="3"],
+    .xxd-bars[data-emphasis] .xxd-bars__fill,
+    .xxd-proportion__part[data-part="1"],
+    .xxd-proportion__part[data-part="3"],
+    .xxd-waffle__cell[data-part="1"],
+    .xxd-waffle__cell[data-part="3"],
+    .xxd-heatmap__cell[data-level="1"],
+    .xxd-heatmap__cell[data-level="2"],
+    .xxd-dumbbell__line {
       background: CanvasText;
+    }
+
+    .xxd-waffle__cell,
+    .xxd-heatmap__cell {
+      border: 1px solid GrayText;
+      background: Canvas;
+    }
+
+    .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="3"],
+    .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="4"] {
+      color: HighlightText;
+    }
+
+    .xxd-dumbbell__from {
+      border-color: CanvasText;
+      background: Canvas;
     }
 
     /* tab：选中的那一个有 2px 下边框（伪元素的背景会被抹掉） */

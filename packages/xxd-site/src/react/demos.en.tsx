@@ -4,6 +4,11 @@ import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
   Gauge,
+  Bars,
+  Proportion,
+  Waffle,
+  Heatmap,
+  Dumbbell,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -614,6 +619,49 @@ export function GaugeDemo() {
         <Button size="sm" onClick={() => setCups((n) => Math.max(0, n - 1))}>One less</Button>
         <Button size="sm" onClick={() => setCups((n) => Math.min(8, n + 1))}>One more</Button>
       </div>
+    </div>
+  );
+}
+
+export function BarsDemo() {
+  return (
+    <div className="xxd-stack" style={{ width: "100%", maxWidth: 560, ["--stack-gap" as string]: "24px" }}>
+      <Bars unit="users" items={[{ label: "Publisher", value: 2410 }, { label: "Link sorter", value: 830 }, { label: "Image saver", value: 5102, highlight: true }, { label: "Today", value: 312 }]} />
+      <Bars variant="funnel" unit="users" items={[{ label: "Opened", value: 12480 }, { label: "Wrote one", value: 5210 }, { label: "Joined", value: 742 }]} />
+    </div>
+  );
+}
+
+export function ProportionDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 480 }}>
+      <Proportion label="Storage used" unit="GB" parts={[{ label: "Images", value: 38 }, { label: "Video", value: 22 }, { label: "Documents", value: 9 }, { label: "Other", value: 3 }]} />
+    </div>
+  );
+}
+
+export function WaffleDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 480 }}>
+      <Waffle label="Where new members come from" parts={[{ label: "Friends", value: 46 }, { label: "Search", value: 27 }, { label: "WeChat", value: 18 }, { label: "Other", value: 9 }]} />
+    </div>
+  );
+}
+
+export function HeatmapDemo() {
+  const values: Record<string, number> = {};
+  for (let i = 0; i < 140; i += 1) if (i % 3 !== 1) values[new Date(Date.UTC(2026, 9, 19) - i * 86400000).toISOString().slice(0, 10)] = (i * 7) % 9;
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Heatmap values={values} end="2026-10-19" weeks={20} unit="posts" />
+    </div>
+  );
+}
+
+export function DumbbellDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 520 }}>
+      <Dumbbell unit="min" fromLabel="Before" toLabel="After" rows={[{ label: "First post", from: 14, to: 6 }, { label: "Images ready", from: 9, to: 4 }, { label: "Layout", from: 21, to: 12 }]} />
     </div>
   );
 }

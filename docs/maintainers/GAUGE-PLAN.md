@@ -119,6 +119,7 @@
 
 - **网页版几何单独一个文件**：放进 `xxd.js` 会超 32 KB 的体积预算（+3.9 KB gzip）。改成 `dist/gauge.js`（3.7 KB gzip），
   像图标一样按需加载：经典脚本放在 `xxd.js` 后面；ESM 用 `useGauge(await import("@xxd/css/gauge"))`。没加载时 `Xxd.gauge()` 在控制台提示一次。
+  **同一天后来改名**（CHART-TYPES-PLAN D46）：和图型的换算合成一个文件 `dist/viz.js`（`window.XxdViz`），`useGauge` 改名 `useViz(await import("@xxd/css/viz"))`；`@xxd/css/gauge` 这个入口还在。
   React 和小程序直接用 `@xxd/css/gauge`，不需要这一步。
 - **小程序里指针不转**：表盘是一张图片，值变了整张重画（和 `Chart` 一样）。真机上要看重画时闪不闪（`MINI-DEVICE-CHECKLIST.md`）。
 - **小程序读屏**：表盘整块是一张图（`role=img`），名字是整句；微信不认 `aria-valuetext`。

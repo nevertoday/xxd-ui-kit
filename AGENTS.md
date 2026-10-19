@@ -7,7 +7,8 @@
 1. `docs/maintainers/DESIGNER-REVIEW-PLAN.md` —— 最近一轮（设计师评审 V1–V6）的任务和验收标准；之前的轮次在同目录的 `REVIEW-PLAN.md`、`PLAN.md`、`OPTIMIZATION-PLAN.md`。做完在「进度」里打勾写日期。
    2026-10-18 做完的两份：`COLOR-SCALE-PLAN.md`（颜色色阶：组件只用用途名，不现场混色；改色阶跑 `node packages/xxd-tokens/scripts/scales.mjs`）、
    `MINI-REVIEW-PLAN.md`（小程序对抗测试 Q1–Q6；真机上还要看的在 `MINI-DEVICE-CHECKLIST.md`）。
-   2026-10-19：`GAUGE-PLAN.md`（量表 Gauge：元素参考 gauge-ui，画法按设计原则 §14；几何只有一份 `@xxd/css/gauge`，网页 / React / 小程序共用）。
+   2026-10-19：`GAUGE-PLAN.md`（量表 Gauge：元素参考 gauge-ui，画法按设计原则 §14）、`CHART-TYPES-PLAN.md`（条形榜、构成条、百格图、热力格、前后对比：
+   图型分类参考 lieflat-charts，**它是非商用许可，不能搬它的代码**）。换算只有一份 `@xxd/css/viz`（含量表几何），网页 / React / 小程序共用；选图看 §14 的表。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 

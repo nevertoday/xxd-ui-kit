@@ -1,11 +1,12 @@
-// 量表：一个数在一个范围里的哪儿（配额、得分、完成度）。几何和网页版同一份（gauge-core → @xxd/css/gauge），
+// 量表：一个数在一个范围里的哪儿（配额、得分、完成度）。几何和网页版同一份（viz-core → @xxd/css/viz），
 // 表盘画成 SVG 图片（颜色从当前外观的令牌算，和 Chart 一样）；数字、标签、两端刻度、图例是 Text（系统字体，读屏念得到）。
 // 小程序里指针不转：值变了整张图重画。
 import { Image, Text, View } from "@tarojs/components";
 import type { ReactNode } from "react";
 import "../styles/gauge.mini.css";
 import { a11y } from "./aria";
-import { gaugeColors, gaugeModel, type XxdGaugeOptions } from "./gauge-core";
+import { gaugeColors, gaugeModel, type XxdGaugeOptions } from "./viz-core";
+import { Legend } from "./legend";
 import { base64 } from "./icon";
 import { useXxd } from "./provider";
 import { cx, imgAlt, mods } from "./util";
@@ -47,15 +48,7 @@ export function Gauge({ size, className, ...options }: GaugeProps) {
         </View>
       )}
       {m.legend.length > 0 && (
-        <View className="xxd-gauge__legend">
-          {m.legend.map((l, i) => (
-            <View key={i} className="xxd-gauge__item">
-              <View className={cx("xxd-gauge__key", mods({ part: String(l.part) }))} {...a11y({ hidden: true })} />
-              <Text className="xxd-gauge__name">{l.label}</Text>
-              <Text className="xxd-gauge__num">{l.text}</Text>
-            </View>
-          ))}
-        </View>
+        <Legend items={m.legend.map((l) => ({ label: l.label, num: l.text, part: l.part }))} />
       )}
     </View>
   );

@@ -4,6 +4,11 @@ import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
   Gauge,
+  Bars,
+  Proportion,
+  Waffle,
+  Heatmap,
+  Dumbbell,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -614,6 +619,49 @@ export function GaugeDemo() {
         <Button size="sm" onClick={() => setCups((n) => Math.max(0, n - 1))}>少一杯</Button>
         <Button size="sm" onClick={() => setCups((n) => Math.min(8, n + 1))}>多一杯</Button>
       </div>
+    </div>
+  );
+}
+
+export function BarsDemo() {
+  return (
+    <div className="xxd-stack" style={{ width: "100%", maxWidth: 560, ["--stack-gap" as string]: "24px" }}>
+      <Bars unit="人" items={[{ label: "长文发布", value: 2410 }, { label: "排序链接", value: 830 }, { label: "批量存图", value: 5102, highlight: true }, { label: "今日待办", value: 312 }]} />
+      <Bars variant="funnel" unit="人" items={[{ label: "打开插件", value: 12480 }, { label: "写过一篇", value: 5210 }, { label: "开了会员", value: 742 }]} />
+    </div>
+  );
+}
+
+export function ProportionDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 480 }}>
+      <Proportion label="已用空间" unit="GB" parts={[{ label: "图片", value: 38 }, { label: "视频", value: 22 }, { label: "文档", value: 9 }, { label: "其他", value: 3 }]} />
+    </div>
+  );
+}
+
+export function WaffleDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 480 }}>
+      <Waffle label="新会员从哪来" parts={[{ label: "朋友推荐", value: 46 }, { label: "搜索", value: 27 }, { label: "公众号", value: 18 }, { label: "其他", value: 9 }]} />
+    </div>
+  );
+}
+
+export function HeatmapDemo() {
+  const values: Record<string, number> = {};
+  for (let i = 0; i < 140; i += 1) if (i % 3 !== 1) values[new Date(Date.UTC(2026, 9, 19) - i * 86400000).toISOString().slice(0, 10)] = (i * 7) % 9;
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Heatmap values={values} end="2026-10-19" weeks={20} unit="篇" />
+    </div>
+  );
+}
+
+export function DumbbellDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 520 }}>
+      <Dumbbell unit="分钟" fromLabel="改版前" toLabel="改版后" rows={[{ label: "写第一篇", from: 14, to: 6 }, { label: "配好图片", from: 9, to: 4 }, { label: "排好版", from: 21, to: 12 }]} />
     </div>
   );
 }

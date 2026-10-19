@@ -86,11 +86,11 @@ export function ratio(v, min, max) {
   return span ? clamp((v - min) / span, 0, 1) : 0;
 }
 
-/** 数字格式：缺省最多一位小数，按语言加千分位 */
-export function gaugeFormat({ locale = "zh-CN", decimals } = {}) {
+/** 数字格式：缺省最多一位小数，按语言加千分位；compact 时缩写（「1.2万」「12K」） */
+export function gaugeFormat({ locale = "zh-CN", decimals, compact = false } = {}) {
   let nf;
   try {
-    nf = new Intl.NumberFormat(locale, { maximumFractionDigits: decimals ?? 1, minimumFractionDigits: decimals ?? 0 });
+    nf = new Intl.NumberFormat(locale, compact ? { notation: "compact", maximumFractionDigits: decimals ?? 1 } : { maximumFractionDigits: decimals ?? 1, minimumFractionDigits: decimals ?? 0 });
   } catch {
     nf = { format: (n) => String(round(n)) };
   }
@@ -110,7 +110,9 @@ export function normalizeGauge(o = {}) {
   const pair = isRange ? o.value.map((v) => clamp(finite(v, min), min, max)).sort((a, b) => a - b) : null;
   const value = isRange ? pair[1] : clamp(finite(o.value, min), min, max);
   const raw = isRange ? null : finite(o.value, min);
-  const from = isRange ? pair[0] : min;
+  // origin：填充从这个值往两边长（偏差、盈亏）；缺省从最小值长
+  const origin = !isRange && o.origin != null && o.origin !== "" && Number.isFinite(Number(o.origin)) ? clamp(Number(o.origin), min, max) : null;
+  const from = isRange ? pair[0] : origin ?? min;
   const zones = (o.zones ?? [])
     .filter((z) => z && TONES.has(z.tone))
     .map((z) => ({ tone: z.tone, label: z.label, from: clamp(finite(z.from, min), min, max), to: clamp(finite(z.to, max), min, max) }))
@@ -130,7 +132,7 @@ export function normalizeGauge(o = {}) {
   const ticks = Math.max(0, Math.min(60, Math.round(finite(o.ticks, 0))));
   // 指针只给 arc / half；有分格、分段、多环时不画指针
   const needle = Boolean(o.needle) && shape !== "ring" && !segments && !parts.length && !rings.length;
-  return { shape, min, max, value, raw, from, isRange, zones, targets, parts, rings, segments, ticks, needle, unit: o.unit ?? "", label: o.label ?? "", locale: o.locale ?? "zh-CN", decimals: o.decimals, format: o.format, ends: o.ends ?? (shape !== "ring" && !rings.length) };
+  return { shape, min, max, value, raw, from, origin, isRange, zones, targets, parts, rings, segments, ticks, needle, unit: o.unit ?? "", label: o.label ?? "", locale: o.locale ?? "zh-CN", decimals: o.decimals, compact: o.compact, format: o.format, ends: o.ends ?? (shape !== "ring" && !rings.length) };
 }
 
 /** 数值落在哪个区段：两头都算在内，落在两段交界上算后一段（区段按起点排好） */
@@ -148,7 +150,7 @@ export function zoneOf(zones, v) {
 export function gaugeModel(options = {}) {
   const g = normalizeGauge(options);
   const L = labelsFor(g.locale);
-  const fmt = typeof g.format === "function" ? g.format : gaugeFormat({ locale: g.locale, decimals: g.decimals });
+  const fmt = typeof g.format === "function" ? g.format : gaugeFormat({ locale: g.locale, decimals: g.decimals, compact: g.compact });
   const { start, end, box } = SHAPES[g.shape];
   const sweep = end - start;
   const ring = g.shape === "ring";
@@ -220,7 +222,7 @@ export function gaugeModel(options = {}) {
   } else {
     arc(GAUGE_R, start, end, "track");
     // 有指针时只画轨道和区段，数值由指针指
-    if (!g.needle && g.value > g.from) arc(GAUGE_R, angleOf(g.from), angleOf(g.value), fillRole);
+    if (!g.needle && g.value !== g.from) arc(GAUGE_R, angleOf(Math.min(g.from, g.value)), angleOf(Math.max(g.from, g.value)), fillRole);
   }
 
   // 刻度：轨道内侧的发丝线
@@ -229,6 +231,8 @@ export function gaugeModel(options = {}) {
     const count = ring ? g.ticks : g.ticks + 1;
     for (let i = 0; i < count; i += 1) hairline(start + (sweep * i) / g.ticks, r0, r0 - 3, "tick", 1);
   }
+  // 原点：从这里往两边长时，画一道横穿轨道的次要色刻度
+  if (g.origin != null && !g.rings.length) hairline(angleOf(g.origin), GAUGE_R - GAUGE_W / 2 - 1.5, GAUGE_R + GAUGE_W / 2 + 1.5, "tick", 1);
   // 目标线：横穿轨道的墨色短线
   if (!g.rings.length) for (const t of g.targets) hairline(angleOf(t), GAUGE_R - GAUGE_W / 2 - 1.5, GAUGE_R + GAUGE_W / 2 + 1.5, "target", 1.5);
 

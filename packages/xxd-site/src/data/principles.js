@@ -186,4 +186,13 @@ export const principles = [
     dontMarkup: `<svg viewBox="-60 -60 120 104" width="140" height="122" role="img" aria-label="从绿到红渐变、带发光的量表"><defs><linearGradient id="pr-neon" x1="0" x2="1"><stop offset="0" stop-color="#22c55e"/><stop offset=".5" stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/></linearGradient><filter id="pr-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter></defs><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="12" stroke-linecap="round" filter="url(#pr-glow)" opacity=".7"/><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="10" stroke-linecap="round"/></svg>`,
     dontText: "从绿到红的渐变加发光：颜色和数值没关系，看不出哪段正常、哪段超限，只剩装饰。",
   },
+  {
+    id: "countable",
+    title: "占比用能数的格子，不用饼图",
+    ref: "§14",
+    doMarkup: `<div class="xxd-waffle" data-viz="waffle" style="width:100%;max-width:320px;--waffle-size:132px" data-label="新会员从哪来" data-parts="朋友推荐:46;搜索:27;公众号:18;其他:9"></div>`,
+    doText: "1 格 = 1%：46 格和 27 格，差多少一眼数得出来；图例写出百分比。",
+    dontMarkup: `<svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="四块扇形的饼图，没有数字"><path d="M50 50L50.0 2.0A48 48 0 0 1 61.9 96.5Z" fill="#111111" stroke="#fff" stroke-width="1"/><path d="M50 50L61.9 96.5A48 48 0 0 1 2.4 56.0Z" fill="#898681" stroke="#fff" stroke-width="1"/><path d="M50 50L2.4 56.0A48 48 0 0 1 24.3 9.5Z" fill="#6d6b67" stroke="#fff" stroke-width="1"/><path d="M50 50L24.3 9.5A48 48 0 0 1 50.0 2.0Z" fill="#7e7b77" stroke="#fff" stroke-width="1"/></svg>`,
+    dontText: "扇形的角度很难比：46% 和 27% 差多少看不出来，没有数字就只剩形状。",
+  },
 ];

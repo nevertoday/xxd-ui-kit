@@ -21,6 +21,11 @@ import {
   Dock,
   DropTarget,
   Gauge,
+  Bars,
+  Proportion,
+  Waffle,
+  Heatmap,
+  Dumbbell,
   Pagination,
   Search,
   Segmented,
@@ -452,9 +457,9 @@ describe("Gauge（GAUGE-PLAN G4）", () => {
     expect(el.querySelector(".xxd-gauge__state")?.textContent).toBe("超限");
     expect(el.querySelector(".xxd-gauge__fill-danger")).not.toBeNull();
     // 网页版（@xxd/css）画出来的类名一样
-    const lib = await import("@xxd/css/gauge");
-    const { gauge, useGauge } = await import("@xxd/css");
-    useGauge(lib);
+    const lib = await import("@xxd/css/viz");
+    const { gauge, useViz } = await import("@xxd/css");
+    useViz(lib);
     const native = document.createElement("div");
     gauge(native, { value: 94, unit: "%", label: "本月额度", target: 80, zones: [{ from: 80, to: 90, tone: "warning" }, { from: 90, tone: "danger" }] });
     const classes = (n: Element) => [...n.querySelectorAll("[class]")].map((x) => x.getAttribute("class")).sort();
@@ -478,6 +483,67 @@ describe("Gauge（GAUGE-PLAN G4）", () => {
     const el = container.querySelector(".xxd-gauge")!;
     expect(el.getAttribute("role")).toBe("group");
     expect(el.getAttribute("aria-label")).toBe("This week");
-    expect([...el.querySelectorAll(".xxd-gauge__item")].map((li) => li.textContent)).toEqual(["Writing3 of 5", "Reading40 of 60"]);
+    expect([...el.querySelectorAll(".xxd-legend__item")].map((li) => li.textContent)).toEqual(["Writing3 of 5", "Reading40 of 60"]);
+  });
+});
+
+describe("图型（CHART-TYPES-PLAN H4）：和 Xxd.viz 画出来的结构一样", () => {
+  const same = async (node: ReactNode, kind: string, data: unknown, options: Record<string, unknown> = {}) => {
+    const { container } = render(node);
+    const lib = await import("@xxd/css/viz");
+    const { viz, useViz } = await import("@xxd/css");
+    useViz(lib);
+    const native = document.createElement("div");
+    viz(native, kind as "bars", data, options);
+    const shape = (n: Element) => [...n.querySelectorAll("*")].map((x) => `${x.tagName}.${x.getAttribute("class") ?? ""}[${x.getAttribute("data-part") ?? x.getAttribute("data-level") ?? ""}]${x.children.length ? "" : x.textContent}`);
+    expect(shape(container.firstElementChild!)).toEqual(shape(native));
+    return container.firstElementChild!;
+  };
+
+  it("条形榜", async () => {
+    const items = [{ label: "长文发布", value: 2410 }, { label: "批量存图", value: 5102, highlight: true }];
+    const el = await same(<Bars items={items} unit="人" step={1000} />, "bars", items, { unit: "人", step: 1000 });
+    expect(el.tagName).toBe("OL");
+    expect(el.hasAttribute("data-emphasis")).toBe(true);
+    expect((el as HTMLElement).style.getPropertyValue("--rungs")).toBe("5");
+  });
+
+  it("构成条、百格图", async () => {
+    const parts = [{ label: "图片", value: 38 }, { label: "视频", value: 22 }];
+    const p = await same(<Proportion parts={parts} label="已用空间" unit="GB" />, "proportion", parts, { label: "已用空间", unit: "GB" });
+    expect(p.getAttribute("aria-label")).toBe("已用空间，图片 63%，视频 37%");
+    const w = await same(<Waffle parts={parts} label="来源" />, "waffle", parts, { label: "来源" });
+    expect(w.querySelectorAll(".xxd-waffle__cell")).toHaveLength(100);
+  });
+
+  it("热力格（日历、矩阵）、前后对比", async () => {
+    const values = { "2026-10-19": 5, "2026-10-12": 2 };
+    const cal = await same(<Heatmap values={values} end="2026-10-19" weeks={8} />, "calendar", values, { end: "2026-10-19", weeks: 8 });
+    expect(cal.querySelectorAll(".xxd-heatmap__grid .xxd-heatmap__cell")).toHaveLength(56);
+    const matrix = { rows: ["一", "二"], cols: ["9", "10"], values: [[1, 4], [0, 8]] };
+    await same(<Heatmap matrix={matrix} numbers />, "matrix", matrix, { numbers: true });
+    const rows = [{ label: "写第一篇", from: 14, to: 6 }];
+    const d = await same(<Dumbbell rows={rows} unit="分钟" />, "dumbbell", rows, { unit: "分钟" });
+    expect(d.querySelector(".xxd-dumbbell__item")?.textContent).toBe("写第一篇14 分钟 → 6 分钟−8");
+  });
+});
+
+describe("查漏补缺（CHART-TYPES-PLAN 8.1）：React 和 Xxd.viz 一样", () => {
+  it("条形榜的对照、参考线、刻度、瀑布、空数据", async () => {
+    const lib = await import("@xxd/css/viz");
+    const { viz, useViz } = await import("@xxd/css");
+    useViz(lib);
+    const items = [{ label: "a", value: 2400, compare: 2000, note: "历史最高" }, { label: "b", value: 1000 }];
+    const o = { axis: true, mark: 1800, markLabel: "平均", compareLabel: "去年", valueLabel: "今年", unit: "人" };
+    const { container } = render(<Bars items={items} {...o} />);
+    const native = document.createElement("ol");
+    viz(native, "bars", items, o);
+    const shape = (n: Element) => [...n.querySelectorAll("*")].map((x) => `${x.className}|${x.children.length ? "" : x.textContent}|${(x as HTMLElement).style?.cssText ?? ""}`);
+    expect(shape(container.firstElementChild!)).toEqual(shape(native));
+    expect(container.querySelector(".xxd-bars__key")?.textContent).toBe("今年去年平均 1,800 人");
+    const w = render(<Bars variant="waterfall" items={[{ label: "毛收入", value: 100, total: true }, { label: "退款", value: -20 }]} />);
+    expect(w.container.querySelectorAll("[data-total]")).toHaveLength(1);
+    const e = render(<Bars items={[]} />);
+    expect(e.container.textContent).toBe("没有数据");
   });
 });

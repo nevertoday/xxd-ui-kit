@@ -33,6 +33,11 @@ export {
   AccountCard,
   Gauge,
   type GaugeProps,
+  Bars,
+  Proportion,
+  Waffle,
+  Heatmap,
+  Dumbbell,
 } from "./xxd";
 export { Icon, IconContext, createIcon, icons, ICON_NAMES } from "@xxd/icons/react";
 export { ACCENT_PRESETS, type XxdSettings } from "@xxd/tokens";

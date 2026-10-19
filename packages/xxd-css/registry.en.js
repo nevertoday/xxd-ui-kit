@@ -1060,7 +1060,8 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
   <div class="xxd-stat"><p class="xxd-stat__label">New members</p><p class="xxd-stat__value">86</p><span class="xxd-stat__delta" data-tone="down">↓ 3 vs last week</span><span class="xxd-stat__spark" data-spark="12,11,13,10,9,10,8"></span></div>
   <div class="xxd-stat"><p class="xxd-stat__label">Average write time</p><p class="xxd-stat__value">2.4<span class="xxd-stat__unit">s</span></p><span class="xxd-stat__delta">Flat</span><span class="xxd-stat__spark" data-spark="5,5,6,5,5,4,5"></span></div>
 </div>`,
-    js: `el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // or data-spark="3,5,4,8" and then Xxd.init()`,
+    js: `el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // or data-spark="3,5,4,8" and then Xxd.init()
+// Spark bars (one number a day): Xxd.sparkline(values, { type: "bar" }) or data-spark-type="bar"`,
     a11y: ["The sparkline is aria-hidden decoration; write the change as text (↑ 12.4% vs last week), never color alone."],
   },
   Chart: {
@@ -1121,6 +1122,8 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))
       "data-rings": "Concentric rings, at most 3: Writing:3/5;Reading:40/60 (each ring has its own maximum)",
       "data-size": "sm | lg: size of the number in the middle",
       "--gauge-size": "Maximum width (default 160px); put a row of gauges in .xxd-gauges",
+      "data-origin": "The fill grows both ways from this value (variance, profit and loss, e.g. 0); a tick marks the origin",
+      "data-compact": "Abbreviate large numbers: \"12.5K\"",
     },
     markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
   <div class="xxd-gauge" data-gauge data-value="72" data-unit="%" data-label="Storage used" data-target="80" data-zones="80-90:warning,90:danger"></div>
@@ -1167,6 +1170,146 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))
   <div class="xxd-gauge" data-gauge data-value="36" data-unit="%" data-label="Default"></div>
   <div class="xxd-gauge" data-gauge data-size="lg" style="--gauge-size:220px" data-value="36" data-unit="%" data-label="Large"></div>
 </div>` },
+      { title: "Growing from an origin", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <div class="xxd-gauges">
+    <div class="xxd-gauge" data-gauge data-shape="half" data-min="-50" data-max="50" data-origin="0" data-value="-12" data-unit="%" data-label="Against budget"></div>
+    <div class="xxd-gauge" data-gauge data-shape="half" data-min="-50" data-max="50" data-origin="0" data-value="18" data-unit="%" data-label="Against last month"></div>
+  </div>
+</div>` },
     ],
+  },
+  Bars: {
+    title: "Bar list",
+    summary: "Comparing a few categories or a ranking: name on the left, bar in the middle, number on the right, sorted by size. Mark one as the highlight (accent, the rest gray); cut bars into units; diverging bars grow both ways from a center line; a funnel says how many each step keeps; a waterfall breaks a total into changes. Add a comparison value (last year), a reference line (average), an axis and notes. Bars are proportional to the largest value, with no track.",
+    attributes: {
+      "data-viz=\"bars\" + data-items": "Declarative: \"name:value;name:value\", drawn by Xxd.init() (needs viz.js)",
+      "data-highlight": "Names to highlight (comma separated): highlighted bars use the accent, the rest gray 9",
+      "data-step": "How much one unit is: bars are cut into units (at most 60)",
+      "data-variant": "diverging | funnel | waterfall",
+      "data-unit / data-max / data-sort=\"false\"": "Unit; the value of a full bar (default: the largest); keep the given order",
+      "data-rungs + --rungs": "Cut into units when you write the HTML yourself: --rungs is how many units a full bar has",
+      "--value": "Each row's share when you write the HTML yourself (0–1; −1–1 for diverging)",
+      "--bars-label": "Width of the name column (default 28%)",
+      "data-items: value/compare": "A comparison value (last year): \"Publisher:2410/1980\" draws a thin gray bar under the main one and writes it under the number",
+      "data-value-label / data-compare-label": "Legend names for the main and comparison bars (\"This year\", \"Last year\")",
+      "data-mark + data-mark-label": "Reference line (average, target): a thin ink line across all rows, labelled above (\"Average 1,800 users\")",
+      "data-axis": "A row of tick values below (rounded to 1 / 2 / 5 × 10ⁿ), with hairline gridlines behind the bars",
+      "data-total": "In a waterfall (data-variant=\"waterfall\"), the names of total rows (comma separated): totals start at 0 in the accent; the rest are changes",
+      "data-compact": "Abbreviate large numbers: \"12.5K\"",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <div class="xxd-chart-card">
+  <div class="xxd-chart-card__head"><h3 class="xxd-chart-card__title">Bulk Image Saver has the most users</h3><span class="xxd-chart-card__meta">Last 30 days</span></div>
+  <ol class="xxd-bars" data-viz="bars" data-unit="users" data-highlight="Bulk image saver" data-items="Long-form publisher:2410;Link sorter:830;Bulk image saver:5102;Today:312"></ol>
+  <p class="xxd-chart-card__note">Weekly active users per extension.</p>
+</div>
+</div>`,
+    rules: ["Use it for rankings and a few categories (≤ 12); use a line chart for trends", "Bars start at 0 and are proportional to the value; never break the axis", "Positive and negative are both ink, told apart by direction and the − sign, not red and green (up is not always good)", "Waterfall changes are gray 9 with + / −, totals are the accent; no red and green", "Comparison values stay in the background: a thin gray bar plus a line of text under the number; main and comparison differ by weight", "§14"],
+    a11y: ["An ordered list: each row's text is the data (name, value, how many stayed), read as is; the bar itself is aria-hidden", "Highlight is not color alone: the name turns to body color, and the title states the conclusion", "Comparison values and notes are written under the number (text), read as is; the legend and axis rows are aria-hidden (all data is in each row's text)"],
+    js: `Xxd.viz(el, "bars", [{ label: "Publisher", value: 2410 }, { label: "Image saver", value: 5102, highlight: true }], { unit: "users" })
+// Declarative: <ol class="xxd-bars" data-viz="bars" data-items="Publisher:2410;Image saver:5102"></ol>
+// React: <Bars items={[{ label: "Publisher", value: 2410 }]} unit="users" />`,
+    examples: [
+      { title: "Cut into units", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <ol class="xxd-bars" data-viz="bars" data-step="1" data-unit="posts" data-items="Mon:3;Tue:5;Wed:2;Thu:6" data-sort="false"></ol>
+  <p class="xxd-chart-card__note">1 unit = 1 post</p>
+</div>` },
+      { title: "Diverging", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <ol class="xxd-bars" data-viz="bars" data-variant="diverging" data-unit="%" data-items="Posters:18;Covers:6;Notes:-4;Long images:-11"></ol>
+</div>` },
+      { title: "Funnel", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <ol class="xxd-bars" data-viz="bars" data-variant="funnel" data-unit="people" data-items="Opened:12480;Wrote a post:5210;Became a member:742"></ol>
+</div>` },
+      { title: "Comparison, reference line and axis", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <ol class="xxd-bars" data-viz="bars" data-unit="users" data-axis data-mark="1800" data-mark-label="Average" data-value-label="This year" data-compare-label="Last year" data-items="Publisher:2410/1980;Link sorter:830/1020;Image saver:3102/2400;Today:312/0"></ol>
+</div>` },
+      { title: "Waterfall", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <ol class="xxd-bars" data-viz="bars" data-variant="waterfall" data-unit="k" data-total="Gross,Net" data-items="Gross:120;Refunds:-14;Channel fees:-22;Subsidy:6;Net:90"></ol>
+</div>` },
+    ],
+  },
+  Proportion: {
+    title: "Proportion bar",
+    summary: "One whole split into parts (≤ 5): a bar divided by share, with a legend of names, values and percentages (adding up to exactly 100%). Several in a column make a stacked bar chart.",
+    attributes: {
+      "data-viz=\"proportion\" + data-parts": "Declarative: \"name:value;name:value\" (needs viz.js)",
+      "data-label / data-unit": "Title (top row, with the total on the right); unit",
+      "data-legend=\"false\"": "No legend (when stacking several, draw it under the last one only)",
+      "data-max": "When stacking several, bar length is total ÷ max (shows both make-up and size)",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:480px">
+  <div class="xxd-proportion" data-viz="proportion" data-label="Storage used" data-unit="GB" data-parts="Images:38;Video:22;Documents:9;Other:3"></div>
+</div>`,
+    rules: ["At most 5 parts; merge the rest into \"Other\"", "Percentages are rounded with the largest remainder method, so they add up to exactly 100%", "Colors are the 5 chart category colors; the first part is the accent", "§14"],
+    a11y: ["role=group with a full-sentence aria-label (\"Images 53%, Video 31%…\"); the bar is aria-hidden and the legend is text"],
+    js: `Xxd.viz(el, "proportion", [{ label: "Images", value: 38 }, { label: "Video", value: 22 }], { label: "Storage used", unit: "GB" })
+// React: <Proportion parts={[…]} label="Storage used" unit="GB" />`,
+    examples: [
+      { title: "Stacked", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:480px">
+  <div class="xxd-proportion" data-viz="proportion" data-max="92" data-legend="false" data-label="East" data-unit="k" data-parts="Members:62;Single posts:21;Ads:9"></div>
+  <div class="xxd-proportion" data-viz="proportion" data-max="92" data-legend="false" data-label="South" data-unit="k" data-parts="Members:41;Single posts:30;Ads:14"></div>
+  <div class="xxd-proportion" data-viz="proportion" data-max="92" data-label="North" data-unit="k" data-parts="Members:35;Single posts:12;Ads:18"></div>
+</div>` },
+    ],
+  },
+  Waffle: {
+    title: "Waffle",
+    summary: "A unit chart for shares: 10 × 10, one cell = 1%, with a legend and a note on the unit. When all you have is a few percentages, it is more honest than a pie: you can count it.",
+    attributes: {
+      "data-viz=\"waffle\" + data-parts": "Declarative: \"name:value;name:value\" (counts or percentages; needs viz.js)",
+      "data-cells": "Number of cells (default 100)",
+      "--waffle-size": "Width of the grid (default 160px)",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:480px">
+  <div class="xxd-waffle" data-viz="waffle" data-label="Where new members come from" data-parts="Friends:46;Search:27;WeChat:18;Other:9"></div>
+</div>`,
+    rules: ["Instead of a pie: use it when you only have shares, ≤ 5 kinds", "Cells are allotted by the largest remainder method, exactly 100 in total, no made-up cells", "Say what a cell is (\"1 cell = 1%\")", "§14"],
+    a11y: ["role=group with a full-sentence aria-label; the cells are aria-hidden and the legend states the percentages"],
+    js: `Xxd.viz(el, "waffle", [{ label: "Friends", value: 46 }, { label: "Search", value: 27 }], { label: "Where new members come from" })
+// React: <Waffle parts={[…]} label="Where new members come from" />`,
+  },
+  Heatmap: {
+    title: "Heatmap",
+    summary: "Darker means more: a calendar (53 weeks × 7 days, which days were active) and a matrix (two dimensions × a value, such as weekday × hour, with numbers in the cells if you like). Zero plus 4 levels, gray with ink, the accent scale with an accent.",
+    attributes: {
+      "data-viz=\"heatmap\" + data-values": "Calendar: JSON like {\"2026-03-02\": 5} (needs viz.js)",
+      "data-end / data-weeks": "Last day (default today); weeks shown (default 53)",
+      "data-variant=\"matrix\" + data-rows / data-cols / data-values": "Matrix: row and column names comma separated, values one row per group, separated by semicolons",
+      "data-numbers": "Write the numbers in matrix cells",
+      "--heat-cell": "Calendar cell size (default 12px)",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:760px">
+  <div class="xxd-chart-card">
+  <div class="xxd-chart-card__head"><h3 class="xxd-chart-card__title">More writing on weekdays than at weekends</h3><span class="xxd-chart-card__meta">Through Oct 19</span></div>
+  <div class="xxd-heatmap" data-viz="heatmap" data-end="2026-10-19" data-unit="posts" data-values='{"2026-10-19":2,"2026-10-17":1,"2026-10-16":1,"2026-10-14":1,"2026-10-13":1,"2026-10-12":6,"2026-10-11":1,"2026-10-09":1,"2026-10-08":6,"2026-10-07":2,"2026-10-06":2,"2026-10-05":2,"2026-10-02":2,"2026-10-01":2,"2026-09-30":1,"2026-09-29":2,"2026-09-28":6,"2026-09-24":2,"2026-09-22":2,"2026-09-21":3,"2026-09-17":1,"2026-09-16":6,"2026-09-15":4,"2026-09-14":9,"2026-09-11":4,"2026-09-10":4,"2026-09-09":9,"2026-09-08":1,"2026-09-04":3,"2026-09-03":9,"2026-09-02":6,"2026-08-31":9,"2026-08-28":2,"2026-08-26":2,"2026-08-25":9,"2026-08-24":9,"2026-08-22":2,"2026-08-19":6,"2026-08-17":6,"2026-08-15":2,"2026-08-14":2,"2026-08-13":2,"2026-08-12":1,"2026-08-11":4,"2026-08-10":4,"2026-08-07":1,"2026-08-06":6,"2026-08-05":6,"2026-08-04":6,"2026-08-03":1,"2026-07-31":1,"2026-07-30":2,"2026-07-29":4,"2026-07-28":1,"2026-07-25":3,"2026-07-23":9,"2026-07-22":9,"2026-07-20":9,"2026-07-19":2,"2026-07-18":4,"2026-07-16":2,"2026-07-15":2,"2026-07-13":2,"2026-07-09":1,"2026-07-08":3,"2026-07-07":2,"2026-07-06":2,"2026-07-03":2,"2026-07-02":2,"2026-06-28":9,"2026-06-26":1,"2026-06-24":2,"2026-06-23":4,"2026-06-22":4,"2026-06-19":2,"2026-06-18":4,"2026-06-17":1,"2026-06-16":4,"2026-06-14":1,"2026-06-10":2,"2026-06-09":4,"2026-06-08":6,"2026-06-05":2,"2026-06-04":2,"2026-06-03":9,"2026-06-01":9,"2026-05-29":2,"2026-05-28":1,"2026-05-27":2,"2026-05-26":2,"2026-05-24":3,"2026-05-23":2,"2026-05-21":6,"2026-05-19":4,"2026-05-15":2,"2026-05-14":1,"2026-05-11":2,"2026-05-10":9,"2026-05-08":1,"2026-05-07":9,"2026-05-05":1,"2026-05-04":3,"2026-05-03":1,"2026-05-01":1,"2026-04-30":2,"2026-04-29":9,"2026-04-28":9,"2026-04-27":2,"2026-04-23":2,"2026-04-21":1,"2026-04-20":4,"2026-04-19":2,"2026-04-17":3,"2026-04-14":4,"2026-04-13":2,"2026-04-11":1,"2026-04-10":9,"2026-04-09":2,"2026-04-08":6,"2026-04-06":6,"2026-04-05":4,"2026-04-04":4,"2026-04-03":9,"2026-04-02":1,"2026-04-01":3,"2026-03-31":1,"2026-03-30":2,"2026-03-28":3,"2026-03-27":2,"2026-03-26":2,"2026-03-23":3,"2026-03-20":9,"2026-03-19":1,"2026-03-18":2,"2026-03-17":1,"2026-03-16":1,"2026-03-13":2,"2026-03-12":1,"2026-03-11":4,"2026-03-09":3,"2026-03-07":2,"2026-03-04":2,"2026-03-03":3,"2026-03-02":2,"2026-03-01":2,"2026-02-28":1,"2026-02-26":1,"2026-02-24":2,"2026-02-23":2,"2026-02-21":6,"2026-02-20":6,"2026-02-18":2,"2026-02-16":2,"2026-02-14":1,"2026-02-12":3,"2026-02-11":1,"2026-02-10":6,"2026-02-07":2,"2026-02-06":1,"2026-02-05":2,"2026-02-04":1,"2026-02-03":4,"2026-01-31":3,"2026-01-30":2,"2026-01-29":6,"2026-01-28":3,"2026-01-27":2,"2026-01-26":1,"2026-01-25":1,"2026-01-24":1,"2026-01-23":3,"2026-01-22":2,"2026-01-21":2,"2026-01-20":6,"2026-01-16":2,"2026-01-15":6,"2026-01-12":1,"2026-01-08":2,"2026-01-07":1,"2026-01-06":4,"2026-01-02":1,"2026-01-01":2,"2025-12-31":1,"2025-12-30":1,"2025-12-26":1,"2025-12-24":1,"2025-12-22":2,"2025-12-21":9,"2025-12-19":9,"2025-12-17":1,"2025-12-16":2,"2025-12-15":2,"2025-12-14":3,"2025-12-12":9,"2025-12-11":3,"2025-12-09":2,"2025-12-08":3,"2025-12-06":9,"2025-12-05":1,"2025-12-03":3,"2025-11-30":9,"2025-11-29":9,"2025-11-27":2,"2025-11-26":1,"2025-11-25":3,"2025-11-23":3,"2025-11-21":2,"2025-11-20":9,"2025-11-19":2,"2025-11-18":9,"2025-11-17":6,"2025-11-16":2,"2025-11-14":1,"2025-11-12":4,"2025-11-10":2,"2025-11-07":4,"2025-11-06":6,"2025-11-04":4,"2025-10-31":1,"2025-10-29":2,"2025-10-28":3,"2025-10-27":4,"2025-10-26":4,"2025-10-24":1,"2025-10-22":2,"2025-10-21":1,"2025-10-17":3,"2025-10-16":2,"2025-10-15":6,"2025-10-14":3}'></div>
+  <p class="xxd-chart-card__note">Each cell is a day; darker means more posts.</p>
+</div>
+</div>`,
+    rules: ["Only zero plus 4 levels: more cannot be told apart", "The latest week is on the right; on narrow screens it scrolls sideways and starts at the right end", "§14"],
+    a11y: ["The cells are one image (role=img) whose aria-label is a summary (\"251 of 365 days with activity, 812 in total, at most 9 in a day\")", "The part that scrolls sideways is role=region + aria-label + tabindex=0: keyboard users can focus it and scroll with the arrow keys", "Each cell has a title (date and value) for mouse users; nothing depends on it", "Numbers on the two darkest matrix levels use --on-action, ≥ 4.5:1"],
+    js: `Xxd.viz(el, "calendar", { "2026-10-18": 3, "2026-10-19": 5 }, { end: "2026-10-19", unit: "posts" })
+Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4], [0, 8]] }, { numbers: true })
+// React: <Heatmap values={…} unit="posts" /> or <Heatmap matrix={{ rows, cols, values }} numbers />`,
+    examples: [
+      { title: "Matrix", markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:560px">
+  <div class="xxd-heatmap" data-viz="heatmap" data-variant="matrix" data-numbers data-label="When people write" data-rows="Mon,Tue,Wed,Thu,Fri,Sat,Sun" data-cols="8,10,12,14,16,18,20,22" data-values="2,6,4,5,7,3,9,4;1,5,6,4,6,4,8,5;2,7,5,6,8,3,10,6;1,6,4,5,7,4,9,5;3,8,6,7,9,5,6,2;0,1,2,3,2,4,5,3;0,1,1,2,3,5,7,4"></div>
+</div>` },
+    ],
+  },
+  Dumbbell: {
+    title: "Dumbbell",
+    summary: "Before and after per category (≤ 8 rows): a thin line joins two dots, a hollow ring for before and a solid dot (accent) for after, with \"before → after\" and the change on the right. Positions follow the data's range and need not start at 0 (it compares position, not length).",
+    attributes: {
+      "data-viz=\"dumbbell\" + data-rows": "Declarative: \"name:before>after;…\" (needs viz.js)",
+      "data-from-label / data-to-label": "Names of the two dots (default \"Before\" / \"After\")",
+      "data-min / data-max / data-unit": "Range of positions (default: the data's range); unit",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:24px;width:100%;max-width:520px">
+  <div class="xxd-dumbbell" data-viz="dumbbell" data-unit="min" data-from-label="Before" data-to-label="After" data-rows="First post:14>6;Images ready:9>4;Layout done:21>12;Published:5>3"></div>
+</div>`,
+    rules: ["Use it for two points in time and ≤ 8 categories; use a line chart for more points", "Dots are always round (--r-circle)", "§14"],
+    a11y: ["An ordered list: each row reads \"name before → after change\"; the dots and line are aria-hidden", "Before and after are not color alone: one hollow, one solid, with a key above"],
+    js: `Xxd.viz(el, "dumbbell", [{ label: "First post", from: 14, to: 6 }], { unit: "min", fromLabel: "Before", toLabel: "After" })
+// React: <Dumbbell rows={[…]} unit="min" fromLabel="Before" toLabel="After" />`,
   },
 };
