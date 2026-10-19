@@ -326,3 +326,21 @@ test("数量加减、日期滚轮：到头了按钮变灰；2 月的天数跟着
   assert.equal(days(), 28, "换到 2025 年变成 28 天");
   d.unmount();
 });
+
+test("量表：和网页版同一份几何；颜色从当前外观取、线头跟圆角模式；读屏念整句", async () => {
+  const { Gauge, gaugeModel } = mini;
+  const v = render(app(h(Gauge, { value: 94, unit: "%", label: "本月额度", target: 80, zones: [{ from: 80, to: 90, tone: "warning" }, { from: 90, tone: "danger" }] })));
+  await tick(10);
+  const img = v.all((n) => n.type === "image")[0];
+  const svg = Buffer.from(img.props.src.replace("data:image/svg+xml;base64,", ""), "base64").toString();
+  assert.match(svg, /stroke-linecap="butt"/, "直角模式：平头");
+  assert.doesNotMatch(svg, /var\(|class=/, "图片里没有 CSS 变量和类名（图片读不到页面的样式）");
+  const dial = v.byClass("xxd-gauge__dial")[0];
+  assert.equal(dial.props.ariaLabel, "本月额度，94%，超限，目标 80%");
+  assert.equal(v.byClass("xxd-gauge__state")[0].props.children, "超限");
+  assert.ok(cls(v.byClass("xxd-gauge__state")[0]).includes("is-tone-danger"));
+  // 几何和 @xxd/css/gauge 一样（同一份代码打进来的）
+  const web = await import("@xxd/css/gauge");
+  assert.equal(gaugeModel({ value: 42 }).svgBody, web.gaugeModel({ value: 42 }).svgBody);
+  v.unmount();
+});

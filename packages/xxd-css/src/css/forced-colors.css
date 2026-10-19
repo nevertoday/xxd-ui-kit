@@ -78,6 +78,53 @@
       background: CanvasText;
     }
 
+    /* 量表：轨道 GrayText，填充 Highlight，其余的线 CanvasText；分段、多环靠图例的文字分 */
+    .xxd-gauge__svg,
+    .xxd-gauge__pointer,
+    .xxd-gauge__key {
+      forced-color-adjust: none;
+    }
+
+    .xxd-gauge__track,
+    .xxd-gauge__tick {
+      stroke: GrayText;
+    }
+
+    .xxd-gauge__fill,
+    .xxd-gauge__fill-warning,
+    .xxd-gauge__fill-danger,
+    .xxd-gauge__fill-success,
+    .xxd-gauge__part-0,
+    .xxd-gauge__part-2,
+    .xxd-gauge__part-4 {
+      stroke: Highlight;
+    }
+
+    .xxd-gauge__part-1,
+    .xxd-gauge__part-3,
+    .xxd-gauge__zone-warning,
+    .xxd-gauge__zone-danger,
+    .xxd-gauge__zone-success,
+    .xxd-gauge__target,
+    .xxd-gauge__needle-line {
+      stroke: CanvasText;
+    }
+
+    .xxd-gauge__hub {
+      fill: CanvasText;
+    }
+
+    .xxd-gauge__key,
+    .xxd-gauge__key[data-part="2"],
+    .xxd-gauge__key[data-part="4"] {
+      background: Highlight;
+    }
+
+    .xxd-gauge__key[data-part="1"],
+    .xxd-gauge__key[data-part="3"] {
+      background: CanvasText;
+    }
+
     /* tab：选中的那一个有 2px 下边框（伪元素的背景会被抹掉） */
     .xxd-tabs__ink {
       background: Highlight;

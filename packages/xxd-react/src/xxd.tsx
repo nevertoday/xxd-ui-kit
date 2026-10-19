@@ -16,6 +16,7 @@ import {
 } from "react";
 import { Icon } from "@xxd/icons/react";
 import { ACCENT_PRESETS } from "@xxd/tokens";
+import { gaugeModel } from "@xxd/css/gauge";
 import { useXxdAppearance } from "./appearance";
 import { useXxdLocale } from "./locale";
 
@@ -471,3 +472,104 @@ export function AccountCard({ name, avatar, plan, tone, member, action }: { name
     </div>
   );
 }
+
+/* ── Gauge：一个数在一个范围里的哪儿（GAUGE-PLAN）。几何和 @xxd/css 的 Xxd.gauge 是同一份（@xxd/css/gauge） ── */
+export function Gauge({
+  size,
+  className,
+  style,
+  "aria-label": ariaLabel,
+  ...options
+}: {
+  /** 一个数，或者 [最低, 最高] 一段区间（分段、多环不用写） */
+  value?: number | readonly [number, number];
+  /** 缺省 0 */
+  min?: number;
+  /** 缺省 100 */
+  max?: number;
+  /** arc：270°，缺口朝下（缺省）；half：半圆；ring：整圈 */
+  shape?: "arc" | "half" | "ring";
+  unit?: string;
+  /** 显示在数字下面，也是读屏念的名字 */
+  label?: string;
+  /** 小数位（缺省最多一位） */
+  decimals?: number;
+  format?: (n: number) => string;
+  /** 目标线（一条或几条） */
+  target?: number | readonly number[];
+  /** 区段，只表意义：数值进了哪一段，填充换成那一段的颜色，数字下面写出状态 */
+  zones?: readonly { from?: number; to?: number; tone: "warning" | "danger" | "success"; label?: string }[];
+  /** 刻度：把弧分成几份 */
+  ticks?: number;
+  /** 分格：N 格，整格才亮 */
+  segments?: number;
+  /** 细线指针（arc / half；有指针时不画填充）；值变了转过去 */
+  needle?: boolean;
+  /** 分段：几部分首尾相接，配图例 */
+  parts?: readonly { label: string; value: number }[];
+  /** 同心多环：最多 3 环，每环自己的满额，配图例 */
+  rings?: readonly { label: string; value: number; min?: number; max?: number; unit?: string }[];
+  /** 两端的刻度数（缺省：arc / half 显示，ring 不显示） */
+  ends?: boolean;
+  /** 中间数字的字号 */
+  size?: "sm" | "lg";
+  /** 没有 label 时，读屏念的名字 */
+  "aria-label"?: string;
+  className?: string;
+  /** 最大宽度：style={{ "--gauge-size": "220px" }} */
+  style?: CSSProperties;
+}) {
+  const { locale } = useXxdLocale();
+  const m = gaugeModel({ locale, ...options });
+  const d = m.display;
+  const aria = { ...m.aria, ...(ariaLabel && !m.aria["aria-label"] ? { "aria-label": ariaLabel } : {}) };
+  return (
+    <div className={cx("xxd-gauge", className)} data-shape={m.shape} data-needle={flag(Boolean(m.needle))} data-size={size} style={style} {...aria}>
+      <div className="xxd-gauge__dial" style={{ "--gauge-cx": `${m.center.x}%`, "--gauge-cy": `${m.center.y}%` } as CSSProperties}>
+        <svg className="xxd-gauge__svg" viewBox={m.viewBox} aria-hidden="true" focusable="false" dangerouslySetInnerHTML={{ __html: m.svgBody }} />
+        {m.needle && (
+          <svg className="xxd-gauge__pointer" viewBox={m.viewBox} aria-hidden="true" focusable="false">
+            {/* 只改 transform：值变了指针转过去；看不见的圆让转轴在圆心 */}
+            <g className="xxd-gauge__needle" style={{ transform: `rotate(${m.needle.angle}deg)` }}>
+              <circle r={m.needle.length} fill="none" stroke="none" />
+              <line x1="0" y1="0" x2="0" y2={-m.needle.length} className="xxd-gauge__needle-line" strokeWidth="1.5" strokeLinecap="butt" vectorEffect="non-scaling-stroke" />
+              <circle r="2.5" className="xxd-gauge__hub" />
+            </g>
+          </svg>
+        )}
+        {d && (
+          <div className="xxd-gauge__center" aria-hidden="true">
+            <span className="xxd-gauge__value">
+              {d.value}
+              {d.unit && <span className="xxd-gauge__unit">{d.unit}</span>}
+            </span>
+            {d.label && <span className="xxd-gauge__label">{d.label}</span>}
+            {d.state && (
+              <span className="xxd-gauge__state" data-tone={d.state.tone}>
+                {d.state.text}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+      {m.ends && (
+        <div className="xxd-gauge__ends" aria-hidden="true" style={{ "--gauge-ends-x": `${m.ends.x}%` } as CSSProperties}>
+          <span className="xxd-gauge__min">{m.ends.min}</span>
+          <span className="xxd-gauge__max">{m.ends.max}</span>
+        </div>
+      )}
+      {m.legend.length > 0 && (
+        <ul className="xxd-gauge__legend">
+          {m.legend.map((l, i) => (
+            <li key={i} className="xxd-gauge__item">
+              <span className="xxd-gauge__key" data-part={l.part} />
+              <span className="xxd-gauge__name">{l.label}</span>
+              <span className="xxd-gauge__num">{l.text}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+export type GaugeProps = Parameters<typeof Gauge>[0];

@@ -1,6 +1,6 @@
 // 第三批组件的演示：手机上常用的（底部按钮条、数量加减、日期滚轮、结果页）
 import { View } from "@tarojs/components";
-import { BottomBar, Button, Cell, CellGroup, DatePicker, Result, Stack, Stepper, Text, useToast } from "@xxd/mini";
+import { BottomBar, Button, Cell, CellGroup, DatePicker, Gauge, Gauges, Result, Stack, Stepper, Text, useToast } from "@xxd/mini";
 import { useState } from "react";
 import type { Demo } from "./types";
 
@@ -52,7 +52,35 @@ function DatePickerDemo({ tr }: { tr: Tr }) {
   );
 }
 
+function GaugeDemo({ tr }: { tr: Tr }) {
+  const [cups, setCups] = useState(5);
+  const zones = [
+    { from: 80, to: 90, tone: "warning" as const },
+    { from: 90, tone: "danger" as const },
+  ];
+  return (
+    <Stack gap={24}>
+      <Gauges>
+        <Gauge value={72} unit="%" label={tr("空间已用", "Storage used")} target={80} zones={zones} />
+        <Gauge value={94} unit="%" label={tr("本月额度", "Monthly quota")} target={80} zones={zones} />
+      </Gauges>
+      <Gauges>
+        <Gauge shape="ring" segments={8} max={8} value={cups} unit={tr("杯", "glasses")} label={tr("今天喝水", "Water today")} />
+        <Gauge shape="half" needle ticks={10} value={64} unit="%" label={tr("CPU 负载", "CPU load")} zones={[{ from: 80, tone: "danger" }]} />
+      </Gauges>
+      <CellGroup>
+        <Cell title={tr("喝了几杯", "Glasses")} control={<Stepper value={cups} min={0} max={8} onValueChange={setCups} label={tr("喝了几杯", "Glasses")} />} />
+      </CellGroup>
+      <Gauges>
+        <Gauge shape="ring" max={100} unit="GB" label={tr("已用空间", "Storage used")} parts={[{ label: tr("图片", "Images"), value: 38 }, { label: tr("视频", "Video"), value: 22 }, { label: tr("文档", "Documents"), value: 9 }]} />
+        <Gauge shape="ring" label={tr("本周目标", "This week")} rings={[{ label: tr("写作", "Writing"), value: 3, max: 5 }, { label: tr("阅读", "Reading"), value: 40, max: 60 }, { label: tr("运动", "Exercise"), value: 2, max: 4 }]} />
+      </Gauges>
+    </Stack>
+  );
+}
+
 export const BATCH3: Demo[] = [
+  { name: "Gauge", render: (tr) => <GaugeDemo tr={tr} /> },
   { name: "BottomBar", bleed: true, render: (tr) => <BottomBarDemo tr={tr} /> },
   { name: "Stepper", bleed: true, render: (tr) => <StepperDemo tr={tr} /> },
   { name: "DatePicker", bleed: true, render: (tr) => <DatePickerDemo tr={tr} /> },

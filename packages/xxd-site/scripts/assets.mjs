@@ -1,5 +1,5 @@
 // 展示站的静态资源：
-//   public/xxd/      @xxd/css 的构建产物（boot.js、xxd.css、xxd.js、icons.js）
+//   public/xxd/      @xxd/css 的构建产物（boot.js、xxd.css、xxd.js、gauge.js、icons.js）
 //   public/v/<版本>/  同一批文件带版本号的一份（README「先试一下」引用它）
 //   public/xxd/echarts.js  图表组件页用（echarts/dist/echarts.min.js）
 //   public/xxd/kumo.css  React 组件的预编译样式（@cloudflare/kumo standalone，Kumo 换皮版）
@@ -25,7 +25,7 @@ const need = (file, name) => {
 };
 const cssDist = join(pkgs, "xxd-css/dist");
 need(join(cssDist, "xxd.js"), "@xxd/css");
-for (const f of ["boot.js", "xxd.css", "xxd.js", "icons.js"]) copyFileSync(join(cssDist, f), join(out, f));
+for (const f of ["boot.js", "xxd.css", "xxd.js", "gauge.js", "icons.js"]) copyFileSync(join(cssDist, f), join(out, f));
 // 插件套件（XxdExtension）：插件专用模式的演示要用（没有 chrome.* 时走演示行为）
 const extDist = join(pkgs, "xxd-extension/dist/extension.js");
 need(extDist, "@xxd/extension");
@@ -35,7 +35,7 @@ copyFileSync(extDist, join(out, "extension.js"));
 const version = JSON.parse(readFileSync(join(pkgs, "xxd-css/package.json"), "utf8")).version;
 const versioned = join(here, "../public/v", version);
 mkdirSync(versioned, { recursive: true });
-for (const f of ["boot.js", "xxd.css", "xxd.min.css", "components.css", "xxd.js", "xxd.esm.js", "icons.js"]) copyFileSync(join(cssDist, f), join(versioned, f));
+for (const f of ["boot.js", "xxd.css", "xxd.min.css", "components.css", "xxd.js", "xxd.esm.js", "gauge.js", "icons.js"]) copyFileSync(join(cssDist, f), join(versioned, f));
 
 // 小程序版的演示：演示小程序（packages/xxd-mini-demo）编出的 H5，放在 /mini/（组件页的「小程序」标签、/miniprogram/ 页嵌它）
 const miniH5 = join(pkgs, "xxd-mini-demo/dist-h5");

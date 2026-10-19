@@ -202,6 +202,7 @@
   --r-lg: 0px;   /* 大面：对话框、sheet */
   --r-pill: 0px; /* 状态标签、开关：直角模式下开关也是方的 */
   --r-circle: 50%; /* 语义圆：状态点、色块、头像 —— 不跟开关走 */
+  --stroke-cap: butt; /* 图上粗线（量表的轨道和填充）的线头：直角模式平头，圆角模式圆头 */
 
   /* ── 阴影：只给浮层（tooltip / 菜单 / toast / 对话框 / sheet），卡片、行、按钮没有阴影 ── */
   --shadow-popover: 0 18px 44px rgba(var(--shadow-rgb), 0.16);
@@ -692,6 +693,7 @@
   --r-md: 10px;
   --r-lg: 14px;
   --r-pill: 999px;
+  --stroke-cap: round;
 }
 
 /* 主色：一个颜色定整个界面的调子，而不是灰底上一个彩色按钮。

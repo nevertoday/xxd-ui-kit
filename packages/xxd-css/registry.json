@@ -1336,7 +1336,8 @@
         "xxd-meter",
         "xxd-meter__head",
         "xxd-meter__track",
-        "xxd-meter__fill"
+        "xxd-meter__fill",
+        "xxd-meter__target"
       ],
       "markup": "<progress class=\"xxd-progress\" value=\"60\" max=\"100\"></progress>\n<div class=\"xxd-loadbar\" role=\"progressbar\" aria-label=\"正在加载\"></div>\n<span class=\"xxd-spinner\"></span>",
       "react": "Loader / Meter",
@@ -1346,7 +1347,20 @@
       "summary": "确定进度用 <progress>，不确定用加载条 / spinner。",
       "a11y": [
         "<progress> 自带进度语义；加载条写 role=progressbar + aria-label",
-        "spinner 是装饰时 aria-hidden，并在旁边用文字说正在做什么"
+        "spinner 是装饰时 aria-hidden，并在旁边用文字说正在做什么",
+        "计量条写 role=meter + aria-valuenow / min / max；超限、目标写进 aria-valuetext 和旁边的字"
+      ],
+      "attributes": {
+        ".xxd-meter + --value": "计量条：--value 是 0–1",
+        "data-tone": "计量条超限变色：warning | danger | success（旁边的数字写出状态）",
+        ".xxd-meter__target + --target": "计量条的目标线（0–1）",
+        "data-segments + --segments": "计量条分格：整格才亮"
+      },
+      "examples": [
+        {
+          "title": "计量条：目标、超限、分格",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:20px;width:100%;max-width:320px\">\n  <div class=\"xxd-meter\" style=\"--value:.72\" role=\"meter\" aria-label=\"空间\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"72\" aria-valuetext=\"72%，目标 80%\"><div class=\"xxd-meter__head\"><span>空间</span><span>72% · 目标 80%</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div><span class=\"xxd-meter__target\" style=\"--target:.8\"></span></div>\n  <div class=\"xxd-meter\" data-tone=\"danger\" style=\"--value:.94\" role=\"meter\" aria-label=\"本月额度\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"94\" aria-valuetext=\"94%，超限\"><div class=\"xxd-meter__head\"><span>本月额度</span><span>94% · 超限</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div></div>\n  <div class=\"xxd-meter\" data-segments style=\"--segments:5;--value:.6\" role=\"meter\" aria-label=\"设置进度\" aria-valuemin=\"0\" aria-valuemax=\"5\" aria-valuenow=\"3\" aria-valuetext=\"第 3 步，共 5 步\"><div class=\"xxd-meter__head\"><span>设置进度</span><span>3 / 5 步</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div></div>\n</div>"
+        }
       ]
     },
     {
@@ -1634,6 +1648,107 @@
         "颜色只差深浅，所以折线从第 3 条起换线型：实线、实线、虚线、点线、点划线（WCAG 1.4.1：不只靠颜色区分）；第 1 条线宽 2px，其余 1.5px",
         "超过 5 条就该拆图或只高亮一条，其余画成 --muted-2 的背景线",
         "图表旁边写一句结论或附数据表，读屏和不看图的人也拿得到信息"
+      ]
+    },
+    {
+      "name": "Gauge",
+      "zh": "量表",
+      "category": "展示",
+      "classes": [
+        "xxd-gauges",
+        "xxd-gauge",
+        "xxd-gauge__dial",
+        "xxd-gauge__svg",
+        "xxd-gauge__pointer",
+        "xxd-gauge__track",
+        "xxd-gauge__fill",
+        "xxd-gauge__fill-warning",
+        "xxd-gauge__fill-danger",
+        "xxd-gauge__fill-success",
+        "xxd-gauge__part-0",
+        "xxd-gauge__part-1",
+        "xxd-gauge__part-2",
+        "xxd-gauge__part-3",
+        "xxd-gauge__part-4",
+        "xxd-gauge__zone-warning",
+        "xxd-gauge__zone-danger",
+        "xxd-gauge__zone-success",
+        "xxd-gauge__target",
+        "xxd-gauge__tick",
+        "xxd-gauge__needle",
+        "xxd-gauge__needle-line",
+        "xxd-gauge__hub",
+        "xxd-gauge__center",
+        "xxd-gauge__value",
+        "xxd-gauge__unit",
+        "xxd-gauge__label",
+        "xxd-gauge__state",
+        "xxd-gauge__ends",
+        "xxd-gauge__min",
+        "xxd-gauge__max",
+        "xxd-gauge__legend",
+        "xxd-gauge__item",
+        "xxd-gauge__key",
+        "xxd-gauge__name",
+        "xxd-gauge__num"
+      ],
+      "attributes": {
+        "data-gauge": "声明式：Xxd.init() 按下面这些 data-* 画出来；改了 data-* 再调一次 Xxd.initGauges()",
+        "data-value": "数值；同时写 data-from 就是一段区间（data-from 到 data-value）",
+        "data-min / data-max": "范围（缺省 0–100）",
+        "data-shape": "arc（缺省，270°，缺口朝下）| half（半圆）| ring（整圈）",
+        "data-unit / data-label": "单位；标签（显示在数字下面，也是读屏念的名字）",
+        "data-zones": "区段，只表意义：80-90:warning,90:danger；可以带名字：0-20:danger:电量低",
+        "data-target": "目标线，可以写几条：80,95",
+        "data-ticks": "刻度：把弧分成几份",
+        "data-segments": "分格：N 格，整格才亮",
+        "data-needle": "细线指针（arc / half）；有指针时不画填充",
+        "data-parts": "分段：图片:38;视频:22（每段自己的量，首尾相接）",
+        "data-rings": "多环，最多 3 环：写作:3/5;阅读:40/60（每环自己的满额）",
+        "data-size": "sm | lg：中间数字的字号",
+        "--gauge-size": "最大宽度（缺省 160px）；一排量表用 .xxd-gauges"
+      },
+      "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-value=\"72\" data-unit=\"%\" data-label=\"空间已用\" data-target=\"80\" data-zones=\"80-90:warning,90:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-value=\"94\" data-unit=\"%\" data-label=\"本月额度\" data-target=\"80\" data-zones=\"80-90:warning,90:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-segments=\"8\" data-max=\"8\" data-value=\"5\" data-unit=\"杯\" data-label=\"今天喝水\"></div>\n</div>",
+      "react": "Gauge",
+      "rules": [
+        "一个量表只回答一个问题：这个数在范围里的哪儿（配额用了多少、得分、完成度）。看趋势用折线，比大小用柱状，不要用一排量表凑一张图",
+        "填充是主色（没设主色就是墨色）；只有数值进了 warning / danger / success 区段才换颜色，而且数字下面写出状态，不只靠颜色",
+        "形状只有三种：arc（270°）、half（180°）、ring（整圈）。轨道和填充的线头跟圆角模式（--stroke-cap），分格、分段的缝永远是平的",
+        "数字、单位、两端的刻度数是 HTML 字（系统字体、等宽数字），不画进图里；刻度数只标两端",
+        "不做进场动画；值变了指针转过去（220ms），填充直接到位",
+        "分段、多环一定配图例写出数字；多环最多 3 环，颜色和图表的分类色是同一组",
+        "§1",
+        "§8",
+        "§14"
+      ],
+      "summary": "一个数在一个范围里的哪儿：配额、得分、完成度。三种形状（270° 弧、半圆、整圈）；轨道是淡灰、填充是主色，进了区段才换成意义色。还有目标线、刻度、分格、区间、分段、多环和细线指针。",
+      "a11y": [
+        "一个数：role=meter + aria-valuenow / min / max，aria-valuetext 是整句（「94%，超限，目标 80%」）；名字来自 data-label，或者自己写 aria-label",
+        "区间、分段、多环：role=group + aria-label；图例是普通文字，读屏照念；SVG 一律 aria-hidden",
+        "Windows 高对比模式：轨道 GrayText、填充 Highlight、目标线和指针 CanvasText"
+      ],
+      "js": "Xxd.gauge(el, { value: 72, unit: \"%\", label: \"空间已用\", zones: [{ from: 80, to: 90, tone: \"warning\" }, { from: 90, tone: \"danger\" }], target: 80 })\n// 声明式：<div class=\"xxd-gauge\" data-gauge data-value=\"72\" …></div>，Xxd.init() 画出来\n// React：<Gauge value={72} unit=\"%\" label=\"空间已用\" zones={[{ from: 90, tone: \"danger\" }]} target={80} />\n// 几何（小程序、服务端）：import { gaugeModel } from \"@xxd/css/gauge\"",
+      "examples": [
+        {
+          "title": "指针和刻度",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-needle data-ticks=\"10\" data-value=\"64\" data-unit=\"%\" data-label=\"CPU 负载\" data-zones=\"80:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-needle data-ticks=\"12\" data-max=\"120\" data-value=\"38\" data-unit=\"ms\" data-label=\"响应时间\" data-zones=\"60-90:warning,90:danger\"></div>\n</div>"
+        },
+        {
+          "title": "区间",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-10\" data-max=\"40\" data-from=\"12\" data-value=\"26\" data-unit=\"°C\" data-label=\"今天气温\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-from=\"60\" data-value=\"75\" data-label=\"目标区间\" data-unit=\"kg\" data-min=\"40\" data-max=\"100\"></div>\n</div>"
+        },
+        {
+          "title": "分段",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-max=\"100\" data-unit=\"GB\" data-label=\"已用空间\" data-parts=\"图片:38;视频:22;文档:9\"></div>\n</div>"
+        },
+        {
+          "title": "多环",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-label=\"本周目标\" data-rings=\"写作:3/5;阅读:40/60;运动:2/4\"></div>\n</div>"
+        },
+        {
+          "title": "尺寸",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-size=\"sm\" style=\"--gauge-size:120px\" data-value=\"36\" data-unit=\"%\" data-label=\"小\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-value=\"36\" data-unit=\"%\" data-label=\"缺省\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-size=\"lg\" style=\"--gauge-size:220px\" data-value=\"36\" data-unit=\"%\" data-label=\"大\"></div>\n</div>"
+        }
       ]
     }
   ]

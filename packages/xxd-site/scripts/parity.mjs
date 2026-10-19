@@ -36,6 +36,14 @@ export const PARTS = {
     ["数字列", "td:last-child", "td:last-child", ["textAlign", "numeric"]],
     ["行线", "tbody tr", "tbody tr", ["rowLine"]],
   ],
+  // 量表（GAUGE-PLAN G4）：两边都用 @xxd/css/gauge 画，比表盘大小、线的颜色和中间的字
+  gauge: [
+    ["表盘", ".xxd-gauge__dial", ".xxd-gauge__dial", ["width", "height"]],
+    ["轨道", ".xxd-gauge__track", ".xxd-gauge__track", ["stroke", "cap"]],
+    ["填充", "[class^=xxd-gauge__fill], [class^=xxd-gauge__part-0]", "[class^=xxd-gauge__fill], [class^=xxd-gauge__part-0]", ["stroke", "cap"]],
+    ["数字", ".xxd-gauge__value", ".xxd-gauge__value", ["fontSize", "fontWeight", "color", "numeric"]],
+    ["标签", ".xxd-gauge__label, .xxd-gauge__name", ".xxd-gauge__label, .xxd-gauge__name", ["fontSize", "color"]],
+  ],
 };
 
 /** 对照跑三种外观：亮直角墨色、暗圆角主色紧凑、亮圆角质感 */
@@ -98,6 +106,8 @@ function measure([cellSel, sel, props]) {
       out.highlight = layers.some((l) => /inset/.test(l) && norm(l.match(/(?:rgba?|color|oklch|oklab)\([^)]*\)|#\w+/)?.[0]) !== "transparent") ? "有" : "无";
     }
     else if (p === "backgroundColor") out.backgroundColor = norm(s.backgroundColor);
+    else if (p === "stroke") out.stroke = norm(s.stroke);
+    else if (p === "cap") out.cap = s.strokeLinecap;
     else if (p === "background") out.background = s.backgroundImage !== "none" ? `image ${s.backgroundImage.slice(0, 30)}` : norm(s.backgroundColor);
     else if (p === "radius") out.radius = s.borderTopLeftRadius;
     else if (p === "opacity") { let o = 1; for (let e = el; e && e !== cell; e = e.parentElement) o *= parseFloat(getComputedStyle(e).opacity); out.opacity = o.toFixed(2); }

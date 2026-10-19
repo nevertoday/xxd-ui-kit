@@ -879,9 +879,21 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
 <div class="xxd-loadbar" role="progressbar" aria-label="Loading"></div>
 <span class="xxd-spinner"></span>`,
     rules: ["Animates transform only"],
+    attributes: {
+      ".xxd-meter + --value": "Meter bar: --value is 0–1",
+      "data-tone": "Meter bar over a limit: warning | danger | success (write the state in the text next to it)",
+      ".xxd-meter__target + --target": "Meter bar target mark (0–1)",
+      "data-segments + --segments": "Meter bar in segments: a cell lights only when full",
+    },
+    examples: [{ title: "Meter bar: target, over limit, segments", markup: `<div class="xxd-stack" style="--stack-gap:20px;width:100%;max-width:320px">
+  <div class="xxd-meter" style="--value:.72" role="meter" aria-label="Storage" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72" aria-valuetext="72%, target 80%"><div class="xxd-meter__head"><span>Storage</span><span>72% · target 80%</span></div><div class="xxd-meter__track"><div class="xxd-meter__fill"></div></div><span class="xxd-meter__target" style="--target:.8"></span></div>
+  <div class="xxd-meter" data-tone="danger" style="--value:.94" role="meter" aria-label="Monthly quota" aria-valuemin="0" aria-valuemax="100" aria-valuenow="94" aria-valuetext="94%, over limit"><div class="xxd-meter__head"><span>Monthly quota</span><span>94% · over limit</span></div><div class="xxd-meter__track"><div class="xxd-meter__fill"></div></div></div>
+  <div class="xxd-meter" data-segments style="--segments:5;--value:.6" role="meter" aria-label="Setup" aria-valuemin="0" aria-valuemax="5" aria-valuenow="3" aria-valuetext="Step 3 of 5"><div class="xxd-meter__head"><span>Setup</span><span>3 / 5 steps</span></div><div class="xxd-meter__track"><div class="xxd-meter__fill"></div></div></div>
+</div>` }],
     a11y: [
       "<progress> has progress semantics built in; the load bar needs role=progressbar + aria-label",
       "A decorative spinner is aria-hidden, with text next to it saying what is happening",
+      "Meter bars use role=meter + aria-valuenow / min / max; put the limit and target in aria-valuetext and in the text next to it",
     ],
   },
   Table: {
@@ -1090,5 +1102,71 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
 Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))
 // React: <Chart echarts={echarts} options={Xxd.chartOptions(option)} />`,
     a11y: ["Put a one-sentence conclusion or a table next to the chart; besides color, line width also marks the highlighted line."],
+  },
+  Gauge: {
+    title: "Gauge",
+    summary: "Where one number sits in a range: quota used, a score, progress toward a goal. Three shapes (270° arc, half circle, full ring); the track is a light gray and the fill is the accent, switching to a meaning color only inside a zone. Also target marks, ticks, segments, ranges, stacked parts, concentric rings and a thin needle.",
+    attributes: {
+      "data-gauge": "Declarative: Xxd.init() draws it from the data-* below; after changing data-*, call Xxd.initGauges() again",
+      "data-value": "The value; with data-from it is a range (data-from to data-value)",
+      "data-min / data-max": "The range (default 0–100)",
+      "data-shape": "arc (default, 270°, opening at the bottom) | half | ring",
+      "data-unit / data-label": "Unit; label (shown under the number, and the name screen readers read)",
+      "data-zones": "Zones, for meaning only: 80-90:warning,90:danger; with a name: 0-20:danger:Battery low",
+      "data-target": "Target marks, one or more: 80,95",
+      "data-ticks": "Ticks: how many parts the arc is split into",
+      "data-segments": "Segments: N cells, a cell lights only when full",
+      "data-needle": "Thin needle (arc / half); no fill is drawn with a needle",
+      "data-parts": "Stacked parts: Images:38;Video:22 (each part's own amount, end to end)",
+      "data-rings": "Concentric rings, at most 3: Writing:3/5;Reading:40/60 (each ring has its own maximum)",
+      "data-size": "sm | lg: size of the number in the middle",
+      "--gauge-size": "Maximum width (default 160px); put a row of gauges in .xxd-gauges",
+    },
+    markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
+  <div class="xxd-gauge" data-gauge data-value="72" data-unit="%" data-label="Storage used" data-target="80" data-zones="80-90:warning,90:danger"></div>
+  <div class="xxd-gauge" data-gauge data-value="94" data-unit="%" data-label="Monthly quota" data-target="80" data-zones="80-90:warning,90:danger"></div>
+  <div class="xxd-gauge" data-gauge data-shape="ring" data-segments="8" data-max="8" data-value="5" data-unit="glasses" data-label="Water today"></div>
+</div>`,
+    rules: [
+      "A gauge answers one question: where is this number in its range (quota used, a score, progress). Use a line chart for trends and a bar chart for comparisons; don't build a chart out of a row of gauges",
+      "The fill is the accent (ink when there is no accent); it changes color only inside a warning / danger / success zone, and the state is written under the number, never color alone",
+      "Only three shapes: arc (270°), half (180°), ring (full circle). Track and fill ends follow the corner mode (--stroke-cap); the cuts between segments and parts are always flat",
+      "The number, unit and end labels are HTML text (system font, tabular figures), not drawn into the SVG; only the two ends are labelled",
+      "No entrance animation; when the value changes the needle turns (220ms) and the fill jumps straight there",
+      "Stacked parts and rings always come with a legend that states the numbers; at most 3 rings, in the same category colors as charts",
+      "§1",
+      "§8",
+      "§14",
+    ],
+    a11y: [
+      "One value: role=meter + aria-valuenow / min / max, and aria-valuetext is the full sentence (\"94%, Over limit, target 80%\"); the name comes from data-label, or write aria-label yourself",
+      "Ranges, stacked parts and rings: role=group + aria-label; the legend is plain text that screen readers read as is; the SVG is always aria-hidden",
+      "Windows high contrast: track GrayText, fill Highlight, target and needle CanvasText",
+    ],
+    js: `Xxd.gauge(el, { value: 72, unit: "%", label: "Storage used", zones: [{ from: 80, to: 90, tone: "warning" }, { from: 90, tone: "danger" }], target: 80 })
+// Declarative: <div class="xxd-gauge" data-gauge data-value="72" …></div>, drawn by Xxd.init()
+// React: <Gauge value={72} unit="%" label="Storage used" zones={[{ from: 90, tone: "danger" }]} target={80} />
+// Geometry only (mini programs, servers): import { gaugeModel } from "@xxd/css/gauge"`,
+    examples: [
+      { title: "Needle and ticks", markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
+  <div class="xxd-gauge" data-gauge data-shape="half" data-needle data-ticks="10" data-value="64" data-unit="%" data-label="CPU load" data-zones="80:danger"></div>
+  <div class="xxd-gauge" data-gauge data-needle data-ticks="12" data-max="120" data-value="38" data-unit="ms" data-label="Response time" data-zones="60-90:warning,90:danger"></div>
+</div>` },
+      { title: "Range", markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
+  <div class="xxd-gauge" data-gauge data-shape="half" data-min="-10" data-max="40" data-from="12" data-value="26" data-unit="°C" data-label="Temperature today"></div>
+  <div class="xxd-gauge" data-gauge data-from="60" data-value="75" data-label="Target range" data-unit="kg" data-min="40" data-max="100"></div>
+</div>` },
+      { title: "Stacked parts", markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
+  <div class="xxd-gauge" data-gauge data-shape="ring" data-max="100" data-unit="GB" data-label="Storage used" data-parts="Images:38;Video:22;Documents:9"></div>
+</div>` },
+      { title: "Rings", markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
+  <div class="xxd-gauge" data-gauge data-shape="ring" data-label="This week" data-rings="Writing:3/5;Reading:40/60;Exercise:2/4"></div>
+</div>` },
+      { title: "Sizes", markup: `<div class="xxd-gauges" style="width:100%;max-width:560px">
+  <div class="xxd-gauge" data-gauge data-size="sm" style="--gauge-size:120px" data-value="36" data-unit="%" data-label="Small"></div>
+  <div class="xxd-gauge" data-gauge data-value="36" data-unit="%" data-label="Default"></div>
+  <div class="xxd-gauge" data-gauge data-size="lg" style="--gauge-size:220px" data-value="36" data-unit="%" data-label="Large"></div>
+</div>` },
+    ],
   },
 };

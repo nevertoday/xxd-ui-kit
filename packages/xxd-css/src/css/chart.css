@@ -124,4 +124,209 @@
       margin-top: var(--space-2);
     }
   }
+
+  /* 量表（GAUGE-PLAN）：一个数在一个范围里的哪儿。几何在 js/gauge.js；颜色按 GAUGE_PAINT 从令牌取（测试会对） */
+  .xxd-gauge {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    max-width: var(--gauge-size, 160px);
+    min-width: 0;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-gauge__dial {
+    position: relative;
+    width: 100%;
+  }
+
+  .xxd-gauge__svg,
+  .xxd-gauge__pointer {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .xxd-gauge__pointer {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* 轨道和填充的线头跟圆角模式；分格、分段的缝（写了 stroke-linecap 的）永远是平的 */
+  .xxd-gauge__svg path:not([stroke-linecap]) {
+    stroke-linecap: var(--stroke-cap);
+  }
+
+  .xxd-gauge__track { stroke: var(--wash-strong); }
+  .xxd-gauge__fill { stroke: var(--action); }
+  .xxd-gauge__fill-warning { stroke: var(--warning-solid); }
+  .xxd-gauge__fill-danger { stroke: var(--danger-solid); }
+  .xxd-gauge__fill-success { stroke: var(--success-solid); }
+  .xxd-gauge__part-0 { stroke: var(--action); }
+  .xxd-gauge__part-1 { stroke: var(--gray-9); }
+  .xxd-gauge__part-2 { stroke: var(--gray-11); }
+  .xxd-gauge__part-3 { stroke: var(--gray-10); }
+  .xxd-gauge__part-4 { stroke: var(--accent-8); }
+  .xxd-gauge__zone-warning { stroke: var(--warning-border-strong); }
+  .xxd-gauge__zone-danger { stroke: var(--danger-border-strong); }
+  .xxd-gauge__zone-success { stroke: var(--success-border-strong); }
+  .xxd-gauge__target { stroke: var(--ink); }
+  .xxd-gauge__tick { stroke: var(--muted-2); }
+  .xxd-gauge__needle-line { stroke: var(--ink); }
+  .xxd-gauge__hub { fill: var(--ink); }
+
+  /* 指针：只动 transform；看不见的那个圆让转轴在圆心 */
+  .xxd-gauge__needle {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--motion-medium) var(--ease-out-expo);
+  }
+
+  /* 中间的字：数字 + 单位，下面一行标签；落进区段时再一行状态（不只靠颜色） */
+  .xxd-gauge__center {
+    position: absolute;
+    left: var(--gauge-cx);
+    top: var(--gauge-cy);
+    display: grid;
+    justify-items: center;
+    max-width: 64%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    line-height: var(--leading-xs);
+  }
+
+  .xxd-gauge[data-shape="half"] .xxd-gauge__center {
+    transform: translate(-50%, -100%);
+  }
+
+  /* 有指针：字让开圆心。arc 放到缺口里，half 放到表盘下面 */
+  .xxd-gauge[data-needle][data-shape="arc"] .xxd-gauge__center {
+    transform: translate(-50%, 24%);
+  }
+
+  .xxd-gauge[data-needle][data-shape="half"] .xxd-gauge__center {
+    position: static;
+    max-width: none;
+    margin-top: var(--space-2);
+    transform: none;
+  }
+
+  .xxd-gauge__value {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: var(--weight-strong) var(--text-xl) / var(--leading-md) var(--font-body);
+  }
+
+  .xxd-gauge[data-size="sm"] .xxd-gauge__value {
+    font-size: var(--text-lg);
+  }
+
+  .xxd-gauge[data-size="lg"] .xxd-gauge__value {
+    font-size: var(--text-xxl);
+    line-height: var(--leading-lg);
+  }
+
+  .xxd-gauge__unit {
+    margin-inline-start: var(--space-0-5);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    color: var(--muted);
+  }
+
+  .xxd-gauge__label,
+  .xxd-gauge__state {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .xxd-gauge__state[data-tone="warning"] { color: var(--warning-text); }
+  .xxd-gauge__state[data-tone="danger"] { color: var(--danger-text); }
+  .xxd-gauge__state[data-tone="success"] { color: var(--success-text); }
+
+  /* 两端的刻度数：在缺口两侧，各自对着弧的那一头 */
+  .xxd-gauge__ends {
+    position: relative;
+    width: 100%;
+    height: var(--leading-xs);
+    margin-top: calc(var(--space-2) * -1);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  .xxd-gauge__min,
+  .xxd-gauge__max {
+    position: absolute;
+    top: 0;
+    left: var(--gauge-ends-x);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .xxd-gauge__max {
+    left: auto;
+    right: var(--gauge-ends-x);
+    transform: translateX(50%);
+  }
+
+  /* 图例（分段、多环）：色条 · 名字 · 数字 */
+  .xxd-gauge__legend {
+    display: grid;
+    gap: var(--space-1);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .xxd-gauge__item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .xxd-gauge__key {
+    width: 12px;
+    height: 4px;
+    background: var(--action);
+  }
+
+  .xxd-gauge__key[data-part="1"] { background: var(--gray-9); }
+  .xxd-gauge__key[data-part="2"] { background: var(--gray-11); }
+  .xxd-gauge__key[data-part="3"] { background: var(--gray-10); }
+  .xxd-gauge__key[data-part="4"] { background: var(--accent-8); }
+
+  .xxd-gauge__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+
+  .xxd-gauge__num {
+    color: var(--ink);
+  }
+
+  /* 一排量表 */
+  .xxd-gauges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--gauge-size, 160px), 1fr));
+    align-items: start;
+    justify-items: center;
+    gap: var(--space-6) var(--space-4);
+  }
 }

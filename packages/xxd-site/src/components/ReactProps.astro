@@ -3,6 +3,7 @@
 // 小小东自己写的（Rail、Card、Sheet…）读 @xxd/react 构建时从源码生成的 dist/props.json。
 import registry from "@cloudflare/kumo/ai/component-registry.json";
 import xxdProps from "@xxd/react/props.json";
+import { REACT_PROPS_EN } from "../data/react-props.en.js";
 import { langOf, t } from "../i18n/index.js";
 import ReactPropsTable from "./ReactPropsTable.astro";
 interface Props {
@@ -12,7 +13,9 @@ const { name } = Astro.props;
 const lang = langOf(Astro.url.pathname);
 const L = t(lang);
 const own = xxdProps[name];
-const entry = registry.components[name] ?? (own && { props: own.props, subComponents: {}, rest: own.rest });
+// 自己写的组件：说明是中文注释；英文页换成 data/react-props.en.js 里的英文（没有就不显示）
+const ownProps = own && lang === "en" ? Object.fromEntries(Object.entries(own.props).map(([k, p]) => [k, { ...p, description: REACT_PROPS_EN[name]?.[k] ?? "" }])) : own?.props;
+const entry = registry.components[name] ?? (own && { props: ownProps, subComponents: {}, rest: own.rest });
 // 只列组件自己的属性：有说明、有可选值或有缺省值的（id、title、name 这些 HTML 通用属性不列）
 const KEEP = new Set(["disabled", "open", "defaultOpen", "onOpenChange", "value", "defaultValue", "onValueChange", "checked", "onCheckedChange"]);
 const props = entry

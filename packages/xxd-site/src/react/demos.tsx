@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
+  Gauge,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -592,6 +593,27 @@ export function StatDemo() {
           <span className="xxd-stat__spark" dangerouslySetInnerHTML={{ __html: sparkline(data as number[]) }} />
         </div>
       ))}
+    </div>
+  );
+}
+
+export function GaugeDemo() {
+  const [cups, setCups] = useState(5);
+  const zones = [
+    { from: 80, to: 90, tone: "warning" as const },
+    { from: 90, tone: "danger" as const },
+  ];
+  return (
+    <div className="xxd-stack" style={{ width: "100%", maxWidth: 560 }}>
+      <div className="xxd-gauges">
+        <Gauge value={72} unit="%" label="空间已用" target={80} zones={zones} />
+        <Gauge shape="ring" segments={8} max={8} value={cups} unit="杯" label="今天喝水" />
+        <Gauge shape="half" needle ticks={10} value={cups * 12} unit="%" label="CPU 负载" zones={[{ from: 80, tone: "danger" }]} />
+      </div>
+      <div className="xxd-cluster">
+        <Button size="sm" onClick={() => setCups((n) => Math.max(0, n - 1))}>少一杯</Button>
+        <Button size="sm" onClick={() => setCups((n) => Math.min(8, n + 1))}>多一杯</Button>
+      </div>
     </div>
   );
 }

@@ -115,6 +115,7 @@ export const BATCH2: Demo[] = [
     render: (tr) => (
       <Stack gap={16}>
         <Progress value={60} label={tr("上传中", "Uploading")} />
+        <Progress value={72} label={tr("空间", "Storage")} valueText={tr("72% · 目标 80%", "72% · target 80%")} target={80} />
         <Progress value={92} label={tr("本月用量", "This month")} valueText="92 / 100" tone="warning" />
         <Progress value={100} label={tr("同步完成", "Synced")} tone="success" />
       </Stack>

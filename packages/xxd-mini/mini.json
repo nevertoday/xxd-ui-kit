@@ -514,6 +514,42 @@
       "summaryEn": "Line, bar and spark charts drawn as images, no ECharts needed; same palette as the web kit."
     },
     {
+      "name": "Gauge",
+      "zh": "量表",
+      "en": "Gauge",
+      "batch": 3,
+      "web": [
+        "Gauge"
+      ],
+      "blocks": [
+        "xxd-gauges",
+        "xxd-gauge"
+      ],
+      "summary": "一个数在一个范围里的哪儿：配额、得分、完成度。弧、半圆、整圈，区段、目标线、分格、分段、多环；和网页版同一份几何。",
+      "summaryEn": "Where one number sits in a range: quota, score, progress. Arc, half or ring, with zones, targets, segments, stacked parts and rings; the same geometry as the web kit.",
+      "skip": [
+        "xxd-gauge__track",
+        "xxd-gauge__fill",
+        "xxd-gauge__fill-warning",
+        "xxd-gauge__fill-danger",
+        "xxd-gauge__fill-success",
+        "xxd-gauge__part-0",
+        "xxd-gauge__part-1",
+        "xxd-gauge__part-2",
+        "xxd-gauge__part-3",
+        "xxd-gauge__part-4",
+        "xxd-gauge__zone-warning",
+        "xxd-gauge__zone-danger",
+        "xxd-gauge__zone-success",
+        "xxd-gauge__target",
+        "xxd-gauge__tick",
+        "xxd-gauge__needle",
+        "xxd-gauge__needle-line",
+        "xxd-gauge__hub",
+        "xxd-gauge__pointer"
+      ]
+    },
+    {
       "name": "BottomBar",
       "zh": "底部按钮条",
       "en": "BottomBar",

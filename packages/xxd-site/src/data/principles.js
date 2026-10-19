@@ -177,4 +177,13 @@ export const principles = [
     dontMarkup: `<div class="xxd-cluster"><div class="xxd-input-wrap" style="width:160px"><i data-xxd-icon="Search" data-size="16"></i><input class="xxd-input" aria-label="搜索插件" placeholder="搜索插件"></div><button class="xxd-chip" aria-pressed="true">全部</button><button class="xxd-chip">落后</button></div>`,
     dontText: "40px 的输入框旁边放 28px 的标签：一行里三种高度。",
   },
+  {
+    id: "data-viz",
+    title: "图里的颜色也只表意义",
+    ref: "§14",
+    doMarkup: `<div class="xxd-gauges" style="--gauge-size:120px;width:100%;max-width:280px"><div class="xxd-gauge" data-gauge data-size="sm" data-value="72" data-unit="%" data-label="空间已用" data-zones="90:danger"></div><div class="xxd-gauge" data-gauge data-size="sm" data-value="94" data-unit="%" data-label="本月额度" data-zones="90:danger"></div></div>`,
+    doText: "平时是墨色（或主色），超限了才变红，并且写出「超限」。",
+    dontMarkup: `<svg viewBox="-60 -60 120 104" width="140" height="122" role="img" aria-label="从绿到红渐变、带发光的量表"><defs><linearGradient id="pr-neon" x1="0" x2="1"><stop offset="0" stop-color="#22c55e"/><stop offset=".5" stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/></linearGradient><filter id="pr-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter></defs><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="12" stroke-linecap="round" filter="url(#pr-glow)" opacity=".7"/><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="10" stroke-linecap="round"/></svg>`,
+    dontText: "从绿到红的渐变加发光：颜色和数值没关系，看不出哪段正常、哪段超限，只剩装饰。",
+  },
 ];

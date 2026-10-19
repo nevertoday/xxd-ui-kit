@@ -110,6 +110,15 @@ export declare function chartOptions<T extends Record<string, any>>(option?: T, 
 export declare function watchChartTheme(chart: { setOption(option: any, opts?: any): void }, build: () => any, options?: { el?: Element }): () => void;
 export declare function sparkline(values: (number | string)[], options?: { width?: number; height?: number; strokeWidth?: number; area?: boolean }): string;
 export declare function initSparklines(root?: ParentNode): void;
+export type { XxdGaugeOptions, XxdGaugeModel, XxdGaugeShape, XxdGaugeTone, XxdGaugeZone } from "./gauge";
+/** 量表的几何用哪份：ESM 项目 useGauge(await import("@xxd/css/gauge"))；经典脚本自动用 window.XxdGauge（dist/gauge.js）。 */
+export declare function useGauge(lib: typeof import("./gauge") | null): void;
+/** 画一个量表（或者值变了重画）：el 是 .xxd-gauge。 */
+export declare function gauge(el: Element, options: import("./gauge").XxdGaugeOptions): import("./gauge").XxdGaugeModel;
+/** 元素上的 data-*（data-value、data-zones="70-90:warning,90:danger"、data-parts="图片:30;视频:20"、data-rings="写作:3/5"…）→ 选项 */
+export declare function gaugeOptionsFrom(el: Element): import("./gauge").XxdGaugeOptions;
+/** 声明式：[data-gauge] 的元素都画出来（Xxd.init 会调用） */
+export declare function initGauges(root?: ParentNode): void;
 
 /** 行为 JS 自己生成的文字用哪种语言（缺省跟 <html lang>）。传空值恢复成跟 <html lang>。 */
 export type XxdLocale = "zh-CN" | "zh-Hant" | "en";

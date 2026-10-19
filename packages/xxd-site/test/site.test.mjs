@@ -149,3 +149,12 @@ test("两种实现对照（V1）：PARITY 里的每一对，对照页的 HTML �
     }
   }
 });
+
+test("React 属性表：自己写的组件里有中文说明的属性，英文页都有英文（data/react-props.en.js）", async () => {
+  const props = JSON.parse(readFileSync(new URL("../../xxd-react/dist/props.json", import.meta.url), "utf8"));
+  const { REACT_PROPS_EN } = await import("../src/data/react-props.en.js");
+  const missing = [];
+  for (const [name, e] of Object.entries(props)) for (const [k, p] of Object.entries(e.props)) if (han.test(p.description ?? "") && !REACT_PROPS_EN[name]?.[k]) missing.push(`${name}.${k}`);
+  assert.deepEqual(missing, []);
+  for (const v of Object.values(REACT_PROPS_EN).flatMap(Object.values)) assert.ok(!han.test(v), v);
+});

@@ -173,4 +173,13 @@ export const principles = [
     dontMarkup: `<div class="xxd-cluster"><div class="xxd-input-wrap" style="width:160px"><i data-xxd-icon="Search" data-size="16"></i><input class="xxd-input" aria-label="Search extensions" placeholder="Search extensions"></div><button class="xxd-chip" aria-pressed="true">All</button><button class="xxd-chip">Behind</button></div>`,
     dontText: "A 40px input next to 28px chips: three heights in one row.",
   },
+  {
+    id: "data-viz",
+    title: "In charts, color still means something",
+    ref: "§14",
+    doMarkup: `<div class="xxd-gauges" style="--gauge-size:120px;width:100%;max-width:280px"><div class="xxd-gauge" data-gauge data-size="sm" data-value="72" data-unit="%" data-label="Storage used" data-zones="90:danger"></div><div class="xxd-gauge" data-gauge data-size="sm" data-value="94" data-unit="%" data-label="Monthly quota" data-zones="90:danger"></div></div>`,
+    doText: "Ink (or the accent) normally; red only over the limit, with \"Over limit\" written out.",
+    dontMarkup: `<svg viewBox="-60 -60 120 104" width="140" height="122" role="img" aria-label="A glowing gauge with a green-to-red gradient"><defs><linearGradient id="pr-neon" x1="0" x2="1"><stop offset="0" stop-color="#22c55e"/><stop offset=".5" stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/></linearGradient><filter id="pr-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter></defs><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="12" stroke-linecap="round" filter="url(#pr-glow)" opacity=".7"/><path d="M-35.355 35.355A50 50 0 0 1 0 -50A50 50 0 0 1 35.355 35.355" fill="none" stroke="url(#pr-neon)" stroke-width="10" stroke-linecap="round"/></svg>`,
+    dontText: "A green-to-red gradient with a glow: the color has nothing to do with the value, so you cannot tell normal from over the limit; it is only decoration.",
+  },
 ];

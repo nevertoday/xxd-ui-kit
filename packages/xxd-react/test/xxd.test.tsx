@@ -20,6 +20,7 @@ import {
   Swatches,
   Dock,
   DropTarget,
+  Gauge,
   Pagination,
   Search,
   Segmented,
@@ -439,4 +440,44 @@ describe("R6 React 和原生对照", () => {
       expect([...new Set(roles(r))].sort()).toEqual([...new Set(roles(n))].sort());
     });
   }
+});
+
+describe("Gauge（GAUGE-PLAN G4）", () => {
+  it("和 Xxd.gauge 同一个结构：role=meter、名字、整句、两端刻度", async () => {
+    const { container } = render(<Gauge value={94} unit="%" label="本月额度" target={80} zones={[{ from: 80, to: 90, tone: "warning" }, { from: 90, tone: "danger" }]} />);
+    const el = container.querySelector(".xxd-gauge")!;
+    expect(el.getAttribute("role")).toBe("meter");
+    expect(el.getAttribute("aria-label")).toBe("本月额度");
+    expect(el.getAttribute("aria-valuetext")).toBe("94%，超限，目标 80%");
+    expect(el.querySelector(".xxd-gauge__state")?.textContent).toBe("超限");
+    expect(el.querySelector(".xxd-gauge__fill-danger")).not.toBeNull();
+    // 网页版（@xxd/css）画出来的类名一样
+    const lib = await import("@xxd/css/gauge");
+    const { gauge, useGauge } = await import("@xxd/css");
+    useGauge(lib);
+    const native = document.createElement("div");
+    gauge(native, { value: 94, unit: "%", label: "本月额度", target: 80, zones: [{ from: 80, to: 90, tone: "warning" }, { from: 90, tone: "danger" }] });
+    const classes = (n: Element) => [...n.querySelectorAll("[class]")].map((x) => x.getAttribute("class")).sort();
+    expect(classes(el)).toEqual(classes(native));
+  });
+
+  it("指针：值变了只改 transform（同一个元素，过渡才放得出来）", () => {
+    const { container, rerender } = render(<Gauge shape="half" needle value={20} label="负载" />);
+    const g = container.querySelector(".xxd-gauge__needle") as SVGGElement;
+    rerender(<Gauge shape="half" needle value={80} label="负载" />);
+    expect(container.querySelector(".xxd-gauge__needle")).toBe(g);
+    expect(g.style.transform).toBe("rotate(54deg)");
+  });
+
+  it("英文、多环的图例、没有 label 时用 aria-label", () => {
+    const { container } = render(
+      <XxdLocaleProvider locale="en">
+        <Gauge shape="ring" aria-label="This week" rings={[{ label: "Writing", value: 3, max: 5 }, { label: "Reading", value: 40, max: 60 }]} />
+      </XxdLocaleProvider>,
+    );
+    const el = container.querySelector(".xxd-gauge")!;
+    expect(el.getAttribute("role")).toBe("group");
+    expect(el.getAttribute("aria-label")).toBe("This week");
+    expect([...el.querySelectorAll(".xxd-gauge__item")].map((li) => li.textContent)).toEqual(["Writing3 of 5", "Reading40 of 60"]);
+  });
 });

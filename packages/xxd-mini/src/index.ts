@@ -41,3 +41,5 @@ export { Stepper, type StepperProps } from "./stepper";
 export { DatePicker, type DatePickerProps } from "./datepicker";
 export { Result, type ResultProps } from "./result";
 export { Chart, Sparkline, chartPalette, chartSvg, type ChartProps, type ChartSeries } from "./chart";
+export { Gauge, Gauges, type GaugeProps } from "./gauge";
+export { gaugeModel, gaugeColors, GAUGE_PAINT, type XxdGaugeOptions, type XxdGaugeModel } from "./gauge-core";

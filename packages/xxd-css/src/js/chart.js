@@ -8,6 +8,8 @@
 //   chart.setOption(Xxd.chartOptions({ xAxis: {…}, series: [{ type: "line", data }] }));
 //   Xxd.watchChartTheme(chart, () => Xxd.chartOptions(myOption))   // 切主题 / 主色时自动重画
 
+import { getLocale } from "./i18n.js";
+
 const read = (el, name, fallback) => {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
   return v || fallback;
@@ -149,4 +151,116 @@ export function initSparklines(root = document) {
     el.innerHTML = sparkline(el.dataset.spark.split(","));
     el.dataset.sparkDone = "1";
   }
+}
+
+/* ── 量表（GAUGE-PLAN G2）：几何在 gauge.js（三种实现共用），这里只管放进页面 ──
+ * 几何那部分单独一个文件（3KB gzip），像图标一样按需加载，不用量表的页面不背：
+ *   经典脚本：xxd.js 后面加 <script src="vendor/xxd/gauge.js"></script>（window.XxdGauge）
+ *   ESM：     useGauge(await import("@xxd/css/gauge"))
+ */
+let gaugeImpl = null;
+export function useGauge(lib) {
+  gaugeImpl = lib || null;
+}
+const gaugeLib = () => gaugeImpl ?? globalThis.XxdGauge ?? null;
+let warnedGauge = false;
+const missingGauge = () => {
+  if (!warnedGauge) console.warn('[xxd] 页面里有量表，但没有加载量表的几何：经典脚本在 xxd.js 后面加 gauge.js；ESM 里 useGauge(await import("@xxd/css/gauge"))');
+  warnedGauge = true;
+  return null;
+};
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+/** 量表的 HTML（除了根元素本身）：表盘（SVG + 指针 + 中间的字）、两端的刻度数、图例。React 版渲染同一个结构。 */
+export function gaugeInnerHtml(m, needleSvg = gaugeLib()?.needleSvg) {
+  const d = m.display;
+  const center = d
+    ? `<div class="xxd-gauge__center" aria-hidden="true"><span class="xxd-gauge__value">${esc(d.value)}${d.unit ? `<span class="xxd-gauge__unit">${esc(d.unit)}</span>` : ""}</span>${d.label ? `<span class="xxd-gauge__label">${esc(d.label)}</span>` : ""}${d.state ? `<span class="xxd-gauge__state" data-tone="${d.state.tone}">${esc(d.state.text)}</span>` : ""}</div>`
+    : "";
+  const pointer = m.needle ? needleSvg(m.needle, { viewBox: m.viewBox }) : "";
+  const ends = m.ends ? `<div class="xxd-gauge__ends" aria-hidden="true" style="--gauge-ends-x:${m.ends.x}%"><span class="xxd-gauge__min">${esc(m.ends.min)}</span><span class="xxd-gauge__max">${esc(m.ends.max)}</span></div>` : "";
+  const legend = m.legend.length
+    ? `<ul class="xxd-gauge__legend">${m.legend.map((l) => `<li class="xxd-gauge__item"><span class="xxd-gauge__key" data-part="${l.part}"></span><span class="xxd-gauge__name">${esc(l.label)}</span><span class="xxd-gauge__num">${esc(l.text)}</span></li>`).join("")}</ul>`
+    : "";
+  return `<div class="xxd-gauge__dial" style="--gauge-cx:${m.center.x}%;--gauge-cy:${m.center.y}%">${m.svg}${pointer}${center}</div>${ends}${legend}`;
+}
+
+const GAUGE_ARIA = ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-valuetext"];
+
+/**
+ * 画一个量表（或者值变了重画）。el 是 .xxd-gauge；options 见 index.d.ts 的 XxdGaugeOptions。
+ *   Xxd.gauge(el, { value: 72, unit: "%", label: "已用", zones: [{ from: 90, tone: "danger" }], target: 80 })
+ * 有指针时只改指针的 transform（转过去有过渡），其余部分整个换掉。
+ */
+export function gauge(el, options = {}) {
+  const lib = gaugeLib();
+  if (!lib) return missingGauge();
+  const m = lib.gaugeModel({ locale: getLocale(el), ...options });
+  const turn = el.querySelector(".xxd-gauge__needle");
+  const before = turn?.style.transform;
+  el.innerHTML = gaugeInnerHtml(m, lib.needleSvg);
+  el.classList.add("xxd-gauge");
+  el.dataset.shape = m.shape;
+  el.toggleAttribute("data-needle", Boolean(m.needle));
+  for (const k of GAUGE_ARIA) el.removeAttribute(k);
+  // 没有标签时保留作者自己写的 aria-label
+  if (!el.dataset.gaugeOwnLabel) el.dataset.gaugeOwnLabel = el.hasAttribute("aria-label") ? "1" : "0";
+  if (el.dataset.gaugeOwnLabel !== "1") el.removeAttribute("aria-label");
+  for (const [k, v] of Object.entries(m.aria)) if (k !== "aria-label" || el.dataset.gaugeOwnLabel !== "1") el.setAttribute(k, String(v));
+  if (m.aria.role === "meter" && !el.hasAttribute("aria-label") && !el.hasAttribute("aria-labelledby")) console.warn("[xxd] 量表要有名字：传 label，或者在元素上写 aria-label", el);
+  // 指针从上一次的角度转到这一次（innerHTML 换掉了元素，先放回旧角度，下一帧再转）
+  const next = el.querySelector(".xxd-gauge__needle");
+  if (next && before && before !== next.style.transform) {
+    const target = next.style.transform;
+    next.style.transform = before;
+    next.getBoundingClientRect();
+    next.style.transform = target;
+  }
+  return m;
+}
+
+const numList = (s) => (s ? s.split(",").map((x) => x.trim()).filter(Boolean) : []);
+/** 「图片:30;视频:20」→ [{ label, value }] */
+const pairs = (s) =>
+  (s ? s.split(";") : []).map((x) => {
+    const at = x.lastIndexOf(":");
+    return { label: x.slice(0, at).trim(), value: x.slice(at + 1).trim() };
+  });
+
+/** 元素上的 data-* → Xxd.gauge 的选项 */
+export function gaugeOptionsFrom(el) {
+  const d = el.dataset;
+  const value = d.from != null ? [d.from, d.value] : d.value;
+  const zones = numList(d.zones).map((z) => {
+    // 「70-90:warning」「90:danger」「0-20:danger:电量低」
+    const [span, tone, label] = z.split(":");
+    const [from, to] = span.split(/(?<=\d)-/);
+    return { from, to, tone, label };
+  });
+  return {
+    value,
+    min: d.min,
+    max: d.max,
+    shape: d.shape,
+    unit: d.unit,
+    label: d.label,
+    decimals: d.decimals != null ? Number(d.decimals) : undefined,
+    target: numList(d.target),
+    zones,
+    ticks: d.ticks,
+    segments: d.segments,
+    needle: d.needle != null && d.needle !== "false",
+    parts: pairs(d.parts),
+    // 「写作:3/5;阅读:40/60」：每环自己的满额
+    rings: pairs(d.rings).map((r) => {
+      const [value, max] = r.value.split("/");
+      return { label: r.label, value, max };
+    }),
+  };
+}
+
+/** 声明式：<div class="xxd-gauge" data-gauge data-value="72" data-unit="%" data-label="已用"></div>；data-* 变了再调一次就重画 */
+export function initGauges(root = document) {
+  for (const el of root.querySelectorAll?.("[data-gauge]") ?? []) gauge(el, gaugeOptionsFrom(el));
 }

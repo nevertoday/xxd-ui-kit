@@ -1,15 +1,3 @@
-.xxd-meter.is-tone-success .xxd-meter__fill {
-  background: var(--success);
-}
-
-.xxd-meter.is-tone-warning .xxd-meter__fill {
-  background: var(--warning);
-}
-
-.xxd-meter.is-tone-danger .xxd-meter__fill {
-  background: var(--danger);
-}
-
 .xxd-meter__value {
   color: var(--muted);
   font-variant-numeric: tabular-nums;

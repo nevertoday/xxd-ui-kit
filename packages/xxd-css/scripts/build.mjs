@@ -75,6 +75,8 @@ writeFileSync(join(dist, "xxd.min.css"), `${banner}\n${minCss.outputFiles[0].tex
 const js = { bundle: true, target: "es2020", legalComments: "none", banner: { js: banner } };
 await build({ ...js, entryPoints: [join(root, "src/js/global.js")], format: "iife", minify: true, outfile: join(dist, "xxd.js") });
 await build({ ...js, entryPoints: [join(root, "src/js/index.js")], format: "esm", outfile: join(dist, "xxd.esm.js") });
+// 量表的几何（GAUGE-PLAN D40）：单独一个经典脚本，用量表的页面才加载
+await build({ ...js, entryPoints: [join(root, "src/js/gauge-global.js")], format: "iife", minify: true, outfile: join(dist, "gauge.js") });
 
 copyFileSync(join(tokensDir, "dist/boot.js"), join(dist, "boot.js"));
 copyFileSync(join(iconsDir, "dist/icons.iife.js"), join(dist, "icons.js"));
@@ -83,4 +85,4 @@ const size = (f) => {
   const buf = readFileSync(join(dist, f));
   return `${f} ${(buf.length / 1024).toFixed(1)}KB / gzip ${(gzipSync(buf).length / 1024).toFixed(1)}KB`;
 };
-console.log(["xxd.min.css", "xxd.js", "boot.js", "icons.js"].map(size).join("\n"));
+console.log(["xxd.min.css", "xxd.js", "gauge.js", "boot.js", "icons.js"].map(size).join("\n"));

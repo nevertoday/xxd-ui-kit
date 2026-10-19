@@ -37,10 +37,15 @@
       "types": "./src/js/labels.d.ts",
       "import": "./src/js/labels.js"
     },
+    "./gauge": {
+      "types": "./src/js/gauge.d.ts",
+      "import": "./src/js/gauge.js"
+    },
     "./index.css": "./src/index.css",
     "./css/*.css": "./src/css/*.css",
     "./dist/boot.js": "./dist/boot.js",
     "./dist/components.css": "./dist/components.css",
+    "./dist/gauge.js": "./dist/gauge.js",
     "./dist/icons.js": "./dist/icons.js",
     "./dist/xxd.css": "./dist/xxd.css",
     "./dist/xxd.esm.js": "./dist/xxd.esm.js",

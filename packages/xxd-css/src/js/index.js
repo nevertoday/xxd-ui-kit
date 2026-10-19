@@ -14,7 +14,7 @@ import { initStructure, installStructure } from "./structure.js";
 import { initData, installData } from "./data.js";
 import { installDrawerSwipe } from "./layers.js";
 import { initSortable, installAuth, installConfirmTwice, installSortable } from "./patterns.js";
-import { initSparklines } from "./chart.js";
+import { initGauges, initSparklines } from "./chart.js";
 import { installAnnouncer } from "./announce.js";
 import { collect } from "./lifecycle.js";
 
@@ -29,7 +29,7 @@ export { toast, copyText, showTooltip, hideTooltip, showBubble, runBusy } from "
 export { openSheet, closeSheet, openPanel, closePanel, openLayer, closeLayer } from "./layers.js";
 export { bindSearch, markMatches, clearMarks, addTag, tagValues, openCommandPalette, bindCommandPalette, setFieldError } from "./inputs.js";
 export { mountAppearance, APPEARANCE_LABELS } from "./appearance.js";
-export { chartTokens, chartPalette, chartOptions, watchChartTheme, sparkline, initSparklines } from "./chart.js";
+export { chartTokens, chartPalette, chartOptions, watchChartTheme, sparkline, initSparklines, gauge, initGauges, gaugeOptionsFrom, useGauge } from "./chart.js";
 export { bindDrop, openViewer, flip, setStatus, rollText, celebrate, filterSettings, bindSettingsSearch } from "./patterns.js";
 export { ICON } from "./icons-min.js";
 export { setLocale, getLocale, resolveLocale, t } from "./i18n.js";
@@ -110,6 +110,7 @@ export function init(root = document) {
   initStructure(root);
   initData(root);
   initSparklines(root);
+  initGauges(root);
   initMenus(root);
   initSortable(root);
   const lib = iconLib();
