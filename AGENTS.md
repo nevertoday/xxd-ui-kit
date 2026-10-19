@@ -5,6 +5,7 @@
 ## 开工前必读
 
 1. `docs/maintainers/DESIGNER-REVIEW-PLAN.md` —— 最近一轮（设计师评审 V1–V6）的任务和验收标准；之前的轮次在同目录的 `REVIEW-PLAN.md`、`PLAN.md`、`OPTIMIZATION-PLAN.md`。做完在「进度」里打勾写日期。
+   待做的两份：`COLOR-SCALE-PLAN.md`（颜色色阶）、`MINI-REVIEW-PLAN.md`（小程序对抗测试 Q1–Q6）；第 3 节没定的先不动。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
