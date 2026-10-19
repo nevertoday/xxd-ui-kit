@@ -1,7 +1,7 @@
 // 外观设置：主题、圆角、主色、密度、按钮质感、语言。改了马上全小程序生效，存在本机
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { AppearanceSettings, Button, Cell, CellGroup, Segmented, TabBar, Text, useXxd, XxdPage } from "@xxd/mini";
+import { AppearanceSettings, Button, Cell, CellGroup, Segmented, Text, useXxd, XxdPage } from "@xxd/mini";
 import { useContext, useEffect } from "react";
 import { LangCtx, useTr } from "../../i18n";
 import { MAIN_TABS } from "../../tabs";
@@ -14,7 +14,7 @@ export default function Settings() {
     Taro.setNavigationBarTitle({ title: tr("外观", "Appearance") }).catch(() => {});
   }, [tr]);
   return (
-    <XxdPage tabBar>
+    <XxdPage tabBar={MAIN_TABS(tr)}>
       <View className="demo-hero">
         <Text variant="heading1">{tr("外观", "Appearance")}</Text>
         <Text variant="secondary">{tr("改了马上生效，所有页面一起变。", "Changes apply right away, on every page.")}</Text>
@@ -34,7 +34,6 @@ export default function Settings() {
           {tr("恢复缺省", "Reset to defaults")}
         </Button>
       </View>
-      <TabBar items={MAIN_TABS(tr)} value="settings" />
     </XxdPage>
   );
 }

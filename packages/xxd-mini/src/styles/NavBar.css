@@ -16,6 +16,29 @@
   font-size: var(--text-lg);
 }
 
+/* 标题居中，和微信自带的导航栏一致（自带和自定义混着用时标题不跳）；左右各让出胶囊那么宽，太长就省略。
+   导航栏本身是 sticky，已经能给标题定位 */
+.xxd-navbar .xxd-topbar__title {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  max-width: calc(100% - var(--nav-side, 104px) * 2);
+  height: calc(100% - var(--status-bar, 0px));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
 .xxd-navbar__back {
   margin-right: -4px;
+}
+
+/* 标题居中、不占位：胶囊左边的东西推到最右 */
+.xxd-navbar__trailing {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
 }

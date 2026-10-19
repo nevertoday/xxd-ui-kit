@@ -1,6 +1,7 @@
 // 浮层的公共部分：开关动画（关的时候先播完再卸载）、挂到页面最外层（root-portal）、手机返回键先关浮层。
 import { PageContainer, RootPortal, View } from "@tarojs/components";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { IconTableCtx, iconVars } from "./icon";
 import { useXxd } from "./provider";
 import { cx, IS_H5 } from "./util";
 
@@ -34,6 +35,10 @@ interface LayerApi {
   remove: (id: number) => void;
 }
 const LayerCtx = createContext<LayerApi | null>(null);
+/** 页面根上的底部留白变量：root-portal 里的浮层（轻提示）也要用 */
+export const BottomInsetCtx = createContext("");
+/** 底部按钮条（BottomBar）向 XxdPage 登记：页面据此给底部留位置 */
+export const BottomBarCtx = createContext<{ add: () => void; remove: () => void } | null>(null);
 export const LayerProvider = LayerCtx.Provider;
 
 let layerId = 0;
@@ -140,7 +145,10 @@ export function BackGuard({ open, onBack }: { open: boolean; onBack: () => void 
 /** 浮层的根：root-portal 把浮层挪到页面最外层，继承不到 XxdPage 上的变量和类名，这里再写一遍 */
 export function useOverlayRoot() {
   const x = useXxd();
-  return { className: cx("xxd-overlay", x.className), style: x.style };
+  // root-portal 里继承不到页面根上的图标变量，再写一遍
+  const icons = useContext(IconTableCtx);
+  const inset = useContext(BottomInsetCtx);
+  return { className: cx("xxd-overlay", x.className), style: `${x.style};${inset}${iconVars(icons)}` };
 }
 
 /** 挂到页面最外层，并带上外观变量（root-portal 里继承不到 XxdPage 上的） */

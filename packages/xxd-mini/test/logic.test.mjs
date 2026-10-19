@@ -237,3 +237,92 @@ test("导航栏：胶囊读到全 0 时按状态栏估一个，高度不会是�
   assert.equal(height(), 44 + 32 + 4 * 2);
   v.unmount();
 });
+
+test("图标：同一个图标的数据在页面根上只写一次，每个图标只引用变量；后来打开的面板里的新图标也补上", async () => {
+  const { Icon, Button } = mini;
+  const { Trash, Plus, X } = await import("@xxd/icons/each");
+  let setOpen;
+  function Page() {
+    const [open, s] = React.useState(false);
+    setOpen = s;
+    return app(...Array.from({ length: 20 }, (_, i) => h(Icon, { key: i, icon: i % 2 ? Trash : Plus })), h(Sheet, { open, onOpenChange: s, title: "面板", closable: false }, h(Icon, { icon: X })));
+  }
+  const v = render(h(Page));
+  const icons = v.byClass("ui-icon");
+  assert.equal(icons.length, 20);
+  for (const i of icons) assert.ok(i.props.style.length < 120, `图标自己的样式应该很短：${i.props.style.slice(0, 80)}`);
+  const root = v.byClass("xxd-page")[0].props.style;
+  assert.equal((root.match(/--xi-\d+:url/g) ?? []).length, 2, "两种图标，页面根上两个变量");
+  await act(async () => setOpen(true));
+  await tick(30);
+  assert.equal((v.byClass("xxd-page")[0].props.style.match(/--xi-\d+:url/g) ?? []).length, 3, "面板里的新图标补到页面根上");
+  assert.match(v.byClass("xxd-overlay")[0].props.style, /--xi-2:url/, "浮层根上也有（root-portal 继承不到）");
+  v.unmount();
+});
+
+test("列表行：放开关时点整行就切换，开关自己被点不会切两次；读屏上整行是一个开关", async () => {
+  const { Cell, Switch } = mini;
+  function Row() {
+    const [on, set] = React.useState(false);
+    return app(h(Cell, { title: "完成音效", control: h(Switch, { checked: on, onCheckedChange: set }) }));
+  }
+  const v = render(h(Row));
+  const row = () => v.byClass("xxd-cell")[0];
+  assert.equal(row().props.ariaRole, "switch");
+  assert.equal(row().props.ariaChecked, false);
+  assert.equal(row().props.ariaLabel, "完成音效");
+  await act(async () => row().props.onClick());
+  assert.equal(row().props.ariaChecked, true, "点整行打开");
+  let stopped = false;
+  await act(async () => v.byClass("xxd-choice")[0].props.onClick({ stopPropagation: () => (stopped = true) }));
+  assert.equal(stopped, true, "点开关本身不冒泡到行上");
+  assert.equal(row().props.ariaChecked, false);
+  assert.equal(v.byClass("xxd-choice")[0].props.ariaHidden, true, "开关本身对读屏隐藏，整行代表它");
+  v.unmount();
+});
+
+test("底部：有底部按钮条时页面底下留出它的高度，轻提示浮在它上面；自定义标签栏跟着设置页的修改变", async () => {
+  const { BottomBar, Button, TabBarHost, useXxd: use } = mini;
+  const v = render(app(h(BottomBar, null, h(Button, { variant: "primary" }, "新建"))));
+  const page = v.byClass("xxd-page")[0];
+  assert.ok(cls(page).includes("is-has-bottom"));
+  assert.match(page.props.style, /--bottom-inset:calc\(var\(--bottombar-h\) \+ env\(safe-area-inset-bottom\)\)/);
+  v.unmount();
+  const items = [{ value: "a", label: "甲", url: "/pages/a/index" }, { value: "b", label: "乙", url: "/pages/b/index" }];
+  let update;
+  function Settings() {
+    update = use().update;
+    return null;
+  }
+  const host = render(h(TabBarHost, { items }));
+  const settings = render(app(h(Settings)));
+  assert.ok(!cls(host.byClass("xxd-tabbar-host")[0]).includes("is-theme-dark"));
+  await act(async () => update({ theme: "dark" }));
+  assert.ok(cls(host.byClass("xxd-tabbar-host")[0]).includes("is-theme-dark"), "设置页改成暗色，自定义标签栏跟着变");
+  host.unmount();
+  settings.unmount();
+});
+
+test("数量加减、日期滚轮：到头了按钮变灰；2 月的天数跟着年份变", async () => {
+  const { Stepper, DatePicker } = mini;
+  function S() {
+    const [n, set] = React.useState(1);
+    return app(h(Stepper, { value: n, onValueChange: set, min: 1, max: 2, label: "杯数" }));
+  }
+  const v = render(h(S));
+  const btns = () => v.all((n) => n.type === "button");
+  assert.ok(btns()[0].props.disabled, "到最小值，减一变灰");
+  await act(async () => btns()[1].props.onClick());
+  assert.equal(v.byClass("xxd-stepper__value")[0].props.children, 2);
+  assert.ok(btns()[1].props.disabled, "到最大值，加一变灰");
+  v.unmount();
+  const d = render(app(h(DatePicker, { open: true, onOpenChange: () => {}, value: "2024-02-10", onConfirm: () => {} })));
+  await tick(30);
+  const days = () => d.all((n) => n.type === "picker-view-column")[2].props.children.length;
+  assert.equal(days(), 29, "2024 年 2 月 29 天");
+  const wheel = d.all((n) => n.type === "picker-view")[0];
+  const yearIdx = d.all((n) => n.type === "picker-view-column")[0].props.children.findIndex((c) => c.key === "2025");
+  await act(async () => wheel.props.onChange({ detail: { value: [yearIdx, 1, 9] } }));
+  assert.equal(days(), 28, "换到 2025 年变成 28 天");
+  d.unmount();
+});

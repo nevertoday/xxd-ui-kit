@@ -26,6 +26,10 @@
 }
 
 .xxd-searchbar__cancel {
+  display: flex;
+  align-items: center;
+  min-height: var(--hit-min);
+  padding: 0 var(--space-1);
   color: var(--action-text);
   font-size: var(--text-lg);
 }

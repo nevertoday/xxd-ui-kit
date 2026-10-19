@@ -13,3 +13,8 @@
 .xxd-cluster {
   align-items: center;
 }
+
+/* 页面底部留出标签栏、按钮条和安全区（XxdPage 算好的 --bottom-inset） */
+.xxd-page.is-has-bottom {
+  padding-bottom: var(--bottom-inset);
+}

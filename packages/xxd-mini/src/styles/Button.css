@@ -5,7 +5,26 @@
   margin: 0;
 }
 
-/* 手机上点得到：按钮至少 --hit-min（44px）高的点击区（网页版靠 ::after 撑开，这里同样） */
+/* 点按区（原则第 13 节，MINI-REVIEW-PLAN I1）：看得见的大小不变，四周撑到至少 --hit-min。
+   按按钮自己的大小算：网页版按 --control-h 算，小号按钮只撑到 36px，而且只往上下撑 */
+.xxd-btn.xxd-btn:after,
+button.xxd-btn.xxd-btn:after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--hit-min));
+  height: max(100%, var(--hit-min));
+  border: 0;
+  border-radius: 0;
+  transform: translate(-50%, -50%);
+}
+
+/* 只有图标的按钮没有字要截断：不裁，点按区才撑得出去 */
+.xxd-btn.is-icon-only {
+  overflow: visible;
+}
 .xxd-btn.is-block {
   display: flex;
   width: 100%;

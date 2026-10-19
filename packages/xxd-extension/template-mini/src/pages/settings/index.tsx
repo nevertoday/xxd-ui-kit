@@ -1,14 +1,13 @@
 import { View } from "@tarojs/components";
-import { AppearanceSettings, TabBar, XxdPage } from "@xxd/mini";
+import { AppearanceSettings, XxdPage } from "@xxd/mini";
 import { TABS } from "../../tabs";
 
 export default function Settings() {
   return (
-    <XxdPage tabBar>
+    <XxdPage tabBar={TABS}>
       <View style="padding-top:16px">
         <AppearanceSettings />
       </View>
-      <TabBar items={TABS} value="settings" />
     </XxdPage>
   );
 }

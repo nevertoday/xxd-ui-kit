@@ -7,3 +7,24 @@
   background: var(--disabled-bg);
   color: var(--disabled-ink);
 }
+
+/* 能点的标签：点按区上下撑到 --hit-min（看得见的还是 28px）。不裁，撑出去的部分才点得到 */
+.xxd-chip.is-interactive {
+  position: relative;
+  overflow: visible;
+}
+
+.xxd-chip.is-interactive:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--hit-min));
+  height: max(100%, var(--hit-min));
+  transform: translate(-50%, -50%);
+}
+
+/* 选中的标签：边用满色（网页版是 28% 的淡边），手机上没有悬停，扫一眼要看得出选了哪个（MINI-REVIEW-PLAN A5） */
+.xxd-chip.is-pressed {
+  border-color: var(--action-text);
+}

@@ -512,6 +512,52 @@
       ],
       "summary": "折线、柱状、迷你折线：画成图片，不用装 ECharts；配色和网页版同一个算法。",
       "summaryEn": "Line, bar and spark charts drawn as images, no ECharts needed; same palette as the web kit."
+    },
+    {
+      "name": "BottomBar",
+      "zh": "底部按钮条",
+      "en": "BottomBar",
+      "batch": 3,
+      "web": [],
+      "blocks": [
+        "xxd-bottombar"
+      ],
+      "summary": "固定在底部的一排按钮：自动留安全区、给页面底部留位置，有标签栏时摞在它上面。",
+      "summaryEn": "A fixed row of buttons at the bottom: it keeps the safe area, reserves room at the end of the page and sits above the tab bar."
+    },
+    {
+      "name": "Stepper",
+      "zh": "数量加减",
+      "en": "Stepper",
+      "batch": 3,
+      "web": [],
+      "blocks": [
+        "xxd-stepper"
+      ],
+      "summary": "减一、数字、加一：件数、份数、人数，到头了按钮变灰。",
+      "summaryEn": "Minus, number, plus for quantities; the buttons disable at the limits."
+    },
+    {
+      "name": "DatePicker",
+      "zh": "日期滚轮",
+      "en": "DatePicker",
+      "batch": 3,
+      "web": [],
+      "blocks": [],
+      "summary": "年月日、时分的滚轮，天数跟着年月变。",
+      "summaryEn": "Wheels for dates and times; the days follow the year and month."
+    },
+    {
+      "name": "Result",
+      "zh": "结果页",
+      "en": "Result",
+      "batch": 3,
+      "web": [],
+      "blocks": [
+        "xxd-result"
+      ],
+      "summary": "提交成功、付款失败、审核中：一个意义色的图标、一句话、下一步。",
+      "summaryEn": "Submitted, payment failed, under review: a tone icon, one sentence and the next step."
     }
   ],
   "has": {}

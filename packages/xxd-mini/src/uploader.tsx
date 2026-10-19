@@ -118,6 +118,7 @@ export function Uploader({ value, onChange, max = 9, upload, concurrency = 3, ma
           {item.status === "uploading" && (
             <View className="xxd-uploader__veil" {...a11y({ role: "progressbar", label: t.loading, valuenow: Math.round(item.progress ?? 0), valuemin: 0, valuemax: 100 })}>
               <Text>{Math.round(item.progress ?? 0)}%</Text>
+              <View className="xxd-uploader__bar" style={`transform:scaleX(${Math.max(0, Math.min(100, item.progress ?? 0)) / 100})`} />
             </View>
           )}
           {item.status === "error" && (

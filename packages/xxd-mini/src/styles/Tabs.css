@@ -14,7 +14,9 @@
 .xxd-tabs > .is-role-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: var(--space-1-5);
+  min-width: var(--hit-min);
   height: max(var(--hit-min), var(--tab-h, var(--control-h)));
 }
 

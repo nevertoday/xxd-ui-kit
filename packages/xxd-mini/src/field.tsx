@@ -1,6 +1,6 @@
 // 输入框：标签、说明、出错、字数。网页版的 .xxd-field / .xxd-input / .xxd-textarea。
 import { Input as TaroInput, Textarea as TaroTextarea, View, Text } from "@tarojs/components";
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import "../styles/field.mini.css";
 import { a11y } from "./aria";
 import { useAdjustPosition } from "./keyboard";
@@ -21,11 +21,17 @@ export interface FieldProps {
 
 // 字段的标签字：里面的输入框拿它当读屏名字（小程序里没有 <label for>）
 const FieldLabel = createContext<string | undefined>(undefined);
+// 字段里的输入框把字数交给字段：说明在左、字数在右，放一行（MINI-REVIEW-PLAN U6）
+type CounterInfo = { length: number; max: number; over: boolean };
+const FieldMeta = createContext<((info: CounterInfo | null) => void) | null>(null);
 
 /** 一个字段：标签 + 输入框 + 说明 / 出错 */
 export function Field({ label, help, error, optional, children, className }: FieldProps) {
   const { lang } = useXxd();
+  const [counter, setCounter] = useState<CounterInfo | null>(null);
+  const report = useRef((info: CounterInfo | null) => setCounter((prev) => (prev && info && prev.length === info.length && prev.max === info.max && prev.over === info.over ? prev : info))).current;
   return (
+    <FieldMeta.Provider value={report}>
     <FieldLabel.Provider value={typeof label === "string" ? label : undefined}>
     <View className={cx("xxd-field", mods({ invalid: Boolean(error) }), className)}>
       {label != null && (
@@ -35,16 +41,33 @@ export function Field({ label, help, error, optional, children, className }: Fie
         </Text>
       )}
       {children}
-      {error ? (
-        <Text className="xxd-error" {...a11y({ role: "alert", live: "assertive" })}>
-          {error}
-        </Text>
-      ) : help != null ? (
-        <Text className="xxd-help">{help}</Text>
-      ) : null}
+      {(error || help != null || counter) && (
+        <View className="xxd-field__meta">
+          {error ? (
+            <Text className="xxd-error" {...a11y({ role: "alert", live: "assertive" })}>
+              {error}
+            </Text>
+          ) : help != null ? (
+            <Text className="xxd-help">{help}</Text>
+          ) : null}
+          {counter && <Counter length={counter.length} max={counter.max} over={counter.over} />}
+        </View>
+      )}
     </View>
     </FieldLabel.Provider>
+    </FieldMeta.Provider>
   );
+}
+
+/** 字数：在字段里交给字段画（和说明一行），不在字段里自己画 */
+function useCounter(show: boolean, length: number, max: number | undefined, over: boolean): ReactNode {
+  const report = useContext(FieldMeta);
+  const on = show && max != null;
+  useLayoutEffect(() => {
+    if (report) report(on ? { length, max: max!, over } : null);
+  });
+  useLayoutEffect(() => () => report?.(null), [report]);
+  return on && !report ? <Counter length={length} max={max!} over={over} /> : null;
 }
 
 /** 输入框的读屏名字：自己的 label → 外面 Field 的标签 → 提示字。H5 里还要交给里面真正的 <input> */
@@ -150,6 +173,7 @@ export function Input({ value, defaultValue, onValueChange, placeholder, disable
   const [current, set] = useValue(value, defaultValue, onValueChange);
   const [shown, mark] = useNativeValue(current);
   const { limit, over, native: nativeMax } = useLimit(maxLength, counter);
+  const counterNode = useCounter(Boolean(counter), charCount(current), maxLength, over);
   const { name, native } = useInputName(label, placeholder);
   const [id] = useState(() => nextId("input"));
   return (
@@ -177,7 +201,7 @@ export function Input({ value, defaultValue, onValueChange, placeholder, disable
         {...native}
         {...a11y({ label: name, disabled })}
       />
-      {counter && maxLength != null && <Counter length={charCount(current)} max={maxLength} over={over} />}
+      {counterNode}
     </>
   );
 }
@@ -193,13 +217,14 @@ export function Textarea({ value, defaultValue, onValueChange, placeholder, disa
   const [current, set] = useValue(value, defaultValue, onValueChange);
   const [shown, mark] = useNativeValue(current);
   const { limit, over, native: nativeMax } = useLimit(maxLength, counter);
+  const counterNode = useCounter(Boolean(counter), charCount(current), maxLength, over);
   const { name, native } = useInputName(label, placeholder);
   return (
     <>
       <TaroTextarea
         className={cx("xxd-textarea", mods({ invalid, disabled, autosize: autoHeight }), className)}
         placeholderClass="is-placeholder"
-        style={autoHeight ? undefined : `height:${rows * 22 + 18}px`}
+        style={autoHeight ? undefined : `--rows:${rows}`}
         value={shown}
         placeholder={placeholder}
         disabled={disabled || undefined}
@@ -217,7 +242,7 @@ export function Textarea({ value, defaultValue, onValueChange, placeholder, disa
         {...native}
         {...a11y({ label: name, disabled })}
       />
-      {counter && maxLength != null && <Counter length={charCount(current)} max={maxLength} over={over} />}
+      {counterNode}
     </>
   );
 }

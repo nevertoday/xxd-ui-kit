@@ -1,6 +1,6 @@
 // 第二批组件的演示
 import { View } from "@tarojs/components";
-import { Cell, CellGroup, Chart, Collapse, LoadMore, Picker, Progress, SearchBar, Stack, Stat, Stats, Steps, Swipe, Text, Uploader, useToast, type UploadItem } from "@xxd/mini";
+import { Cell, CellGroup, Chart, Collapse, LoadMore, Picker, Progress, SearchBar, Stack, Stat, Stats, Steps, Swipe, SwipeGroup, Text, Uploader, useToast, type UploadItem } from "@xxd/mini";
 import { useState } from "react";
 import { IMAGES } from "./batch1";
 import type { Demo } from "./types";
@@ -45,7 +45,8 @@ function SwipeDemo({ tr }: { tr: Tr }) {
   const toast = useToast();
   return (
     <View>
-      <CellGroup note={tr("往左滑出操作。", "Swipe left for actions.")}>
+      <CellGroup note={tr("往左滑出操作；一次只开一行。", "Swipe left for actions; one row opens at a time.")}>
+        <SwipeGroup>
         {[tr("交周报", "Send the report"), tr("买咖啡豆", "Buy coffee beans"), tr("给猫剪指甲", "Trim the cat's claws")].map((t) => (
           <Swipe
             key={t}
@@ -57,6 +58,7 @@ function SwipeDemo({ tr }: { tr: Tr }) {
             <Cell title={t} />
           </Swipe>
         ))}
+        </SwipeGroup>
       </CellGroup>
     </View>
   );

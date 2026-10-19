@@ -15,12 +15,15 @@ export function readLang(): Lang {
   if (process.env.TARO_ENV === "h5" && /[?&#]lang=en\b/.test(globalThis.location?.href ?? "")) return "en";
   return "zh";
 }
+/** 换语言时发的事件：自带的自定义标签栏不在 App 下面，靠它知道 */
+export const LANG_EVENT = "xxd-demo:lang";
 export function saveLang(lang: Lang) {
   try {
     Taro.setStorageSync(KEY, lang);
   } catch {
     /* 存不了就只这一次 */
   }
+  Taro.eventCenter?.trigger?.(LANG_EVENT, lang);
 }
 
 export const LangCtx = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "zh", setLang: () => {} });

@@ -1,0 +1,55 @@
+/* 结果页：内容在屏幕上三分之一处，图标用意义色，其余还是墨色和灰（不整块上色） */
+.xxd-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(var(--space-8) * 2) var(--space-6) var(--space-6);
+  text-align: center;
+}
+
+.xxd-result__icon {
+  margin-bottom: var(--space-4);
+  background-color: var(--muted);
+}
+
+.xxd-result.is-tone-success .xxd-result__icon {
+  background-color: var(--success);
+}
+
+.xxd-result.is-tone-danger .xxd-result__icon {
+  background-color: var(--danger);
+}
+
+.xxd-result.is-tone-warning .xxd-result__icon {
+  background-color: var(--warning);
+}
+
+.xxd-result__title {
+  color: var(--ink);
+  font: var(--weight-strong) var(--text-xl) / var(--leading-xl) var(--font-body);
+}
+
+.xxd-result__desc {
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.xxd-result__extra {
+  align-self: stretch;
+  margin-top: var(--space-6);
+}
+
+.xxd-result__actions {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.xxd-result__actions > .xxd-btn {
+  width: 100%;
+  height: var(--hit-min);
+}

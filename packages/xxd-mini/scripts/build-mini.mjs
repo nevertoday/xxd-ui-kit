@@ -602,10 +602,12 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 `;
 }
 
-/** 组件样式加起来的上限（§11）：压缩后 64 KB */
+/** 组件样式加起来的上限（§11）：压缩后 68 KB。这是 38 个组件全用上的总量；按需引入，没用到的组件样式不进包 */
 // 2026-10-15 从 60 KB 调到 64 KB：设计师评审加了禁用、浮层抬起一层、半档间距这些令牌（亮暗各一份）和浮层规则，约 2 KB。
+// 2026-10-18 从 64 KB 调到 68 KB：小程序对抗测试（MINI-REVIEW-PLAN D31）加了底部按钮条、数量加减、日期滚轮、结果页四个组件，
+// 还有点按区、面板拖动和键盘的规则，约 3.5 KB。色阶计划（COLOR-SCALE-PLAN S3）去掉预先算的混色以后再看能不能收回。
 // 微信主包上限 2 MB，样式这一块仍然很小；再往上涨要先看能不能删。
-export const SIZE_BUDGET = 64 * 1024;
+export const SIZE_BUDGET = 68 * 1024;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tokensJson = join(tokensDir, "dist/tokens.json");

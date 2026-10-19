@@ -1,0 +1,28 @@
+/* 数量加减：一个细线框，中间是数字（等宽数字，变了宽度不跳） */
+.xxd-stepper {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h-sm);
+  border: 1px solid var(--line-control);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+}
+
+.xxd-stepper > .xxd-btn {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.xxd-stepper__value {
+  min-width: var(--control-h-sm);
+  padding: 0 var(--space-1);
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-sm) / 1 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.xxd-stepper.is-disabled .xxd-stepper__value {
+  color: var(--disabled-ink);
+}

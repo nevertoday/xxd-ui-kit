@@ -27,7 +27,7 @@ export interface EmptyProps {
 export function Empty({ icon, title, description, action, size, className }: EmptyProps) {
   return (
     <View className={cx("xxd-empty", mods({ size: size === "md" ? undefined : size }), className)}>
-      {icon && <Icon icon={icon} size={size === "lg" ? 32 : 24} />}
+      {icon && <Icon icon={icon} size={size === "sm" ? 24 : size === "lg" ? 40 : 32} />}
       <TaroText className="xxd-empty__title">{title}</TaroText>
       {description != null && <TaroText className="xxd-empty__text">{description}</TaroText>}
       {action != null && <View className="xxd-empty__actions">{action}</View>}
@@ -125,7 +125,7 @@ export function Tag({ children, pressed, onPressedChange, disabled, className }:
   const interactive = Boolean(onPressedChange);
   return (
     <View
-      className={cx("xxd-chip", mods({ pressed, disabled }), className)}
+      className={cx("xxd-chip", mods({ pressed, disabled, interactive }), className)}
       hoverClass={interactive && !disabled ? "is-hover" : "none"}
       onClick={interactive && !disabled ? () => onPressedChange?.(!pressed) : undefined}
       {...a11y(interactive ? { role: "button", pressed: Boolean(pressed), disabled } : {})}

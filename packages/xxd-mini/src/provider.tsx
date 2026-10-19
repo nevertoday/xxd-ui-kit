@@ -1,5 +1,6 @@
 // XxdProvider：放在 app.tsx，管外观设置（读写存储、跟随系统）、语言、轻提示。
 // 小程序里 App 的 children 就是各个页面，所以所有页面共用这一份：在设置页改了主色，别的页面也跟着变。
+import { eventCenter } from "@tarojs/taro";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { XxdSettings } from "@xxd/tokens";
 import { DEFAULT_SETTINGS, DEFAULT_STORAGE_KEY, readSettings, resolveAppearance, systemTheme, watchSystemTheme, writeSettings, type Resolved, type Theme } from "./appearance";
@@ -58,6 +59,15 @@ export function XxdProvider({ children, lang = "zh", storageKey = DEFAULT_STORAG
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
   useEffect(() => watchSystemTheme(setSystem), []);
+  // 自定义标签栏（TabBarHost）不在这棵树下面：设置改了发个事件告诉它
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    eventCenter?.trigger?.("xxd:settings", settings);
+  }, [settings]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const update = useCallback(

@@ -134,9 +134,9 @@ const headings = [
 
   <h2 class="site-h2" id="components">{T.h.components}</h2>
   {
-    [1, 2].map((batch) => (
+    [1, 2, 3].map((batch) => (
       <section class="site-mini-group">
-        <h3 class="site-h3">{batch === 1 ? L.miniBatch1 : L.miniBatch2}</h3>
+        <h3 class="site-h3">{batch === 1 ? L.miniBatch1 : batch === 2 ? L.miniBatch2 : L.miniBatch3}</h3>
         <ul class="site-mini-list">
           {items.filter((c) => c.batch === batch).map((c) => (
             <li>

@@ -3,9 +3,10 @@
 import manifest from "@xxd/mini/mini.json";
 import batch1 from "../../../xxd-mini-demo/src/demos/batch1.tsx?raw";
 import batch2 from "../../../xxd-mini-demo/src/demos/batch2.tsx?raw";
+import batch3 from "../../../xxd-mini-demo/src/demos/batch3.tsx?raw";
 import { withImports } from "./markup.js";
 
-const SOURCES = [batch1, batch2];
+const SOURCES = [batch1, batch2, batch3];
 
 /** Button → button，SearchBar → search-bar */
 export const miniSlug = (name) => name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();

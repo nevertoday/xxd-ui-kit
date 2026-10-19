@@ -71,13 +71,13 @@ export function NavBar({ title, back, leading, trailing, divider = true, classNa
   // 导航栏这一条的高度：胶囊上下各留同样的空
   const barHeight = Math.max(rect.height + (rect.top - rect.statusBar) * 2, 40);
   return (
-    <View className={cx("xxd-topbar", "xxd-navbar", divider && "is-divider", className)} style={`padding-top:${rect.statusBar}px;height:${rect.statusBar + barHeight}px;padding-right:${rect.right}px`} {...a11y({ role: "navigation" })}>
+    <View className={cx("xxd-topbar", "xxd-navbar", divider && "is-divider", className)} style={`padding-top:${rect.statusBar}px;height:${rect.statusBar + barHeight}px;padding-right:${rect.right}px;--nav-side:${rect.right}px;--status-bar:${rect.statusBar}px`} {...a11y({ role: "navigation" })}>
       {canBack && <Button variant="ghost" icon={ChevronLeft} label={t.back} onClick={onBack} className="xxd-navbar__back" />}
       {leading}
       <Text className="xxd-topbar__title" {...a11y({ role: "heading", level: 1 })}>
         {title}
       </Text>
-      {trailing}
+      {trailing != null && <View className="xxd-navbar__trailing">{trailing}</View>}
     </View>
   );
 }

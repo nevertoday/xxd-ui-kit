@@ -51,6 +51,12 @@ export const offKeyboardHeightChange = (f) => keyboard.delete(f);
 export const onWindowResize = (f) => resize.add(f);
 export const offWindowResize = (f) => resize.delete(f);
 export const useRouter = () => ({ params: {} });
+const listeners = new Map();
+export const eventCenter = {
+  on: (name, fn) => (listeners.get(name) ?? listeners.set(name, new Set()).get(name)).add(fn),
+  off: (name, fn) => listeners.get(name)?.delete(fn),
+  trigger: (name, ...args) => listeners.get(name)?.forEach((fn) => fn(...args)),
+};
 import { useEffect, useRef } from "react";
 const pageHook = (set) => (fn) => {
   const ref = useRef(fn);

@@ -21,13 +21,18 @@ export interface PickerProps {
   /** 每一列选中的值 */
   value: string[];
   onConfirm: (value: string[]) => void;
+  /** 滚轮停下时回调（还没点确定）。联动（选了省，城市跟着变）：在这里改 columns */
+  onChange?: (value: string[]) => void;
   confirmLabel?: string;
 }
 
-export function Picker({ open, onOpenChange, title, columns, value, onConfirm, confirmLabel }: PickerProps) {
+export function Picker({ open, onOpenChange, title, columns, value, onConfirm, onChange, confirmLabel }: PickerProps) {
   const { t } = useXxd();
   const toIndex = (v: string[]) => columns.map((col, i) => Math.max(0, col.findIndex((o) => o.value === v[i])));
-  const [index, setIndex] = useState<number[]>(() => toIndex(value));
+  const [rawIndex, setIndex] = useState<number[]>(() => toIndex(value));
+  // 列变短了（联动：2 月只有 28 天）：选中的位置收进范围里
+  const index = columns.map((col, c) => Math.min(rawIndex[c] ?? 0, Math.max(0, col.length - 1)));
+  const valueAt = (idx: number[]) => idx.map((i, c) => columns[c]?.[i]?.value);
   // 每次打开都从当前的值开始
   useEffect(() => {
     if (open) setIndex(toIndex(value));
@@ -47,7 +52,7 @@ export function Picker({ open, onOpenChange, title, columns, value, onConfirm, c
         <Button
           variant="primary"
           onClick={() => {
-            onConfirm(index.map((i, c) => columns[c][i]?.value));
+            onConfirm(valueAt(index));
             onOpenChange(false);
           }}
         >
@@ -55,7 +60,11 @@ export function Picker({ open, onOpenChange, title, columns, value, onConfirm, c
         </Button>
       }
     >
-      <PickerView className="xxd-wheel" indicatorClass="xxd-wheel__indicator" indicatorStyle="height:44px" maskClass="xxd-wheel__mask" value={index} immediateChange onChange={(e) => setIndex(e.detail.value as number[])}>
+      <PickerView className="xxd-wheel" indicatorClass="xxd-wheel__indicator" indicatorStyle="height:44px" maskClass="xxd-wheel__mask" value={index} immediateChange onChange={(e) => {
+          const next = e.detail.value as number[];
+          setIndex(next);
+          onChange?.(valueAt(next));
+        }}>
         {columns.map((col, c) => (
           <PickerViewColumn key={c}>
             {col.map((o) => (

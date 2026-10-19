@@ -21,7 +21,7 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 52px;
+  min-height: var(--tabbar-h);
   color: var(--muted);
   transition: color var(--motion-quick) ease;
 }
@@ -40,7 +40,7 @@
 }
 
 .xxd-tabbar__label {
-  font: var(--weight-medium) var(--text-2xs) / var(--leading-xs) var(--font-body);
+  font: var(--weight-medium) var(--text-tab) / var(--leading-xs) var(--font-body);
 }
 
 .xxd-tabbar__badge {
@@ -49,8 +49,8 @@
   left: 14px;
   min-width: 16px;
   height: 16px;
-  padding: 0 4px;
-  font-size: 10px;
+  padding: 0 var(--space-1);
+  font-size: var(--text-tab);
   line-height: 16px;
 }
 
@@ -63,7 +63,9 @@
   left: 18px;
 }
 
-/* 放了固定标签栏的页面：内容底下留出它的高度 */
-.xxd-page.is-has-tabbar {
-  padding-bottom: calc(53px + env(safe-area-inset-bottom));
+/* 页面底部的留白在 BottomBar.css（.xxd-page.is-has-bottom，按 --bottom-inset） */
+
+/* 自带的自定义标签栏（custom-tab-bar 里的 TabBarHost）：不固定，占满那一条 */
+.xxd-tabbar-host {
+  color: var(--ink);
 }

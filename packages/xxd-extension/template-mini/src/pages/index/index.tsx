@@ -1,6 +1,6 @@
 import { View } from "@tarojs/components";
 import { FileText, Plus } from "@xxd/icons/each";
-import { Button, Cell, CellGroup, Empty, Field, Input, Sheet, TabBar, Text, useToast, XxdPage } from "@xxd/mini";
+import { BottomBar, Button, Cell, CellGroup, Empty, Field, Input, Sheet, Text, useToast, XxdPage } from "@xxd/mini";
 import { useState } from "react";
 import { TABS } from "../../tabs";
 
@@ -17,7 +17,7 @@ export default function Index() {
     toast("已添加", { tone: "success" });
   };
   return (
-    <XxdPage tabBar>
+    <XxdPage tabBar={TABS}>
       <View className="page-head">
         <Text variant="heading1">__APP_NAME__</Text>
         <Text variant="secondary">用 @xxd/mini 搭的小程序：直角、墨色、暖黑、系统字体。</Text>
@@ -31,17 +31,17 @@ export default function Index() {
       ) : (
         <Empty icon={FileText} title="还没有内容" description="点下面的「新建」加一条。" />
       )}
-      <View className="page-block">
-        <Button variant="primary" block icon={Plus} onClick={() => setOpen(true)}>
+      {/* 主操作放底部按钮条：自动留安全区，页面底下留出它的高度 */}
+      <BottomBar>
+        <Button variant="primary" icon={Plus} onClick={() => setOpen(true)}>
           新建
         </Button>
-      </View>
+      </BottomBar>
       <Sheet open={open} onOpenChange={setOpen} title="新建" footer={<Button variant="primary" disabled={!draft.trim()} onClick={add}>添加</Button>}>
         <Field label="内容">
           <Input value={draft} onValueChange={setDraft} placeholder="写点什么" focus={open} confirmType="done" onConfirm={add} />
         </Field>
       </Sheet>
-      <TabBar items={TABS} value="index" />
     </XxdPage>
   );
 }

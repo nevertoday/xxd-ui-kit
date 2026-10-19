@@ -59,3 +59,12 @@ button.xxd-chip::after {
   width: auto;
   height: auto;
 }
+
+/* 手机上的字不小于 12px（MINI-REVIEW-PLAN D29）：网页版 11px 的那一档在小程序里抬到 12px；
+   只有标签栏的字和角标数字用 --text-tab（11px），和系统自带的标签栏一样 */
+page,
+.xxd-h5-root,
+.xxd-overlay,
+.xxd-tabbar-host {
+  --text-2xs: var(--text-xs);
+}

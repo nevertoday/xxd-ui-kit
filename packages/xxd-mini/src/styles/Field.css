@@ -25,7 +25,31 @@
   font-weight: var(--weight-regular);
 }
 
-/* 字数在右边 */
+/* 说明（或出错）在左、字数在右，放一行 */
+.xxd-field__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.xxd-field__meta > .xxd-help,
+.xxd-field__meta > .xxd-error {
+  flex: 1;
+  min-width: 0;
+}
+
 .xxd-help.is-counter {
+  flex: none;
   justify-self: end;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.xxd-help.is-counter.is-over {
+  color: var(--danger);
+}
+
+/* 多行输入框按行数定高：行高 × 行数 + 上下内边距 + 边框（不在组件里写死数字） */
+.xxd-textarea:not(.is-autosize) {
+  height: calc(var(--rows, 3) * var(--leading-md) + var(--space-2) * 2 + 2px);
 }

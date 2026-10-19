@@ -140,3 +140,17 @@
 .xxd-sheet__action.is-cancel {
   border-top: 8px solid var(--wash);
 }
+
+/* 一列操作：标题和操作一样居中（MINI-REVIEW-PLAN A4） */
+.xxd-sheet.is-actions .xxd-sheet__head {
+  justify-content: center;
+  padding-right: var(--space-4);
+}
+
+.xxd-sheet.is-actions .xxd-sheet__title {
+  flex: none;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}

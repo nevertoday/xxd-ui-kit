@@ -3,11 +3,13 @@
 import { View } from "@tarojs/components";
 // 按名字导入 API：Taro 编 H5 时只改写它自己处理过的源码里的 Taro.xxx，组件库在 node_modules 里，默认导出上没有这些 API
 import { setBackgroundColor, setBackgroundTextStyle, setNavigationBarColor, useDidHide, useDidShow } from "@tarojs/taro";
-import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import "../styles/layout.mini.css";
 import { a11y } from "./aria";
-import { LayerProvider, useLayerStack } from "./overlay";
+import { IconTableCtx, iconVars } from "./icon";
+import { BottomBarCtx, BottomInsetCtx, LayerProvider, useLayerStack } from "./overlay";
 import { useXxd } from "./provider";
+import { TabBar, tabValueFor, type TabBarItem } from "./tabbar";
 import { ToastRegion } from "./toast";
 import { cx, IS_H5, nextId, styleText } from "./util";
 
@@ -21,11 +23,20 @@ export interface XxdPageProps {
   customNav?: boolean;
   /** 页面底色：bg（缺省，网页版的页面底）或 paper（白纸，表单页常用） */
   surface?: "bg" | "paper";
-  /** 页面底部放了固定的 TabBar：内容底下留出它的高度 */
-  tabBar?: boolean;
+  /**
+   * 底部标签栏。传标签的列表（推荐）：微信里由自带的自定义标签栏（custom-tab-bar 里的 TabBarHost）来画，
+   * 页面不用管；H5 里 Taro 不画自定义标签栏，这里画一个。传 true：页面里自己放了固定的 TabBar，这里只留出它的高度
+   */
+  tabBar?: boolean | TabBarItem[];
 }
 
 export function XxdPage({ children, className, style, safeArea = true, customNav = false, surface = "bg", tabBar = false }: XxdPageProps) {
+  const tabItems = Array.isArray(tabBar) ? tabBar : null;
+  // 页面自己要给标签栏留位置吗：传 true 时是；传列表时只有 H5 是（微信的自带标签栏不占页面的地方）
+  const ownTabBar = tabBar === true || (tabItems != null && IS_H5);
+  // 底部按钮条（BottomBar）登记上来
+  const [bars, setBars] = useState(0);
+  const barApi = useMemo(() => ({ add: () => setBars((n) => n + 1), remove: () => setBars((n) => n - 1) }), []);
   const x = useXxd();
   const bg = surface === "paper" ? x.vars["--paper"] : x.vars["--bg"];
   const layers = useLayerStack();
@@ -34,6 +45,13 @@ export function XxdPage({ children, className, style, safeArea = true, customNav
   const [active, setActive] = useState(true);
   useDidShow(() => setActive(true));
   useDidHide(() => setActive(false));
+  // 图标表：子组件渲染时登记，登记了新的就在 layout effect 里再画一次页面根（和第一次渲染一起发出去，不会先空一帧）
+  const iconMap = useRef(new Map<string, string>());
+  const [iconCount, setIconCount] = useState(0);
+  const icons = useMemo(() => ({ map: iconMap.current, version: iconCount, sync: () => setIconCount(iconMap.current.size) }), [iconCount]);
+  useLayoutEffect(() => {
+    if (iconMap.current.size !== iconCount) setIconCount(iconMap.current.size);
+  });
 
   // layout effect：和第一次渲染一起发出去，强制亮 / 暗时导航栏不先闪一下系统的颜色
   useLayoutEffect(() => {
@@ -76,8 +94,22 @@ export function XxdPage({ children, className, style, safeArea = true, customNav
     };
   }, [layers.open, id]);
 
+  // 底部要留多少（MINI-REVIEW-PLAN U4）：标签栏 + 底部按钮条 + 安全区。页面底部的留白、轻提示、浮动按钮都用 --bottom-inset
+  const safe = "env(safe-area-inset-bottom)";
+  const hasBar = bars > 0;
+  const inset = `calc(${ownTabBar ? "var(--tabbar-h) + " : ""}${hasBar ? "var(--bottombar-h) + " : ""}${safe})`;
+  const insetVars = `--bottom-inset:${inset};--xxd-bar-bottom:${ownTabBar ? `calc(var(--tabbar-h) + ${safe})` : "0px"};--xxd-bar-safe:${ownTabBar ? "0px" : safe};`;
+  const reserve = ownTabBar || hasBar;
   return (
-    <View id={id} className={cx("xxd-page", x.className, surface === "paper" && "is-surface-paper", safeArea && !tabBar && "is-safe-bottom", tabBar && "is-has-tabbar", className)} style={`${x.style};${styleText(style)}`} {...a11y({ role: "main" })}>
+    <View
+      id={id}
+      className={cx("xxd-page", x.className, surface === "paper" && "is-surface-paper", safeArea && !reserve && "is-safe-bottom", reserve && "is-has-bottom", className)}
+      style={`${x.style};${insetVars}${iconVars(icons)}${styleText(style)}`}
+      {...a11y({ role: "main" })}
+    >
+      <IconTableCtx.Provider value={icons}>
+      <BottomInsetCtx.Provider value={insetVars}>
+      <BottomBarCtx.Provider value={barApi}>
       <LayerProvider value={layers.api}>
         {/* 微信里浮层在 root-portal 里，不在这一层下面：浮层打开时这一层对读屏隐藏 */}
         <View className="xxd-page__body" {...(IS_H5 ? {} : a11y({ hidden: layers.open }))}>
@@ -85,7 +117,11 @@ export function XxdPage({ children, className, style, safeArea = true, customNav
         </View>
         {layers.guard}
       </LayerProvider>
+      </BottomBarCtx.Provider>
+      {tabItems && IS_H5 && <TabBar items={tabItems} value={tabValueFor(tabItems) ?? tabItems[0]?.value} />}
       <ToastRegion active={active} />
+      </BottomInsetCtx.Provider>
+      </IconTableCtx.Provider>
     </View>
   );
 }

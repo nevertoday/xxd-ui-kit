@@ -1,9 +1,9 @@
-// 待办：真能用的一页（也是 @xxd/mini 的试点）。新建、勾选、左滑删除、长按出更多操作、按标签筛选，数据存在本机。
+// 待办：真能用的一页（也是 @xxd/mini 的试点）。新建（底部按钮条）、勾选、左滑删除、长按出更多操作（轻震一下）、按标签筛选，数据存在本机。
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { CheckSquare, Plus } from "@xxd/icons/each";
-import { ActionSheet, Badge, Button, CellGroup, Checkbox, Dialog, Empty, Field, Input, Segmented, Sheet, Swipe, TabBar, Text, useToast, XxdPage } from "@xxd/mini";
-import { useEffect, useMemo, useState } from "react";
+import { ActionSheet, Badge, BottomBar, Button, CellGroup, Checkbox, Dialog, Empty, Field, Input, Segmented, Sheet, Swipe, SwipeGroup, Text, useLongPress, useToast, XxdPage } from "@xxd/mini";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTr } from "../../i18n";
 import { loadTodos, newId, saveTodos, type Todo } from "../../store";
 import { MAIN_TABS } from "../../tabs";
@@ -46,7 +46,7 @@ export default function TodoPage() {
   const tagLabel = (t: Todo["tag"]) => (t === "work" ? tr("工作", "Work") : t === "life" ? tr("生活", "Life") : "");
 
   return (
-    <XxdPage tabBar>
+    <XxdPage tabBar={MAIN_TABS(tr)}>
       <View className="demo-hero">
         <Text variant="heading1">{tr("今日待办", "Today")}</Text>
         <Text variant="secondary">{todos.length ? tr(`还有 ${openCount} 件没做，做完了 ${doneCount} 件`, `${openCount} to do, ${doneCount} done`) : tr("写下今天要做的事", "Write down what to do today")}</Text>
@@ -66,16 +66,18 @@ export default function TodoPage() {
       </View>
       {shown.length ? (
         <CellGroup>
+          <SwipeGroup>
           {shown.map((t) => (
             <Swipe key={t.id} actions={[{ label: tr("删除", "Delete"), danger: true, onClick: () => remove(t) }]}>
-              <View className="xxd-row todo-row" onLongPress={() => setMenuFor(t)}>
+              <TodoRow onLongPress={() => setMenuFor(t)}>
                 <Checkbox checked={t.done} onCheckedChange={(on) => toggle(t.id, on)} label={t.text}>
                   <Text className={t.done ? "todo-done" : undefined}>{t.text}</Text>
                 </Checkbox>
                 {t.tag !== "none" && <Badge tone={t.tag === "work" ? "action" : undefined}>{tagLabel(t.tag)}</Badge>}
-              </View>
+              </TodoRow>
             </Swipe>
           ))}
+          </SwipeGroup>
         </CellGroup>
       ) : (
         <Empty
@@ -91,11 +93,12 @@ export default function TodoPage() {
           </Button>
         </View>
       )}
-      <View className="todo-fab">
+      {/* 主操作放底部按钮条：页面底下自动留出位置，轻提示浮在它上面，不会盖住最后一行（MINI-REVIEW-PLAN U4） */}
+      <BottomBar>
         <Button variant="primary" icon={Plus} onClick={() => setAdding(true)}>
           {tr("新建", "New")}
         </Button>
-      </View>
+      </BottomBar>
 
       <Sheet
         open={adding}
@@ -150,7 +153,15 @@ export default function TodoPage() {
         confirm={{ label: tr("清掉", "Clear"), danger: true, onClick: () => setTodos((list) => list.filter((t) => !t.done)) }}
       />
 
-      <TabBar items={MAIN_TABS(tr)} value="todo" />
     </XxdPage>
+  );
+}
+
+/** 一行待办：长按出更多操作，长按生效时轻震一下 */
+function TodoRow({ children, onLongPress }: { children?: ReactNode; onLongPress: () => void }) {
+  return (
+    <View className="xxd-row todo-row" onLongPress={useLongPress(onLongPress)}>
+      {children}
+    </View>
   );
 }

@@ -1,0 +1,5 @@
+/* 手机上的空状态：放在内容区的上三分之一处（不贴着上面），图标 32px（MINI-REVIEW-PLAN U5） */
+.xxd-empty:not(.is-size-sm) {
+  padding-top: calc(var(--space-8) * 2);
+  padding-bottom: var(--space-8);
+}

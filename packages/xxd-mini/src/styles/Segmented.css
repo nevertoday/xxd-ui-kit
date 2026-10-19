@@ -1,9 +1,9 @@
-/* 手机上分段选择的每一段至少 32px 高、文字居中 */
+/* 手机上分段选择：每一段 40px 高，加上外框上下各 2px，整条正好 --hit-min（44px），点得到 */
 .xxd-segmented > .is-role-radio {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: calc(var(--control-h) - 4px);
+  height: calc(var(--hit-min) - 4px);
 }
 
 .xxd-segmented.is-size-sm > .is-role-radio {

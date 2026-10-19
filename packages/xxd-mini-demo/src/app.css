@@ -59,10 +59,3 @@
   text-decoration: line-through;
 }
 
-/* 新建按钮浮在标签栏上面 */
-.todo-fab {
-  position: fixed;
-  right: var(--space-4);
-  bottom: calc(68px + env(safe-area-inset-bottom));
-  z-index: var(--z-dock);
-}
