@@ -386,15 +386,24 @@ export function audit(css) {
 
 /* ───────────── 令牌 ───────────── */
 
+/** 色阶的数字令牌 */
+const SCALE_NUMERIC = /^--(gray|accent|success|danger|warning)-(\d+|on)$/;
+
 /** 一组变量写成声明 */
 const declare = (vars, indent = "  ") => Object.entries(vars).map(([k, v]) => `${indent}${k}: ${v};`).join("\n");
 
-/** 小程序版令牌：缺省外观（亮）写在 page 上，暗色写进媒体查询；都算成具体的值 */
-export function tokensCss(modes, mixes) {
+/**
+ * 小程序版令牌：缺省外观（亮）写在 page 上，暗色写进媒体查询；都算成具体的值。
+ * used：组件样式里真的引用了的变量。色阶以后令牌有两百多个（五族 × 12 级 + 用途名），小程序只写用得到的（体积门禁）
+ */
+export function tokensCss(modes, mixes, used) {
   const extra = Object.fromEntries(mixes);
-  const light = appearanceVars({ theme: "light" }, { modes, extra, coarse: true }).vars;
+  // 只筛色阶的数字令牌（--gray-3、--danger-9 这类：给生成器、测试和颜色页用，组件里只写用途名）；
+  // 别的令牌（间距、字号、用途名……）都写上：用户自己的样式里也会用
+  const keep = ([k]) => !used || !SCALE_NUMERIC.test(k) || used.has(k);
+  const light = Object.fromEntries(Object.entries(appearanceVars({ theme: "light" }, { modes, extra, coarse: true }).vars).filter(keep));
   const dark = appearanceVars({ theme: "dark" }, { modes, extra, coarse: true }).vars;
-  const darkOnly = Object.fromEntries(Object.entries(dark).filter(([k, v]) => light[k] !== v));
+  const darkOnly = Object.fromEntries(Object.entries(dark).filter(([k, v]) => keep([k]) && light[k] !== v));
   // page 是小程序的页面根；.xxd-h5-root 是 Taro 编 H5 时的页面根（H5 里没有 page 元素，@xxd/mini 运行时把这个类名挂到 <html> 上）
   return `page,\n.xxd-h5-root {\n  color-scheme: light;\n${declare(light)}\n}\n\n/* 跟随系统暗色（app.json 要开 darkmode）。用户选了强制亮 / 暗时，XxdPage 把算好的变量写在页面根节点上，盖过这里 */\n@media (prefers-color-scheme: dark) {\n  page,\n  .xxd-h5-root {\n    color-scheme: dark;\n${declare(darkOnly, "    ")}\n  }\n}\n`;
 }
@@ -419,7 +428,7 @@ export function themeJson(modes) {
 
 /* ───────────── 主流程 ───────────── */
 
-export function buildMini({ componentsCss, modes, manifest, extraCss = {} }) {
+export function buildMini({ componentsCss, modes, manifest, extraCss = {}, jsSource = "" }) {
   const blocks = new Map();
   for (const c of manifest.components) for (const b of c.blocks) blocks.set(b, c);
   const mixes = new Map();
@@ -517,12 +526,14 @@ export function buildMini({ componentsCss, modes, manifest, extraCss = {} }) {
   const used = [...out.values(), base.join("\n"), extraCss.base ?? ""].join("\n");
   const frames = [...keyframes].filter(([name]) => new RegExp(`\\b${name}\\b`).test(used.replace(/@keyframes\s+[\w-]+/g, ""))).map(([, text]) => text);
   const baseOwn = extraCss.base ? convertBody(extraCss.base, mixes, { known }) : "";
-  const tokens = `${HEADER}\n${BANNER}\n${tokensCss(modes, mixes)}\n/* 基础（网页版改写） */\n${base.join("\n\n")}\n\n/* 基础（小程序专有） */\n${baseOwn}\n\n/* 动画 */\n${frames.join("\n\n")}\n`;
+  // 用到的变量：组件样式、基础样式、组件 JS 里行内写的 var(--…)
+  const usedVars = new Set([...`${used}\n${baseOwn}\n${jsSource}`.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1]));
+  const tokens = `${HEADER}\n${BANNER}\n${tokensCss(modes, mixes, usedVars)}\n/* 基础（网页版改写） */\n${base.join("\n\n")}\n\n/* 基础（小程序专有） */\n${baseOwn}\n\n/* 动画 */\n${frames.join("\n\n")}\n`;
   report.approx = approx;
   // Skyline 的后备声明：每条规则的声明块都过一遍（只处理最里层的块，@media 里的规则也算）
   const sky = (css) => css.replace(/([^{}]*)\{([^{}]*)\}/g, (m, sel, body) => `${sel}{${addSkylineFallbacks(body, sel)}}`);
   for (const [k, v] of out) out.set(k, sky(v));
-  return { files: out, tokens: sky(tokens), mixes, report };
+  return { files: out, tokens: sky(tokens), mixes, report, usedVars };
 }
 
 function reportMarkdown({ report, files, tokens, mixes, problems }) {
@@ -624,7 +635,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const stylesSrc = join(root, "src/styles");
   for (const f of existsSync(stylesSrc) ? readdirSync(stylesSrc) : []) if (f.endsWith(".css")) extraCss[f.replace(/\.css$/, "")] = readFileSync(join(stylesSrc, f), "utf8");
   for (const name of Object.keys(extraCss)) if (name !== "base" && !manifest.components.some((c) => c.name === name)) throw new Error(`src/styles/${name}.css 不对应 mini.json 里的组件`);
-  const result = buildMini({ componentsCss: readFileSync(componentsPath, "utf8"), modes, manifest, extraCss });
+  // 组件 JS 里行内写的变量（var(--…)）也算用到
+  const jsSource = readdirSync(join(root, "src")).filter((f) => /\.tsx?$/.test(f)).map((f) => readFileSync(join(root, "src", f), "utf8")).join("\n");
+  const result = buildMini({ componentsCss: readFileSync(componentsPath, "utf8"), modes, manifest, extraCss, jsSource });
   const outDir = join(root, "styles");
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
@@ -640,8 +653,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const mixes = Object.fromEntries([...result.mixes].sort(([a], [b]) => a.localeCompare(b)));
   const { prefersContrast, ...runtimeModes } = modes;
   void prefersContrast;
-  writeFileSync(join(outDir, "vars.js"), `// 由 scripts/build-mini.mjs 生成，请勿手改。\n// 运行时（XxdPage）用：各外观的令牌（@xxd/tokens 的 tokens.json）和派生色（网页版的 color-mix，小程序里由 JS 算好）\nexport const MODES = ${JSON.stringify(runtimeModes)};\nexport const MIXES = ${JSON.stringify(mixes)};\n`);
-  writeFileSync(join(outDir, "vars.d.ts"), `import type { TokenModes } from "@xxd/tokens/resolve";\nexport declare const MODES: TokenModes;\nexport declare const MIXES: Record<string, string>;\n`);
+  writeFileSync(join(outDir, "vars.js"), `// 由 scripts/build-mini.mjs 生成，请勿手改。\n// 运行时（XxdPage）用：各外观的令牌（@xxd/tokens 的 tokens.json）和派生色（网页版的 color-mix，小程序里由 JS 算好）\nexport const MODES = ${JSON.stringify(runtimeModes)};\nexport const MIXES = ${JSON.stringify(mixes)};\n// 组件样式里用到的令牌：根节点上的行内变量只写这些（色阶的数字令牌大多用不到）\nexport const USED = ${JSON.stringify([...result.usedVars].sort())};\n`);
+  writeFileSync(join(outDir, "vars.d.ts"), `import type { TokenModes } from "@xxd/tokens/resolve";\nexport declare const MODES: TokenModes;\nexport declare const MIXES: Record<string, string>;\nexport declare const USED: string[];\n`);
   writeFileSync(join(outDir, "theme.json"), JSON.stringify(themeJson(modes), null, 2) + "\n");
   writeFileSync(join(outDir, "REPORT.md"), reportMarkdown({ ...result, problems }));
   const total = all.reduce((n, [, css]) => n + Buffer.byteLength(css), 0);

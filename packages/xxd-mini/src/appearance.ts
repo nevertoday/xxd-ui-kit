@@ -5,7 +5,7 @@
 // 按名字导入 API：Taro 编 H5 时只改写它自己处理过的源码里的 Taro.xxx，组件库在 node_modules 里，默认导出上没有这些 API
 import { getAppBaseInfo, getStorageSync, getSystemInfoSync, offThemeChange, onThemeChange, setStorageSync } from "@tarojs/taro";
 import { appearanceVars, DEFAULT_SETTINGS, DEFAULT_STORAGE_KEY, normalizeAccent, type XxdSettings } from "@xxd/tokens";
-import { MIXES, MODES } from "../styles/vars.js";
+import { MIXES, MODES, USED } from "../styles/vars.js";
 import { IS_H5 } from "./util";
 
 // H5（Taro 编出来的网页）：没有 page 元素，令牌挂在 <html class="xxd-h5-root"> 上；
@@ -45,6 +45,9 @@ export interface Resolved {
 }
 
 const staticCache: Partial<Record<Theme, Record<string, string>>> = {};
+// 色阶的数字令牌只写组件样式里用得到的（大多用不到，写上去只会让每页根节点的行内样式变长）；别的令牌都写
+const USED_SET = new Set<string>(USED);
+const SCALE_NUMERIC = /^--(gray|accent|success|danger|warning)-(\d+|on)$/;
 /** tokens.mini.css 里写死的那一套（亮：page 上；暗：媒体查询里） */
 function staticVars(theme: Theme) {
   return (staticCache[theme] ??= appearanceVars({ theme }, { modes: MODES, extra: MIXES, coarse: true }).vars);
@@ -55,7 +58,7 @@ export function resolveAppearance(settings: XxdSettings, system: Theme, lock: Xx
   const { theme, accent, vars } = appearanceVars(s, { modes: MODES, extra: MIXES, system, coarse: true });
   const base = staticVars(system);
   const style = Object.entries(vars)
-    .filter(([k, v]) => base[k] !== v)
+    .filter(([k, v]) => base[k] !== v && (USED_SET.has(k) || !SCALE_NUMERIC.test(k)))
     .map(([k, v]) => `${k}:${v}`)
     .join(";");
   const className = [

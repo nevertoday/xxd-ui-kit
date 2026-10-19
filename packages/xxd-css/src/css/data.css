@@ -255,7 +255,7 @@
   }
 
   .xxd-code .tok-s {
-    color: color-mix(in srgb, var(--action-text) 78%, var(--ink));
+    color: var(--accent-text-strong);
   }
 
   .xxd-code .tok-n {
@@ -272,7 +272,7 @@
   }
 
   .xxd-code .tok-t {
-    color: color-mix(in srgb, var(--action-text) 60%, var(--ink));
+    color: var(--accent-text-strong);
   }
 
   .xxd-code-block {
@@ -292,7 +292,7 @@
     min-height: 34px;
     padding: 0 var(--space-1-5) 0 var(--space-3);
     border-bottom: 1px solid var(--line);
-    background: color-mix(in srgb, var(--action) 3%, var(--paper));
+    background: var(--accent-bg);
     color: var(--muted);
     font: var(--text-2xs) / var(--leading-xs) var(--font-mono);
   }

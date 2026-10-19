@@ -132,7 +132,7 @@ test("小程序版（M5）：mini.json 的每个组件中英两版都有页面�
     if (built) for (const pre of ["", "en/"]) assert.ok(existsSync(new URL(`${pre}miniprogram/${slug(c.name)}/index.html`, dist)), `${pre}miniprogram/${slug(c.name)} 没有页面（先 pnpm --filter @xxd/site build）`);
   }
   // 演示小程序里每个组件都有演示（组件页的「小程序」标签页和这一页都嵌它）
-  const demos = ["batch1", "batch2"].map((b) => readFileSync(new URL(`../../xxd-mini-demo/src/demos/${b}.tsx`, import.meta.url), "utf8")).join("\n");
+  const demos = ["batch1", "batch2", "batch3"].map((b) => readFileSync(new URL(`../../xxd-mini-demo/src/demos/${b}.tsx`, import.meta.url), "utf8")).join("\n");
   for (const c of manifest.components) assert.match(demos, new RegExp(`name: "${c.name}"`), `${c.name} 没有演示`);
 });
 

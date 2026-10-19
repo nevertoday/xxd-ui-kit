@@ -24,6 +24,11 @@ export function chartTokens(el = document.documentElement) {
     line: read(el, "--line", dark ? "#34312c" : "#e6e3dc"),
     paper: read(el, "--paper", dark ? "#1c1b19" : "#ffffff"),
     accent: read(el, "--action", ink),
+    // 色阶里的几级（COLOR-SCALE-PLAN）：分类色从这里取，不现场混色
+    gray9: read(el, "--gray-9", dark ? "#807a6e" : "#898681"),
+    gray10: read(el, "--gray-10", dark ? "#918b82" : "#7e7b77"),
+    gray11: read(el, "--gray-11", dark ? "#a7a194" : "#6d6b67"),
+    accent8: read(el, "--accent-8", dark ? "#c2beb6" : "#353433"),
     success: read(el, "--success", "#2f7d4f"),
     danger: read(el, "--danger", "#c4372c"),
     warning: read(el, "--warning", "#b7791f"),
@@ -33,15 +38,14 @@ export function chartTokens(el = document.documentElement) {
 }
 
 /**
- * 分类色：第一条是主色，后面是墨色按 78% / 64% / 54% / 46% 往纸色混 —— 最浅的一档和纸色也有 3:1（WCAG 1.4.11）。
- * 颜色只差深浅，所以第三条起折线还换线型（虚线、点线、点划线），不只靠颜色分（WCAG 1.4.1）。
+ * 分类色（色阶里取，MINI-REVIEW-PLAN A2）：第一条是主色 9 级，第二条灰 9 级，再是灰 11 / 10 级、主色 8 级——每一种和纸色都 ≥ 3:1（WCAG 1.4.11）。
+ * 第二条起折线换线型（虚线、点线、点划线），不只靠颜色分（WCAG 1.4.1）：两条线一深一浅、一实一虚，一眼分得开。
  */
 export function chartPalette(tokens = chartTokens()) {
-  const mix = (p) => `color-mix(in srgb, ${tokens.ink} ${p}%, ${tokens.paper})`;
-  return [tokens.accent, mix(78), mix(64), mix(54), mix(46)];
+  return [tokens.accent, tokens.gray9, tokens.gray11, tokens.gray10, tokens.accent8];
 }
 
-const LINE_TYPES = ["solid", "solid", "dashed", "dotted", [6, 3, 1, 3]];
+const LINE_TYPES = ["solid", "dashed", "dotted", [6, 3, 1, 3], "dashed"];
 
 // ECharts 的 canvas 不认 color-mix()：在浏览器里把它算成 rgb()
 function resolveColor(value) {

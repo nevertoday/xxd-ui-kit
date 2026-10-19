@@ -74,10 +74,9 @@ test("12 个主色 × 亮/暗：标记 ≥ 3，文字版 ≥ 4.5，实心底（�
       const ratio = contrast(rgb(p[bg]), rgb(p[on]));
       assert.ok(ratio >= 4.5, `${preset.name} ${on} on ${bg}: ${ratio.toFixed(2)}`);
     }
-    // 文字版放在选中底上（chip、选中的导航项）也 ≥ 4.5
-    const sel = (paper, mark, t) => paper.map((v, i) => Math.round(v + (mark[i] - v) * t));
-    assert.ok(contrast(rgb(p["--action-text-custom"]), sel(LIGHT_PAPER, rgb(p["--action-custom"]), 0.13)) >= 4.5, `${preset.name} light text on selected`);
-    assert.ok(contrast(rgb(p["--action-text-custom-dark"]), sel(DARK_PAPER, rgb(p["--action-custom-dark"]), 0.18)) >= 4.5, `${preset.name} dark text on selected`);
+    // 文字版放在选中底（主色的 4 级：chip、选中的导航项）上也 ≥ 4.5
+    assert.ok(contrast(rgb(p["--action-text-custom"]), rgb(p["--accent-4-custom"])) >= 4.5, `${preset.name} light text on selected`);
+    assert.ok(contrast(rgb(p["--action-text-custom-dark"]), rgb(p["--accent-4-custom-dark"])) >= 4.5, `${preset.name} dark text on selected`);
     // 实心底仍是同一个颜色：在纸上 ≥ 3，压暗不超过 25%
     assert.ok(contrast(rgb(p["--action-fill-custom-dark"]), DARK_PAPER) >= 3 - 0.01, `${preset.name} dark fill mark`);
   }

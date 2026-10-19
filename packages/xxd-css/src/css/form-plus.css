@@ -19,12 +19,12 @@
   }
 
   .xxd-input-group:hover {
-    border-color: color-mix(in srgb, var(--ink) 28%, var(--line-control));
+    border-color: var(--line-control-hover);
     transition-duration: 0s;
   }
 
   .xxd-input-group:focus-within {
-    border-color: color-mix(in srgb, var(--action) 70%, var(--line-control));
+    border-color: var(--accent-border-strong);
   }
 
   .xxd-input-group[aria-invalid="true"] {
@@ -205,12 +205,12 @@
   }
 
   .xxd-picker__trigger:hover {
-    border-color: color-mix(in srgb, var(--ink) 28%, var(--line-control));
+    border-color: var(--line-control-hover);
     transition-duration: 0s;
   }
 
   .xxd-picker__trigger[aria-expanded="true"] {
-    border-color: color-mix(in srgb, var(--action) 70%, var(--line-control));
+    border-color: var(--accent-border-strong);
   }
 
   .xxd-picker__trigger::after {

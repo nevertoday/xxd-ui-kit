@@ -57,7 +57,7 @@
   .xxd-input:hover,
   .xxd-textarea:hover,
   .xxd-select > select:hover {
-    border-color: color-mix(in srgb, var(--ink) 28%, var(--line-control));
+    border-color: var(--line-control-hover);
   }
 
   /* 只读：底色淡一档，一眼和能改的分开（字还是正文色，能选中复制） */
@@ -69,7 +69,7 @@
   .xxd-input:focus,
   .xxd-textarea:focus,
   .xxd-select > select:focus {
-    border-color: color-mix(in srgb, var(--action) 70%, var(--line-control));
+    border-color: var(--accent-border-strong);
     outline: none;
   }
 
@@ -315,7 +315,7 @@
 
   .xxd-check:hover,
   .xxd-radio:hover {
-    border-color: color-mix(in srgb, var(--ink) 40%, var(--line-control));
+    border-color: var(--line-control-hover);
   }
 
   .xxd-check:checked,
@@ -481,7 +481,7 @@
   }
 
   .xxd-taginput:focus-within {
-    border-color: color-mix(in srgb, var(--action) 70%, var(--line-control));
+    border-color: var(--accent-border-strong);
   }
 
   .xxd-taginput > input {

@@ -267,7 +267,7 @@
     border: 0;
     border-radius: var(--r-sm);
     background: transparent;
-    color: color-mix(in srgb, var(--ink) 60%, var(--paper));
+    color: var(--muted);
     font: var(--weight-medium) var(--text-2xs) / var(--leading-xs) var(--font-body);
     text-decoration: none;
     cursor: pointer;

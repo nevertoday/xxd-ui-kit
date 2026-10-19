@@ -128,7 +128,7 @@
   .xxd-prose :not(pre) > code {
     padding: 1px var(--space-1);
     border-radius: var(--r-xs);
-    background: color-mix(in srgb, var(--action) 12%, transparent);
+    background: var(--accent-tint);
     color: var(--ink);
     font-family: var(--font-mono);
     /* 行内等宽字比周围小一号（13 → 12、12 → 11），总是整数像素；行高跟着所在的那一行 */
@@ -146,7 +146,7 @@
     margin: 0;
     padding: var(--space-3) var(--space-4);
     border-radius: var(--r-md);
-    background: color-mix(in srgb, var(--action) 6%, var(--paper));
+    background: var(--accent-bg);
     color: var(--ink);
     font: var(--text-xs) / var(--leading-sm) var(--font-mono); /* 代码块是多行的：12 / 20 */
     overflow-x: auto;
@@ -359,7 +359,7 @@
   /* 阅读排版：会员站文章、预览。一个颜色四种强度：100% 指向（链接、列表点），40% 线与标记，12% 行内代码，6% 代码块。 */
   .xxd-prose {
     max-width: var(--read-width);
-    color: color-mix(in srgb, var(--ink) 88%, var(--muted));
+    color: var(--ink);
     font-size: var(--text-lg);
     line-height: var(--leading-lg); /* 16 / 28：阅读用宽一档的行高 */
     overflow-wrap: break-word;
@@ -413,7 +413,7 @@
   .xxd-prose a {
     color: var(--action-text);
     text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, var(--action) 40%, transparent);
+    text-decoration-color: var(--accent-border);
     text-underline-offset: 3px;
   }
 
@@ -446,15 +446,15 @@
 
   .xxd-prose blockquote {
     padding-left: var(--space-4);
-    border-left: 2px solid color-mix(in srgb, var(--action) 40%, transparent);
-    color: color-mix(in srgb, var(--ink) 72%, transparent);
+    border-left: 2px solid var(--accent-border);
+    color: var(--muted);
   }
 
   .xxd-prose hr {
     height: 1px;
     margin: var(--space-6) 0;
     border: 0;
-    background: color-mix(in srgb, var(--action) 40%, transparent);
+    background: var(--accent-border);
   }
 
   .xxd-prose img,
@@ -471,7 +471,7 @@
   }
 
   .xxd-prose th {
-    border-bottom: 1px solid color-mix(in srgb, var(--action) 40%, transparent);
+    border-bottom: 1px solid var(--accent-border);
     text-align: left;
   }
 
@@ -486,7 +486,7 @@
 
   .xxd-prose mark {
     padding: 0 var(--space-0-5);
-    background: color-mix(in srgb, var(--action) 18%, transparent);
+    background: var(--accent-tint-hover);
     color: inherit;
   }
 
@@ -494,7 +494,7 @@
   .xxd-hit {
     padding: 0 1px;
     border-radius: var(--r-xs);
-    background: color-mix(in srgb, var(--action) 22%, transparent);
+    background: var(--accent-tint-active);
     color: inherit;
   }
 }

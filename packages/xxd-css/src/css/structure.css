@@ -90,7 +90,7 @@
     border: 0;
     border-radius: var(--r-sm);
     background: transparent;
-    color: color-mix(in srgb, var(--ink) 78%, var(--muted));
+    color: var(--ink);
     font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
     text-align: left;
     text-decoration: none;
@@ -485,9 +485,9 @@
     border-radius: var(--r-xs);
     background:
       linear-gradient(var(--on-ink), var(--on-ink)) 22% 22% / 22% 22% no-repeat,
-      linear-gradient(color-mix(in srgb, var(--on-ink) 72%, transparent), color-mix(in srgb, var(--on-ink) 72%, transparent)) 78% 22% / 22% 22% no-repeat,
-      linear-gradient(color-mix(in srgb, var(--on-ink) 46%, transparent), color-mix(in srgb, var(--on-ink) 46%, transparent)) 22% 78% / 22% 22% no-repeat,
-      linear-gradient(color-mix(in srgb, var(--on-ink) 22%, transparent), color-mix(in srgb, var(--on-ink) 22%, transparent)) 78% 78% / 22% 22% no-repeat,
+      linear-gradient(rgba(var(--paper-rgb), 0.72), rgba(var(--paper-rgb), 0.72)) 78% 22% / 22% 22% no-repeat,
+      linear-gradient(rgba(var(--paper-rgb), 0.46), rgba(var(--paper-rgb), 0.46)) 22% 78% / 22% 22% no-repeat,
+      linear-gradient(rgba(var(--paper-rgb), 0.22), rgba(var(--paper-rgb), 0.22)) 78% 78% / 22% 22% no-repeat,
       var(--ink);
   }
 

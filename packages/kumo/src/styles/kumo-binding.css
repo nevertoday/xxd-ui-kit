@@ -494,14 +494,15 @@
   }
   [data-kumo-component][data-kumo-component][style*="--color-kumo-danger"] {
     --xxd-btn-bg: var(--danger-strong, #b42318);
-    --xxd-btn-bg-hover: color-mix(in srgb, var(--danger-strong, #b42318) 88%, #000000);
-    color: #ffffff !important;
+    --xxd-btn-bg-hover: var(--danger-solid-hover, #a60e06);
+    color: var(--danger-on-solid, #ffffff) !important;
   }
   [data-kumo-component][data-kumo-component][style*="--kumo-button-emphasis-bg"]:not(:disabled):hover {
     background: var(--xxd-btn-bg-hover);
   }
   [data-kumo-component][data-kumo-component][style*="--kumo-button-emphasis-bg"]:not(:disabled):active {
-    background: color-mix(in srgb, var(--xxd-btn-bg-hover) 92%, #000000);
+    /* 按下：色阶的 10 级（和 HTML 版的 --btn-bg-active 一样） */
+    background: var(--xxd-btn-bg-hover);
     --tw-inset-shadow: var(--btn-highlight-pressed, 0 0 #0000);
     transform: translateY(var(--btn-press-y, 0px));
   }
@@ -517,7 +518,7 @@
   :is(input, textarea)[class*="ring-kumo-line"][class*="bg-kumo-control"]:focus,
   [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component]:focus {
     --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color);
-    --tw-ring-color: color-mix(in srgb, var(--action, #111111) 70%, var(--line-control, #898681));
+    --tw-ring-color: var(--accent-border-strong, #353433);
   }
   /* 原生的下拉没有单独的底色（透明，落在纸上）；React 的触发按钮用纸色，看起来一样，这里对齐成同一个值 */
   [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component] {

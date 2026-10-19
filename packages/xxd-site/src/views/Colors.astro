@@ -10,6 +10,11 @@ const meaning = ["--success", "--danger", "--warning", "--success-strong", "--da
 const raised = ["--paper-raised", "--wash-raised", "--wash-strong-raised", "--line-raised"];
 const disabled = ["--disabled-ink", "--disabled-bg", "--disabled-line"];
 const dark = { ...tokens.base, ...tokens.dark };
+// 色阶（COLOR-SCALE-PLAN）：五族 × 12 级，亮暗各一套
+const FAMS = ["gray", "accent", "success", "danger", "warning"];
+const scaleOf = (fam, vars) => Array.from({ length: 12 }, (_, i) => vars[`--${fam}-${i + 1}`]);
+const ROLES = ["", "bg", "tint", "tint-hover", "tint-active", "line", "border", "border-strong", "solid", "solid-hover", "text", "text-strong"];
+const GRAY_TOKEN = ["--bg", "", "--wash", "--wash-strong / --selected-bg", "", "--line", "--line-strong", "--muted-2", "--line-control", "--line-control-hover", "--muted", "--ink"];
 const ratio = (fg, bg) => contrast(toRgb(fg), toRgb(bg)).toFixed(2);
 const accents = ACCENT_PRESETS.slice(1).map((p) => {
   const pal = accentPalette(p.id);
@@ -23,30 +28,40 @@ const T = en
       title: "Color", caption: "Foundations",
       lead: "Black, white and gray, with ink for emphasis; color is reserved for meaning and the optional accent. Swatches show the color in the current appearance; the light and dark values are written below.",
       groups: ["Paper and lines", "Ink and text", "Meaning colors", "Raised layer (overlays)", "Disabled"], accent: "12 accents", light: "Light", dark: "Dark",
+      scales: "Scales", scalesLead: "Every color comes in the same 12 steps, and each step has one job (the logic of Radix Colors). Components never mix colors on the spot; they use a role name such as <code class=\"xxd-code-inline\">--danger-tint</code> or <code class=\"xxd-code-inline\">--accent-border</code>. Light and dark are generated separately, and the grays you already know sit on their steps unchanged.",
+      fams: { gray: "Warm gray", accent: "Accent (ink by default)", success: "Success", danger: "Danger", warning: "Warning" },
+      roleCols: ["Step", "Used for", "Role name (danger as the example)", "Gray token"],
+      roleUses: ["Page background", "One step up: cards, striped rows", "Tint: controls at rest, badges, callouts", "Tint on hover / selected", "Tint pressed", "Quiet line: dividers, card edges", "Border: outline buttons, selected outlines", "Control border, focus, border on hover (≥ 3:1)", "Solid fill: buttons, solid badges", "Solid fill on hover / pressed", "Colored text, secondary text (≥ 4.5:1 on steps 1–4)", "Strong text (≥ 7:1)"],
+      scaleGate: "Contrast gates (tests, every family, light and dark, ink and every preset): step 11 on steps 1–4 ≥ 4.5; step 12 on 1–3 ≥ 7; steps 8 and 9 on 1–2 ≥ 3; text on steps 9 and 10 ≥ 4.5.",
       groupNotes: { raised: "Dialogs, menus, popovers, panels, sheets and toasts sit one step up. In light mode it equals paper (the shadow lifts it); in dark mode it is one step lighter, because shadows don't show on a dark background. Hovers and dividers inside move up with it.", disabled: "Disabled controls use these instead of transparency (transparency over an accent, dark paper or an image is unpredictable and can't be specced). Disabled text doesn't need 4.5:1, but must be clearly different from enabled text." },
-      derive: "What one accent turns into", deriveLead: "Pick any color. In Auto (the default) the accent is lightened or darkened until it is readable; in Exact the solid fills and marks use your color as is, and the text on them switches to near-black if white isn't readable. Links stay darkened in both.",
+      derive: "What one accent turns into", deriveLead: "Pick any color to see its 12 steps in light and dark. In Auto (the default) step 9 is lightened or darkened until it is readable; in Exact step 9 is your color as is, and the text on it switches to near-black if white isn't readable. Step 11 (links) is readable in both.",
       pick: "Accent", mode: "Mode", auto: "Auto", exact: "Exact (brand color as is)", deriveCols: ["Variable", "Used for", "Light", "Dark"],
       uses: { "--action-custom": "Marks: switches, tab underline, focus, selection", "--action-text-custom": "Text: links, small labels (≥ 4.5:1)", "--action-fill-custom": "Solid fills: primary button, solid badge, checked box", "--on-action-custom": "Text on the solid fill", "--action-fill-hover-custom": "Solid fill on hover" },
       sample: "Post", link: "A link",
       gate: "Contrast (enforced by tests): body and secondary text ≥ 4.5 on paper / bg / wash; meaning colors ≥ 4.5; white text on *-strong fills ≥ 4.5.",
-      accentNote: "Accents are lightened or darkened automatically: marks (switches, tab underlines, focus) ≥ 3:1; text ≥ 4.5:1; solid fills (primary buttons, solid badges) are darkened a little more so white text on them is ≥ 4.5:1. This holds on both light and dark paper. The first one is ink, the default.",
+      accentNote: "Each accent is turned into a full 12-step scale. Solid fills and marks (primary buttons, switches, tab underlines, focus) use step 9, darkened until white text on it is ≥ 4.5:1 (on dark paper: lightened until it is ≥ 3:1); text uses step 11, ≥ 4.5:1 on steps 1–4. The grays pick up a hint of the accent. The first one is ink, the default.",
       cols: ["Accent", "Light · mark", "Light · text (contrast)", "Dark · mark", "Dark · text (contrast)", "Solid button light / dark"],
     }
   : {
       title: "颜色", caption: "基础",
       lead: "黑 / 白 / 灰，强调靠墨色；颜色只留给意义和可选的主色。色块显示当前外观下的颜色，下面写着亮 / 暗两套值。",
       groups: ["纸与线", "墨与文字", "语义色", "抬起来的一层（浮层）", "禁用"], accent: "12 个主色", light: "亮", dark: "暗",
+      scales: "色阶", scalesLead: "每种颜色都分成同样的 12 级，每一级用途固定（借鉴 Radix Colors 的逻辑）。组件里不现场混色，只用用途名，比如 <code class=\"xxd-code-inline\">--danger-tint</code>、<code class=\"xxd-code-inline\">--accent-border</code>。亮暗各生成一套；你熟悉的那些灰（<code class=\"xxd-code-inline\">--bg</code>、<code class=\"xxd-code-inline\">--wash</code>、<code class=\"xxd-code-inline\">--line</code>、<code class=\"xxd-code-inline\">--muted</code>……）就钉在对应的级上，值没变。",
+      fams: { gray: "暖灰", accent: "主色（缺省是墨色）", success: "成功", danger: "危险", warning: "警告" },
+      roleCols: ["级", "用途", "用途名（以危险色为例）", "对应的灰令牌"],
+      roleUses: ["页面底", "浅一层的底：卡片、条纹行", "淡底：控件平时、徽标、提示条", "淡底悬停 / 选中", "淡底按下", "安静的线：分隔线、卡片边", "边：描边按钮、选中的描边", "控件的边、聚焦、边悬停（≥ 3:1）", "实心底：按钮、实心徽标", "实心底悬停 / 按下", "带颜色的字、次要文字（在 1–4 级上 ≥ 4.5）", "强调字（≥ 7）"],
+      scaleGate: "对比度门禁（测试，每族、亮暗、墨色和每个预设都测）：11 级在 1–4 级上 ≥ 4.5；12 级在 1–3 级上 ≥ 7；8、9 级在 1、2 级上 ≥ 3；9、10 级上的字 ≥ 4.5。",
       groupNotes: { raised: "对话框、菜单、popover、面板、sheet、toast 抬起来一层。亮色时和纸一样（靠阴影托起）；暗色时亮一档，因为暗底上阴影看不出来。里面的悬停底、分隔线跟着一起抬。", disabled: "禁用的控件用这三个，不用半透明（半透明叠在主色、暗纸、图片上颜色没法预测，设计稿也没法标）。禁用的字不要求 4.5:1，但要和能用的一眼分开。" },
-      derive: "一个主色变出的颜色", deriveLead: "随便选一个颜色。「自动」（缺省）会把它提亮或加深到看得清；「原样」让实心底和标记直接用你的颜色，白字看不清时底上的字换成近黑。链接两种模式下都会加深。",
+      derive: "一个主色变出的颜色", deriveLead: "随便选一个颜色，看它亮暗两套 12 级。「自动」（缺省）会把 9 级提亮或加深到看得清；「原样」的 9 级就是你的颜色，白字看不清时底上的字换成近黑。11 级（链接）两种模式下都看得清。",
       pick: "主色", mode: "模式", auto: "自动", exact: "原样（品牌色不变）", deriveCols: ["变量", "用在哪", "亮", "暗"],
       uses: { "--action-custom": "标记：开关、tab 下划线、焦点、选中", "--action-text-custom": "文字：链接、小标签（≥ 4.5:1）", "--action-fill-custom": "实心底：主按钮、实心徽标、勾选框", "--on-action-custom": "实心底上的字", "--action-fill-hover-custom": "实心底悬停" },
       sample: "写入", link: "一个链接",
       gate: "对比度（测试门禁）：正文与次要文字在 paper / bg / wash 上 ≥ 4.5；语义色 ≥ 4.5；*-strong 做底时白字 ≥ 4.5。",
-      accentNote: "主色会被自动提亮或加深：标记（开关、tab 下划线、焦点）≥ 3:1；文字 ≥ 4.5:1；实心底（主按钮、实心徽标）单独压暗一点，让上面的白字 ≥ 4.5:1。亮暗两种纸上都成立。第一个是墨色，也是默认。",
+      accentNote: "每个主色都生成整套 12 级。实心底和标记（主按钮、开关、tab 下划线、焦点）用 9 级，压暗到上面的白字 ≥ 4.5:1（暗纸上提亮到 ≥ 3:1）；文字用 11 级，在 1–4 级上 ≥ 4.5:1。灰也跟着带一点主色。第一个是墨色，也是默认。",
       cols: ["主色", "亮 · 标记", "亮 · 文字（对比度）", "暗 · 标记", "暗 · 文字（对比度）", "实心按钮 亮 / 暗"],
     };
 const sections = [["surfaces", T.groups[0], surfaces], ["ink", T.groups[1], inks], ["meaning", T.groups[2], meaning], ["raised", T.groups[3], raised], ["disabled", T.groups[4], disabled]];
-const headings = [...sections.map(([slug, text]) => ({ slug, text })), { slug: "accent", text: T.accent }, { slug: "derive", text: T.derive }];
+const headings = [{ slug: "scales", text: T.scales }, ...sections.map(([slug, text]) => ({ slug, text })), { slug: "accent", text: T.accent }, { slug: "derive", text: T.derive }];
 const swatch = (name) => ({ name, light: tokens.base[name], dark: dark[name] });
 ---
 
@@ -56,6 +71,38 @@ const swatch = (name) => ({ name, light: tokens.base[name], dark: dark[name] });
     <h1 class="xxd-text" data-variant="display">{T.title}</h1>
     <p class="site-lead">{T.lead}</p>
   </header>
+
+  <h2 class="site-h2" id="scales">{T.scales}</h2>
+  <p class="site-p" set:html={T.scalesLead} />
+  <div class="site-scales">
+    {FAMS.map((fam) => (
+      <div class="site-scale">
+        <b class="site-scale__name">{T.fams[fam]}</b>
+        {[["light", tokens.base], ["dark", dark]].map(([mode, vars]) => (
+          <div class="site-scale__row" data-mode={mode}>
+            <span class="site-scale__mode">{mode === "light" ? T.light : T.dark}</span>
+            {scaleOf(fam, vars).map((hex, i) => <i style={`background:${hex}`} title={`--${fam}-${i + 1} ${hex}`}><span class="xxd-sr-only">{`${i + 1} ${hex}`}</span></i>)}
+          </div>
+        ))}
+      </div>
+    ))}
+    <div class="site-scale__steps" aria-hidden="true"><span></span>{Array.from({ length: 12 }, (_, i) => <span>{i + 1}</span>)}</div>
+  </div>
+  <div class="xxd-table-wrap"><table class="site-props">
+    <thead><tr>{T.roleCols.map((c) => <th>{c}</th>)}</tr></thead>
+    <tbody>
+      {ROLES.map((role, i) => (
+        <tr>
+          <td>{i + 1}</td>
+          <td data-wrap>{T.roleUses[i]}</td>
+          <td>{role ? <code class="xxd-code-inline">--danger-{role}</code> : <span class="xxd-text" data-variant="secondary">—</span>}</td>
+          <td>{GRAY_TOKEN[i] ? <code class="xxd-code-inline">{GRAY_TOKEN[i]}</code> : <span class="xxd-text" data-variant="secondary">—</span>}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table></div>
+  <p class="site-p">{T.scaleGate}</p>
+
   {sections.map(([id, title, names]) => (
     <section>
       <h2 class="site-h2" id={id}>{title}</h2>
@@ -106,6 +153,14 @@ const swatch = (name) => ({ name, light: tokens.base[name], dark: dark[name] });
         </div>
       ))}
     </div>
+    <div class="site-scales" data-derive-scales>
+      {["light", "dark"].map((mode) => (
+        <div class="site-scale__row" data-mode={mode} data-derive-scale={mode}>
+          <span class="site-scale__mode">{mode === "light" ? T.light : T.dark}</span>
+          {Array.from({ length: 12 }, () => <i></i>)}
+        </div>
+      ))}
+    </div>
     <div class="xxd-table-wrap"><table class="xxd-table">
       <thead><tr>{T.deriveCols.map((c) => <th>{c}</th>)}</tr></thead>
       <tbody data-derive-rows></tbody>
@@ -137,6 +192,15 @@ const swatch = (name) => ({ name, light: tokens.base[name], dark: dark[name] });
           return `<tr><td><code class="xxd-code-inline">${k}</code></td><td data-wrap>${uses[k]}</td><td>${chip(l, "#ffffff")}</td><td>${chip(d, "#201f1a")}</td></tr>`;
         });
         box.querySelector("[data-derive-rows]").innerHTML = rows.join("");
+        // 整套 12 级
+        for (const row of box.querySelectorAll("[data-derive-scale]")) {
+          const d = row.dataset.deriveScale === "dark" ? "-dark" : "";
+          row.querySelectorAll("i").forEach((cell, i) => {
+            const v = p[`--accent-${i + 1}-custom${d}`];
+            cell.style.background = v;
+            cell.title = `${i + 1} ${v}`;
+          });
+        }
       };
       color.addEventListener("input", render);
       box.querySelector("[data-derive-mode]").addEventListener("xxd:change", (e) => { mode = e.detail.value; render(); });

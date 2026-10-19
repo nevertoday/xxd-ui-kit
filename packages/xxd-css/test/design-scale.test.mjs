@@ -73,3 +73,21 @@ describe("刻度", () => {
     for (const t of ["--disabled-ink", "--disabled-bg", "--disabled-line"]) expect(tokens).toContain(`${t}:`);
   });
 });
+
+describe("颜色色阶（COLOR-SCALE-PLAN S3）", () => {
+  it("组件里不现场混色：用色阶的用途名（--danger-tint、--accent-border……）；例外要在同一行写明原因", () => {
+    const bad = [];
+    for (const f of readdirSync(join(root, "src/css"))) {
+      readFileSync(join(root, "src/css", f), "utf8").split("\n").forEach((line, i) => {
+        if (line.includes("color-mix(") && !line.includes("color-mix 例外")) bad.push(`${f}:${i + 1} ${line.trim()}`);
+      });
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it("用到的用途名都在令牌里", () => {
+    const missing = new Set();
+    for (const [, css] of files) for (const m of css.matchAll(/var\((--(?:accent|success|danger|warning)-[a-z-]+)\)/g)) if (!tokens.includes(`${m[1]}:`)) missing.add(m[1]);
+    expect([...missing]).toEqual([]);
+  });
+});

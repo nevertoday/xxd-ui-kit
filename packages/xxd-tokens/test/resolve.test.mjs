@@ -32,7 +32,8 @@ test("color-mix 的百分比规则：缺一个用 100 减；和不到 100 降透
 
 test("和 Chrome 算的 color-mix 一样（每个通道差 ≤ 1，透明度差 ≤ 0.005）", () => {
   const list = mixExpressions();
-  assert.ok(list.length > 100, `只有 ${list.length} 个表达式`);
+  // 色阶以后令牌里的 color-mix 少了很多（主色的灰和选中底改成了色阶里的某一级），剩下的组件里的照样对
+  assert.ok(list.length > 50, `只有 ${list.length} 个表达式`);
   for (const expr of list) {
     const want = chrome[expr];
     assert.ok(want, `对照表里没有 ${expr}：pnpm --filter @xxd/tokens fixture:color-mix`);

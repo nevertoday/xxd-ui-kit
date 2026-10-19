@@ -41,13 +41,14 @@
 | 5 | 淡底按下 | `--danger-tint-active` | — |
 | 6 | 安静的线（分隔线、卡片边） | `--danger-line` | `--line` |
 | 7 | 边（描边按钮、选中的描边） | `--danger-border` | `--line-strong` |
-| 8 | 控件的边（≥ 3:1，WCAG 1.4.11）/ 边悬停 | `--danger-border-strong` | `--line-control` |
-| 9 | 实心底（按钮、实心徽标） | `--danger-solid` | — |
-| 10 | 实心底悬停 | `--danger-solid-hover` | — |
+| 8 | 控件的边、聚焦（≥ 3:1，WCAG 1.4.11）/ 边悬停 | `--danger-border-strong` | `--muted-2`（灰的 8 级是装饰色） |
+| 9 | 实心底（按钮、实心徽标） | `--danger-solid` | `--line-control`（灰的控件边在 9 级） |
+| 10 | 实心底悬停 / 按下 | `--danger-solid-hover` | `--line-control-hover` |
 | 11 | 次要文字 / 带颜色的字（≥ 4.5:1） | `--danger-text` | `--muted` |
 | 12 | 正文 / 强调字（≥ 7:1） | `--danger-text-strong` | `--ink` |
 
-- 灰的 9、10 级是装饰色（`--muted-2`，图标、分隔点），不当文字色，和现在一样。
+- 灰族和有颜色的族在 8、9 级上不一样：灰的 8 级是装饰色（`--muted-2`，图标、分隔点，不当文字色），9 级是控件的边（`--line-control`），10 级是控件的边悬停（`--line-control-hover`）。
+  按明度排，`--muted-2` 比 `--line-control` 浅，放不到 9 级后面。
 - `--paper`（白卡片）亮色时比 1 级还亮，保留成单独的令牌；暗色时就是 2 级。浮层的 `--paper-raised` 在暗色时取 3 级。
 - 实心底上的字有一个配套的令牌：`--danger-on-solid`（白字不够 4.5:1 时自动换近黑字）。
 
@@ -119,8 +120,8 @@
 
 | 阶段 | 状态 | 日期 |
 | --- | --- | --- |
-| S1 生成器和原型 | 原型已做好，等维护者看过、定第 3 节（生成器 `@xxd/tokens/src/scales.js` + 测试；原型页 `node packages/xxd-tokens/scripts/scales-prototype.mjs` → 本机预览 /proto/color-scales.html） | 2026-10-18 |
-| S2 令牌 | 未开始 | |
-| S3 组件换成角色令牌 | 未开始 | |
-| S4 展示站和文档 | 未开始 | |
-| S5 收尾 | 未开始 | |
+| S1 生成器和原型 | 做完（第 3 节 2026-10-18 按建议定下）（生成器 `@xxd/tokens/src/scales.js` + 测试；原型页 `node packages/xxd-tokens/scripts/scales-prototype.mjs` → 本机预览 /proto/color-scales.html） | 2026-10-18 |
+| S2 令牌 | 做完。`scripts/scales.mjs` 把五族 × 12 级、用途名写进 tokens.css 标明的区域（亮、暗、亮色的一块、主色两块），构建检查是不是最新的；现有的灰和语义色钉在对应的级上（`GRAY_PINS`、`SEMANTIC_PINS`），值一点不变；主色由 `accentPalette` 按色阶算，主色块里的灰、线、选中底指向色阶；生成器补了 8 级 ≥ 3:1、11 级在 1–4 级上 ≥ 4.5、两种字都不够时挪实心底；和 Chrome 的混色对照重新生成 | 2026-10-18 |
+| S3 组件换成角色令牌 | 做完。`@xxd/css` 56 处 → 2 处写明原因的例外（质感按钮的边、跟着字色的下划线），门禁在 `design-scale.test.mjs`；React 换皮和 Kumo 主题同样换；小程序预先算的派生色 17 → 0，色阶的数字令牌只写用得到的。审计结果见下 | 2026-10-18 |
+| S4 展示站和文档 | 做完。颜色页最前面加「色阶」：五族 × 亮暗的色条、级 → 用途 → 用途名 → 灰令牌的表、门禁；试色工具显示整套 12 级。设计原则第 2 节、设计师入口页换成用途名。（规格表本来就不反查颜色，不用改。） | 2026-10-18 |
+| S5 收尾 | 做完。`.changeset/color-scales.md`；`--success-strong` 等保留为兼容（= `--*-solid`），新代码用用途名 | 2026-10-18 |

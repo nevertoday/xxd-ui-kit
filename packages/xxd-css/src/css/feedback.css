@@ -16,23 +16,23 @@
   }
 
   .xxd-badge[data-tone="action"] {
-    background: color-mix(in srgb, var(--action) 12%, var(--paper));
+    background: var(--accent-tint);
     color: var(--action-text);
   }
 
   .xxd-badge[data-tone="success"] {
-    background: color-mix(in srgb, var(--success) 12%, var(--paper));
-    color: color-mix(in srgb, var(--success) 78%, var(--ink)); /* 淡底上也 ≥ 4.5 */
+    background: var(--success-tint);
+    color: var(--success-text); /* 淡底上也 ≥ 4.5（色阶门禁：11 级在 1–4 级上） */
   }
 
   .xxd-badge[data-tone="danger"] {
-    background: color-mix(in srgb, var(--danger) 12%, var(--paper));
-    color: color-mix(in srgb, var(--danger) 78%, var(--ink)); /* 淡底上也 ≥ 4.5 */
+    background: var(--danger-tint);
+    color: var(--danger-text);
   }
 
   .xxd-badge[data-tone="warning"] {
-    background: color-mix(in srgb, var(--warning) 14%, var(--paper));
-    color: color-mix(in srgb, var(--warning) 78%, var(--ink)); /* 淡底上也 ≥ 4.5 */
+    background: var(--warning-tint);
+    color: var(--warning-text);
   }
 
   .xxd-badge[data-variant="solid"] {
@@ -88,7 +88,7 @@
 
   .xxd-chip[aria-pressed="true"] {
     background: var(--selected-bg);
-    border-color: color-mix(in srgb, var(--action) 28%, transparent);
+    border-color: var(--accent-border);
     color: var(--action-text);
   }
 
@@ -236,8 +236,8 @@
   }
 
   .xxd-banner[data-tone="warning"] {
-    border-color: color-mix(in srgb, var(--warning) 28%, var(--line));
-    background: color-mix(in srgb, var(--warning) 8%, var(--paper));
+    border-color: var(--warning-line);
+    background: var(--warning-bg);
   }
 
   .xxd-banner[data-tone="warning"] > .ui-icon {
@@ -245,8 +245,8 @@
   }
 
   .xxd-banner[data-tone="danger"] {
-    border-color: color-mix(in srgb, var(--danger) 28%, var(--line));
-    background: color-mix(in srgb, var(--danger) 7%, var(--paper));
+    border-color: var(--danger-line);
+    background: var(--danger-bg);
   }
 
   .xxd-banner[data-tone="danger"] > .ui-icon {
@@ -254,8 +254,8 @@
   }
 
   .xxd-banner[data-tone="success"] {
-    border-color: color-mix(in srgb, var(--success) 28%, var(--line));
-    background: color-mix(in srgb, var(--success) 7%, var(--paper));
+    border-color: var(--success-line);
+    background: var(--success-bg);
   }
 
   .xxd-banner[data-tone="success"] > .ui-icon {

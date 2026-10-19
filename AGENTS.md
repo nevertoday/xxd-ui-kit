@@ -5,7 +5,8 @@
 ## 开工前必读
 
 1. `docs/maintainers/DESIGNER-REVIEW-PLAN.md` —— 最近一轮（设计师评审 V1–V6）的任务和验收标准；之前的轮次在同目录的 `REVIEW-PLAN.md`、`PLAN.md`、`OPTIMIZATION-PLAN.md`。做完在「进度」里打勾写日期。
-   待做的两份：`COLOR-SCALE-PLAN.md`（颜色色阶）、`MINI-REVIEW-PLAN.md`（小程序对抗测试 Q1–Q6）；第 3 节没定的先不动。
+   2026-10-18 做完的两份：`COLOR-SCALE-PLAN.md`（颜色色阶：组件只用用途名，不现场混色；改色阶跑 `node packages/xxd-tokens/scripts/scales.mjs`）、
+   `MINI-REVIEW-PLAN.md`（小程序对抗测试 Q1–Q6；真机上还要看的在 `MINI-DEVICE-CHECKLIST.md`）。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
@@ -13,7 +14,7 @@
 
 - **许可与发布**：MIT 开源。来自 Kumo 的代码保留 `LICENSE-KUMO`。不要 push 到 `upstream`（那是 Cloudflare 的仓库）。推送、发布 npm、部署展示站都是维护者的决定，AI 助手不要自己做，等维护者明确说了再做。package 暂时保持 `private: true`，防止误发 npm。
 - **别的仓库**：插件、网站各有自己的仓库，常有未提交的工作。要改的话用 `git worktree add -b <新分支>` 在临时目录里改、在新分支上提交，不推送、不合并。
-- **令牌唯一来源**是 `packages/xxd-tokens/tokens.css`。组件里不写死颜色、圆角、阴影、字重。
+- **令牌唯一来源**是 `packages/xxd-tokens/tokens.css`。组件里不写死颜色、圆角、阴影、字重；颜色用色阶的用途名（`--danger-tint`、`--accent-border`……），不写 `color-mix()`（测试会拦）。
 - 矩形圆角只用 `--r-xs / sm / md / lg / pill`；语义圆用 `--r-circle`。默认直角。
 - 卡片、行、按钮不加阴影；动效只动 opacity / transform；字重只有 400 / 500 / 600。
 - 图标：24 网格、1.5 线宽、round cap、miter join、方角。

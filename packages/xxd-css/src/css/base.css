@@ -55,7 +55,7 @@
   }
 
   :where(.xxd-page) ::selection {
-    background: color-mix(in srgb, var(--action) 18%, transparent);
+    background: var(--accent-border);
   }
 
   /* hidden 属性永远有效：组件自己写了 display（grid / flex）也一样；组件里面没有类名的元素

@@ -1101,6 +1101,50 @@
   }
 
   /* 色板 */
+  /* 色阶：每族一行 12 格，亮暗各一排（颜色页） */
+  .site-scales {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+    overflow-x: auto;
+  }
+
+  .site-scale {
+    display: grid;
+    gap: var(--space-0-5);
+    min-width: 520px;
+  }
+
+  .site-scale__name {
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+  }
+
+  .site-scale__row,
+  .site-scale__steps {
+    display: grid;
+    grid-template-columns: 40px repeat(12, minmax(0, 1fr));
+    gap: var(--space-0-5);
+    min-width: 520px;
+  }
+
+  .site-scale__row > i {
+    display: block;
+    height: var(--control-h-sm);
+    border-radius: var(--r-xs);
+  }
+
+  .site-scale__mode,
+  .site-scale__steps > span {
+    align-self: center;
+    color: var(--muted);
+    font: var(--text-xs) / var(--leading-xs) var(--font-mono);
+    text-align: center;
+  }
+
+  .site-scale__mode {
+    text-align: left;
+  }
+
   .site-swatches {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

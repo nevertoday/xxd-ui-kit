@@ -11,7 +11,6 @@
 import type { ThemeConfig } from "./types.js";
 
 const same = (value: string) => ({ light: value, dark: value });
-const tint = (color: string, pct: number) => `color-mix(in srgb, var(${color}) ${pct}%, transparent)`;
 
 export const XXD_COLOR: Record<string, string> = {
   // 面：纸 / 背景 / 洗色
@@ -29,7 +28,7 @@ export const XXD_COLOR: Record<string, string> = {
   // 强调：墨色或主色
   // 实心底（上面放白字）：主色时是压暗到 4.5:1 的 fill
   "kumo-brand": "var(--action-fill, var(--action, #111111))",
-  "kumo-brand-hover": "var(--action-fill-hover, color-mix(in srgb, var(--action, #111111) 84%, var(--paper, #ffffff)))",
+  "kumo-brand-hover": "var(--action-fill-hover, var(--accent-solid-hover, #323232))",
   // 线
   "kumo-line": "var(--line, #e9e7e4)",
   "kumo-hairline": "var(--line, #e9e7e4)",
@@ -39,16 +38,17 @@ export const XXD_COLOR: Record<string, string> = {
   "kumo-arrow-edge": "var(--line, #e9e7e4)",
   "kumo-arrow-stroke": "transparent",
   // 语义：只表达意义；info 是中性的。color 组会被当作底色用（白字），所以用 *-strong；text 组用普通语义色。
-  "kumo-info-tint": tint("--ink, #111111", 5),
+  // 淡底是色阶的 3 级（COLOR-SCALE-PLAN：组件里不现场混色），兜底值是亮色的值
+  "kumo-info-tint": "var(--wash, #f6f4f1)",
   "kumo-info": "var(--ink, #111111)",
-  "kumo-warning-tint": tint("--warning, #b45309", 10),
+  "kumo-warning-tint": "var(--warning-tint, #fff0e9)",
   "kumo-warning": "var(--warning-strong, #b45309)",
-  "kumo-danger-tint": tint("--danger, #b42318", 9),
+  "kumo-danger-tint": "var(--danger-tint, #feeeec)",
   "kumo-danger": "var(--danger-strong, #b42318)",
-  "kumo-success-tint": tint("--success, #15803d", 9),
+  "kumo-success-tint": "var(--success-tint, #eaf6ec)",
   "kumo-success": "var(--success-strong, #15803d)",
   "kumo-banner-info": "var(--wash, #f6f4f1)",
-  "kumo-banner-warning": "color-mix(in srgb, var(--warning, #b45309) 10%, var(--paper, #ffffff))",
+  "kumo-banner-warning": "var(--warning-bg, #fef8f4)",
   // 徽标：颜色只留给意义；装饰色收敛到强调色或中性
   "kumo-badge-red": "var(--danger-strong, #b42318)",
   "kumo-badge-green": "var(--success-strong, #15803d)",

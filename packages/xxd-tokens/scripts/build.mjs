@@ -109,6 +109,9 @@ const MODE_NAMES = {
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  // 色阶区域要是最新的（改了 src/scales.js 要先跑 node scripts/scales.mjs）
+  const { applyScales } = await import("./scales.mjs");
+  if (applyScales(source) !== source) throw new Error("tokens.css 里的色阶不是最新的：先跑 node packages/xxd-tokens/scripts/scales.mjs");
   rmSync(dist, { recursive: true, force: true });
   mkdirSync(dist, { recursive: true });
   const blocks = parseBlocks(source);

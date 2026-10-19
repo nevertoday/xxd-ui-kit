@@ -56,13 +56,13 @@
   }
 
   .xxd-btn:is([data-variant="primary"], [data-variant="danger"]):active:not(:disabled, [aria-disabled="true"]) {
-    background: color-mix(in srgb, var(--btn-bg-hover) 92%, #000000);
+    background: var(--btn-bg-active);
   }
 
   .xxd-btn[aria-pressed="true"] {
     --btn-bg: var(--selected-bg);
     --btn-bg-hover: var(--selected-bg);
-    --btn-bd: color-mix(in srgb, var(--action) 30%, var(--line-strong));
+    --btn-bd: var(--accent-border);
   }
 
   .xxd-btn[data-variant="primary"] {
@@ -70,6 +70,7 @@
     --btn-bg: var(--action-fill);
     --btn-bd: var(--action-fill);
     --btn-bg-hover: var(--action-fill-hover);
+    --btn-bg-active: var(--action-fill-hover);
   }
 
   .xxd-btn[data-variant="primary"]:hover {
@@ -89,7 +90,7 @@
   }
 
   .xxd-btn[data-variant="outline"]:hover {
-    border-color: color-mix(in srgb, var(--ink) 45%, var(--line-strong));
+    border-color: var(--line-control-hover);
   }
 
   .xxd-btn.ui-dialog-cancel {
@@ -103,16 +104,17 @@
   }
 
   .xxd-btn[data-variant="danger"] {
-    --btn-fg: #ffffff;
-    --btn-bg: var(--danger-strong);
-    --btn-bd: var(--danger-strong);
-    --btn-bg-hover: color-mix(in srgb, var(--danger-strong) 88%, #000000);
+    --btn-fg: var(--danger-on-solid);
+    --btn-bg: var(--danger-solid);
+    --btn-bd: var(--danger-solid);
+    --btn-bg-hover: var(--danger-solid-hover);
+    --btn-bg-active: var(--danger-solid-hover);
   }
 
   .xxd-btn[data-variant="danger-outline"] {
-    --btn-fg: var(--danger);
-    --btn-bd: color-mix(in srgb, var(--danger) 45%, var(--line));
-    --btn-bg-hover: color-mix(in srgb, var(--danger) 8%, var(--paper));
+    --btn-fg: var(--danger-text);
+    --btn-bd: var(--danger-border);
+    --btn-bg-hover: var(--danger-tint);
   }
 
   .xxd-btn[data-size="xs"] {
@@ -210,7 +212,7 @@
   /* 质感（data-finish="material"）：只给实心按钮；这是材质，不是浮起 —— 没有外阴影。
    * 变量（--btn-edge / --btn-highlight / --btn-press-y）在 @xxd/tokens 里：离按钮最近的 data-finish 说了算，React 版读同一组。 */
   .xxd-btn:is([data-variant="primary"], [data-variant="danger"]) {
-    --btn-bd: color-mix(in srgb, var(--btn-bg) var(--btn-edge, 100%), #000000);
+    --btn-bd: color-mix(in srgb, var(--btn-bg) var(--btn-edge, 100%), #000000); /* color-mix 例外：质感的边按 --btn-edge 的百分比掺黑，对应不到某一级 */
     box-shadow: var(--btn-highlight, none);
   }
 
@@ -235,7 +237,7 @@
     color: var(--action-text);
     font: inherit;
     text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); /* color-mix 例外：下划线跟着当前字色淡下去 */
     text-underline-offset: 3px;
     cursor: pointer;
   }
@@ -290,7 +292,7 @@
 
   .xxd-btn-group > .xxd-btn[data-variant="primary"] + .xxd-btn[data-variant="primary"] {
     margin-left: 0;
-    border-left-color: color-mix(in srgb, var(--on-action) 30%, var(--action-fill));
+    border-left-color: var(--accent-solid-hover);
   }
 
   .xxd-btn-group > .xxd-btn:first-child {

@@ -1,7 +1,6 @@
 // 图表：折线、柱状、迷你折线。画成 SVG 图片（小程序里不用装 ECharts，主包小），颜色从当前外观的令牌算：
 // 和网页版 chartPalette 同一个算法——第一条是主色，后面几条是不同深浅的墨色。坐标轴的字用普通文字画在图外面。
 import { Image, View, Text } from "@tarojs/components";
-import { resolveValue } from "@xxd/tokens/resolve";
 import type { ReactNode } from "react";
 import "../styles/chart.mini.css";
 import { a11y } from "./aria";
@@ -14,13 +13,12 @@ export interface ChartSeries {
   data: number[];
 }
 
-/** 和 @xxd/css 的 chartPalette 一样：主色，再是墨色 78 / 64 / 54 / 46% 混纸色 */
+/** 和 @xxd/css 的 chartPalette 一样（色阶里取）：主色 9 级、灰 9 级、灰 11 / 10 级、主色 8 级 */
 export function chartPalette(vars: Record<string, string>): string[] {
-  const mix = (p: number) => resolveValue(`color-mix(in srgb, ${vars["--ink"]} ${p}%, ${vars["--paper"]})`, {});
-  return [vars["--action"], mix(78), mix(64), mix(54), mix(46)];
+  return [vars["--action"], vars["--gray-9"], vars["--gray-11"], vars["--gray-10"], vars["--accent-8"]];
 }
 
-const DASH = ["", "", "4 3", "1.5 3", "6 3 1 3"];
+const DASH = ["", "4 3", "1.5 3", "6 3 1 3", "4 3"];
 
 interface SvgOptions {
   type: "line" | "bar";
@@ -92,7 +90,8 @@ export function Chart({ type = "line", series, labels, height = 160, title, meta
         <View className="xxd-chart__legend" {...a11y({ hidden: true })}>
           {series.map((s, i) => (
             <View key={s.name} className="xxd-chart__key">
-              <View className="xxd-chart__swatch" style={`background:${colors[i % colors.length]}`} />
+              {/* 图例的短线和图里的线型一致：第二条起是虚线 */}
+              <View className="xxd-chart__swatch" style={DASH[i % DASH.length] ? `background:repeating-linear-gradient(90deg,${colors[i % colors.length]} 0 3px,transparent 3px 5px)` : `background:${colors[i % colors.length]}`} />
               <Text>{s.name}</Text>
             </View>
           ))}

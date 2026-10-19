@@ -53,20 +53,20 @@ button.xxd-btn.xxd-btn:after {
   min-width: 0;
 }
 
-/* 实心按钮按下：比按下前再深 8%（网页版用 color-mix 和局部变量算，这里写成全局令牌） */
+/* 实心按钮按下：色阶的 10 级（和网页版的 --btn-bg-active 一样；小程序的 :active 是 .is-active） */
 .xxd-btn.is-variant-primary.is-active:not(.is-disabled) {
-  background: color-mix(in srgb, var(--action-fill-hover) 92%, #000000);
+  background: var(--accent-solid-hover);
 }
 
 .xxd-btn.is-variant-danger.is-active:not(.is-disabled) {
-  background: color-mix(in srgb, color-mix(in srgb, var(--danger-strong) 88%, #000000) 92%, #000000);
+  background: var(--danger-solid-hover);
 }
 
-/* 质感（material）的边：比底色深一档 */
+/* 质感（material）的边：比底色深一档（网页版按 --btn-edge 掺黑；小程序没有 color-mix，用色阶里深一级的颜色） */
 .is-finish-material .xxd-btn.is-variant-primary {
-  --btn-bd: color-mix(in srgb, var(--action-fill) 86%, #000000);
+  --btn-bd: var(--accent-text);
 }
 
 .is-finish-material .xxd-btn.is-variant-danger {
-  --btn-bd: color-mix(in srgb, var(--danger-strong) 86%, #000000);
+  --btn-bd: var(--danger-solid-hover);
 }

@@ -6,7 +6,7 @@
 //   压暗后在暗纸上不足 3:1 才改用近黑字。hover 色同样保证 4.5:1。
 // - 另有一个更深的「文字版」（链接、小标签），在纸上达到 4.5:1。
 // - accentMode: "exact"（品牌色原样）时，标记和实心底都用原色，白字不够就换近黑字；文字版照样加深。
-// tokens.css 根据这些变量推出其余一切：hover/选中淡层、焦点、灰色和线条里的一点色调。
+// tokens.css 根据这些变量推出其余一切：选中底、焦点、灰色和线条里的一点色调（都是色阶里的某一级）。
 
 /**
  * 第一个是默认墨色；其余 10 个在 OKLCH 里明度相同（L 0.60）、彩度相同（C 0.105），色相每隔 36° 一个，
@@ -30,6 +30,8 @@ export const ACCENT_PRESETS = Object.freeze(
     { id: "#718391", name: "Misty slate", zh: "雾灰蓝" },
   ].map((preset) => Object.freeze(preset)),
 );
+
+import { generateScale, GRAY_PINS } from "./scales.js";
 
 export const LIGHT_PAPER = [255, 255, 255];
 export const DARK_PAPER = [32, 31, 26];
@@ -91,57 +93,44 @@ export function accentFillHover(fill, on, paper) {
   return clampRgb(mix(fill, on === WHITE ? [0, 0, 0] : WHITE, 0.1));
 }
 
-export const ACCENT_KEYS = Object.freeze([
-  "action-custom",
-  "action-rgb-custom",
-  "on-action-custom",
-  "action-text-custom",
-  "action-fill-custom",
-  "action-fill-hover-custom",
-  "action-custom-dark",
-  "action-rgb-custom-dark",
-  "on-action-custom-dark",
-  "action-text-custom-dark",
-  "action-fill-custom-dark",
-  "action-fill-hover-custom-dark",
-]);
-
-/** 原样：实心底直接用原色；白字不到 4.5 就换成近黑字（品牌色保真，设计师评审 D21） */
-function exactFill(mark) {
-  return { fill: mark, on: contrast(mark, WHITE) >= 4.5 ? WHITE : NEAR_BLACK };
-}
+const OLD_KEYS = ["action-custom", "action-rgb-custom", "on-action-custom", "action-text-custom", "action-fill-custom", "action-fill-hover-custom"];
+/** 主色写到根上的全部变量名（不带 --、不带前缀）：老的 6 个 + 主色族 12 级 + 带色调的灰 12 级，亮暗各一份 */
+export const ACCENT_KEYS = Object.freeze(
+  ["", "-dark"].flatMap((sfx) => [
+    ...OLD_KEYS.map((k) => `${k}${sfx}`),
+    ...Array.from({ length: 12 }, (_, i) => `accent-${i + 1}-custom${sfx}`),
+    `accent-on-custom${sfx}`,
+    ...Array.from({ length: 12 }, (_, i) => `gray-${i + 1}-custom${sfx}`),
+  ]),
+);
 
 /**
  * 一个主色的全部变量；墨色返回 null。prefix 用于作用域（如注入第三方页面时用 "xxd-"）。
- * exact：品牌色原样出现在实心底和标记（开关、tab 下划线、焦点）上，不提亮也不压暗；正文里的强调文字（链接）仍然加深到 4.5:1。
- *   代价：浅的品牌色做标记时可能不到 3:1——这是产品自己的选择，缺省（auto）仍然自动调整。
+ * 按色阶算（docs/maintainers/COLOR-SCALE-PLAN.md）：主色族 12 级 + 带一点主色的灰 12 级，亮暗各一套。
+ * 老的变量也由色阶给值：标记和实心底 = 9 级，悬停 = 10 级，强调字 = 11 级（在 1–4 级上 ≥ 4.5）。
+ * exact：9 级就是品牌色原样（白字不够换近黑字）；缺省压暗 / 提亮到实心底上的白字 ≥ 4.5（暗色是在暗纸上 ≥ 3）。
  */
 export function accentPalette(value, prefix = "", { exact = false } = {}) {
   const hex = normalizeAccent(value);
   if (!hex) return null;
-  const base = toRgb(hex);
-  const light = exact ? base : ensureContrast(base, LIGHT_PAPER, [0, 0, 0]);
-  const dark = exact ? base : ensureContrast(base, DARK_PAPER, [255, 255, 255]);
-  // 文字版要在纸上和「选中底」（tokens.css 的 --selected-bg：亮 13%、暗 18% 主色）上都 ≥ 4.5
-  const lightText = ensureContrast(base, clampRgb(mix(LIGHT_PAPER, light, 0.13)), [0, 0, 0], 4.5);
-  const darkText = ensureContrast(base, clampRgb(mix(DARK_PAPER, dark, 0.18)), [255, 255, 255], 4.5);
-  const lightFill = exact ? exactFill(base) : accentFill(light, LIGHT_PAPER);
-  const darkFill = exact ? exactFill(base) : accentFill(dark, DARK_PAPER);
   const name = (key) => `--${prefix}${key}`;
-  return {
-    [name("action-custom")]: toHex(light),
-    [name("action-rgb-custom")]: light.join(", "),
-    [name("on-action-custom")]: toHex(lightFill.on),
-    [name("action-text-custom")]: toHex(lightText),
-    [name("action-fill-custom")]: toHex(lightFill.fill),
-    [name("action-fill-hover-custom")]: toHex(accentFillHover(lightFill.fill, lightFill.on, LIGHT_PAPER)),
-    [name("action-custom-dark")]: toHex(dark),
-    [name("action-rgb-custom-dark")]: dark.join(", "),
-    [name("on-action-custom-dark")]: toHex(darkFill.on),
-    [name("action-text-custom-dark")]: toHex(darkText),
-    [name("action-fill-custom-dark")]: toHex(darkFill.fill),
-    [name("action-fill-hover-custom-dark")]: toHex(accentFillHover(darkFill.fill, darkFill.on, DARK_PAPER)),
-  };
+  const out = {};
+  for (const mode of ["light", "dark"]) {
+    const sfx = mode === "dark" ? "-dark" : "";
+    const acc = generateScale(hex, { mode, exact });
+    const gray = generateScale("", { mode, kind: "gray", tint: hex, pins: GRAY_PINS[mode] });
+    const [nine, ten, eleven] = [acc.steps[8], acc.steps[9], acc.steps[10]];
+    out[name(`action-custom${sfx}`)] = nine;
+    out[name(`action-rgb-custom${sfx}`)] = toRgb(nine).join(", ");
+    out[name(`on-action-custom${sfx}`)] = acc.on;
+    out[name(`action-text-custom${sfx}`)] = eleven;
+    out[name(`action-fill-custom${sfx}`)] = nine;
+    out[name(`action-fill-hover-custom${sfx}`)] = ten;
+    acc.steps.forEach((h, i) => (out[name(`accent-${i + 1}-custom${sfx}`)] = h));
+    out[name(`accent-on-custom${sfx}`)] = acc.on;
+    gray.steps.forEach((h, i) => (out[name(`gray-${i + 1}-custom${sfx}`)] = h));
+  }
+  return out;
 }
 
 /** 写到元素上（页面里是 <html>，Shadow DOM 里是 host）。返回生效的 hex，墨色返回 ""。 */

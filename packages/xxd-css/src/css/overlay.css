@@ -121,7 +121,7 @@
     min-height: 56px;
     padding: var(--space-3) var(--space-4);
     border-top: 1px solid var(--line);
-    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    background: rgba(var(--paper-rgb), 0.96);
     backdrop-filter: blur(10px);
   }
 

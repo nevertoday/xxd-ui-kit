@@ -152,8 +152,8 @@
   );
 
   --color-kumo-brand-hover: light-dark(
-    var(--action-fill-hover, color-mix(in srgb, var(--action, #111111) 84%, var(--paper, #ffffff))),
-    var(--action-fill-hover, color-mix(in srgb, var(--action, #111111) 84%, var(--paper, #ffffff)))
+    var(--action-fill-hover, var(--accent-solid-hover, #323232)),
+    var(--action-fill-hover, var(--accent-solid-hover, #323232))
   );
 
   --color-kumo-line: light-dark(
@@ -192,8 +192,8 @@
   );
 
   --color-kumo-info-tint: light-dark(
-    color-mix(in srgb, var(--ink, #111111) 5%, transparent),
-    color-mix(in srgb, var(--ink, #111111) 5%, transparent)
+    var(--wash, #f6f4f1),
+    var(--wash, #f6f4f1)
   );
 
   --color-kumo-info: light-dark(
@@ -202,8 +202,8 @@
   );
 
   --color-kumo-warning-tint: light-dark(
-    color-mix(in srgb, var(--warning, #b45309) 10%, transparent),
-    color-mix(in srgb, var(--warning, #b45309) 10%, transparent)
+    var(--warning-tint, #fff0e9),
+    var(--warning-tint, #fff0e9)
   );
 
   --color-kumo-warning: light-dark(
@@ -212,8 +212,8 @@
   );
 
   --color-kumo-danger-tint: light-dark(
-    color-mix(in srgb, var(--danger, #b42318) 9%, transparent),
-    color-mix(in srgb, var(--danger, #b42318) 9%, transparent)
+    var(--danger-tint, #feeeec),
+    var(--danger-tint, #feeeec)
   );
 
   --color-kumo-danger: light-dark(
@@ -222,8 +222,8 @@
   );
 
   --color-kumo-success-tint: light-dark(
-    color-mix(in srgb, var(--success, #15803d) 9%, transparent),
-    color-mix(in srgb, var(--success, #15803d) 9%, transparent)
+    var(--success-tint, #eaf6ec),
+    var(--success-tint, #eaf6ec)
   );
 
   --color-kumo-success: light-dark(
@@ -237,8 +237,8 @@
   );
 
   --color-kumo-banner-warning: light-dark(
-    color-mix(in srgb, var(--warning, #b45309) 10%, var(--paper, #ffffff)),
-    color-mix(in srgb, var(--warning, #b45309) 10%, var(--paper, #ffffff))
+    var(--warning-bg, #fef8f4),
+    var(--warning-bg, #fef8f4)
   );
 
   --color-kumo-badge-red: light-dark(
@@ -325,7 +325,7 @@
     --color-kumo-fill: var(--wash-strong, #eeece9);
     --color-kumo-fill-hover: var(--wash, #f6f4f1);
     --color-kumo-brand: var(--action-fill, var(--action, #111111));
-    --color-kumo-brand-hover: var(--action-fill-hover, color-mix(in srgb, var(--action, #111111) 84%, var(--paper, #ffffff)));
+    --color-kumo-brand-hover: var(--action-fill-hover, var(--accent-solid-hover, #323232));
     --color-kumo-line: var(--line, #e9e7e4);
     --color-kumo-hairline: var(--line, #e9e7e4);
     --color-kumo-focus: var(--action, #111111);
@@ -333,16 +333,16 @@
     --color-kumo-shadow-drop: rgba(var(--shadow-rgb, 17, 17, 17), 0.08);
     --color-kumo-arrow-edge: var(--line, #e9e7e4);
     --color-kumo-arrow-stroke: transparent;
-    --color-kumo-info-tint: color-mix(in srgb, var(--ink, #111111) 5%, transparent);
+    --color-kumo-info-tint: var(--wash, #f6f4f1);
     --color-kumo-info: var(--ink, #111111);
-    --color-kumo-warning-tint: color-mix(in srgb, var(--warning, #b45309) 10%, transparent);
+    --color-kumo-warning-tint: var(--warning-tint, #fff0e9);
     --color-kumo-warning: var(--warning-strong, #b45309);
-    --color-kumo-danger-tint: color-mix(in srgb, var(--danger, #b42318) 9%, transparent);
+    --color-kumo-danger-tint: var(--danger-tint, #feeeec);
     --color-kumo-danger: var(--danger-strong, #b42318);
-    --color-kumo-success-tint: color-mix(in srgb, var(--success, #15803d) 9%, transparent);
+    --color-kumo-success-tint: var(--success-tint, #eaf6ec);
     --color-kumo-success: var(--success-strong, #15803d);
     --color-kumo-banner-info: var(--wash, #f6f4f1);
-    --color-kumo-banner-warning: color-mix(in srgb, var(--warning, #b45309) 10%, var(--paper, #ffffff));
+    --color-kumo-banner-warning: var(--warning-bg, #fef8f4);
     --color-kumo-badge-red: var(--danger-strong, #b42318);
     --color-kumo-badge-green: var(--success-strong, #15803d);
     --color-kumo-badge-orange: var(--warning-strong, #b45309);
@@ -382,7 +382,7 @@
     --color-kumo-fill: var(--wash-strong, #eeece9);
     --color-kumo-fill-hover: var(--wash, #f6f4f1);
     --color-kumo-brand: var(--action-fill, var(--action, #111111));
-    --color-kumo-brand-hover: var(--action-fill-hover, color-mix(in srgb, var(--action, #111111) 84%, var(--paper, #ffffff)));
+    --color-kumo-brand-hover: var(--action-fill-hover, var(--accent-solid-hover, #323232));
     --color-kumo-line: var(--line, #e9e7e4);
     --color-kumo-hairline: var(--line, #e9e7e4);
     --color-kumo-focus: var(--action, #111111);
@@ -390,16 +390,16 @@
     --color-kumo-shadow-drop: rgba(var(--shadow-rgb, 17, 17, 17), 0.08);
     --color-kumo-arrow-edge: var(--line, #e9e7e4);
     --color-kumo-arrow-stroke: transparent;
-    --color-kumo-info-tint: color-mix(in srgb, var(--ink, #111111) 5%, transparent);
+    --color-kumo-info-tint: var(--wash, #f6f4f1);
     --color-kumo-info: var(--ink, #111111);
-    --color-kumo-warning-tint: color-mix(in srgb, var(--warning, #b45309) 10%, transparent);
+    --color-kumo-warning-tint: var(--warning-tint, #fff0e9);
     --color-kumo-warning: var(--warning-strong, #b45309);
-    --color-kumo-danger-tint: color-mix(in srgb, var(--danger, #b42318) 9%, transparent);
+    --color-kumo-danger-tint: var(--danger-tint, #feeeec);
     --color-kumo-danger: var(--danger-strong, #b42318);
-    --color-kumo-success-tint: color-mix(in srgb, var(--success, #15803d) 9%, transparent);
+    --color-kumo-success-tint: var(--success-tint, #eaf6ec);
     --color-kumo-success: var(--success-strong, #15803d);
     --color-kumo-banner-info: var(--wash, #f6f4f1);
-    --color-kumo-banner-warning: color-mix(in srgb, var(--warning, #b45309) 10%, var(--paper, #ffffff));
+    --color-kumo-banner-warning: var(--warning-bg, #fef8f4);
     --color-kumo-badge-red: var(--danger-strong, #b42318);
     --color-kumo-badge-green: var(--success-strong, #15803d);
     --color-kumo-badge-orange: var(--warning-strong, #b45309);

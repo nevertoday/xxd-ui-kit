@@ -28,7 +28,7 @@
 
   .xxd-dropzone[data-over] {
     border-color: var(--action);
-    background: color-mix(in srgb, var(--action) 4%, var(--paper));
+    background: var(--accent-bg);
   }
 
   .xxd-dropveil {
@@ -39,7 +39,7 @@
     place-items: center;
     border: 1px dashed var(--action);
     border-radius: var(--r-lg);
-    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    background: rgba(var(--paper-rgb), 0.88);
     color: var(--ink);
     font: var(--weight-medium) var(--text-base) / var(--leading-sm) var(--font-body);
     backdrop-filter: blur(2px);

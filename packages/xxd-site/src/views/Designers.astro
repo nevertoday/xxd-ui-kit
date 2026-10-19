@@ -13,7 +13,7 @@ const T = en
       h: { read: "Read these first", tokens: "Tokens: name things, don't measure them", widths: "Widths to design at", appearance: "The five appearance settings", assets: "Specs and assets", handoff: "Handing over to development" },
       read: [
         ["/principles", "Design principles", "The rules every visual decision maps back to, each with a do / don't pair rendered from real components."],
-        ["/foundations/colors", "Color", "Paper, ink, lines, meaning colors, the raised layer for overlays, disabled colors and the 12 accents. Try your own brand color there."],
+        ["/foundations/colors", "Color", "The 12-step scales (every step has one job), paper, ink, lines, meaning colors, the raised layer for overlays, disabled colors and the 12 accents. Try your own brand color there."],
         ["/foundations/type", "Typography", "Eight sizes, each paired with a line height on the 4px grid."],
         ["/foundations/spacing", "Spacing and sizing", "The 4px scale, the two half steps, control heights and densities, and the three breakpoints."],
         ["/foundations/radius", "Corners", "Square by default; five radius steps in rounded mode."],
@@ -24,7 +24,7 @@ const T = en
         "Every color, size, spacing and radius in the components comes from a token in tokens.css. In a spec, write the token name (--space-3, --control-h, --text-sm / --leading-sm), not the pixel value: the value changes with density and corners, the name doesn't.",
         "Spacing uses the 4px scale (--space-1 to --space-8). Two half steps are for optical gaps only: 2px and 6px.",
         "Type sizes come in pairs with a line height: 13 / 20 for body and controls, 12 / 20 for descriptions that can wrap, 16 / 28 for reading text.",
-        "Colors: --ink for text, --muted for secondary text (never --muted-2), --line for dividers, --line-control for the edges of inputs and checkboxes, --paper-raised for anything floating.",
+        "Colors: --ink for text, --muted for secondary text (never --muted-2), --line for dividers, --line-control for the edges of inputs and checkboxes, --paper-raised for anything floating. Tints, borders and fills of the accent and meaning colors use role names from the scales: --danger-tint for a soft background, --danger-border for an outline, --danger-solid for a fill, --danger-text for colored text. Don't mix colors with a percentage.",
         "Exact values for every token in all 8 appearances (light / dark × square / rounded × standard / compact) are in tokens.resolved.json.",
       ],
       widths: [
@@ -63,7 +63,7 @@ const T = en
       h: { read: "先看这几页", tokens: "令牌：说名字，不量像素", widths: "出稿的宽度", appearance: "五个外观设置", assets: "规格和素材", handoff: "交给开发" },
       read: [
         ["/principles", "设计原则", "每个视觉决定都能回到这里；每条都有用真组件渲染的「好 / 不好」。"],
-        ["/foundations/colors", "颜色", "纸、墨、线、语义色、浮层抬起的一层、禁用色、12 个主色。可以在那里试自己的品牌色。"],
+        ["/foundations/colors", "颜色", "12 级色阶（每一级用途固定）、纸、墨、线、语义色、浮层抬起的一层、禁用色、12 个主色。可以在那里试自己的品牌色。"],
         ["/foundations/type", "字体与层级", "八档字号，每档配一个落在 4px 网格上的行高。"],
         ["/foundations/spacing", "间距与尺寸", "4px 刻度和两个半档、控件高度和两档密度、三个断点。"],
         ["/foundations/radius", "圆角", "缺省直角；圆角模式下五档。"],
@@ -74,7 +74,7 @@ const T = en
         "组件里的颜色、尺寸、间距、圆角都来自 tokens.css 的令牌。标注时写令牌名（--space-3、--control-h、--text-sm / --leading-sm），不写像素：像素会随密度和圆角变，名字不变。",
         "间距用 4px 刻度（--space-1 到 --space-8）；两个半档只给光学上的小间隔：2px 和 6px。",
         "字号和行高成对：正文和控件 13 / 20，会折行的说明 12 / 20，阅读正文 16 / 28。",
-        "颜色：正文用 --ink，次要文字用 --muted（不用 --muted-2），分隔线用 --line，输入框和复选框的边用 --line-control，浮起来的东西用 --paper-raised。",
+        "颜色：正文用 --ink，次要文字用 --muted（不用 --muted-2），分隔线用 --line，输入框和复选框的边用 --line-control，浮起来的东西用 --paper-raised。主色、语义色的淡底、边、实心底用色阶的用途名：淡底 --danger-tint、描边 --danger-border、实心底 --danger-solid、带颜色的字 --danger-text。不要按百分比混色。",
         "每个令牌在 8 种外观（亮 / 暗 × 直角 / 圆角 × 标准 / 紧凑）下的具体值在 tokens.resolved.json 里。",
       ],
       widths: [

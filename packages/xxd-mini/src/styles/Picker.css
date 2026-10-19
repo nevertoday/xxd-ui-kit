@@ -15,12 +15,12 @@
 }
 
 .xxd-wheel__indicator {
-  height: 44px;
+  height: var(--hit-min);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 
-/* 上下渐隐：从纸色淡到透明 */
+/* 上下渐隐：从 72% 的纸色淡到透明（从不透明开始淡，最上最下两项几乎看不见，MINI-REVIEW-PLAN A7） */
 .xxd-wheel__mask {
-  background-image: linear-gradient(to bottom, var(--paper), rgba(var(--paper-rgb), 0)), linear-gradient(to top, var(--paper), rgba(var(--paper-rgb), 0));
+  background-image: linear-gradient(to bottom, rgba(var(--paper-rgb), 0.72), rgba(var(--paper-rgb), 0)), linear-gradient(to top, rgba(var(--paper-rgb), 0.72), rgba(var(--paper-rgb), 0));
 }
