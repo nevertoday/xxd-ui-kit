@@ -13,7 +13,8 @@
     "dev:weapp": "taro build --type weapp --watch",
     "dev:h5": "taro build --type h5 --watch",
     "check": "node scripts/check-h5.mjs",
-    "check:weapp": "node scripts/check-weapp.mjs"
+    "check:weapp": "node scripts/check-weapp.mjs",
+    "check:devtools": "node scripts/check-devtools.mjs"
   },
   "browserslist": [
     "defaults and fully supports es6-module",

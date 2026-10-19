@@ -76,4 +76,5 @@ ci/reports/
 packages/xxd-mini/styles/
 packages/xxd-mini/test/.out/
 packages/xxd-mini-demo/dist-h5/
+packages/xxd-mini-demo/shots/
 .swc/

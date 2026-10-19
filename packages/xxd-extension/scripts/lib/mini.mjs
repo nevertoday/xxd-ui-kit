@@ -160,6 +160,14 @@ export function checkMini(dir) {
     const pageConfig = read(file.replace(/index\.(tsx|jsx)$/, "index.config.ts")) || "";
     if (/navigationStyle\s*:\s*["']custom["']/.test(pageConfig) && !/<NavBar\b/.test(text)) add("nav", "warn", file, say("这一页用了自定义导航栏，但没用 <NavBar> —— 右上角的胶囊按钮会盖住内容", "This page uses a custom nav bar but no <NavBar> — the capsule button will cover the content"));
   }
+  // 标签栏（MINI-REVIEW-PLAN D26）：页面里自己放 TabBar、用 redirectTo 切页，每切一次整页重载
+  for (const file of sourceFiles(join(dir, "src/pages"), /\.(tsx|jsx)$/)) {
+    if (/<TabBar\b/.test(read(file))) add("tabbar", "warn", file, say("页面里自己放了 <TabBar>：切页会整页重载、丢掉滚动位置。用小程序自带的 tabBar（custom: true），在 src/custom-tab-bar/index.tsx 里放 <TabBarHost items={TABS} />，页面写 <XxdPage tabBar={TABS}>", "This page renders its own <TabBar>: switching tabs reloads the whole page and loses the scroll position. Use the built-in tabBar (custom: true), put <TabBarHost items={TABS} /> in src/custom-tab-bar/index.tsx and write <XxdPage tabBar={TABS}> on the page"));
+  }
+  if (appConfig && /tabBar\s*:\s*\{[\s\S]*?custom\s*:\s*true/.test(appConfig)) {
+    const host = read(firstExisting(dir, ["src/custom-tab-bar/index.tsx", "src/custom-tab-bar/index.jsx"]) || "");
+    if (!host || !/<TabBarHost\b/.test(host)) add("tabbar", "warn", join(dir, "src/custom-tab-bar/index.tsx"), say("app.config 的 tabBar 开了 custom，但 src/custom-tab-bar 里没有 <TabBarHost> —— 底部不会出现标签栏", "app.config turns on tabBar.custom, but src/custom-tab-bar has no <TabBarHost> — no tab bar will show"));
+  }
   if (appConfig && /navigationStyle\s*:\s*["']custom["']/.test(appConfig)) {
     for (const file of sourceFiles(join(dir, "src/pages"), /^index\.(tsx|jsx)$/)) if (!/<NavBar\b/.test(read(file))) add("nav", "warn", file, say("整个小程序是自定义导航栏，这一页没用 <NavBar>", "The whole app uses a custom nav bar, but this page has no <NavBar>"));
   }

@@ -61,6 +61,8 @@ describe("doctor 的小程序规则", () => {
     edit("project.config.json", (s) => s.replace('"libVersion": "3.0.0"', '"libVersion": "2.20.0"'));
     edit("src/app.tsx", (s) => s.replace('<XxdProvider lang="zh">{children}</XxdProvider>', "children"));
     edit("src/pages/settings/index.tsx", (s) => s.replaceAll("XxdPage", "View").replace("<AppearanceSettings />", "<AppearanceSettings /><Button icon={Trash} />"));
+    edit("src/pages/index/index.tsx", (s) => s.replace("</XxdPage>", '  <TabBar items={TABS} value="index" />\n    </XxdPage>'));
+    rmSync(join(dir, "src/custom-tab-bar"), { recursive: true, force: true });
     edit("src/app.css", (s) => `${s}\n.card[data-on] { color: var(--ink) }\n.list * { margin: 0 }\n:root { --x: 1 }\n.btn:hover { opacity: 0.8 }\n`);
     mkdirSync(join(dir, "dist"), { recursive: true });
     writeFileSync(join(dir, "dist/app.json"), "{}");
@@ -77,6 +79,8 @@ describe("doctor 的小程序规则", () => {
     has("mini", /XxdProvider/);
     has("mini", /XxdPage/);
     has("nav", /NavBar/);
+    has("tabbar", /自己放了 <TabBar>/);
+    has("tabbar", /TabBarHost/);
     has("a11y", /label/);
     has("wxss", /属性选择器/);
     has("wxss", /通配符/);

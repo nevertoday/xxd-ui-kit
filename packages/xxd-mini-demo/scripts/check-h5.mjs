@@ -3,6 +3,8 @@
 //   2. 不横向溢出（手机 390 和 320 宽）、控制台没有报错；
 //   3. 浮层（底部面板、一列操作、对话框、滚轮）打开后再扫一遍，并且整个落在屏幕里；
 //   4. 待办页走一遍：新建、勾选、筛选、左滑删除、撤销，刷新以后还在；外观页切暗色，所有页面跟着变、刷新以后还在。
+//   5. 对抗测试（MINI-REVIEW-PLAN Q6）：点按区 ≥ 44（真的点一下边上）、字不小于 12px（标签栏的字和角标除外）、
+//      同一组里一行字的行一样高；连点「新建」只开一个面板；超长的中英文待办不溢出；轻提示不盖住底部按钮条。
 // 用法：pnpm --filter @xxd/mini-demo build:h5 && pnpm --filter @xxd/mini-demo check
 // 需要 Chromium：CHROME_EXE=<Chrome 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
@@ -86,6 +88,52 @@ async function overflow(page, label) {
   for (const o of out) fail("溢出", `${label} ${o}`);
 }
 
+/** 点按区、字号、行高（MINI-REVIEW-PLAN I1、U1、U3） */
+async function touchRules(page, label) {
+  const out = await page.evaluate(() => {
+    const bad = [];
+    const sel = "[role=button],[role=switch],[role=checkbox],[role=radio],[role=tab],[role=menuitem],[role=link],taro-button-core,.xxd-input-clear";
+    const isTarget = (n) => n && n.closest?.(sel);
+    // 从中心往四个方向一像素一像素地点：点到自己（或它里面的东西）算它的；点到别的能点的东西算两边共享（相邻按钮中间的空）
+    const mine = (el, x, y) => {
+      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return false;
+      const hit = document.elementFromPoint(x, y);
+      return Boolean(hit && (el === hit || el.contains(hit) || hit.contains(el) || (isTarget(hit) && isTarget(hit) !== el)));
+    };
+    const reach = (el, x, y, dx, dy) => {
+      let n = 0;
+      while (n < 30 && mine(el, x + dx * (n + 1), y + dy * (n + 1))) n += 1;
+      return n;
+    };
+    for (const el of document.querySelectorAll(sel)) {
+      const r = el.getBoundingClientRect();
+      // 只给读屏的（1×1）、被整行代表的、看不见的、停用的不算
+      if (r.width < 4 || r.height < 4 || el.closest("[aria-hidden=true]") || getComputedStyle(el).visibility === "hidden") continue;
+      if (el.matches("[disabled], [aria-disabled=true]") || r.bottom < 0 || r.top > innerHeight) continue;
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      // 中心被别的东西盖着（上传中的那张图上面的遮罩）：本来就点不到，不算
+      if (!mine(el, cx, cy)) continue;
+      const w = reach(el, cx, cy, -1, 0) + reach(el, cx, cy, 1, 0) + 1;
+      const h = reach(el, cx, cy, 0, -1) + reach(el, cx, cy, 0, 1) + 1;
+      if (w < 43 || h < 43) bad.push(`${(el.getAttribute("aria-label") || el.textContent || el.className).trim().slice(0, 16)} 看得见 ${Math.round(r.width)}×${Math.round(r.height)}，点得到 ${w}×${h}`);
+    }
+    // 字号：小于 12px 的只允许标签栏的字和角标
+    for (const el of document.querySelectorAll(".xxd-page *, .xxd-overlay *")) {
+      if (el.children.length || !el.textContent.trim()) continue;
+      const fs = parseFloat(getComputedStyle(el).fontSize);
+      if (fs < 12 && !el.closest(".xxd-tabbar__label, .xxd-tabbar__badge, .xxd-sr-only")) bad.push(`「${el.textContent.trim().slice(0, 12)}」字号 ${fs}px`);
+    }
+    // 同一组里，一行字（没有说明）的行一样高
+    for (const body of document.querySelectorAll(".xxd-group__body")) {
+      const hs = [...body.children].filter((r) => r.classList.contains("xxd-row") && !r.classList.contains("is-stack") && !r.querySelector(".xxd-row__desc, .xxd-segmented")).map((r) => Math.round(r.getBoundingClientRect().height)).filter((h) => h > 0);
+      if (hs.length > 1 && Math.max(...hs) - Math.min(...hs) > 1) bad.push(`同一组里一行字的行高不一样：${[...new Set(hs)].join(" / ")}px`);
+    }
+    return [...new Set(bad)].slice(0, 6);
+  });
+  for (const o of out) fail("手指", `${label} ${o}`);
+}
+
 /* ── 1–2. 每个组件页 ── */
 let scans = 0;
 for (const mode of MODES) {
@@ -96,6 +144,7 @@ for (const mode of MODES) {
       if (width === 390) {
         await axe(page, label);
         scans += 1;
+        if (mode.id === "zh-light") await touchRules(page, label);
       }
       await overflow(page, label);
       for (const e of errors) fail("报错", `${label} ${e}`);
@@ -103,7 +152,7 @@ for (const mode of MODES) {
     }
   }
 }
-console.log(`组件页：${manifest.components.length} 个组件 × ${MODES.length} 种外观 × 2 种宽度，axe ${scans} 次`);
+console.log(`组件页：${manifest.components.length} 个组件 × ${MODES.length} 种外观 × 2 种宽度，axe ${scans} 次；点按区、字号、同组行高`);
 
 /* ── 3. 浮层 ── */
 const OVERLAYS = [
@@ -154,6 +203,46 @@ console.log(`浮层：${OVERLAYS.length} 个 × ${MODES.length} 种外观`);
   for (const e of errors) fail("报错", `返回键：${e}`);
   await ctx.close();
   console.log("返回键：面板打开时按返回先关面板；点按钮关的不多留历史");
+}
+
+/* ── 5. 对抗：连点、超长文字、轻提示和底部按钮条 ── */
+{
+  const ctx = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto(`${base}#/pages/todo/index`);
+  await page.waitForTimeout(700);
+  // 连点三下「新建」：只开一个面板
+  const nb = page.getByText("新建", { exact: true }).last();
+  await nb.click();
+  await nb.click({ force: true }).catch(() => {});
+  await nb.click({ force: true }).catch(() => {});
+  await page.waitForTimeout(400);
+  if ((await page.locator(".xxd-sheet.is-open").count()) !== 1) fail("对抗", `连点三下「新建」开了 ${await page.locator(".xxd-sheet.is-open").count()} 个面板`);
+  await page.locator(".xxd-scrim").first().click({ force: true });
+  await page.waitForTimeout(400);
+  const add = async (text) => {
+    await page.getByText("新建", { exact: true }).last().click();
+    await page.waitForTimeout(350);
+    await page.locator(".xxd-sheet input").fill(text);
+    await page.getByText("添加", { exact: true }).click();
+    await page.waitForTimeout(350);
+  };
+  await add("给设计师回一下关于小程序底部面板圆角和安全区的那几个问题，顺便把截图整理好发群里");
+  await add("Supercalifragilisticexpialidocious_long_english_word");
+  await overflow(page, "对抗 320 超长待办");
+  // 轻提示（「已添加」）不盖住底部按钮条
+  const boxes = await page.evaluate(() => {
+    const t = document.querySelector(".xxd-toast")?.getBoundingClientRect();
+    const b = document.querySelector(".xxd-bottombar")?.getBoundingClientRect();
+    return t && b ? { toast: t.bottom, bar: b.top } : null;
+  });
+  if (!boxes) fail("对抗", "没看到轻提示或底部按钮条");
+  else if (boxes.toast > boxes.bar + 1) fail("对抗", `轻提示（底边 ${Math.round(boxes.toast)}）盖住了底部按钮条（顶边 ${Math.round(boxes.bar)}）`);
+  for (const e of errors) fail("报错", `对抗：${e}`);
+  await ctx.close();
+  console.log("对抗：连点新建、320 宽超长中英文待办、轻提示不盖底部按钮条");
 }
 
 /* ── 4. 待办和外观：真的操作一遍 ── */
