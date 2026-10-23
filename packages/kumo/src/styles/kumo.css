@@ -66,7 +66,7 @@
   animation: skeleton 1.5s ease-in-out infinite;
 }
 
-[data-mode="dark"] .skeleton {
+:is([data-mode="dark"], [data-theme="dark"]) .skeleton {
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -145,7 +145,7 @@
   box-sizing: border-box;
 }
 
-[data-mode="dark"] .rdp-root {
+:is([data-mode="dark"], [data-theme="dark"]) .rdp-root {
   /* Dark mode colors */
   --rdp-accent-color: oklch(97% 0 0);
   --rdp-accent-background-color: oklch(35% 0 0);
@@ -653,12 +653,12 @@
   background-color: transparent !important;
 }
 
-[data-mode="dark"] .kumo-shiki span:not(.line-highlighted) {
+:is([data-mode="dark"], [data-theme="dark"]) .kumo-shiki span:not(.line-highlighted) {
   color: var(--shiki-dark) !important;
   background-color: transparent !important;
 }
 
-[data-mode="dark"] .kumo-shiki .line-highlighted {
+:is([data-mode="dark"], [data-theme="dark"]) .kumo-shiki .line-highlighted {
   color: var(--shiki-dark) !important;
 }
 
@@ -679,7 +679,7 @@
   --kumo-code-highlight-bg: rgba(0, 0, 0, 0.05);
 }
 
-[data-mode="dark"] .kumo-shiki {
+:is([data-mode="dark"], [data-theme="dark"]) .kumo-shiki {
   --kumo-code-highlight-bg: rgba(255, 255, 255, 0.08);
 }
 

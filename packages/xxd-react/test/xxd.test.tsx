@@ -404,7 +404,8 @@ describe("R6 XxdAppearanceProvider", () => {
     const { rerender } = render(<App n={1} />);
     const before = html.getAttribute("data-theme");
     const writes: string[] = [];
-    const spy = new MutationObserver((records) => records.forEach((r) => writes.push(r.attributeName ?? "")));
+    // data-xxd-switching 是上一次换主题挂的一帧（DARK-REVIEW-PLAN D109），过一帧自己拿掉，不算重新套外观
+    const spy = new MutationObserver((records) => records.forEach((r) => r.attributeName !== "data-xxd-switching" && writes.push(r.attributeName ?? "")));
     spy.observe(html, { attributes: true });
     rerender(<App n={2} />);
     rerender(<App n={3} />);

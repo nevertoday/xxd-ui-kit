@@ -551,6 +551,9 @@
   /* @scales:end */
   --shadow-popover: 0 18px 44px rgba(0, 0, 0, 0.42);
   --shadow-dialog: 0 28px 76px rgba(0, 0, 0, 0.5);
+  /* 根上用 var() 算的两个：局部的一块里要重算，不然沿用根上的阴影色（DARK-REVIEW-PLAN K5） */
+  --shadow-sheet: -18px 0 54px rgba(var(--shadow-rgb), 0.14);
+  --swatch-edge: rgba(var(--shadow-rgb), 0.12);
   /* 派生的强调令牌：:root 上已经按亮色算好再继承下来，换了 --ink 的这一块要重新声明，主按钮、焦点才跟着变 */
   --action: var(--ink);
   /* 热力格的 4 档（CHART-TYPES-PLAN D44）：越深越多；0 档是 --wash。墨色时取灰阶，有主色时取主色的色阶。
@@ -748,6 +751,9 @@
   --focus-color: var(--action-text);
   --shadow-popover: 0 18px 44px rgba(var(--shadow-rgb), 0.16);
   --shadow-dialog: 0 28px 76px rgba(var(--shadow-rgb), 0.24);
+  /* 根上用 var() 算的两个：局部的一块里要重算，不然沿用根上的阴影色（DARK-REVIEW-PLAN K5） */
+  --shadow-sheet: -18px 0 54px rgba(var(--shadow-rgb), 0.14);
+  --swatch-edge: rgba(var(--shadow-rgb), 0.12);
 }
 
 /* 圆角也可以只用在页面里的一块（ACCEPTANCE-REVIEW：以前只认根上的，局部写 data-corners 不生效，展示站只好把值抄成行内样式） */

@@ -27,3 +27,21 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* 局部主题（DARK-REVIEW-PLAN D107）：写了 data-theme 的一块是一张完整的面，字色、底色跟着换，
+   不沿用外面的（以前亮页面里一块暗色，没自己写颜色的字是暗底上的墨色）。
+   放在最低的一层：浮层（toast、确认框）抄了 data-theme 以后照样用自己的底色。 */
+@layer xxd.base {
+  :where([data-theme]:not(:root)) {
+    color: var(--ink);
+    background-color: var(--bg);
+  }
+}
+
+/* 切主题那一下不过渡（D109）：按钮、输入框带颜色过渡，整页一下子暗了它们还亮着、慢慢变过去。
+   applySettings 换主题时在根上挂一帧 data-xxd-switching。 */
+:root[data-xxd-switching] *,
+:root[data-xxd-switching] *::before,
+:root[data-xxd-switching] *::after {
+  transition: none !important;
+}

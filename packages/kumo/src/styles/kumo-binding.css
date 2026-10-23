@@ -112,7 +112,7 @@
     text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
   }
 
-  [data-mode="dark"] .link-current {
+  :is([data-mode="dark"], [data-theme="dark"]) .link-current {
     text-decoration-color: color-mix(in oklch, currentColor 65%, transparent);
   }
 
@@ -125,7 +125,7 @@
     stroke-width: 1.75;
   }
 
-  [data-mode="dark"] .link-external-icon {
+  :is([data-mode="dark"], [data-theme="dark"]) .link-external-icon {
     stroke-width: 2;
   }
 }
@@ -268,11 +268,11 @@
     );
   }
 
-  [data-mode="dark"] .skeleton-line {
+  :is([data-mode="dark"], [data-theme="dark"]) .skeleton-line {
     background-color: rgba(255, 255, 255, 0.06);
   }
 
-  [data-mode="dark"] .skeleton-line::after {
+  :is([data-mode="dark"], [data-theme="dark"]) .skeleton-line::after {
     background: linear-gradient(
       90deg,
       rgba(255, 255, 255, 0) 0%,
@@ -358,8 +358,8 @@
    This compensates for the different geometry of inner vs outer stroke paths.
    Used by: Tooltip, Popover
    See: https://base-ui.com/react/components/tooltip */
-[data-mode="dark"] .kumo-tooltip-popup,
-[data-mode="dark"] .kumo-popover-popup {
+:is([data-mode="dark"], [data-theme="dark"]) .kumo-tooltip-popup,
+:is([data-mode="dark"], [data-theme="dark"]) .kumo-popover-popup {
   outline-offset: -1px;
 }
 

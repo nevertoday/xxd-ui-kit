@@ -1129,11 +1129,11 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
   if (window.echarts) {
     const days = Array.from({ length: 14 }, (_, i) => \`Day \${i + 1}\`);
     const line = echarts.init(document.getElementById("chart-line"));
-    const lineOpt = () => Xxd.chartOptions({ legend: {}, xAxis: { type: "category", data: days, boundaryGap: false }, yAxis: { type: "value" }, series: [{ name: "Long-form publisher", type: "line", data: [42, 48, 45, 60, 58, 66, 71, 69, 80, 78, 85, 90, 88, 96] }, { name: "Image sorter", type: "line", data: [20, 22, 25, 24, 28, 27, 30, 33, 31, 35, 34, 36, 38, 40] }] });
+    const lineOpt = () => Xxd.chartOptions({ legend: {}, xAxis: { type: "category", data: days, boundaryGap: false }, yAxis: { type: "value" }, series: [{ name: "Long-form publisher", type: "line", data: [42, 48, 45, 60, 58, 66, 71, 69, 80, 78, 85, 90, 88, 96] }, { name: "Image sorter", type: "line", data: [20, 22, 25, 24, 28, 27, 30, 33, 31, 35, 34, 36, 38, 40] }] }, { el: line.getDom() });
     line.setOption(lineOpt());
     Xxd.watchChartTheme(line, lineOpt);
     const bar = echarts.init(document.getElementById("chart-bar"));
-    const barOpt = () => Xxd.chartOptions({ xAxis: { type: "category", data: ["Long-form publisher", "Link sorter", "Bulk image saver", "Today"] }, yAxis: { type: "value" }, series: [{ type: "bar", data: [2410, 830, 5102, 312] }] });
+    const barOpt = () => Xxd.chartOptions({ xAxis: { type: "category", data: ["Long-form publisher", "Link sorter", "Bulk image saver", "Today"] }, yAxis: { type: "value" }, series: [{ type: "bar", data: [2410, 830, 5102, 312] }] }, { el: bar.getDom() });
     bar.setOption(barOpt());
     Xxd.watchChartTheme(bar, barOpt);
     new ResizeObserver(() => { line.resize(); bar.resize(); }).observe(document.getElementById("chart-line").parentElement.parentElement);

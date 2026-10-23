@@ -131,7 +131,13 @@ export function watchChartTheme(chart, build, { el = document.documentElement } 
   const apply = () => chart.setOption(build(), { notMerge: true });
   const mo = new MutationObserver(apply);
   mo.observe(el, { attributes: true, attributeFilter: ["data-theme", "data-accent", "style", "data-corners"] });
-  return () => mo.disconnect();
+  // 页面里某一块换了主题也重画（D112）：只看 data-theme，不看 style
+  const local = new MutationObserver((records) => records.some((r) => r.target !== el) && apply());
+  local.observe(el.ownerDocument?.documentElement ?? el, { attributes: true, subtree: true, attributeFilter: ["data-theme"] });
+  return () => {
+    mo.disconnect();
+    local.disconnect();
+  };
 }
 
 /**

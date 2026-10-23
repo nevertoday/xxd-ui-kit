@@ -19,4 +19,6 @@ export declare function applySettings(
   options?: { element?: HTMLElement; lock?: XxdSettings },
 ): (Required<XxdSettings> & { resolvedTheme: "light" | "dark" }) | null;
 export declare function watchSystemTheme(getSettings: () => XxdSettings, options?: { element?: HTMLElement; lock?: XxdSettings }): () => void;
+/** 打印永远是亮色：打印前整页和页面里 data-theme="dark" 的块换成亮色，打印完换回（boot.js 自动装）。 */
+export declare function watchPrint(getSettings: () => XxdSettings, options?: { element?: HTMLElement; lock?: XxdSettings }): () => void;
 export declare function trackInputModality(root?: HTMLElement): void;

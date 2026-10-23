@@ -13,7 +13,9 @@ import { describe, expect, it } from "vitest";
 // xxd.js 2026-10-22 从 32 调到 33：截断（TRUNCATION-REVIEW-PLAN D92、D93）——放不下的标签换排法、被省略的字提示全文，约 0.6 KB
 // xxd.min.css 2026-10-23 从 25 调到 26、xxd.js 从 33 调到 35：表单和出错（FORM-REVIEW-PLAN）——每种控件的出错样子、错误图标、
 //   整张表单的校验（data-xxd-validate）、三语的默认错误句子、字数，约 0.3 KB / 1.8 KB
-const BUDGET_KB = { "xxd.min.css": 26, "xxd.js": 35, "boot.js": 5, "viz.js": 10, "icons.js": 16, "xxd.shadow.css.js": 26 };
+// boot.js 2026-10-23 从 5 调到 5.5、xxd.js 从 35 调到 36：暗黑模式（DARK-REVIEW-PLAN D108–D110）——打印前换成亮色、切主题那一帧不过渡
+//   （要在首帧的脚本里，拆不出去），放到最外层的浮层跟着局部主题，约 0.2 KB / 0.1 KB
+const BUDGET_KB = { "xxd.min.css": 26, "xxd.js": 36, "boot.js": 5.5, "viz.js": 10, "icons.js": 16, "xxd.shadow.css.js": 26 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

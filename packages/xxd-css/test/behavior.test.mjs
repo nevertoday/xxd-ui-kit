@@ -1,6 +1,7 @@
 // 行为测试（happy-dom）。
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import * as Xxd from "../src/js/index.js";
+import { applySettings, watchPrint } from "../../xxd-tokens/src/theme.js";
 
 beforeAll(() => Xxd.install(document));
 afterEach(() => {
@@ -1105,5 +1106,37 @@ describe("截断（TRUNCATION-REVIEW-PLAN D92、D93）", () => {
     Xxd.showTooltip(m);
     expect(m.hasAttribute("aria-describedby")).toBe(false);
     Xxd.hideTooltip();
+  });
+});
+
+describe("暗黑模式（DARK-REVIEW-PLAN）", () => {
+  it("局部暗色里打开、放到最外层的 toast / 确认框跟着那一块（D108）；别处打开的不跟", () => {
+    html(`<div data-theme="dark"><button id="dk">按钮</button></div><button id="lt">亮的</button>`);
+    document.getElementById("dk").focus();
+    const t1 = Xxd.toast("暗的").element;
+    expect(t1.getAttribute("data-theme")).toBe("dark");
+    Xxd.confirmDialog({ title: "确认？" });
+    expect([...document.querySelectorAll("dialog.xxd-dialog")].pop().getAttribute("data-theme")).toBe("dark");
+    document.getElementById("lt").focus();
+    expect(Xxd.toast("亮的").element.hasAttribute("data-theme")).toBe(false);
+  });
+
+  it("打印前整页和暗色的块换成亮色，打印完换回（D110）；换主题时挂一帧 data-xxd-switching（D109）", async () => {
+    const root = document.documentElement;
+    applySettings({ theme: "light" });
+    applySettings({ theme: "dark" });
+    expect(root.hasAttribute("data-xxd-switching")).toBe(true);
+    await new Promise((r) => setTimeout(r, 80));
+    expect(root.hasAttribute("data-xxd-switching")).toBe(false);
+    html(`<div data-theme="dark" id="blk"></div>`);
+    const off = watchPrint(() => ({ theme: "dark" }));
+    dispatchEvent(new Event("beforeprint"));
+    expect(root.getAttribute("data-theme")).toBe("light");
+    expect(document.getElementById("blk").getAttribute("data-theme")).toBe("light");
+    dispatchEvent(new Event("afterprint"));
+    expect(root.getAttribute("data-theme")).toBe("dark");
+    expect(document.getElementById("blk").getAttribute("data-theme")).toBe("dark");
+    off();
+    applySettings({ theme: "light" });
   });
 });

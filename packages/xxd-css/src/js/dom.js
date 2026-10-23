@@ -24,6 +24,27 @@ export function emit(el, name, detail) {
   el.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
 }
 
+/** 放到最外层的浮层跟着打开它的那一块的 data-theme 走（DARK-REVIEW-PLAN D108）；只拿掉自己抄上去的 */
+// Safari 点按钮不给焦点：退回最近一次按下的地方
+let lastPressed = null;
+globalThis.document?.addEventListener?.("pointerdown", (event) => (lastPressed = targetOf(event)), { capture: true, passive: true });
+const opener = (doc) => {
+  const active = doc?.activeElement;
+  return active && active !== doc.body ? active : lastPressed?.isConnected ? lastPressed : active;
+};
+
+export function matchTheme(layer, from = opener(layer.ownerDocument)) {
+  const scope = from?.closest?.("[data-theme]");
+  if (scope && scope !== layer.ownerDocument.documentElement && !layer.contains(scope)) {
+    layer.setAttribute("data-theme", scope.getAttribute("data-theme"));
+    layer.setAttribute("data-xxd-theme", "");
+  } else if (layer.hasAttribute("data-xxd-theme")) {
+    layer.removeAttribute("data-theme");
+    layer.removeAttribute("data-xxd-theme");
+  }
+  return layer;
+}
+
 /** 输入法正在组合（拼音还没上屏）：这时的回车、Esc、方向键是给输入法的，不算数（FORM-REVIEW-PLAN D103） */
 export const composing = (event) => event.isComposing || event.keyCode === 229;
 

@@ -21,6 +21,7 @@ const current = () => ({ ...defaults, ...theme.readSettings(key) });
 
 theme.applySettings(current(), { lock });
 theme.watchSystemTheme(current, { lock });
+theme.watchPrint(current, { lock });
 theme.trackInputModality();
 
 const api = Object.freeze({

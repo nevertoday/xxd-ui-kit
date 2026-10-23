@@ -57,7 +57,9 @@ export function applySettings(settings = {}, { element = globalThis.document?.do
   if (!element) return null;
   const s = { ...DEFAULT_SETTINGS, ...settings, ...lock };
   const theme = resolveTheme(s.theme);
+  const previous = element.getAttribute("data-theme");
   element.setAttribute("data-theme", theme);
+  if (previous && previous !== theme) pauseTransitions(element);
   // 桥接 Kumo 的 [data-mode=dark] 选择器。
   element.setAttribute("data-mode", theme);
   element.setAttribute("data-corners", s.corners === "rounded" ? "rounded" : "square");
@@ -65,6 +67,40 @@ export function applySettings(settings = {}, { element = globalThis.document?.do
   element.setAttribute("data-finish", s.finish === "material" ? "material" : "flat");
   const accent = applyAccent(element, normalizeAccent(s.accent), { exact: s.accentMode === "exact" });
   return { ...s, theme: s.theme, resolvedTheme: theme, accent };
+}
+
+// 切主题那一下不过渡（DARK-REVIEW-PLAN D109，规则在 base.css）
+function pauseTransitions(element) {
+  element.setAttribute("data-xxd-switching", "");
+  void element.offsetHeight;
+  const raf = globalThis.requestAnimationFrame ?? ((fn) => setTimeout(fn, 16));
+  raf(() => raf(() => element.removeAttribute("data-xxd-switching")));
+}
+
+/** 打印永远是亮色（D110）：打印前换成亮色，打印完换回。 */
+export function watchPrint(getSettings, options = {}) {
+  const win = globalThis;
+  const doc = win.document;
+  if (!doc || !win.addEventListener) return () => {};
+  const swapped = [];
+  const before = () => {
+    const element = options.element ?? doc.documentElement;
+    if (element.getAttribute("data-theme") === "dark") applySettings({ ...getSettings(), theme: "light" }, { ...options, lock: { ...options.lock, theme: "light" } });
+    for (const block of doc.querySelectorAll('[data-theme="dark"]')) {
+      block.setAttribute("data-theme", "light");
+      swapped.push(block);
+    }
+  };
+  const after = () => {
+    applySettings(getSettings(), options);
+    for (const block of swapped.splice(0)) block.setAttribute("data-theme", "dark");
+  };
+  win.addEventListener("beforeprint", before);
+  win.addEventListener("afterprint", after);
+  return () => {
+    win.removeEventListener("beforeprint", before);
+    win.removeEventListener("afterprint", after);
+  };
 }
 
 let systemListener = null;

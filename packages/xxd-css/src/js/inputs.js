@@ -1,6 +1,6 @@
 // 搜索（⌘F / Esc + 匹配高亮）、标签输入、下拉选择（combobox）、命令面板。
 import { place } from "./floating.js";
-import { composing, defaultLayerRoot, emit, nextId } from "./dom.js";
+import { composing, defaultLayerRoot, emit, matchTheme, nextId } from "./dom.js";
 import { openDialog, closeDialog } from "./dialog.js";
 import { ICON } from "./icons-min.js";
 import { fill$1, t } from "./i18n.js";
@@ -459,6 +459,7 @@ export function openCommandPalette({ items = [], placeholder = t("commandPlaceho
     }
   });
   dialog.addEventListener("close", () => setTimeout(() => dialog.remove(), 200), { once: true });
+  matchTheme(dialog);
   within.append(dialog);
   render();
   openDialog(dialog);

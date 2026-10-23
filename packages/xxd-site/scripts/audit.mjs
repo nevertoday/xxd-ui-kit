@@ -24,7 +24,7 @@
 //   15. 动效（MOTION-REVIEW-PLAN D90）：按下的同一刻就有看得见的变化；减少动效下只剩慢淡入淡出，进行中的按钮不定住。
 //   16. 状态（ACCEPTANCE-REVIEW）：选中 / 禁用 / 出错叠上悬停、聚焦后按优先级不变。
 //   17. 截断（TRUNCATION-REVIEW-PLAN D96）：长文字不硬裁、内容和数字不省略、省略的悬停能看到全文、字不互相压；React 不伸出格子。
-// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form]
+// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark]
 // 需要 Chromium：CHROME_EXE=<chrome-headless-shell 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
 import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -615,7 +615,20 @@ async function smokeAudit() {
   for (const [k, v] of Object.entries(expect)) if (r[k] !== v) fail("冒烟", `${k}：期望 ${JSON.stringify(v)}，实际 ${JSON.stringify(r[k])}`);
   for (const e of errors) fail("冒烟", `脚本错误 ${e}`);
   await ctx.close();
-  console.log("冒烟：层叠层顺序、reset 下的对话框、注入宿主的定位");
+  // 首页组件墙的排版在每种窗口宽度下都要排完（2026-10-23 线上 1680 / 1728 / 2560 宽时补洞的循环停不下来，整页卡死）
+  const hung = [];
+  for (const page of ["/", "/en/"]) {
+    for (let w = 1000; w <= 2600; w += 40) {
+      const c = await browser.newContext({ viewport: { width: w, height: 900 } });
+      const tab = await c.newPage();
+      const t0 = Date.now();
+      const ok = await tab.goto(origin + page, { waitUntil: "load", timeout: 15000 }).then(() => Promise.race([tab.evaluate(() => true), new Promise((r) => setTimeout(() => r(false), 3000))])).catch(() => false);
+      if (!ok || Date.now() - t0 > 8000) hung.push(`${page} ${w}px`);
+      await c.close();
+    }
+  }
+  for (const x of hung) fail("冒烟", `首页在 ${x} 宽时卡住（组件墙排版停不下来）`);
+  console.log("冒烟：层叠层顺序、reset 下的对话框、注入宿主的定位；首页 1000–2600 宽都排得完");
 }
 
 /* ── 9. 读屏：键盘走关键流程，读无障碍树和播报区（scripts/sr.mjs） ── */
@@ -1221,7 +1234,159 @@ async function formAudit() {
   console.log(`表单：${n} 页的每个表单控件标错、聚焦、清掉；高对比度；整张表单空着提交（中英）；输入法组合中的回车`);
 }
 
-const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit };
+/* ── 19. 暗黑模式（DARK-REVIEW-PLAN D114）──
+ * · 脚本算颜色的页面：亮着打开再切到暗 ↔ 直接暗着打开，逐个元素的字、底、边、SVG、阴影、画布像素一样；
+ * · 组件页：亮页面里给演示框写 data-theme="dark" ↔ 整页暗色，演示框里的东西一样（局部主题是一张完整的面）；
+ * · 局部暗色里打开、被放到页面最外层的 toast / 确认框 / 命令面板是暗的；打印是亮的；切主题后没有还在慢慢变色的。 */
+function darkPrint(scopeSel) {
+  const cv = Object.assign(document.createElement("canvas"), { width: 1, height: 1 }).getContext("2d", { willReadFrequently: true });
+  const norm = (c) => {
+    if (!c || c === "transparent" || c === "none") return "-";
+    cv.clearRect(0, 0, 1, 1);
+    cv.fillStyle = "#000";
+    cv.fillStyle = c;
+    cv.fillRect(0, 0, 1, 1);
+    const [r, g, b, a] = cv.getImageData(0, 0, 1, 1).data;
+    return a === 0 ? "-" : `${r},${g},${b}${a < 255 ? `/${a}` : ""}`;
+  };
+  const out = [];
+  for (const scope of document.querySelectorAll(scopeSel)) {
+    for (const el of [scope, ...scope.querySelectorAll("*")]) {
+      if (!el.getClientRects().length || el.closest(".xxd-appearance, [data-xxd-appearance]")) continue;
+      const s = getComputedStyle(el);
+      if (s.visibility === "hidden" || s.opacity === "0") continue;
+      const f = { c: norm(s.color), bg: norm(s.backgroundColor) };
+      if (parseFloat(s.borderTopWidth) > 0) f.bd = norm(s.borderTopColor);
+      if (el instanceof SVGElement) Object.assign(f, { fill: s.fill.startsWith("url") ? s.fill : norm(s.fill), stroke: norm(s.stroke) });
+      if (s.boxShadow !== "none") f.sh = s.boxShadow.replace(/rgba?\([^)]*\)|oklch\([^)]*\)|color\([^)]*\)/g, (m) => norm(m));
+      if (el.tagName === "CANVAS" && el.width && el.height) {
+        try {
+          const d = el.getContext("2d")?.getImageData(0, 0, el.width, el.height).data;
+          let h = 0;
+          if (d) for (let k = 0; k < d.length; k += 97) h = (h * 31 + d[k]) >>> 0;
+          f.px = h;
+        } catch {}
+      }
+      out.push({ k: `${el.tagName.toLowerCase()}${el.classList.length ? "." + [...el.classList].slice(0, 2).join(".") : ""}`, f });
+    }
+  }
+  return out;
+}
+
+function darkDiff(a, b) {
+  const out = new Map();
+  if (a.length !== b.length) return [`元素个数 ${a.length} ↔ ${b.length}`];
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].k !== b[i].k) return [`结构不一样：${a[i].k} ↔ ${b[i].k}`];
+    for (const p of new Set([...Object.keys(a[i].f), ...Object.keys(b[i].f)])) if (a[i].f[p] !== b[i].f[p] && !out.has(`${a[i].k} ${p}`)) out.set(`${a[i].k} ${p}`, `${a[i].f[p] ?? "无"} ↔ ${b[i].f[p] ?? "无"}`);
+  }
+  return [...out].map(([k, v]) => `${k}：${v}`);
+}
+
+async function darkAudit() {
+  const still = "<style>*,*::before,*::after{transition:none!important;animation-duration:0s!important}</style>";
+  const open = async (theme, page, setup) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
+    await ctx.addInitScript((s) => localStorage.setItem("xxd-site", JSON.stringify(s)), { theme, corners: "square", accent: "", density: "comfortable", finish: "flat" });
+    await ctx.addInitScript((k) => addEventListener("DOMContentLoaded", () => document.head.insertAdjacentHTML("beforeend", k)), still);
+    const tab = await ctx.newPage();
+    await tab.goto(origin + page, { waitUntil: "networkidle" });
+    await tab.waitForTimeout(200);
+    if (setup) {
+      await tab.evaluate(setup);
+      await tab.waitForTimeout(400);
+    }
+    return { ctx, tab };
+  };
+  // 1. 切换 ↔ 直接打开
+  const scripted = pages.filter((p) => /^\/(components\/(chart|gauge|bars|proportion|waffle|heatmap|dumbbell|stat|progress|appearance|code)|foundations\/colors)\/$/.test(p));
+  for (const page of scripted) {
+    const a = await open("light", page, () => XxdTheme.set({ theme: "dark" }));
+    const A = await a.tab.evaluate(darkPrint, "main");
+    await a.ctx.close();
+    const b = await open("dark", page);
+    const B = await b.tab.evaluate(darkPrint, "main");
+    await b.ctx.close();
+    for (const x of darkDiff(A, B).slice(0, 6)) fail("暗色", `${page} 亮着打开再切到暗和直接暗着打开不一样：${x}`);
+  }
+  // 2. 局部暗色 ↔ 整页暗色（组件页的演示框）
+  const comps = pages.filter((p) => /^\/components\/[^/]+\/$/.test(p) && !/\/appearance\//.test(p));
+  for (const page of comps) {
+    const a = await open("light", page, () => { for (const s of document.querySelectorAll("main .site-demo__stage")) s.setAttribute("data-theme", "dark"); });
+    const A = await a.tab.evaluate(darkPrint, "main .site-demo__stage > *");
+    await a.ctx.close();
+    const b = await open("dark", page);
+    const B = await b.tab.evaluate(darkPrint, "main .site-demo__stage > *");
+    await b.ctx.close();
+    for (const x of darkDiff(A, B).slice(0, 6)) fail("暗色", `${page} 局部暗色和整页暗色不一样：${x}`);
+  }
+  // 3. 局部暗色里打开的浮层、打印、切换时的过渡
+  {
+    const { ctx, tab } = await open("light", "/components/button/");
+    const r = await tab.evaluate(async () => {
+      const bad = [];
+      document.body.insertAdjacentHTML("beforeend", '<div data-theme="dark" id="dk"><button class="xxd-btn" id="dk-btn">按钮</button></div>');
+      const btn = document.getElementById("dk-btn");
+      btn.focus();
+      const raised = getComputedStyle(document.getElementById("dk")).getPropertyValue("--paper-raised").trim();
+      const probe = document.createElement("i");
+      probe.style.color = raised;
+      document.getElementById("dk").append(probe);
+      const want = getComputedStyle(probe).color;
+      const toast = Xxd.toast("局部暗色里的 toast").element;
+      if (getComputedStyle(toast).backgroundColor !== want) bad.push(`toast 是 ${getComputedStyle(toast).backgroundColor}，不是这一块的 ${want}`);
+      Xxd.confirmDialog({ title: "局部暗色里的确认框" });
+      const dialog = [...document.querySelectorAll("dialog.xxd-dialog")].pop();
+      if (getComputedStyle(dialog).backgroundColor !== want) bad.push(`确认框是 ${getComputedStyle(dialog).backgroundColor}，不是这一块的 ${want}`);
+      dialog.close();
+      Xxd.openCommandPalette({ items: [{ label: "一项" }] });
+      const palette = [...document.querySelectorAll("dialog.xxd-palette")].pop();
+      if (getComputedStyle(palette).backgroundColor !== want) bad.push(`命令面板是 ${getComputedStyle(palette).backgroundColor}，不是这一块的 ${want}`);
+      palette.close();
+      document.getElementById("dk").remove();
+      return bad;
+    });
+    for (const x of r) fail("暗色", `局部暗色里打开的浮层：${x}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, tab } = await open("dark", "/components/card/");
+    const r = await tab.evaluate(() => {
+      document.body.insertAdjacentHTML("beforeend", '<div data-theme="dark" id="dk2">一块暗色</div>');
+      dispatchEvent(new Event("beforeprint"));
+      const ink = getComputedStyle(document.body).color;
+      const block = getComputedStyle(document.getElementById("dk2")).color;
+      dispatchEvent(new Event("afterprint"));
+      const back = document.documentElement.getAttribute("data-theme") + " " + document.getElementById("dk2").getAttribute("data-theme");
+      return { ink, block, back };
+    });
+    const dark = (c) => { const [r, g, b] = c.match(/\d+/g).map(Number); return r + g + b < 200; };
+    if (!dark(r.ink) || !dark(r.block)) fail("暗色", `打印时字不是深色（页面 ${r.ink}，暗色的一块 ${r.block}）`);
+    if (r.back !== "dark dark") fail("暗色", `打印完没换回暗色（${r.back}）`);
+    await ctx.close();
+  }
+  for (const page of ["/components/button/", "/components/field/"]) {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    await ctx.addInitScript(() => localStorage.setItem("xxd-site", JSON.stringify({ theme: "light", corners: "square", accent: "", density: "comfortable", finish: "flat" })));
+    const tab = await ctx.newPage();
+    await tab.goto(origin + page, { waitUntil: "networkidle" });
+    const r = await tab.evaluate(async () => {
+      const els = [...document.querySelectorAll("main *")].filter((e) => e.getClientRects().length);
+      const read = () => els.map((e) => { const s = getComputedStyle(e); return s.backgroundColor + s.color + s.borderTopColor; });
+      XxdTheme.set({ theme: "dark" });
+      await new Promise((r) => setTimeout(r, 40));
+      const mid = read();
+      await new Promise((r) => setTimeout(r, 800));
+      const end = read();
+      return [...new Set(els.filter((e, i) => mid[i] !== end[i]).map((e) => `${e.tagName.toLowerCase()}.${e.classList[0] || ""}`))].slice(0, 6);
+    });
+    if (r.length) fail("暗色", `${page} 切到暗色 40ms 后还在变色：${r.join("、")}`);
+    await ctx.close();
+  }
+  console.log(`暗色：${scripted.length} 页切换 ↔ 直接打开，${comps.length} 个组件页局部暗色 ↔ 整页暗色；局部暗色里的浮层、打印、切换不过渡`);
+}
+
+const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit };
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

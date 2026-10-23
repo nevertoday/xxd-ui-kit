@@ -1,6 +1,6 @@
 // Tooltip、Toast、复制。
 import { place } from "./floating.js";
-import { defaultLayerRoot, layerRoot, nextId } from "./dom.js";
+import { defaultLayerRoot, layerRoot, matchTheme, nextId } from "./dom.js";
 import { ICON } from "./icons-min.js";
 import { t } from "./i18n.js";
 import { announce } from "./announce.js";
@@ -44,9 +44,7 @@ export function showTooltip(anchor) {
   el.textContent = text;
   el.toggleAttribute("data-arrow", anchor.hasAttribute("data-tooltip-arrow"));
   // 锚点在页面里一块局部的亮 / 暗里：提示跟着那一块（提示挂在 body 上，不然用的是整页的外观，ACCEPTANCE-REVIEW）
-  const scope = anchor.closest("[data-theme]");
-  if (scope && scope !== anchor.ownerDocument.documentElement) el.setAttribute("data-theme", scope.getAttribute("data-theme"));
-  else el.removeAttribute("data-theme");
+  matchTheme(el, anchor);
   tipAnchor = anchor;
   // 被截断的字的全文提示（D93）：读屏念的本来就是全文，不再连一次
   if (!anchor.hasAttribute(AUTO_TIP)) anchor.setAttribute("aria-describedby", el.id);
@@ -198,6 +196,7 @@ export function toast(message, { tone = "neutral", within, duration, action, sta
   el.className = "xxd-toast";
   el.dataset.tone = tone;
   el.dataset.key = key;
+  matchTheme(el, within?.nodeType === 1 ? within : undefined);
   const icon = { success: ICON.success, danger: ICON.danger, warning: ICON.warning, info: ICON.info }[tone];
   if (icon) el.insertAdjacentHTML("beforeend", icon(16));
   const text = region.ownerDocument.createElement("span");
@@ -381,6 +380,7 @@ export function showBubble(anchor, text, { duration = 1200 } = {}) {
     bubble.setAttribute("aria-hidden", "true");
   }
   if (bubble.parentNode !== layerRoot(anchor)) layerRoot(anchor).append(bubble);
+  matchTheme(bubble, anchor);
   clearTimeout(bubbleTimer);
   bubble.textContent = text;
   announce(text, { within: anchor });

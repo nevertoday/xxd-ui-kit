@@ -1,5 +1,5 @@
 // 小小东模式的行为（优化计划 O4）。
-import { defaultLayerRoot, emit, layerRoot, reducedMotion } from "./dom.js";
+import { defaultLayerRoot, emit, layerRoot, matchTheme, reducedMotion } from "./dom.js";
 import { announce } from "./announce.js";
 import { setFieldError } from "./form.js";
 import { openDialog } from "./dialog.js";
@@ -128,6 +128,7 @@ export function openViewer(items, start = 0, { actions = [], within = defaultLay
     emit(within, "xxd:viewer-close", { index: i });
     setTimeout(() => dialog.remove(), 0);
   });
+  matchTheme(dialog);
   within.append(dialog);
   show(i);
   openDialog(dialog);
@@ -508,7 +509,7 @@ export function celebrate(anchor, { colors = ["#c98a1a", "var(--success)", "var(
     bit.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
     bit.style.setProperty("--dy", `${Math.sin(angle) * dist + 40}px`);
     bit.style.setProperty("--rot", `${Math.random() * 360}deg`);
-    layerRoot(anchor).append(bit);
+    layerRoot(anchor).append(matchTheme(bit, anchor));
     setTimeout(() => bit.remove(), 950);
   }
   anchor.closest(".xxd-celebrate")?.setAttribute("data-play", "");
