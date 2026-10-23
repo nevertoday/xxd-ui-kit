@@ -1,0 +1,110 @@
+---
+// 组件规格（设计师评审 V5-1）：样品按「标准 / 紧凑 × 直角 / 圆角」各渲染一份，浏览器里量计算样式、反查令牌，填进表格。
+// 数字不手写，永远和 CSS 一致。量出来的值找不到令牌的格子带 data-untokened，audit 的「规格」一项会报出来。
+import { SPECS, SPEC_MODES, SPEC_TOKENS } from "../data/specs.js";
+interface Props { name: string; lang: string }
+const { name, lang } = Astro.props;
+const spec = SPECS[name];
+const en = lang === "en";
+const tr = (zh: string, enText: string) => (en ? enText : zh);
+const ROUNDED = "--r-xs:4px;--r-sm:6px;--r-md:10px;--r-lg:14px;--r-pill:999px";
+const modeLabel = ([density, corners]: string[]) => `${density === "compact" ? tr("紧凑", "Compact") : tr("标准", "Standard")} · ${corners === "rounded" ? tr("圆角", "Rounded") : tr("直角", "Square")}`;
+const PROP = en
+  ? { height: "Height", width: "Width", padX: "Padding (left / right)", padY: "Padding (top / bottom)", gap: "Gap", radius: "Corner radius", font: "Size / line height", weight: "Weight", border: "Border", icon: "Icon size" }
+  : { height: "高", width: "宽", padX: "左右内边距", padY: "上下内边距", gap: "间隔", radius: "圆角", font: "字号 / 行高", weight: "字重", border: "边框", icon: "图标尺寸" };
+const strings = { none: tr("没有令牌", "no token"), hair: tr("发丝线", "hairline"), single: tr("行高 = 字号（单行控件）", "line height = size (one-line control)") };
+---
+
+{spec && (
+  <div class="site-spec" data-spec={name} data-tokens={JSON.stringify(SPEC_TOKENS)} data-strings={JSON.stringify(strings)}>
+    <div class="site-spec__samples">
+      {SPEC_MODES.map((m) => (
+        <figure class="site-spec__sample">
+          <div class="site-spec__stage" data-spec-mode={m.join("-")} data-density={m[0]} style={m[1] === "rounded" ? ROUNDED : undefined} set:html={spec.sample(tr)} />
+          <figcaption>{modeLabel(m)}</figcaption>
+        </figure>
+      ))}
+    </div>
+    <div class="xxd-table-wrap">
+      <table class="xxd-table site-spec__table">
+        <thead><tr><th>{tr("部位", "Part")}</th><th>{tr("属性", "Property")}</th>{SPEC_MODES.map((m) => <th>{modeLabel(m)}</th>)}</tr></thead>
+        <tbody>
+          {spec.parts.flatMap(([zh, enLabel, sel, props, hints]) => props.map((p, i) => (
+            <tr data-sel={sel} data-prop={p} data-hint={JSON.stringify(hints?.[p] ?? [])}><td>{i === 0 ? tr(zh, enLabel) : ""}</td><td>{PROP[p]}</td>{SPEC_MODES.map((m) => <td data-mode={m.join("-")}>…</td>)}</tr>
+          )))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+<script is:inline>
+  (() => {
+    const run = () => {
+      for (const box of document.querySelectorAll("[data-spec]")) {
+        const TOK = JSON.parse(box.dataset.tokens);
+        const S = JSON.parse(box.dataset.strings);
+        const canvas = Object.assign(document.createElement("canvas"), { width: 1, height: 1 }).getContext("2d", { willReadFrequently: true });
+        const norm = (c) => { canvas.clearRect(0, 0, 1, 1); canvas.fillStyle = "#000"; canvas.fillStyle = c; canvas.fillRect(0, 0, 1, 1); return [...canvas.getImageData(0, 0, 1, 1).data].join(","); };
+        const COLOR = ["--line", "--line-strong", "--line-control", "--line-raised", "--action-fill", "--action", "--switch-on", "--danger"];
+        // 一个值反查令牌：这一种外观下，值相同的令牌都算
+        const lookup = (stage, list, value) => list.filter((t) => getComputedStyle(stage).getPropertyValue(t).trim() === value);
+        const code = (t) => `<code class="xxd-code-inline">${t}</code>`;
+        // 值相同的令牌有几个时，只写最贴切的那一个（SPEC_TOKENS 里排在前面的）
+        const cell = (value, names, extra = "") => (names.length ? `${value} · ${code(names[0])}${extra}` : `${value} · <span data-untokened>${S.none}</span>`);
+        for (const row of box.querySelectorAll("tbody tr")) {
+          const { sel, prop } = row.dataset;
+          const hint = JSON.parse(row.dataset.hint || "[]");
+          // 这一部位的首选令牌排在最前面
+          const T = (key) => [...hint, ...TOK[key].filter((t) => !hint.includes(t))];
+          for (const td of row.querySelectorAll("td[data-mode]")) {
+            const stage = box.querySelector(`[data-spec-mode="${td.dataset.mode}"]`);
+            const el = stage.querySelector(sel) ?? (stage.firstElementChild?.matches(sel) ? stage.firstElementChild : null);
+            if (!el) { td.textContent = "—"; continue; }
+            const cs = getComputedStyle(el);
+            const r = el.getBoundingClientRect();
+            const px = (v) => `${Math.round(parseFloat(v) * 100) / 100}px`;
+            let html = "";
+            if (prop === "height" || prop === "width" || prop === "icon") {
+              const v = px(prop === "width" ? r.width : r.height);
+              html = cell(v, lookup(stage, T(prop === "icon" ? "icon" : prop), v));
+            } else if (prop === "padX" || prop === "padY") {
+              const [a, b] = prop === "padX" ? [cs.paddingLeft, cs.paddingRight] : [cs.paddingTop, cs.paddingBottom];
+              const one = (v) => (parseFloat(v) === 0 ? "0" : cell(v, lookup(stage, T(prop), v)));
+              html = a === b ? one(a) : `${one(a)} / ${one(b)}`;
+            } else if (prop === "gap") {
+              const v = cs.columnGap !== "normal" && parseFloat(cs.columnGap) ? cs.columnGap : cs.rowGap;
+              html = v === "normal" || !parseFloat(v) ? "0" : cell(v, lookup(stage, T("gap"), v));
+            } else if (prop === "radius") {
+              const v = cs.borderTopLeftRadius;
+              // 直角时所有圆角令牌都是 0：用同一个部位在圆角那一列量出来的令牌名
+              const rounded = box.querySelector(`[data-spec-mode="${td.dataset.mode.replace("square", "rounded")}"]`);
+              const re = rounded.querySelector(sel) ?? rounded.firstElementChild;
+              const rv = getComputedStyle(re).borderTopLeftRadius;
+              const names = parseFloat(rv) === 0 ? [] : lookup(rounded, TOK.radius, rv);
+              html = parseFloat(rv) === 0 ? "0" : cell(v, names.length ? names : lookup(stage, TOK.radius, v));
+            } else if (prop === "font") {
+              const fs = cs.fontSize;
+              const lh = cs.lineHeight;
+              const single = lh === "normal" || Math.abs(parseFloat(lh) - parseFloat(fs)) < 0.5;
+              html = `${cell(fs, lookup(stage, TOK.font, fs))} / ${single ? S.single : cell(lh, lookup(stage, TOK.leading, lh))}`;
+            } else if (prop === "weight") {
+              html = cell(cs.fontWeight, lookup(stage, TOK.weight, cs.fontWeight));
+            } else if (prop === "border") {
+              const w = cs.borderTopWidth;
+              if (!parseFloat(w) || cs.borderTopStyle === "none") html = "0";
+              else {
+                const c = norm(cs.borderTopColor);
+                const names = COLOR.filter((t) => { const v = getComputedStyle(stage).getPropertyValue(t).trim(); return v && norm(v) === c; });
+                html = `${parseFloat(w) === 1 ? `1px（${S.hair}）` : w} · ${names.length ? code(names[0]) : `<span data-untokened>${S.none}</span>`}`;
+              }
+            }
+            td.innerHTML = html;
+          }
+        }
+      }
+    };
+    if (document.readyState === "complete") setTimeout(run, 50);
+    else addEventListener("load", () => setTimeout(run, 50));
+  })();
+</script>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="appName">__APP_NAME_EN__</title>
+  <!-- 首帧前应用主题 / 圆角 / 主色（读 localStorage 镜像），侧边栏用紧凑密度 -->
+  <script src="vendor/xxd/boot.js" data-key="__SLUG__-ui" data-default-density="compact"></script>
+  <!-- xxd:account -->
+  <!-- 登录状态也在首帧前定下来：没登录只显示登录页，不闪 -->
+  <script src="account-boot.js"></script>
+  <!-- /xxd:account -->
+  <link rel="stylesheet" href="vendor/xxd/xxd.css">
+  <link rel="stylesheet" href="sidepanel.css">
+  <script src="vendor/xxd/icons.js"></script>
+  <script src="vendor/xxd/xxd.js"></script>
+  <!-- extension.js 按 _locales 里的 xxdLocale 写好 <html lang>，组件自带的文字（关闭、取消）也跟着这种语言 -->
+  <script src="vendor/xxd/extension.js"></script>
+</head>
+<body class="xxd-page">
+  <!-- xxd:account -->
+  <!-- 登录页：没登录时侧边栏只有这一屏 -->
+  <section class="view-signin" data-i18n-attr="aria-label:signinLabel">
+    <div class="xxd-auth" data-xxd-auth>
+      <span class="xxd-logo" data-size="lg"><span class="xxd-logo__mark"></span></span>
+      <h1 class="xxd-auth__name" data-i18n="appName">__APP_NAME_EN__</h1>
+      <p class="xxd-auth__line" data-i18n="appDescription">__APP_DESC_EN__</p>
+      <span class="xxd-auth__gift" data-i18n="signinGift">New accounts get a 7-day full experience</span>
+      <form id="signin-form">
+        <button class="xxd-btn" data-block type="button" id="signin-google"><svg class="ui-icon" width="16" height="16" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span data-i18n="signinGoogle">Continue with Google</span></button>
+        <div class="xxd-auth__or" data-i18n="signinOr">or use email</div>
+        <div data-step="email" data-active>
+          <input class="xxd-input" type="email" placeholder="you@example.com" data-i18n-attr="aria-label:emailLabel" required>
+          <button class="xxd-btn" data-variant="primary" data-block data-auth-next="password" data-i18n="continue">Continue</button>
+        </div>
+        <div data-step="password">
+          <p class="xxd-help"><span data-i18n="signinAs">Sign in as</span> <b data-auth-email></b></p>
+          <input class="xxd-input" type="password" data-i18n-attr="placeholder:passwordLabel,aria-label:passwordLabel">
+          <div class="xxd-cluster"><button class="xxd-btn ui-dialog-cancel" data-auth-back="email" data-i18n="back">Back</button><button class="xxd-btn" data-variant="primary" style="flex:1" type="submit" data-i18n="continue">Continue</button></div>
+        </div>
+      </form>
+      <p class="xxd-auth__terms" data-i18n="terms">By continuing you agree to the Terms and Privacy Policy</p>
+    </div>
+  </section>
+  <!-- /xxd:account -->
+
+  <div class="app xxd-sheet-host">
+    <!-- tab 在最上面，没有顶栏；tab 的基线就是那条线 -->
+    <nav class="xxd-tabs app-tabs" data-xxd-tabs data-i18n-attr="aria-label:navMain">
+      <button role="tab" id="tab-main" aria-controls="panel-main" aria-selected="true" data-i18n="tabMain">Home</button>
+      <button role="tab" id="tab-history" aria-controls="panel-history" data-i18n="tabHistory">History</button>
+      <button role="tab" id="tab-settings" aria-controls="panel-settings" data-i18n="tabSettings">Settings</button>
+    </nav>
+
+    <main class="app-body">
+      <section id="panel-main" class="xxd-read app-panel">
+        <div class="xxd-dropzone" id="dropzone">
+          <i data-xxd-icon="ImagePlus" data-size="24"></i>
+          <p class="xxd-dropzone__title" data-i18n="dropTitle">Drop files here</p>
+          <p class="xxd-help"><span data-i18n="dropOr">or</span> <button class="xxd-link" type="button" id="pick" data-i18n="dropPick">choose files</button></p>
+        </div>
+        <ul class="xxd-list xxd-group__body" id="items" hidden></ul>
+      </section>
+
+      <section id="panel-history" class="xxd-read app-panel">
+        <div class="xxd-history" id="history"></div>
+        <div class="xxd-empty" id="history-empty"><i data-xxd-icon="History"></i><p class="xxd-empty__title" data-i18n="historyEmpty">Nothing here yet</p></div>
+      </section>
+
+      <section id="panel-settings" class="xxd-read app-panel">
+        <div class="xxd-input-wrap" style="margin-bottom:16px">
+          <i data-xxd-icon="Search" data-size="16"></i>
+          <input class="xxd-input" type="search" id="settings-search" data-i18n-attr="placeholder:searchPlaceholder,aria-label:searchPlaceholder">
+          <button class="xxd-input-clear" data-i18n-attr="aria-label:clear"><i data-xxd-icon="X" data-size="14"></i></button>
+        </div>
+        <div class="xxd-settings" id="settings">
+          <!-- xxd:account -->
+          <section class="xxd-group">
+            <h2 class="xxd-group__title" data-i18n="groupAccount">Account</h2>
+            <div class="xxd-group__body">
+              <div class="xxd-account">
+                <span class="xxd-avatar" id="avatar" style="--avatar-size:32px" data-i18n="avatarText">A</span>
+                <div class="xxd-account__main"><div class="xxd-account__name" id="account-name" data-i18n="accountName">Your name</div><div class="xxd-plan-line" id="plan-line"></div></div>
+                <button class="xxd-btn" data-size="sm" data-variant="primary" id="upgrade" data-i18n="upgrade">Become a member</button>
+              </div>
+              <div class="xxd-row" id="purchase" hidden data-stack>
+                <!-- 价格是占位：换成你自己的 -->
+                <div class="xxd-plans" role="radiogroup" data-i18n-attr="aria-label:plansLabel">
+                  <label class="xxd-plan"><input type="radio" class="xxd-radio" name="plan" value="month" checked><span class="xxd-plan__name" data-i18n="planMonth">Monthly</span><span class="xxd-plan__price" data-i18n="priceMonth">$9</span></label>
+                  <label class="xxd-plan"><input type="radio" class="xxd-radio" name="plan" value="year"><span class="xxd-plan__name" data-i18n="planYear">Yearly</span><span class="xxd-plan__price" data-i18n="priceYear">$69</span></label>
+                </div>
+                <p class="xxd-help" data-i18n="planKeep">Your remaining trial days are kept.</p>
+                <button class="xxd-btn" data-variant="primary" data-block id="pay" data-i18n="pay">Pay</button>
+                <button class="xxd-link" type="button" id="paid" data-i18n="paid">I've paid — check now</button>
+              </div>
+              <div class="xxd-row"><div class="xxd-row__text"><div class="xxd-row__title" data-i18n="signout">Sign out</div></div><div class="xxd-row__control"><button class="xxd-btn" data-size="sm" id="signout" data-i18n="signout" data-i18n-attr="data-confirm-twice:confirmSignout" data-confirm-twice="Confirm sign out">Sign out</button></div></div>
+            </div>
+          </section>
+          <!-- /xxd:account -->
+          <div id="appearance"></div>
+          <section class="xxd-group">
+            <h2 class="xxd-group__title" data-i18n="groupAbout">About</h2>
+            <div class="xxd-group__body"><div class="xxd-row" data-keywords="version 版本 版本號"><div class="xxd-row__text"><div class="xxd-row__title" data-i18n="version">Version</div></div><div class="xxd-row__control xxd-text" data-variant="mono-secondary" id="version"></div></div></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <!-- 状态行：空着，除非有事要说；底部 dock：状态在开头，下一步在末尾 -->
+    <div class="xxd-statusline" id="statusline" hidden></div>
+    <footer class="xxd-dock">
+      <div class="xxd-dock__status" id="status" aria-live="polite"></div>
+      <div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" id="primary" data-i18n="primaryAction">Start</button></div>
+    </footer>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

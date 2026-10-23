@@ -1,0 +1,44 @@
+/* 网页版用 <details>/<summary>，小程序里自己画：一行标题 + 右边箭头，展开时箭头转过来 */
+.xxd-collapse-group {
+  border-top: 1px solid var(--line);
+}
+
+.xxd-collapse {
+  border-bottom: 1px solid var(--line);
+}
+
+.xxd-collapse__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--hit-min);
+  padding: var(--space-3) 0;
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+}
+
+.xxd-collapse__summary.is-hover {
+  color: var(--muted);
+}
+
+.xxd-collapse__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.xxd-collapse__chevron {
+  color: var(--muted-2);
+  transition: transform var(--motion-quick) ease;
+}
+
+.xxd-collapse.is-open .xxd-collapse__chevron {
+  transform: rotate(180deg);
+}
+
+.xxd-collapse__body {
+  padding: 0 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  animation: xxd-fade-in var(--motion-quick) ease;
+}

@@ -1,0 +1,820 @@
+@import "./theme-kumo.css";
+@import "./theme-fedramp.css";
+
+@theme {
+  /* Primitive color definitions for Kumo theme */
+  --color-red-650: oklch(55% 0.238 27.4);
+  --color-red-750: oklch(46% 0.195 27.2);
+
+  --color-blue-400: oklch(70.7% 0.165 254.624);
+  --color-blue-800: oklch(42.4% 0.199 265.638);
+
+  --color-orange-650: oklch(81.5% 0.197 76);
+  --color-teal-650: oklch(54.9% 0.096 184.565);
+
+  --color-kumo-neutral-50: oklch(98.75% 0 0);
+  --color-kumo-neutral-75: oklch(98% 0 0);
+  --color-kumo-neutral-125: oklch(96.5% 0 0);
+  --color-kumo-neutral-450: oklch(89% 0 0);
+  --color-kumo-neutral-750: oklch(32% 0 0);
+  --color-kumo-neutral-850: oklch(24% 0 0);
+  --color-kumo-neutral-925: oklch(17% 0 0);
+  --color-kumo-neutral-950: oklch(15% 0 0);
+  --color-kumo-neutral-975: oklch(12% 0 0);
+  --color-kumo-neutral-1000: oklch(10% 0 0);
+}
+
+/*
+ * 小小东换皮：圆角、阴影、字体指向 @xxd/tokens。
+ * inline：工具类直接写 var(--r-*)，局部的 data-corners 也能生效。
+ * 档位：xs/sm/默认 → 小标记，md/lg → 控件，xl → 面，2xl+ → 大面。
+ * rounded-pill 跟随圆角开关（直角下开关也是方的）；rounded-circle 是语义圆，永远是圆。
+ * 卡片、行、按钮没有阴影；只有浮层（shadow-md 及以上）有阴影。
+ */
+@theme inline {
+  --radius-xs: var(--r-xs, 0.125rem);
+  --radius-sm: var(--r-xs, 0.25rem);
+  --radius: var(--r-xs, 0.25rem);
+  --radius-md: var(--r-sm, 0.375rem);
+  --radius-lg: var(--r-sm, 0.5rem);
+  --radius-xl: var(--r-md, 0.75rem);
+  --radius-2xl: var(--r-lg, 1rem);
+  --radius-3xl: var(--r-lg, 1.5rem);
+  --radius-4xl: var(--r-lg, 2rem);
+
+  --shadow-2xs: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow: 0 0 #0000;
+  --shadow-md: var(--shadow-popover, 0 18px 44px rgba(17, 17, 17, 0.16));
+  --shadow-lg: var(--shadow-popover, 0 18px 44px rgba(17, 17, 17, 0.16));
+  --shadow-xl: var(--shadow-dialog, 0 28px 76px rgba(17, 17, 17, 0.24));
+  --shadow-2xl: var(--shadow-dialog, 0 28px 76px rgba(17, 17, 17, 0.24));
+
+  --font-sans: var(--font-body, "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
+  /* 小小东不用衬线：Tailwind 的 font-serif 也落到同一套无衬线上 */
+  --font-serif: var(--font-title, var(--font-sans));
+}
+
+@utility rounded-pill {
+  border-radius: var(--r-pill, 9999px);
+}
+
+@utility rounded-circle {
+  border-radius: var(--r-circle, 50%);
+}
+
+/* Typography is now generated in theme-kumo.css via codegen:themes */
+
+@theme {
+  /* Easings & transitions */
+  /* 小小东：不弹跳。保留变量名以兼容，值改为 ease-out-expo。 */
+  --ease-bounce: cubic-bezier(0.16, 1, 0.3, 1);
+  --default-transition-duration: 100ms;
+
+  /* Animation */
+  --animate-refresh: refresh 0.5s ease-in-out infinite;
+  --animate-right: right 15s linear infinite;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  [data-mode="dark"] {
+    color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* "spinner" = up and down arrows on number inputs */
+  .no-input-spinner {
+    appearance: textfield;
+
+    ::-webkit-outer-spin-button,
+    ::-webkit-inner-spin-button {
+      appearance: none;
+    }
+  }
+
+  /* Link current variant decoration - different opacities for light/dark */
+  .link-current {
+    text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
+  }
+
+  [data-mode="dark"] .link-current {
+    text-decoration-color: color-mix(in oklch, currentColor 65%, transparent);
+  }
+
+  .link-current:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* External link icon stroke width - thicker in dark mode for visibility */
+  .link-external-icon {
+    stroke-width: 1.75;
+  }
+
+  [data-mode="dark"] .link-external-icon {
+    stroke-width: 2;
+  }
+}
+
+@keyframes right {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.float {
+  animation: float 5s linear infinite alternate;
+}
+
+@keyframes float {
+  to {
+    transform: translate(5px, 15px);
+  }
+}
+
+@keyframes refresh {
+  to {
+    transform: rotate(360deg) scale(0.9);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.4s ease-out;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Chart loading skeleton: the wave stays static while the shimmer moves. */
+.kumo-chart-shimmer {
+  animation: shimmer 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kumo-chart-shimmer {
+    animation: none;
+    transform: none;
+  }
+}
+
+@keyframes toast-bump {
+  0% {
+    transform: scale(1);
+  }
+
+  20% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-toast-bump {
+  animation: toast-bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+/* Subtle bump for small anchored clipboard "Copied" toasts */
+@keyframes clipboard-toast-bump {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.04);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-clipboard-toast-bump {
+  animation: clipboard-toast-bump 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-clipboard-toast-bump {
+    animation: none;
+  }
+}
+
+@layer base {
+  .skeleton-line {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--r-xs, 2px);
+    height: 0.5rem;
+    width: var(--skeleton-width);
+    background-color: #f3f4f6;
+    /* neutral-100 for light mode */
+  }
+
+  .skeleton-line::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    animation: shimmer var(--shimmer-duration, 1.5s) var(--shimmer-delay, 0s)
+      infinite ease-in-out;
+    content: "";
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.08) 50%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  [data-mode="dark"] .skeleton-line {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  [data-mode="dark"] .skeleton-line::after {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+}
+
+/* Scroll-fade: gradient masks that appear on the edges of a horizontally
+   scrollable container based on scroll position. Uses scroll-driven
+   animations (Chrome 115+, Edge 115+). Degrades gracefully to no fade.
+   Activated by the `data-overflowing` attribute (set via JS ResizeObserver). */
+@property --fade-left-n {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --fade-right-n {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes scroll-fade-x-left {
+  from {
+    --fade-left-n: 0;
+  }
+  to {
+    --fade-left-n: 1;
+  }
+}
+
+@keyframes scroll-fade-x-right {
+  from {
+    --fade-right-n: 1;
+  }
+  to {
+    --fade-right-n: 0;
+  }
+}
+
+[data-overflowing] {
+  @supports (animation-timeline: scroll()) {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      white calc(var(--fade-left-n) * var(--scroll-fade-width, 3rem)),
+      white calc(100% - var(--fade-right-n) * var(--scroll-fade-width, 3rem)),
+      transparent
+    );
+
+    animation-name: scroll-fade-x-left, scroll-fade-x-right;
+    animation-timing-function: linear, linear;
+    animation-timeline: scroll(self x);
+    animation-range:
+      0 var(--scroll-fade-range, 3rem),
+      calc(100% - var(--scroll-fade-range, 3rem)) 100%;
+    animation-fill-mode: both;
+  }
+}
+
+/* Tab list scroll behavior. Scrollbar is only hidden when scroll-driven
+   animations are supported (the fade replaces it as the affordance).
+   Unsupported browsers keep the native scrollbar. */
+.kumo-tabs-list {
+  overscroll-behavior-x: contain;
+}
+
+@supports (animation-timeline: scroll()) {
+  .kumo-tabs-list {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .kumo-tabs-list::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Popup outline offset - in dark mode, offset inward to align with inner stroke.
+   This compensates for the different geometry of inner vs outer stroke paths.
+   Used by: Tooltip, Popover
+   See: https://base-ui.com/react/components/tooltip */
+[data-mode="dark"] .kumo-tooltip-popup,
+[data-mode="dark"] .kumo-popover-popup {
+  outline-offset: -1px;
+}
+
+/* Input placeholder color - vanilla CSS to avoid Tailwind parsing issues */
+.kumo-input-placeholder::placeholder {
+  color: var(--text-color-kumo-placeholder);
+}
+
+/* ── 小小东动效（xxd-ui-kit 优化计划 D2 / D4），和 @xxd/css 一致 ──
+ * D2：移上立即变色，移开按组件自己的时长淡回（Kumo 是 150ms）。
+ * D4：浮层（菜单 / 弹出层）从锚点缩放 0.96；对话框只淡入 + 上移 8px，不缩放；关闭比打开快（100ms）。 */
+:where([data-kumo-component], .kumo-tabs-list, [role="menuitem"], [role="option"], [role="tab"]):hover {
+  transition-duration: 0s;
+}
+
+.kumo-popover-popup[data-starting-style],
+.kumo-popover-popup[data-ending-style],
+[role="menu"][data-starting-style],
+[role="menu"][data-ending-style],
+[role="listbox"][data-starting-style],
+[role="listbox"][data-ending-style] {
+  --tw-scale-x: 96%;
+  --tw-scale-y: 96%;
+  --tw-scale-z: 96%;
+}
+
+:is([role="dialog"], [role="alertdialog"]):not(.kumo-popover-popup)[data-starting-style],
+:is([role="dialog"], [role="alertdialog"]):not(.kumo-popover-popup)[data-ending-style] {
+  --tw-scale-x: 100%;
+  --tw-scale-y: 100%;
+  --tw-scale-z: 100%;
+  --tw-translate-y: 8px;
+  --xxd-dialog-y: 8px;
+}
+
+:is([role="dialog"], [role="alertdialog"]):not(.kumo-popover-popup) {
+  transition-property: opacity, translate, scale;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-ending-style]:is(.kumo-popover-popup, .kumo-tooltip-popup, [role="menu"], [role="listbox"], [role="dialog"], [role="alertdialog"]) {
+  transition-duration: var(--motion-out, 100ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-starting-style],
+  [data-ending-style] {
+    --tw-scale-x: 100%;
+    --tw-scale-y: 100%;
+    --tw-scale-z: 100%;
+    --tw-translate-y: 0px;
+    --xxd-dialog-y: 0px;
+  }
+}
+
+/*
+ * 小小东：React 控件的高度和内边距和原生版一样，跟着 --control-h* / --control-pad-x* / --field-pad-x
+ * （紧凑密度 data-density="compact" 对 React 也生效）。只认 Kumo 自己写的尺寸类：
+ * 用的人传了别的高度类（className="h-12"），tailwind-merge 会去掉 h-9，这里也就不再起作用。
+ * 放在 utilities 层、多一个属性选择器，所以盖得住同层的 .h-9。
+ */
+@layer utilities {
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none[data-kumo-component]).h-9 {
+    height: var(--control-h, 2.25rem);
+    padding-inline: var(--control-pad-x, 16px);
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none[data-kumo-component]).h-10 {
+    height: calc(var(--control-h, 2.5rem) + 8px);
+    padding-inline: var(--control-pad-x-lg, 20px);
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none[data-kumo-component]).h-6\.5 {
+    height: var(--control-h-sm, 1.625rem);
+    padding-inline: var(--control-pad-x-sm, 12px);
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"]).h-5 {
+    height: var(--control-h-xs, 1.25rem);
+    padding-inline: 8px;
+  }
+  /* 纯图标按钮 */
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"]).size-9 {
+    width: var(--icon-button, 2.25rem);
+    height: var(--icon-button, 2.25rem);
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"]).size-6\.5 {
+    width: var(--control-h-sm, 1.625rem);
+    height: var(--control-h-sm, 1.625rem);
+  }
+  /* 输入框、下拉 */
+  :is(input, [data-kumo-component="Select"], [data-kumo-component="SensitiveInput"]).h-9 {
+    height: var(--control-h, 2.25rem);
+    padding-inline: var(--field-pad-x, 12px);
+  }
+  :is(input, [data-kumo-component="Select"], [data-kumo-component="SensitiveInput"]).h-6\.5 {
+    height: var(--control-h-sm, 1.625rem);
+  }
+  :is(input, [data-kumo-component="Select"], [data-kumo-component="SensitiveInput"]).h-5 {
+    height: var(--control-h-xs, 1.25rem);
+  }
+  :is([data-kumo-component="Combobox"], [data-kumo-component="Autocomplete"]).min-h-9 {
+    min-height: var(--control-h, 2.25rem);
+  }
+}
+
+/*
+ * 小小东：React 和原生 HTML 长得一样（设计师评审 V1，以 HTML 为准 D19）。
+ * 每一条都对着 @xxd/css 里同一个组件的写法：字号、边、底色、圆角、尺寸都取同一个令牌。
+ * 对照页 /tools/parity 和 audit 的「对照」一项逐对比较，改了这里要过那一项。
+ * 只认 Kumo 自己的标记（data-kumo-component / 它写的类名），不改上游组件源码，合并上游不冲突。
+ * 选择器多叠一个属性，盖得住同层的 Tailwind 工具类（包括 focus: / hover: 变体）。
+ */
+@layer utilities {
+  /* ── 按钮：13px（和原生一样，控件字号是 --text-sm）；边是控件的边 --line-control（SHAPE-LINE-PLAN D62），悬停深一档 ── */
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none)[data-kumo-component]:is(.h-9, .h-10) {
+    font-size: var(--text-sm, 13px);
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none)[data-kumo-component].ring-kumo-line {
+    --tw-ring-color: var(--line-control, #898681);
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none)[data-kumo-component].ring-kumo-line:not(:disabled):hover {
+    --tw-ring-color: var(--line-control-hover, #7e7b77);
+  }
+
+  /* 实心按钮（primary / destructive）：上游叠了一层渐变（span.absolute），小小东缺省纯平 —— 去掉这一层，底色就是原色。
+     质感（data-finish="material"）和原生一样：顶部 1px 内高光 + 深一点的边 + 按下下沉，变量在 tokens.css 里。 */
+  [data-kumo-component][data-kumo-component] > span.absolute.inset-0[aria-hidden="true"] {
+    display: none;
+  }
+  [data-kumo-component][data-kumo-component][style*="--kumo-button-emphasis-bg"] {
+    --xxd-btn-bg: var(--action-fill, #111111);
+    --xxd-btn-bg-hover: var(--action-fill-hover, #3a3a3a);
+    background: var(--xxd-btn-bg);
+    color: var(--on-action, #ffffff) !important;
+    --tw-ring-color: color-mix(in srgb, var(--xxd-btn-bg) var(--btn-edge, 100%), #000000);
+    --tw-inset-shadow: var(--btn-highlight, 0 0 #0000);
+  }
+  [data-kumo-component][data-kumo-component][style*="--color-kumo-danger"] {
+    --xxd-btn-bg: var(--danger-strong, #b42318);
+    --xxd-btn-bg-hover: var(--danger-solid-hover, #a60e06);
+    color: var(--danger-on-solid, #ffffff) !important;
+  }
+  [data-kumo-component][data-kumo-component][style*="--kumo-button-emphasis-bg"]:not(:disabled):hover {
+    background: var(--xxd-btn-bg-hover);
+  }
+  [data-kumo-component][data-kumo-component][style*="--kumo-button-emphasis-bg"]:not(:disabled):active {
+    /* 按下：色阶的 10 级（和 HTML 版的 --btn-bg-active 一样） */
+    background: var(--xxd-btn-bg-hover);
+    --tw-inset-shadow: var(--btn-highlight-pressed, 0 0 #0000);
+    transform: translateY(var(--btn-press-y, 0px));
+  }
+
+  /* ── 输入框、选择：13px；边 --line-control（3:1，D11）；聚焦时边变深一次，不加光圈 ── */
+  :is(input, textarea)[class*="ring-kumo-line"][class*="bg-kumo-control"],
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component],
+  [data-kumo-component="SensitiveInput"][data-kumo-component] {
+    font-size: var(--text-sm, 13px);
+    font-weight: var(--weight-regular, 400);
+    --tw-ring-color: var(--line-control, #898681);
+  }
+  :is(input, textarea)[class*="ring-kumo-line"][class*="bg-kumo-control"]:focus,
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component]:focus {
+    --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color);
+    --tw-ring-color: var(--action, #111111);
+  }
+  /* 原生的下拉没有单独的底色（透明，落在纸上）；React 的触发按钮用纸色，看起来一样，这里对齐成同一个值 */
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component] {
+    background-color: var(--paper, #ffffff);
+  }
+
+  /* 下拉的箭头：原生是一个 14px 的向下 chevron（muted 色），不是上下两个箭头 */
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component] > span[aria-hidden="true"]:last-child {
+    width: 14px;
+    height: 14px;
+    background: var(--muted, #6d6b67);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m6 9 6 6 6-6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m6 9 6 6 6-6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component] > span[aria-hidden="true"]:last-child > svg {
+    display: none;
+  }
+
+  /* ── 复选、单选：16px，边 --line-control；选中时边和底都是强调色 ── */
+  :is([data-kumo-component="Checkbox"], [data-kumo-component="Radio"][data-kumo-part="item"])[data-kumo-component] {
+    --tw-ring-color: var(--line-control, #898681);
+  }
+  [data-kumo-component="Checkbox"][data-kumo-component]:is([data-checked], [data-indeterminate]) {
+    --tw-ring-color: var(--action-fill, #111111);
+  }
+  /* 单选选中：外圈强调色、里面一圈纸色、中间一个 7px 的强调色圆点（原生是 inset 3.5px 的纸色） */
+  [data-kumo-component="Radio"][data-kumo-part="item"][data-kumo-component][data-checked] {
+    --tw-ring-color: var(--action, #111111);
+    background-color: var(--paper, #ffffff);
+  }
+  [data-kumo-component="Radio"][data-kumo-part="item"][data-kumo-component][data-checked] > span > span {
+    width: 7px;
+    height: 7px;
+    background-color: var(--action, #111111);
+  }
+  [data-kumo-component="Checkbox"][data-kumo-component] {
+    border-radius: var(--r-xs, 0px);
+  }
+  /* 选项旁边的字：13px / 400（原生 .xxd-choice），一组的标题 12px / 500（原生 legend） */
+  label:has(> [data-kumo-component="Checkbox"]),
+  label[data-kumo-component="Radio"][data-kumo-part="item-label"] > span:last-child,
+  label:has(+ [data-kumo-component="Switch"]) {
+    font-size: var(--text-sm, 13px) !important;
+    font-weight: var(--weight-regular, 400);
+    color: var(--ink, #111111);
+  }
+  fieldset:has(> [data-kumo-component="Radio"][data-kumo-part="items"]) > div:first-child {
+    font-size: var(--text-xs, 12px);
+    font-weight: var(--weight-medium, 500);
+  }
+  [data-kumo-component="Radio"][data-kumo-part="items"][data-kumo-component] {
+    gap: var(--space-3, 12px);
+  }
+  fieldset:has(> [data-kumo-component="Radio"][data-kumo-part="items"]) {
+    gap: var(--space-2, 8px);
+  }
+
+  /* ── 开关：36 × 20，边 --line-control；开的时候底和边都是 --switch-on ── */
+  [data-kumo-component="Switch"][data-kumo-component][data-kumo-component] {
+    width: var(--switch-w, 36px);
+    height: var(--switch-h, 20px);
+    background-color: var(--wash-strong, #eeece9);
+    --tw-ring-color: var(--line-control, #898681);
+  }
+  [data-kumo-component="Switch"][data-kumo-component][data-kumo-component][data-checked] {
+    background-color: var(--switch-on, #111111);
+    --tw-ring-color: var(--switch-on, #111111);
+  }
+  [data-kumo-component="Switch"][data-kumo-component] > div {
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(var(--switch-h, 20px) - 6px);
+    box-shadow: 0 0 0 0.5px rgba(var(--shadow-rgb, 17, 17, 17), 0.18);
+  }
+  [data-kumo-component="Switch"][data-kumo-component][data-checked] > div {
+    left: calc(var(--switch-w, 36px) - var(--switch-h, 20px) + 3px);
+  }
+
+  /* ── 标签页（underline）：文字在基线上，短墨线只在文字下；高 = 控件高，13px，标签之间 20px ── */
+  .kumo-tabs-list.border-b {
+    /* 标签和控件一样高，下面的基线另算 1px（原生也是这样） */
+    height: calc(var(--tab-h, var(--control-h, 40px)) + 1px);
+    gap: var(--space-5, 20px);
+    padding-bottom: 0;
+    border-color: var(--line, #e9e7e4);
+  }
+  .kumo-tabs-list.border-b > [data-kumo-component="Tabs"][data-kumo-part="tab"][data-kumo-component] {
+    height: 100%;
+    padding: 0;
+    border-radius: 0;
+    font-size: var(--text-sm, 13px);
+    font-weight: var(--weight-medium, 500);
+    color: var(--muted, #6d6b67);
+    background: none;
+  }
+  .kumo-tabs-list.border-b > [data-kumo-component="Tabs"][data-kumo-part="tab"][data-kumo-component]:is([aria-selected="true"], :hover) {
+    color: var(--ink, #111111);
+  }
+  .kumo-tabs-list.border-b > [role="presentation"].bg-kumo-brand {
+    bottom: -1px;
+    height: 2px;
+    background: var(--action, #111111);
+  }
+
+  /* ── 长文字（TRUNCATION-REVIEW-PLAN D95）：按钮、徽标、下拉、面包屑可以收缩，末尾出省略号，不伸出容器（以前 w-max / shrink-0，长了直接伸出去） ── */
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"])[data-kumo-component]:not([class*="size-"]),
+  [data-kumo-component="Badge"][data-kumo-component],
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component] {
+    max-width: 100%;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"])[data-kumo-component]:not([class*="size-"]) {
+    overflow-x: clip;
+    justify-content: safe center;
+  }
+  /* 按钮的字（Kumo 包在 display: contents 的 span 里；有渐变底的变体外面还多一层 div）：只有字的时候换成块，才画得出省略号；里面有图标的照旧 */
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"])[data-kumo-component] > .relative.flex {
+    min-width: 0;
+    max-width: 100%;
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"])[data-kumo-component] > .contents:not(:has(> *)),
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"])[data-kumo-component] > .relative.flex > .contents:not(:has(> *)) {
+    display: block;
+    min-width: 0;
+    overflow-x: clip;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 徽标：只有字的（最常见）换成块排出省略号；带点、带图标的放不下时从开头显示（不改 Kumo 源码：getByText 拿到的就是徽标本身，这是它的约定） */
+  [data-kumo-component="Badge"][data-kumo-component] {
+    overflow-x: clip;
+    justify-content: safe flex-start;
+  }
+  [data-kumo-component="Badge"][data-kumo-component]:not(:has(> *)) {
+    display: inline-block;
+    align-content: center;
+    text-overflow: ellipsis;
+  }
+  [data-kumo-component="Breadcrumbs"][data-kumo-part="link"] {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  [data-kumo-component="Breadcrumbs"][data-kumo-part="link"] > span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── 徽标：20px 高、12px / 500（中文不小于 12px，TYPE-REVIEW-PLAN D71） ── */
+  [data-kumo-component="Badge"][data-kumo-component] {
+    height: 20px;
+    padding-block: 0;
+    font-size: var(--text-xs, 12px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 表格：表头 36px、12px / 500、灰；单元格 44px、13px；数字等宽；行之间一条线 ── */
+  table:has(> thead.group\/header) {
+    font-size: var(--text-sm, 13px);
+    font-variant-numeric: tabular-nums;
+    border-collapse: collapse;
+  }
+  table:has(> thead.group\/header) th {
+    height: 36px;
+    padding: 0 var(--space-3, 12px);
+    border-bottom-color: var(--line-strong, #ccc9c5);
+    background: transparent;
+    color: var(--muted, #6d6b67);
+    font-size: var(--text-xs, 12px);
+    font-weight: var(--weight-medium, 500);
+    line-height: 1.3;
+  }
+  table:has(> thead.group\/header) td {
+    height: 44px;
+    padding: var(--space-1-5, 6px) var(--space-3, 12px);
+  }
+  table:has(> thead.group\/header) tr.even\:bg-kumo-elevated:nth-child(even) {
+    background-color: transparent;
+  }
+  table:has(> thead.group\/header) tbody tr + tr td {
+    border-top: 1px solid var(--line, #e9e7e4);
+  }
+
+  /* ── 对话框：缺省 440 宽、--r-lg 圆角、--shadow-dialog、垂直居中（原生 <dialog> 是居中的，上游贴在顶部 64px） ──
+     注：上游的按钮在 Dialog.Close 里会把 data-kumo-component 写成 "Dialog"，所以上面的按钮规则还认 Kumo 按钮自己的类名组合。 */
+  [role="dialog"].fixed.left-1\/2.sm\:w-96,
+  [role="alertdialog"].fixed.left-1\/2.sm\:w-96 {
+    width: min(440px, calc(100vw - 32px));
+  }
+  :is([role="dialog"], [role="alertdialog"]).fixed.left-1\/2:is(.sm\:w-96, .sm\:w-72, .sm\:w-\[32rem\], .sm\:w-\[48rem\]) {
+    top: 50%;
+    /* 不借 --tw-translate-y：Tailwind 把它注册成缺省「0」（没有单位），放进 calc 整条就失效了 */
+    translate: -50% calc(-50% + var(--xxd-dialog-y, 0px));
+    border-radius: var(--r-lg, 0px);
+    --tw-shadow: var(--shadow-dialog, 0 28px 76px rgba(17, 17, 17, 0.24));
+  }
+  /* 遮罩：和原生 ::backdrop 一样是 --backdrop（半透明的黑），不是上游的浅灰 */
+  .fixed.inset-0.bg-kumo-recessed.opacity-80 {
+    background: var(--backdrop, rgba(5, 5, 5, 0.52));
+    opacity: 1;
+  }
+  .fixed.inset-0.bg-kumo-recessed.opacity-80:is([data-starting-style], [data-ending-style]) {
+    opacity: 0;
+  }
+  :is([role="dialog"], [role="alertdialog"]) [data-xxd-part="dialog-actions"] > :is(button, a) {
+    min-height: var(--hit-min, 40px);
+  }
+  /* 取消是辅助操作：灰字、内容宽度（原生 .ui-dialog-cancel）；移上去变正文色 */
+  [data-xxd-cancel][data-kumo-component] {
+    color: var(--muted, #6d6b67);
+  }
+  [data-xxd-cancel][data-kumo-component]:hover {
+    color: var(--ink, #111111);
+  }
+
+  /* ── 菜单：4px 内边距、--r-md、浮层阴影；每项 32px 高、12px / 500、左右 10px ── */
+  [role="menu"].ring-kumo-line.shadow-lg {
+    padding: var(--space-1, 4px);
+    border-radius: var(--r-md, 0px);
+    --tw-shadow: var(--shadow-popover, 0 18px 44px rgba(17, 17, 17, 0.16));
+  }
+  [data-kumo-component="DropdownMenu"][data-kumo-part="item"][data-kumo-component] {
+    min-height: var(--control-h-sm, 32px); /* 跟密度走，和 HTML 菜单项一样（ACCEPTANCE-REVIEW） */
+    gap: var(--space-2, 8px);
+    padding: 0 var(--space-3, 12px);
+    border-radius: var(--r-xs, 0px);
+    font-size: var(--text-xs, 12px);
+    font-weight: var(--weight-medium, 500);
+    line-height: 1.3;
+  }
+  [data-kumo-component="DropdownMenu"][data-kumo-part="item"][data-kumo-component][data-highlighted]:not(.text-kumo-danger) {
+    background: var(--wash, #f6f4f1);
+  }
+  [role="menu"].ring-kumo-line.shadow-lg > [role="separator"] {
+    margin: var(--space-1, 4px) calc(-1 * var(--space-1, 4px));
+    background: var(--line, #e9e7e4);
+  }
+
+  /* ── 禁用（设计师评审 V2-3）：和原生一样用 --disabled-ink / -bg / -line，不用半透明 ── */
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none)[data-kumo-component][data-kumo-component]:is(:disabled, [aria-disabled="true"], [data-disabled]) {
+    background: var(--disabled-bg, #f6f4f1);
+    color: var(--disabled-ink, #adaaa5) !important;
+    opacity: 1;
+    --tw-ring-color: var(--disabled-line, #e9e7e4);
+    --tw-inset-shadow: 0 0 #0000;
+  }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none)[data-kumo-component][data-kumo-component]:is(.bg-inherit, .bg-transparent):is(:disabled, [aria-disabled="true"], [data-disabled]) {
+    background: transparent;
+  }
+  :is(input, textarea)[class*="ring-kumo-line"][class*="bg-kumo-control"]:disabled {
+    background: var(--disabled-bg, #f6f4f1);
+    color: var(--disabled-ink, #adaaa5);
+    opacity: 1;
+    --tw-ring-color: var(--disabled-line, #e9e7e4);
+  }
+  :is([data-kumo-component="Checkbox"], [data-kumo-component="Radio"][data-kumo-part="item"])[data-kumo-component][data-disabled] {
+    opacity: 1;
+    background-color: var(--disabled-bg, #f6f4f1);
+    --tw-ring-color: var(--disabled-line, #e9e7e4);
+  }
+  :is([data-kumo-component="Checkbox"], [data-kumo-component="Radio"][data-kumo-part="item"])[data-kumo-component][data-disabled]:is([data-checked], [data-indeterminate]) {
+    background-color: var(--disabled-ink, #adaaa5);
+    --tw-ring-color: var(--disabled-ink, #adaaa5);
+  }
+  [data-kumo-component="Switch"][data-kumo-component][data-kumo-component]:is(:disabled, [data-disabled]) {
+    opacity: 1;
+    background-color: var(--disabled-bg, #f6f4f1);
+    --tw-ring-color: var(--disabled-line, #e9e7e4);
+  }
+  [data-kumo-component="Switch"][data-kumo-component][data-kumo-component]:is(:disabled, [data-disabled])[data-checked] {
+    background-color: var(--disabled-ink, #adaaa5);
+    --tw-ring-color: var(--disabled-ink, #adaaa5);
+  }
+  label:has(> [data-kumo-component="Checkbox"][data-disabled]),
+  label:has(+ [data-kumo-component="Switch"]:disabled) {
+    color: var(--disabled-ink, #adaaa5);
+  }
+
+  /* ── 抬起来的一层（设计师评审 V4-3）：浮层的根上把纸、悬停底、线换成 *-raised，和原生一样。
+     Kumo 的 --color-kumo-* 在 :root 上就算好了，这里要在浮层上重新指一次，里面的东西才跟着变 ── */
+  :is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], .kumo-popover-popup)[class*="bg-kumo"] {
+    --paper: var(--paper-raised, #ffffff);
+    --wash: var(--wash-raised, #f6f4f1);
+    --wash-strong: var(--wash-strong-raised, #eeece9);
+    --line: var(--line-raised, #e9e7e4);
+    --color-kumo-base: var(--paper-raised, #ffffff);
+    --color-kumo-control: var(--paper-raised, #ffffff);
+    --color-kumo-overlay: var(--paper-raised, #ffffff);
+    --color-kumo-tint: var(--wash-raised, #f6f4f1);
+    --color-kumo-line: var(--line-raised, #e9e7e4);
+    --color-kumo-hairline: var(--line-raised, #e9e7e4);
+  }
+}

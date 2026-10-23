@@ -1,0 +1,524 @@
+/* 结构（优化计划 O3）：侧栏、工具条、分层卡片、布局预设、面、页面头、文章目录、小小东标志、手风琴。 */
+@layer xxd.components {
+  /* ── 侧栏 ──
+   *   <aside class="xxd-sidebar" data-xxd-sidebar [data-collapsed] [data-variant="floating|inset"] style="--sidebar-w: 248px">
+   *     <div class="xxd-sidebar__head">…</div>
+   *     <nav class="xxd-sidebar__body">
+   *       <div class="xxd-sidebar__group"><div class="xxd-sidebar__label">内容</div>
+   *         <a class="xxd-sidebar__item" href="#" aria-current="page"><i data-xxd-icon="House"></i><span>首页</span><span class="xxd-badge">3</span></a>
+   *         <button class="xxd-sidebar__item" aria-expanded="false" data-sidebar-sub="s1">…</button>
+   *         <div class="xxd-sidebar__sub" id="s1" hidden>…</div>
+   *     </nav>
+   *     <div class="xxd-sidebar__foot">…</div>
+   *     <div class="xxd-sidebar__resize" data-sidebar-resize></div>
+   *   </aside>
+   * 折叠成 56px 图标栏：切换即时，标签淡出，图标不动；悬停图标出 tooltip（data-tooltip 由 JS 补上）。 */
+  .xxd-sidebar {
+    --sidebar-w: 248px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: var(--sidebar-w);
+    height: 100%;
+    min-height: 0;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .xxd-sidebar[data-collapsed] {
+    width: 56px;
+  }
+
+  .xxd-sidebar[data-variant="floating"] {
+    margin: var(--space-2);
+    height: calc(100% - 16px);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-popover);
+  }
+
+  .xxd-sidebar[data-variant="inset"] {
+    border-right: 0;
+    background: transparent;
+  }
+
+  .xxd-sidebar__head,
+  .xxd-sidebar__foot {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 56px;
+    padding: 0 var(--space-3);
+  }
+
+  .xxd-sidebar__head {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .xxd-sidebar__foot {
+    margin-top: auto;
+    border-top: 1px solid var(--line);
+  }
+
+  .xxd-sidebar__body {
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-2);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .xxd-sidebar__group + .xxd-sidebar__group {
+    margin-top: var(--space-4);
+  }
+
+  .xxd-sidebar__label {
+    padding: var(--space-1) var(--space-2);
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    white-space: nowrap;
+  }
+
+  .xxd-sidebar__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: 34px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--motion-quick) ease, color var(--motion-quick) ease;
+  }
+
+  .xxd-sidebar__item:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-sidebar__item[aria-current="page"] {
+    background: var(--selected-bg);
+    color: var(--ink);
+    box-shadow: inset 2px 0 0 var(--action); /* D76：导航的当前项左边一条线，和目录一样（淡底只有 1.15:1） */
+  }
+
+  .xxd-sidebar__item > .ui-icon {
+    flex: none;
+    width: var(--icon-nav);
+    height: var(--icon-nav);
+  }
+
+  .xxd-sidebar__item > span:not(.xxd-badge) {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity var(--motion-quick) ease;
+  }
+
+  /* 徽标最多占一半：长了自己省略，不把名字挤没（TRUNCATION-REVIEW-PLAN） */
+  .xxd-sidebar__item > .xxd-badge {
+    max-width: 50%;
+  }
+
+  .xxd-sidebar__item[aria-expanded]::after {
+    content: "";
+    flex: none;
+    width: 12px;
+    height: 12px;
+    background: var(--muted);
+    -webkit-mask: var(--xxd-chevron-right) center / contain no-repeat;
+    mask: var(--xxd-chevron-right) center / contain no-repeat;
+    transition: transform var(--motion-quick) var(--ease-out-expo);
+  }
+
+  .xxd-sidebar__item[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+
+  .xxd-sidebar__sub {
+    margin: var(--space-0-5) 0 var(--space-1) calc(var(--space-2) + var(--icon-rail) / 2); /* 竖线对准上一级图标的中线 */
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--line);
+  }
+
+  .xxd-sidebar__sub .xxd-sidebar__item {
+    min-height: 30px;
+    font-size: var(--text-xs);
+  }
+
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__label,
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__item > span,
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__item[aria-expanded]::after,
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__sub,
+  .xxd-sidebar[data-collapsed] [data-sidebar-hide] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__sub,
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__label {
+    display: none;
+  }
+
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__item {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__item > span {
+    position: absolute;
+    width: 1px;
+    overflow: hidden;
+  }
+
+  .xxd-sidebar__resize {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+  }
+
+  .xxd-sidebar__resize::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 2px;
+    width: 2px;
+    background: var(--action);
+    opacity: 0;
+    transition: opacity var(--motion-quick) ease;
+  }
+
+  .xxd-sidebar__resize:hover::after,
+  .xxd-sidebar[data-resizing] .xxd-sidebar__resize::after {
+    opacity: 1;
+  }
+
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__resize {
+    display: none;
+  }
+
+  /* ── 工具条（编辑器的格式工具栏）：role="toolbar"，← → 在项之间移动 ── */
+  .xxd-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-0-5);
+    min-height: 40px;
+    padding: var(--space-1);
+  }
+
+  .xxd-toolbar[data-framed] {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+  }
+
+  .xxd-toolbar__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    min-width: 30px;
+    height: 30px;
+    padding: 0 var(--space-1-5);
+    border: 0;
+    border-radius: var(--r-xs);
+    background: transparent;
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--motion-quick) ease, color var(--motion-quick) ease;
+  }
+
+  .xxd-toolbar__item:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-toolbar__item[aria-pressed="true"] {
+    background: var(--selected-bg);
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--line-control); /* D76 */
+  }
+
+  .xxd-toolbar__item:disabled,
+  .xxd-toolbar__item:disabled:hover {
+    background: transparent;
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  .xxd-toolbar__sep {
+    flex: none;
+    width: 1px;
+    height: 18px;
+    margin: 0 var(--space-1);
+    background: var(--line);
+  }
+
+  .xxd-toolbar__spacer {
+    flex: 1;
+  }
+
+  .xxd-toolbar[data-size="sm"] .xxd-toolbar__item {
+    min-width: 26px;
+    height: 26px;
+  }
+
+  .xxd-toolbar[data-size="lg"] .xxd-toolbar__item {
+    min-width: 36px;
+    height: 36px;
+    font-size: var(--text-sm);
+  }
+
+  /* ── 分层卡片：主体（纸）+ 次要区（洗色），次要区可在上或在下 ── */
+  .xxd-layer {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--wash);
+    overflow: hidden;
+  }
+
+  .xxd-layer__secondary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 36px;
+    padding: var(--space-1-5) var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-layer__primary {
+    padding: var(--space-4);
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .xxd-layer__primary:first-child {
+    border-top: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* ── 布局预设：两栏、三栏…。看的是布局自己有多宽（容器查询），不是整个窗口：
+   *    放进窄的侧边栏、卡片里也会叠成一栏。宽 ≥ 560px 才分栏；三栏 ≥ 760px、四栏 ≥ 880px，不够时先两栏 ── */
+  .xxd-layout {
+    --_gap: var(--layout-gap, var(--space-4));
+    container-type: inline-size;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--_gap);
+  }
+
+  .xxd-layout > * {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+
+  @container (min-width: 560px) {
+    .xxd-layout:is([data-cols="2up"], [data-cols="3up"], [data-cols="4up"]) > * { flex-basis: calc((100% - var(--_gap)) / 2); }
+    .xxd-layout[data-cols="1-2"] > :nth-child(odd),
+    .xxd-layout[data-cols="2-1"] > :nth-child(even) { flex-basis: calc((100% - var(--_gap)) / 3); }
+    .xxd-layout[data-cols="1-2"] > :nth-child(even),
+    .xxd-layout[data-cols="2-1"] > :nth-child(odd) { flex-basis: calc((100% - var(--_gap)) * 2 / 3); }
+    .xxd-layout[data-cols="1-3"] > :nth-child(odd) { flex-basis: calc((100% - var(--_gap)) / 4); }
+    .xxd-layout[data-cols="1-3"] > :nth-child(even) { flex-basis: calc((100% - var(--_gap)) * 3 / 4); }
+    .xxd-layout[data-cols="side"] > :nth-child(odd) { flex-basis: 240px; }
+    .xxd-layout[data-cols="side"] > :nth-child(even) { flex-basis: calc(100% - 240px - var(--_gap)); }
+  }
+
+  @container (min-width: 760px) {
+    .xxd-layout[data-cols="3up"] > * { flex-basis: calc((100% - 2 * var(--_gap)) / 3); }
+  }
+
+  @container (min-width: 880px) {
+    .xxd-layout[data-cols="4up"] > * { flex-basis: calc((100% - 3 * var(--_gap)) / 4); }
+  }
+
+  /* ── 面：base（纸）/ raised（浮起：只给浮层）/ sunken（凹下：洗色） ── */
+  .xxd-surface {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+  }
+
+  .xxd-surface[data-level="sunken"] {
+    background: var(--wash);
+  }
+
+  .xxd-surface[data-level="raised"] {
+    box-shadow: var(--shadow-popover);
+  }
+
+  /* ── 页面头：面包屑、标题、说明、操作、tab ── */
+  /* 页面头：标题和它的说明挨着（--space-1），操作按钮在右边、和标题顶对齐、跨两行，不把说明往下推；
+   * 窄的时候（容器窄于 480px）操作换到说明下面。相关的字靠得更近（原则 §6）。 */
+  .xxd-page-header {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+    padding: var(--space-6) 0 var(--space-5);
+  }
+
+  .xxd-page-header > :not(.xxd-page-header__row, .xxd-page-header__desc) {
+    grid-column: 1 / -1;
+  }
+
+  .xxd-page-header > .xxd-breadcrumbs {
+    margin-bottom: var(--space-2);
+  }
+
+  .xxd-page-header__row {
+    display: contents;
+  }
+
+  /* 标题至少留 12 个字宽：放不下时操作按钮整体换到下一行，标题不会被挤成一字一行 */
+  .xxd-page-header__title {
+    grid-column: 1;
+    min-width: min(100%, 12em);
+    margin: 0;
+    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-body);
+  }
+
+  .xxd-page-header__desc {
+    grid-column: 1;
+    max-width: 640px;
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-page-header__actions {
+    grid-column: 2;
+    grid-row: span 2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+
+  /* 窄的时候按读的顺序排：标题 → 说明 → 操作 → 标签页（设计师评审 V3-3：以前按钮插在标题和说明中间） */
+  @container (max-width: 480px) {
+    .xxd-page-header__actions {
+      grid-column: 1 / -1;
+      grid-row: auto;
+      order: 1;
+      justify-content: flex-start;
+      margin-top: var(--space-2);
+    }
+
+    .xxd-page-header > .xxd-tabs {
+      order: 2;
+    }
+  }
+
+  .xxd-page-header > .xxd-tabs {
+    margin-top: var(--space-2);
+  }
+
+  /* ── 文章目录：滚动时高亮当前节（JS 写 aria-current） ── */
+  .xxd-toc {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-xs);
+  }
+
+  .xxd-toc__title {
+    margin: 0 0 var(--space-1-5);
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+  }
+
+  .xxd-toc a {
+    display: block;
+    padding: var(--space-1) 0 var(--space-1) var(--space-3);
+    border-left: 1px solid var(--line);
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--motion-quick) ease, border-color var(--motion-quick) ease;
+  }
+
+  .xxd-toc a:hover {
+    color: var(--ink);
+    transition-duration: 0s;
+  }
+
+  .xxd-toc a[aria-current="true"] {
+    border-left-color: var(--action);
+    color: var(--ink);
+  }
+
+  .xxd-toc [data-depth="3"] a {
+    padding-left: var(--space-6);
+  }
+
+  /* ── 小小东标志：暖黑方块上四个由满到淡的小方块（各插件的同一个标），可带字 ── */
+  .xxd-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--ink);
+    font: var(--weight-strong) var(--text-base) / 1 var(--font-body);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .xxd-logo__mark {
+    --s: var(--logo-size, 20px);
+    flex: none;
+    width: var(--s);
+    height: var(--s);
+    border-radius: var(--r-xs);
+    background:
+      linear-gradient(var(--on-ink), var(--on-ink)) 22% 22% / 22% 22% no-repeat,
+      linear-gradient(rgba(var(--paper-rgb), 0.72), rgba(var(--paper-rgb), 0.72)) 78% 22% / 22% 22% no-repeat,
+      linear-gradient(rgba(var(--paper-rgb), 0.46), rgba(var(--paper-rgb), 0.46)) 22% 78% / 22% 22% no-repeat,
+      linear-gradient(rgba(var(--paper-rgb), 0.22), rgba(var(--paper-rgb), 0.22)) 78% 78% / 22% 22% no-repeat,
+      var(--ink);
+  }
+
+  .xxd-logo[data-size="sm"] {
+    --logo-size: 16px;
+    font-size: var(--text-sm);
+  }
+
+  .xxd-logo[data-size="lg"] {
+    --logo-size: 32px;
+    font-size: var(--text-lg);
+  }
+
+  /* ── 手风琴：<details class="xxd-collapse" name="faq">（同名的一组只开一个，浏览器原生） ── */
+  .xxd-collapse[open] > :not(summary) {
+    animation: xxd-collapse-in var(--motion-medium) var(--ease-out-expo);
+  }
+
+  @keyframes xxd-collapse-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+}

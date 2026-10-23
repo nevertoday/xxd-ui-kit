@@ -1,0 +1,30 @@
+---
+import Site from "../layouts/Site.astro";
+import DoDont from "../components/DoDont.astro";
+import { principlesFor } from "../data/principles.js";
+import { langOf } from "../i18n/index.js";
+const lang = langOf(Astro.url.pathname);
+const principles = principlesFor(lang);
+const headings = principles.map((p) => ({ slug: p.id, text: p.title }));
+const T =
+  lang === "en"
+    ? { title: "Design principles", caption: "Get started", lead: "Each one comes with a Do / Don't pair, all real components: switch the theme, corners and accent in the top right and watch them change. The full text is in the repository at " }
+    : { title: "设计原则", caption: "开始", lead: "每条都配一对「好 / 不好」，都是真的组件：右上角切换主题、圆角、主色，看它们怎么变。完整原文在仓库 " };
+---
+
+<Site title={T.title} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}<code class="xxd-code-inline">docs/DESIGN-PRINCIPLES.md</code>{lang === "en" ? " (in Chinese)." : "。"}</p>
+  </header>
+  {
+    principles.map((p) => (
+      <section>
+        <h2 class="site-h2" id={p.id}>{p.title} <span class="xxd-text" data-variant="caption">{p.ref}</span></h2>
+        {p.note && <p class="site-p">{p.note}</p>}
+        <DoDont doMarkup={p.doMarkup} dontMarkup={p.dontMarkup} doText={p.doText} dontText={p.dontText} />
+      </section>
+    ))
+  }
+</Site>

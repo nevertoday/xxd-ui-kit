@@ -1,0 +1,362 @@
+/* 导航：tabs、分段控件、面包屑、分页、侧栏 rail。 */
+@layer xxd.components {
+  /* Tabs：基线上的文字，当前项下面一条短墨线滑过去。
+   *   <div class="xxd-tabs" role="tablist" data-xxd-tabs>
+   *     <button role="tab" aria-selected="true" aria-controls="p1">写作</button> …
+   *   </div>
+   * 选中改颜色，不加粗。tab 的基线就是那条线：下面不要再画第二条。 */
+  .xxd-tabs {
+    position: relative;
+    display: flex;
+    gap: var(--space-5);
+    overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+
+  .xxd-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 焦点环画在里面：外面那圈会被横向滚动（tabs）、省略号（面包屑）裁掉，以前 tab 只剩右边一条竖线、面包屑完全看不见（WCAG 2.4.7） */
+  .xxd-tabs > [role="tab"]:focus-visible,
+  .xxd-breadcrumbs :is(a, button):focus-visible,
+  .xxd-code:focus-visible,
+  pre[tabindex]:focus-visible,
+  a.xxd-row:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .xxd-tabs > [role="tab"] {
+    position: relative;
+    flex: none;
+    /* 跟着密度：缺省 40，紧凑 32（和控件一样高） */
+    height: var(--tab-h, var(--control-h));
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-sm) / 1 var(--font-body);
+    cursor: pointer;
+    transition: color var(--motion-quick) ease;
+  }
+
+  .xxd-tabs > [role="tab"]:hover {
+    color: var(--ink);
+  }
+
+  .xxd-tabs > [role="tab"][aria-selected="true"] {
+    color: var(--ink);
+  }
+
+  .xxd-tabs > [role="tab"] .xxd-count {
+    margin-left: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 墨线：JS 设置 --ink-x / --ink-w，只动 transform。没有 JS 时退化为选中项自己的下划线。 */
+  .xxd-tabs__ink {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100px;
+    height: 2px;
+    background: var(--action);
+    transform-origin: left center;
+    transform: translateX(var(--ink-x, 0px)) scaleX(calc(var(--ink-w, 0) / 100));
+    transition: transform var(--motion-medium) var(--ease-out-expo);
+    pointer-events: none;
+  }
+
+  .xxd-tabs:not(:has(.xxd-tabs__ink)) > [role="tab"][aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--action);
+  }
+
+  .xxd-tabs[data-size="sm"] > [role="tab"] {
+    height: var(--control-h-sm);
+    font-size: var(--text-xs);
+  }
+
+  [role="tabpanel"].xxd-tabpanel[hidden] {
+    display: none;
+  }
+
+  [role="tabpanel"].xxd-tabpanel {
+    animation: xxd-fade-in var(--motion-quick) ease;
+  }
+
+  /* 分段控件：一个托盘，选中的那段像纸一样浮出来，不是框里套框。
+   *   <div class="xxd-segmented" role="radiogroup" data-xxd-segmented>
+   *     <button role="radio" aria-checked="true">亮</button> …
+   *   </div> */
+  .xxd-segmented {
+    display: inline-flex;
+    gap: var(--space-0-5);
+    padding: var(--space-0-5);
+    border-radius: var(--r-sm);
+    background: var(--wash);
+  }
+
+  .xxd-segmented > [role="radio"],
+  .xxd-segmented > button {
+    flex: 1 0 auto;
+    height: calc(var(--control-h-sm) - 4px);
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: calc(var(--r-sm) - 2px);
+    background: transparent;
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--motion-quick) ease, background-color var(--motion-quick) ease;
+  }
+
+  .xxd-segmented > :hover {
+    color: var(--ink);
+  }
+
+  .xxd-segmented > [aria-checked="true"],
+  .xxd-segmented > [aria-pressed="true"] {
+    background: var(--paper);
+    color: var(--ink);
+    /* 选中的那段要有一个 ≥ 3:1 的记号，不只靠纸色和托盘那 1.1:1 的差（COLOR-REVIEW-PLAN D76） */
+    box-shadow: 0 0 0 1px var(--line-control);
+  }
+
+  /* 尺寸（ACCEPTANCE-REVIEW：React 输出了 data-size，CSS 以前没有）：缺省托盘 = 小号控件高；sm = xs 控件高；lg = 标准控件高 */
+  .xxd-segmented[data-size="sm"] > :is([role="radio"], button) {
+    height: calc(var(--control-h-xs) - 4px);
+    padding: 0 var(--space-2);
+  }
+
+  .xxd-segmented[data-size="lg"] > :is([role="radio"], button) {
+    height: calc(var(--control-h) - 4px);
+  }
+
+  /* 禁用（ACCEPTANCE-REVIEW：分段、tab、chip、链接以前禁用了和默认一样，悬停还会变深）：字用禁用色，悬停不变 */
+  .xxd-segmented > :is(:disabled, [aria-disabled="true"]),
+  .xxd-tabs > [role="tab"]:is(:disabled, [aria-disabled="true"]) {
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  .xxd-segmented > :is(:disabled, [aria-disabled="true"]):hover,
+  .xxd-tabs > [role="tab"]:is(:disabled, [aria-disabled="true"]):hover {
+    color: var(--disabled-ink);
+    background: transparent;
+  }
+
+  .xxd-segmented[data-block] {
+    display: flex;
+  }
+
+  /* 面包屑 */
+  /* 面包屑不换行（换行后第二行会以「>」开头）：放不下时前面的项先缩成省略号，当前页最后才缩 */
+  .xxd-breadcrumbs {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--space-1-5);
+    margin: 0;
+    padding: 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    list-style: none;
+  }
+
+  /* 每一项是普通的块（不是 flex）：文字直接写在 <li> 里时也能出省略号 */
+  .xxd-breadcrumbs > li {
+    display: block;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .xxd-breadcrumbs > li[aria-current],
+  .xxd-breadcrumbs > li:last-child {
+    flex-shrink: 0.2;
+  }
+
+  /* 前面的每一级最多占三分之一：长的那级自己先省略，不按比例把短的（「1.8」）一起缩没（TRUNCATION-REVIEW-PLAN） */
+  .xxd-breadcrumbs > li:not(:last-child, .xxd-breadcrumbs__gap) {
+    max-width: 33%;
+  }
+
+  /* 当前页再长也给前面留几个字：前面的项不会被缩没 */
+  .xxd-breadcrumbs > li:not(:first-child):last-child {
+    max-width: calc(100% - 3.5em);
+  }
+
+  .xxd-breadcrumbs > .xxd-breadcrumbs__gap {
+    flex: none;
+  }
+
+  .xxd-breadcrumbs > li + li::before {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: var(--space-1-5);
+    vertical-align: -2px;
+    background: var(--muted-2);
+    -webkit-mask: var(--xxd-chevron-right) center / contain no-repeat;
+    mask: var(--xxd-chevron-right) center / contain no-repeat;
+  }
+
+  .xxd-breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .xxd-breadcrumbs a:hover {
+    color: var(--ink);
+  }
+
+  .xxd-breadcrumbs [aria-current="page"] {
+    color: var(--ink);
+  }
+
+  /* 分页 */
+  /* 页码不折行：窄的时候（分页栏 < 420px，或者手机）只留「‹ 3 / 12 ›」 */
+  .xxd-pagination {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .xxd-pagination > .xxd-pagination__status {
+    display: none;
+    padding: 0 var(--space-1-5);
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .xxd-pagination > a,
+  .xxd-pagination > button {
+    display: inline-grid;
+    place-items: center;
+    min-width: var(--control-h-sm);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .xxd-pagination > :hover:not(:disabled, [aria-disabled="true"], [aria-current]:not([aria-current="false"])) {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-pagination > [aria-current="page"] {
+    background: var(--selected-bg);
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--line-control); /* D76：淡底之外再有一圈 ≥ 3:1 的边 */
+  }
+
+  .xxd-pagination > :disabled {
+    color: var(--disabled-ink);
+    pointer-events: none;
+  }
+
+  .xxd-pagination > .xxd-pagination__gap {
+    min-width: 20px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  /* 侧栏 rail：图标 20px、标签 10px；激活改颜色和底色，不改线宽、不加粗。 */
+  .xxd-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    width: 56px;
+    padding: var(--space-2) 0;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .xxd-rail > a,
+  .xxd-rail > button {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1);
+    width: 48px;
+    padding: var(--space-1-5) 0 var(--space-1);
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .xxd-rail > :hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-rail > [aria-current="page"],
+  .xxd-rail > [aria-selected="true"] {
+    background: var(--selected-bg);
+    color: var(--ink);
+    box-shadow: inset 2px 0 0 var(--action); /* D76：导航的当前项左边一条线，和目录一样 */
+  }
+
+  .xxd-rail > * > .ui-icon {
+    width: var(--icon-rail);
+    height: var(--icon-rail);
+  }
+
+  .xxd-rail__spacer {
+    flex: 1;
+  }
+
+  /* 顶栏：56px，分隔线属于这一行，控件共用垂直中线。 */
+  .xxd-topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 56px;
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .xxd-topbar__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @keyframes xxd-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+}

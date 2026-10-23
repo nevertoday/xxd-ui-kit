@@ -1,0 +1,78 @@
+{
+  "name": "@xxd/mini",
+  "version": "0.1.0",
+  "private": true,
+  "description": "小小东 UI 的小程序版：基于 Taro 的 React 组件，样式从 @xxd/css 生成 / XXD UI for mini programs (Taro + React)",
+  "license": "MIT",
+  "author": "小小东 (nevertoday)",
+  "homepage": "https://ui.xiaoxiaodong.ai",
+  "bugs": {
+    "url": "https://github.com/nevertoday/xxd-ui-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nevertoday/xxd-ui-kit.git",
+    "directory": "packages/xxd-mini"
+  },
+  "keywords": [
+    "miniprogram",
+    "weapp",
+    "taro",
+    "react",
+    "components",
+    "chinese",
+    "xxd-ui"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tokens.css": "./styles/tokens.mini.css",
+    "./theme.json": "./styles/theme.json",
+    "./mini.json": "./mini.json",
+    "./styles/*": "./styles/*",
+    "./package.json": "./package.json",
+    "./taro-plugin": "./taro-plugin/index.cjs",
+    "./aria.json": "./aria.json"
+  },
+  "files": [
+    "dist",
+    "styles",
+    "mini.json",
+    "taro-plugin",
+    "aria.json"
+  ],
+  "scripts": {
+    "build": "node scripts/build-mini.mjs && node scripts/build-js.mjs",
+    "test": "node --test 'test/*.test.mjs'",
+    "prepack": "node scripts/build-mini.mjs && node scripts/build-js.mjs"
+  },
+  "dependencies": {
+    "@xxd/icons": "workspace:*",
+    "@xxd/tokens": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tarojs/components": "^4.2.1",
+    "@tarojs/shared": "^4.2.1",
+    "@tarojs/taro": "^4.2.1",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@tarojs/components": "4.2.1",
+    "@tarojs/shared": "4.2.1",
+    "@tarojs/taro": "4.2.1",
+    "@types/node": "catalog:",
+    "@types/react": "^18.0.0",
+    "@xxd/css": "workspace:*",
+    "esbuild": "0.28.1",
+    "lightningcss": "1.33.0",
+    "react": "18.3.1",
+    "react-test-renderer": "18.3.1",
+    "typescript": "^5.4.5"
+  }
+}

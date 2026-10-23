@@ -1,0 +1,48 @@
+/* 小程序里对话框盖在屏幕中间（网页版窄屏变成底部抽屉；手机上的抽屉用 Sheet） */
+.xxd-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: calc(var(--z-dialog) + 1);
+  width: min(320px, calc(100vw - 48px));
+  max-width: none;
+  max-height: 80vh;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  transform: translate(-50%, -50%);
+}
+
+.xxd-overlay .xxd-dialog:not(.is-open) {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 8px));
+  /* 收起动画的那 200ms 里不挡住下面的东西 */
+  pointer-events: none;
+}
+
+.xxd-overlay .xxd-dialog.is-open:not(.xxd-palette) {
+  opacity: 1;
+}
+
+.xxd-overlay .xxd-dialog:not(.xxd-palette):before {
+  display: none;
+}
+
+.xxd-dialog__head {
+  padding: var(--inset-lg-y) var(--inset-lg) 0;
+}
+
+.xxd-dialog__desc {
+  display: block;
+  color: var(--muted);
+}
+
+/* 手机上两个按钮平分一行 */
+.xxd-dialog__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.xxd-dialog__actions > .xxd-btn {
+  flex: 1;
+}

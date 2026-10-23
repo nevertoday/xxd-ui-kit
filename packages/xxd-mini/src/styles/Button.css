@@ -1,0 +1,72 @@
+/* 小程序（和 Taro H5）的原生按钮自带 width: 100%、左右 margin: auto、相邻按钮的上边距：清掉，宽度由内容定 */
+.xxd-btn,
+.xxd-chip {
+  width: auto;
+  margin: 0;
+}
+
+/* 点按区（原则第 13 节，MINI-REVIEW-PLAN I1）：看得见的大小不变，四周撑到至少 --hit-min。
+   按按钮自己的大小算：网页版按 --control-h 算，小号按钮只撑到 36px，而且只往上下撑 */
+.xxd-btn.xxd-btn:after,
+button.xxd-btn.xxd-btn:after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--hit-min));
+  height: max(100%, var(--hit-min));
+  border: 0;
+  border-radius: 0;
+  transform: translate(-50%, -50%);
+}
+
+/* 只有图标的按钮没有字要截断：不裁，点按区才撑得出去 */
+.xxd-btn.is-icon-only {
+  overflow: visible;
+}
+.xxd-btn.is-block {
+  display: flex;
+  width: 100%;
+}
+
+/* 加载中：转圈代替图标，字照样留着（宽度不跳） */
+.xxd-btn > .xxd-spinner {
+  width: 14px;
+  height: 14px;
+  color: inherit;
+}
+
+/* 原生 button 被禁用时，微信会把字变灰、底变浅：网页版的禁用令牌（--disabled-*）已经改写过来，这里只要不再叠半透明 */
+.xxd-btn.is-disabled {
+  opacity: 1;
+}
+
+/* 一排按钮平分一行 */
+.xxd-btn-row.is-block {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.xxd-btn-row.is-block > .xxd-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 实心按钮按下：色阶的 10 级（和网页版的 --btn-bg-active 一样；小程序的 :active 是 .is-active） */
+.xxd-btn.is-variant-primary.is-active:not(.is-disabled) {
+  background: var(--accent-solid-hover);
+}
+
+.xxd-btn.is-variant-danger.is-active:not(.is-disabled) {
+  background: var(--danger-solid-hover);
+}
+
+/* 质感（material）的边：比底色深一档（网页版按 --btn-edge 掺黑；小程序没有 color-mix，用色阶里深一级的颜色） */
+.is-finish-material .xxd-btn.is-variant-primary {
+  --btn-bd: var(--accent-text);
+}
+
+.is-finish-material .xxd-btn.is-variant-danger {
+  --btn-bd: var(--danger-solid-hover);
+}

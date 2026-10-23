@@ -1,0 +1,168 @@
+/* 长内容（优化计划 O8；TRUNCATION-REVIEW-PLAN D91–D93）：
+ *   · 任何控件都不撑出它的容器（max-width: 100% + 可收缩）；
+ *   · 内容（标题、状态、数字、图表的类别名）放不下就折行；标签（按钮、chip、tab……）一行，放不下才在末尾出省略号；
+ *   · 标签包在 <span> 里时自己出省略号；弹性布局里的裸文字画不出省略号，xxd.js 量到放不下时标 data-truncated，换成块排再出省略号；
+ *     没有 xxd.js 时也从开头显示（safe center），只裁末尾；
+ *   · 被省略的字悬停、聚焦时提示全文（xxd.js，见 truncate.js）；
+ *   · 正文里的长链接、长英文单词能断行（表格、代码除外：那里宁可横向滚动也不拆词）。
+ * 横向用 overflow-x: clip（不是 hidden）：纵向不裁，按钮在紧凑模式下扩大的点击区（::after）还在。 */
+@layer xxd.components {
+  .xxd-btn,
+  .xxd-chip,
+  .xxd-badge,
+  .xxd-kbd,
+  .xxd-logo,
+  .xxd-progress-pill,
+  .xxd-toolbar__item,
+  .xxd-btn-group,
+  .xxd-segmented,
+  .xxd-picker,
+  .xxd-picker__trigger,
+  .xxd-breadcrumbs > li,
+  .xxd-input-group__addon,
+  .xxd-input-group__suffix {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .xxd-btn,
+  .xxd-chip,
+  .xxd-badge,
+  .xxd-kbd,
+  .xxd-logo,
+  .xxd-toolbar__item,
+  .xxd-input-group__addon,
+  .xxd-input-group__suffix,
+  .xxd-segmented > button,
+  .xxd-segmented > [role="radio"] {
+    overflow-x: clip;
+  }
+
+  .xxd-picker__trigger {
+    width: 100%;
+  }
+
+  /* 居中的标签放不下时从开头显示（以前两边一起裁：「Delete …」显示成「elete "Long-form publis」） */
+  .xxd-btn,
+  .xxd-toolbar__item {
+    justify-content: safe center;
+  }
+
+  /* xxd.js 量到放不下（data-truncated）：换成块排，末尾出省略号；高度、宽度不变，竖直方向不裁（点击区的 ::after 还在） */
+  :is(.xxd-btn, .xxd-chip, .xxd-badge, .xxd-logo, .xxd-toolbar__item)[data-truncated] {
+    display: inline-block;
+    align-content: center;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .xxd-btn[data-block][data-truncated] {
+    display: block;
+  }
+
+  :is(.xxd-btn, .xxd-chip, .xxd-badge, .xxd-logo, .xxd-toolbar__item)[data-truncated] > :is(.ui-icon, svg, img, .xxd-avatar, .xxd-dot) {
+    margin-inline-end: var(--space-1-5);
+    vertical-align: middle;
+  }
+
+  /* 头像里只放一两个字；放了长字也只显示开头，不竖着折成好几行 */
+  .xxd-avatar {
+    place-items: safe center;
+    white-space: nowrap;
+  }
+
+  /* 分段、按钮组：一起收缩，每一段都出省略号 */
+  .xxd-segmented > button,
+  .xxd-segmented > [role="radio"] {
+    flex-shrink: 1;
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
+
+  .xxd-btn-group > .xxd-btn {
+    flex-shrink: 1;
+  }
+
+  .xxd-input-group__addon,
+  .xxd-input-group__suffix {
+    flex-shrink: 1;
+    max-width: 35%;
+  }
+
+  /* dock 的主按钮、输入组里的按钮：可以收缩（按钮自己会裁字） */
+  .xxd-dock__primary,
+  .xxd-input-group > .xxd-btn {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .xxd-dock__primary > .xxd-btn {
+    max-width: 100%;
+  }
+
+  /* 放按钮的那一格：它自己也得能收缩，否则按钮的 max-width: 100% 没有参照 */
+  .xxd-page-header__actions,
+  .xxd-banner__actions,
+  .xxd-dialog__actions,
+  .xxd-cluster {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* 单列栅格：列宽是 minmax(0, 1fr)，不是 auto（auto 会被最长的一行撑开） */
+  .xxd-stack,
+  .xxd-field,
+  .xxd-choices,
+  .xxd-text-pair,
+  .xxd-page-header,
+  .xxd-settings,
+  .xxd-group,
+  .xxd-card__body,
+  .xxd-chart-card,
+  .xxd-empty,
+  .xxd-history,
+  .xxd-plans,
+  .xxd-auth,
+  .xxd-auth form,
+  .xxd-auth [data-step][data-active] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 标签：<button class="xxd-btn"><i …></i><span>很长的名字</span></button> */
+  :is(.xxd-btn, .xxd-chip, .xxd-badge, .xxd-toolbar__item, .xxd-logo, .xxd-input-group__addon, .xxd-input-group__suffix) > span:not([class]),
+  .xxd-label-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* overflow 会按行盒裁，行高 1 时 g / y 的下伸部会被切掉 */
+    line-height: var(--leading-xs);
+  }
+
+  .xxd-breadcrumbs > li > :is(a, span) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 整页：一个词实在放不下时才断开（break-word 不改变尺寸计算，不会把窄格子里的词拆碎） */
+  :where(.xxd-page) {
+    overflow-wrap: break-word;
+  }
+
+  /* 正文类组件：长链接、长英文能断行，而且不会把弹性 / 栅格布局撑开 */
+  :where(.xxd-text, .xxd-prose, .xxd-card, .xxd-banner, .xxd-empty, .xxd-stat, .xxd-chart-card, .xxd-toast, .xxd-dialog__body, .xxd-help, .xxd-label, .xxd-list, .xxd-settings, .xxd-statusline, .xxd-panel, .xxd-sheet, .xxd-dock, .xxd-auth, .xxd-account, .xxd-layer, .xxd-code__head, .xxd-choice, .xxd-choices, .xxd-link, .xxd-rail, .xxd-cluster, .xxd-collapse, .xxd-dropzone, .xxd-qr, .xxd-plans) {
+    overflow-wrap: anywhere;
+  }
+
+  :where(.xxd-table, .xxd-code, pre, code, kbd) {
+    overflow-wrap: normal;
+  }
+
+  /* 栅格 / 弹性布局里的文字块默认 min-width: auto，长单词会把格子撑开 */
+  :where(.xxd-banner, .xxd-stat, .xxd-chart-card__head, .xxd-list__main, .xxd-row, .xxd-empty) > * {
+    min-width: 0;
+  }
+}

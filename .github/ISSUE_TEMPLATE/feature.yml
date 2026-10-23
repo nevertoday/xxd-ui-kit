@@ -1,0 +1,20 @@
+name: 建议 / Feature
+description: 新组件、新模式、改变样子或交互（先讨论再写代码）· New component, pattern, or a change to how something looks or behaves (discuss before coding)
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: 要解决什么问题 · What problem does it solve
+      description: 在什么插件或页面里、谁会用到 · In which extension or page, and who needs it
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你想的做法 · What you have in mind
+  - type: input
+    id: principle
+    attributes:
+      label: 对应设计原则的哪一条 · Which design principle it follows
+      description: https://ui.xiaoxiaodong.ai/principles

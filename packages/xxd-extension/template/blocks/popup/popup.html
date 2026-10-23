@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title data-i18n="appName">__APP_NAME_EN__</title>
+  <script src="vendor/xxd/boot.js" data-key="__SLUG__-ui" data-default-density="compact"></script>
+  <link rel="stylesheet" href="vendor/xxd/xxd.css">
+  <link rel="stylesheet" href="popup.css">
+  <script src="vendor/xxd/icons.js"></script>
+  <script src="vendor/xxd/xxd.js"></script>
+  <script src="vendor/xxd/extension.js"></script>
+</head>
+<body class="xxd-page">
+  <!-- popup 最大 800×600：宽度固定，高度跟着内容走（不要写 height:100%，否则会塌成一条） -->
+  <main class="popup">
+    <header class="popup__head">
+      <span class="xxd-logo" data-size="sm"><span class="xxd-logo__mark"></span></span>
+      <h1 class="popup__title" data-i18n="appName">__APP_NAME_EN__</h1>
+    </header>
+    <p class="xxd-help" data-i18n="popupHint">Quick actions live here; the full app is in the side panel.</p>
+    <div class="xxd-stack">
+      <button class="xxd-btn" data-variant="primary" data-block id="primary" data-i18n="primaryAction">Start</button>
+      <button class="xxd-btn" data-block id="open-panel"><i data-xxd-icon="PanelRight" data-size="16"></i><span data-i18n="popupOpenPanel">Open in side panel</span></button>
+    </div>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

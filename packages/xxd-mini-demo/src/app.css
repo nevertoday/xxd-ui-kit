@@ -1,0 +1,61 @@
+/*postcss-pxtransform disable*/
+/* 演示小程序自己的几条样式：只用令牌 */
+.demo-hero {
+  padding: var(--space-6) var(--space-4) var(--space-2);
+}
+
+.demo-block {
+  padding: var(--space-3) var(--space-4);
+}
+
+.demo-block.is-paper {
+  margin: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+}
+
+.demo-caption {
+  display: block;
+  padding: var(--space-5) var(--space-4) var(--space-2);
+  color: var(--muted);
+  font: var(--weight-medium) var(--text-xs) / 1.4 var(--font-body);
+}
+
+.demo-foot {
+  padding: var(--space-8) var(--space-4);
+  color: var(--muted-2);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.demo-bar {
+  position: relative; /* Skyline 没有 sticky */
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.demo-bar > .xxd-btn {
+  flex: 1;
+}
+
+.todo-row {
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.todo-row > .xxd-choice {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+

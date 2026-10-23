@@ -1,0 +1,3 @@
+# 上游 Kumo 在这里校验 @cloudflare/kumo 的 changeset；本仓库不发布 @cloudflare/kumo，
+# 版本记录只管 @xxd/*（见 .changeset/README.md），所以推送前不再检查。
+exit 0

@@ -1,0 +1,16 @@
+{
+  "miniprogramRoot": "./dist",
+  "projectname": "xxd-mini-demo",
+  "description": "小小东 UI 演示小程序",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "enhance": false,
+    "compileHotReLoad": false,
+    "postcss": false,
+    "minified": false
+  },
+  "libVersion": "3.0.0",
+  "compileType": "miniprogram"
+}

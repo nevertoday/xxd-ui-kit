@@ -1,0 +1,50 @@
+---
+import Site from "../layouts/Site.astro";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const steps = en
+  ? [["--r-xs", "4px", "Small marks: checkboxes, kbd, tooltips"], ["--r-sm", "6px", "Controls: buttons, inputs, selects"], ["--r-md", "10px", "Surfaces: cards, menus, settings groups"], ["--r-lg", "14px", "Large surfaces: dialogs, sheets"], ["--r-pill", "999px", "Status labels, switches, and square things that become circles: avatars, status dots, swatches (all square in square mode)"], ["--r-circle", "50%", "Only where the shape is the meaning: radios (round = pick one) and spinners. Always round"]]
+  : [["--r-xs", "4px", "小标记：复选框、kbd、tooltip"], ["--r-sm", "6px", "控件：按钮、输入框、选择"], ["--r-md", "10px", "面：卡片、菜单、设置组"], ["--r-lg", "14px", "大面：对话框、sheet"], ["--r-pill", "999px", "状态标签、开关，以及正方形的头像、状态点、色块（直角下都是方的）"], ["--r-circle", "50%", "只给形状就是意思的：单选（圆 = 选一个）、转圈。永远是圆"]];
+const T = en
+  ? {
+      title: "Corners", caption: "Foundations", scale: "Scale (current mode)", compare: "Square / rounded side by side",
+      lead: "Square by default (a hard rule on the member site); extensions can switch to rounded under Appearance. Every radius uses only these five steps. Avatars, dots and swatches follow the switch too; only radios and spinners are always round.",
+      inRounded: "Rounded mode", post: "Post to X", draft: "Draft", radio: "Radio", avatar: "D", switch: "Switch",
+      square: ["Square", "The default; the member site locks this one."], rounded: ["Rounded", "Optional in extensions. Only radios stay round either way."],
+    }
+  : {
+      title: "圆角", caption: "基础", scale: "刻度（当前模式）", compare: "直角 / 圆角并排",
+      lead: "默认直角（会员站的硬规则）；插件可以在「外观」里切成圆角。所有圆角都只能用这五档。头像、点、色块也跟开关走；只有单选和转圈永远是圆。",
+      inRounded: "圆角模式", post: "写入 X", draft: "草稿", radio: "单选", avatar: "东", switch: "开关",
+      square: ["直角", "缺省；会员站锁定这一种。"], rounded: ["圆角", "插件里可选。只有单选在两边都是圆。"],
+    };
+---
+
+<Site title={T.title} headings={[{ slug: "scale", text: T.scale.replace(/（.*）| \(.*\)/, "") }, { slug: "compare", text: T.compare }]}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <h2 class="site-h2" id="scale">{T.scale}</h2>
+  <div class="site-swatches">
+    {steps.map(([n, v, use]) => (
+      <div class="site-swatch"><i data-radius-sample style={`border-radius:var(${n});margin:12px;height:48px;border:1px solid var(--line-strong);background:var(--wash)`}></i><div><b class="xxd-text" data-variant="mono" style="font-size:11px">{n}</b><code>{T.inRounded} {v}</code><span class="xxd-text" data-variant="caption">{use}</span></div></div>
+    ))}
+  </div>
+  <h2 class="site-h2" id="compare">{T.compare}</h2>
+  <div class="site-dodont">
+    {["square", "rounded"].map((mode) => (
+      <figure data-kind="do">
+        <div class="site-dodont__stage" data-corners-preview={mode} style={mode === "rounded" ? "--r-xs:4px;--r-sm:6px;--r-md:10px;--r-lg:14px;--r-pill:999px" : "--r-xs:0px;--r-sm:0px;--r-md:0px;--r-lg:0px;--r-pill:0px"}>
+          <button class="xxd-btn" data-variant="primary">{T.post}</button>
+          <input type="checkbox" role="switch" class="xxd-switch" checked aria-label={T.switch} />
+          <span class="xxd-badge">{T.draft}</span>
+          <label class="xxd-choice"><input type="radio" class="xxd-radio" checked />{T.radio}</label>
+          <span class="xxd-avatar">{T.avatar}</span>
+        </div>
+        <figcaption><b>{T[mode][0]}</b>{T[mode][1]}</figcaption>
+      </figure>
+    ))}
+  </div>
+</Site>

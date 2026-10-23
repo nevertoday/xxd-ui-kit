@@ -1,0 +1,30 @@
+/* 没有数据（网页版 .xxd-viz-empty 在构成条的样式里；用不到构成条的项目也要有这一行） */
+.xxd-viz-empty {
+  display: block;
+  grid-column: 1 / -1;
+  padding: var(--space-4) 0;
+  font-size: var(--text-sm);
+  text-align: center;
+  color: var(--muted);
+}
+
+/* 小程序就是手机：名字单独一行，条和数字共用下面一行（CHART-REVIEW-PLAN D53）。
+ * 没有 subgrid：数字那一栏定宽，每行的条才一样长；旁注在这一栏里换行 */
+.xxd-bars__item,
+.xxd-bars__axis {
+  grid-template-columns: minmax(0, 1fr) var(--bars-value, 7em);
+  row-gap: var(--space-1);
+}
+
+.xxd-bars__item > .xxd-bars__label {
+  grid-column: 1 / -1;
+}
+
+.xxd-bars__item > .xxd-bars__track,
+.xxd-bars__ticks {
+  grid-column: 1;
+}
+
+.xxd-bars__item > .xxd-bars__value {
+  grid-column: 2;
+}

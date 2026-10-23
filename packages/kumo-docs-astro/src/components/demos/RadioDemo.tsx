@@ -1,0 +1,440 @@
+import { useState } from "react";
+import { Badge, Radio } from "@cloudflare/kumo";
+
+/** Shows a basic controlled radio group */
+export function RadioBasicDemo() {
+  const [value, setValue] = useState("email");
+  return (
+    <Radio.Group
+      legend="Notification preference"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item label="Email" value="email" />
+      <Radio.Item label="SMS" value="sms" />
+      <Radio.Item label="Push notification" value="push" />
+    </Radio.Group>
+  );
+}
+
+/** Shows the default vertical radio group layout */
+export function RadioDefaultDemo() {
+  const [value, setValue] = useState("personal");
+  return (
+    <Radio.Group legend="Account type" value={value} onValueChange={setValue}>
+      <Radio.Item label="Personal" value="personal" />
+      <Radio.Item label="Business" value="business" />
+      <Radio.Item label="Enterprise" value="enterprise" />
+    </Radio.Group>
+  );
+}
+
+/** Shows a horizontal radio group layout */
+export function RadioHorizontalDemo() {
+  const [value, setValue] = useState("md");
+  return (
+    <Radio.Group
+      legend="Size"
+      orientation="horizontal"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item label="Small" value="sm" />
+      <Radio.Item label="Medium" value="md" />
+      <Radio.Item label="Large" value="lg" />
+    </Radio.Group>
+  );
+}
+
+export function RadioSegmentedDemo() {
+  const [duration, setDuration] = useState("1");
+  return (
+    <Radio.Group
+      appearance="segmented"
+      legend="Duration preset"
+      value={duration}
+      onValueChange={setDuration}
+    >
+      <Radio.Item label="1h" value="1" />
+      <Radio.Item label="12h" value="12" />
+      <Radio.Item label="24h" value="24" />
+    </Radio.Group>
+  );
+}
+
+export function RadioAppearanceComparisonDemo() {
+  return (
+    <div className="flex flex-wrap gap-8">
+      <Radio.Group
+        legend="Default appearance"
+        orientation="horizontal"
+        defaultValue="1"
+      >
+        <Radio.Item label="1h" value="1" />
+        <Radio.Item label="12h" value="12" />
+        <Radio.Item label="24h" value="24" />
+      </Radio.Group>
+      <Radio.Group
+        appearance="segmented"
+        legend="Segmented appearance"
+        defaultValue="1"
+      >
+        <Radio.Item label="1h" value="1" />
+        <Radio.Item label="12h" value="12" />
+        <Radio.Item label="24h" value="24" />
+      </Radio.Group>
+    </div>
+  );
+}
+
+export function RadioSegmentedDisabledDemo() {
+  return (
+    <div className="flex flex-wrap gap-8">
+      <Radio.Group
+        appearance="segmented"
+        legend="Disabled group"
+        defaultValue="12"
+        disabled
+      >
+        <Radio.Item label="1h" value="1" />
+        <Radio.Item label="12h" value="12" />
+        <Radio.Item label="24h" value="24" />
+      </Radio.Group>
+      <Radio.Group
+        appearance="segmented"
+        legend="Disabled item"
+        defaultValue="1"
+      >
+        <Radio.Item label="1h" value="1" />
+        <Radio.Item label="12h" value="12" disabled />
+        <Radio.Item label="24h" value="24" />
+      </Radio.Group>
+    </div>
+  );
+}
+
+export function RadioSegmentedLegendDemo() {
+  return (
+    <Radio.Group appearance="segmented" defaultValue="automatic">
+      <Radio.Legend className="text-sm font-normal text-kumo-subtle">
+        Configuration mode
+      </Radio.Legend>
+      <Radio.Item label="Automatic" value="automatic" />
+      <Radio.Item label="Manual" value="manual" />
+    </Radio.Group>
+  );
+}
+
+export function RadioSegmentedLongLabelsDemo() {
+  return (
+    <div className="w-48 max-w-full">
+      <Radio.Group
+        appearance="segmented"
+        legend="Processing preference"
+        defaultValue="automatic"
+      >
+        <Radio.Item label="Automatic processing" value="automatic" />
+        <Radio.Item label="Manual configuration" value="manual" />
+      </Radio.Group>
+    </div>
+  );
+}
+
+/** Shows a radio group with helper description text */
+export function RadioDescriptionDemo() {
+  const [value, setValue] = useState("standard");
+  return (
+    <Radio.Group
+      legend="Shipping method"
+      description="Choose how you'd like to receive your order"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item label="Standard (5-7 days)" value="standard" />
+      <Radio.Item label="Express (2-3 days)" value="express" />
+      <Radio.Item label="Overnight" value="overnight" />
+    </Radio.Group>
+  );
+}
+
+/** Shows error state for both default and card radio groups */
+export function RadioErrorDemo() {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <Radio.Group
+        legend="Payment method"
+        error="Please select a payment method to continue"
+      >
+        <Radio.Item label="Credit Card" value="card" variant="error" />
+        <Radio.Item label="PayPal" value="paypal" variant="error" />
+      </Radio.Group>
+      <Radio.Group
+        legend="Payment method"
+        appearance="card"
+        error="Please select a payment method to continue"
+      >
+        <Radio.Item
+          label="Credit Card"
+          description="Pay with Visa, Mastercard, American Express, or Elo."
+          value="card"
+          variant="error"
+        />
+        <Radio.Item
+          label="PayPal"
+          description="Pay with your PayPal account."
+          value="paypal"
+          variant="error"
+        />
+      </Radio.Group>
+    </div>
+  );
+}
+
+/** Shows disabled state for both default and card radio groups */
+export function RadioDisabledDemo() {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <Radio.Group legend="Disabled group" disabled defaultValue="a">
+        <Radio.Item label="Option A" value="a" />
+        <Radio.Item label="Option B" value="b" />
+      </Radio.Group>
+      <Radio.Group legend="Individual disabled" defaultValue="available">
+        <Radio.Item label="Available" value="available" />
+        <Radio.Item label="Unavailable" value="unavailable" disabled />
+      </Radio.Group>
+      <Radio.Group
+        legend="Disabled card group"
+        appearance="card"
+        disabled
+        defaultValue="a"
+      >
+        <Radio.Item
+          label="Option A"
+          description="This option is disabled."
+          value="a"
+        />
+        <Radio.Item
+          label="Option B"
+          description="This option is disabled."
+          value="b"
+        />
+      </Radio.Group>
+      <Radio.Group
+        legend="Individual disabled card"
+        appearance="card"
+        defaultValue="available"
+      >
+        <Radio.Item
+          label="Available"
+          description="This option can be selected."
+          value="available"
+        />
+        <Radio.Item
+          label="Unavailable"
+          description="This option is not available."
+          value="unavailable"
+          disabled
+        />
+      </Radio.Group>
+    </div>
+  );
+}
+
+/** Shows radio group with labels positioned before the radio control */
+export function RadioControlPositionDemo() {
+  return (
+    <Radio.Group legend="Preferences" controlPosition="end" defaultValue="a">
+      <Radio.Item label="Label before radio" value="a" />
+      <Radio.Item label="Another option" value="b" />
+    </Radio.Group>
+  );
+}
+
+/** Shows radio card appearance with Cloudflare plan options */
+export function RadioCardDemo() {
+  const [value, setValue] = useState("free");
+  return (
+    <Radio.Group
+      legend="Choose a plan"
+      appearance="card"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item
+        label="Free"
+        description="For personal or hobby projects that aren't business-critical."
+        value="free"
+      />
+      <Radio.Item
+        label="Pro"
+        description="For professional websites that aren't business-critical."
+        value="pro"
+      />
+      <Radio.Item
+        label="Business"
+        description="For small businesses operating online."
+        value="business"
+      />
+      <Radio.Item
+        label="Contract"
+        description="For mission-critical applications that are core to your business."
+        value="contract"
+      />
+    </Radio.Group>
+  );
+}
+
+/** Shows Radio.Legend with sr-only to visually hide the legend while keeping it accessible, useful when a parent Field already provides a visible label */
+export function RadioLegendSrOnlyDemo() {
+  const [value, setValue] = useState("all");
+  return (
+    <Radio.Group defaultValue="all" value={value} onValueChange={setValue}>
+      <Radio.Legend className="sr-only">Paths</Radio.Legend>
+      <Radio.Item label="Allow all paths" value="all" />
+      <Radio.Item label="Restrict to specific paths" value="specific" />
+    </Radio.Group>
+  );
+}
+
+/** Shows Radio.Legend with custom styling for full control over legend presentation */
+export function RadioLegendCustomDemo() {
+  const [value, setValue] = useState("email");
+  return (
+    <Radio.Group value={value} onValueChange={setValue}>
+      <Radio.Legend className="text-sm font-normal text-kumo-subtle">
+        Notification preference
+      </Radio.Legend>
+      <Radio.Item label="Email" value="email" />
+      <Radio.Item label="SMS" value="sms" />
+      <Radio.Item label="Push notification" value="push" />
+    </Radio.Group>
+  );
+}
+
+/** Shows radio card appearance with the control positioned on the left via controlPosition="start" */
+export function RadioCardControlStartDemo() {
+  const [value, setValue] = useState("free");
+  return (
+    <Radio.Group
+      legend="Choose a plan"
+      appearance="card"
+      controlPosition="start"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item
+        label="Free"
+        description="For personal or hobby projects that aren't business-critical."
+        value="free"
+      />
+      <Radio.Item
+        label="Pro"
+        description="For professional websites that aren't business-critical."
+        value="pro"
+      />
+    </Radio.Group>
+  );
+}
+
+enum ThemeType {
+  dark = "dark",
+  light = "light",
+  system = "system",
+}
+
+/** Shows Radio.Group with typed values: a numeric union and a TypeScript enum. */
+export function RadioTypedValueDemo() {
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [theme, setTheme] = useState<ThemeType>(ThemeType.system);
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <Radio.Group<number>
+        legend="Items per page"
+        value={pageSize}
+        onValueChange={setPageSize}
+      >
+        <Radio.Item<number> label="10" value={10} />
+        <Radio.Item<number> label="25" value={25} />
+        <Radio.Item<number> label="50" value={50} />
+      </Radio.Group>
+      <Radio.Group<ThemeType>
+        legend="Theme"
+        value={theme}
+        onValueChange={setTheme}
+      >
+        <Radio.Item<ThemeType> label="Light" value={ThemeType.light} />
+        <Radio.Item<ThemeType> label="Dark" value={ThemeType.dark} />
+        <Radio.Item<ThemeType> label="System" value={ThemeType.system} />
+      </Radio.Group>
+    </div>
+  );
+}
+
+/** Shows Radio.Item labels with rich ReactNode content (icons, badges, or additional markup) */
+export function RadioRichLabelDemo() {
+  const [value, setValue] = useState("pro");
+  return (
+    <Radio.Group
+      legend="Choose a plan"
+      appearance="card"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item
+        label={
+          <span className="flex items-center gap-2">
+            Free
+            <Badge variant="neutral">$0</Badge>
+          </span>
+        }
+        description="For personal or hobby projects."
+        value="free"
+      />
+      <Radio.Item
+        label={
+          <span className="flex items-center gap-2">
+            Pro
+            <Badge variant="primary">Popular</Badge>
+          </span>
+        }
+        description="For professional websites."
+        value="pro"
+      />
+    </Radio.Group>
+  );
+}
+
+/** Shows radio card appearance in horizontal layout */
+export function RadioCardHorizontalDemo() {
+  const [value, setValue] = useState("free");
+  return (
+    <Radio.Group
+      legend="Choose a plan"
+      appearance="card"
+      orientation="horizontal"
+      value={value}
+      onValueChange={setValue}
+    >
+      <Radio.Item
+        label="Free"
+        description="For personal or hobby projects that aren't business-critical."
+        value="free"
+      />
+      <Radio.Item
+        label="Pro"
+        description="For professional websites that aren't business-critical."
+        value="pro"
+      />
+      <Radio.Item
+        label="Business"
+        description="For small businesses operating online."
+        value="business"
+      />
+      <Radio.Item
+        label="Contract"
+        description="For mission-critical applications that are core to your business."
+        value="contract"
+      />
+    </Radio.Group>
+  );
+}

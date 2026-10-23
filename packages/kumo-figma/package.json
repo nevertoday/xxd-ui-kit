@@ -1,0 +1,35 @@
+{
+  "name": "@cloudflare/kumo-figma",
+  "version": "0.3.52",
+  "private": true,
+  "description": "Figma plugin for generating Kumo UI Kit components",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "sync:maybe": "tsx scripts/maybe-sync.ts",
+    "build": "pnpm run sync:maybe && pnpm run build:data && pnpm run build:plugin",
+    "build:data": "tsx src/build-theme-data.ts && tsx src/build-loader-data.ts && tsx src/build-phosphor-icons.ts && tsx src/build-figma-variables.ts",
+    "build:plugin": "vp pack",
+    "dev": "pnpm run sync:maybe && pnpm run build:data && pnpm run build:plugin --watch",
+    "clean": "rm -rf src/generated src/code.js",
+    "test": "vp test run",
+    "typecheck": "pnpm run build:data && tsc --noEmit",
+    "validate": "pnpm --filter @cloudflare/kumo codegen:registry && pnpm run build:data && vp test run src/generators/drift-detection.test.ts",
+    "figma:sync": "tsx scripts/sync-tokens-to-figma.ts"
+  },
+  "dependencies": {
+    "@cloudflare/kumo": "workspace:*",
+    "culori": "^4.0.0"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "1.121.0",
+    "@phosphor-icons/core": "2.1.1",
+    "@types/culori": "4.0.1",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}

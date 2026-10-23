@@ -1,0 +1,414 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Flow"
+description: "A group of components for building directed flow diagrams with nodes and connectors."
+sourceFile: "components/flow"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import {
+  FlowBasicDemo,
+  FlowVerticalDemo,
+  FlowVerticalParallelDemo,
+  FlowParallelDemo,
+  FlowCustomContentDemo,
+  FlowComplexDemo,
+  FlowAnchorDemo,
+  FlowCenteredDemo,
+  FlowPanningDemo,
+  FlowDisabledDemo,
+  FlowParallelAlignEndDemo,
+  FlowParallelNestedListDemo,
+} from "~/components/demos/FlowDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="FlowParallelDemo">
+    <FlowParallelDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { Flow } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { Flow } from "@cloudflare/kumo/components/flow";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+  <p>
+    The Flow components work together to create directed flow diagrams. Use
+    `Flow` as the container,
+    `Flow.Node` for individual
+    steps, and
+    `Flow.Parallel` to create
+    branching paths.
+  </p>
+
+```tsx
+import { Flow } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <Flow>
+      <Flow.Node>Step 1</Flow.Node>
+      <Flow.Node>Step 2</Flow.Node>
+      <Flow.Node>Step 3</Flow.Node>
+    </Flow>
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Sequential Flow
+
+<p>A simple linear flow with nodes connected in sequence.</p>
+<ComponentExample demo="FlowBasicDemo">
+  <FlowBasicDemo client:visible />
+</ComponentExample>
+
+### Parallel Branches
+
+<p>Use `Flow.Parallel` to create branching paths that run in parallel.</p>
+<ComponentExample demo="FlowParallelDemo">
+  <FlowParallelDemo client:visible />
+</ComponentExample>
+
+### Vertical Orientation
+
+<p>
+  Set `orientation="vertical"` to lay nodes out top-to-bottom instead of the
+  default left-to-right. Connectors, parallel branches, and `align` all adapt
+  to the vertical axis.
+</p>
+<ComponentExample demo="FlowVerticalDemo">
+  <FlowVerticalDemo client:visible />
+</ComponentExample>
+
+<p>
+  Parallel branches work the same way in vertical flows. In this orientation
+  `align` controls horizontal alignment of nodes.
+</p>
+<ComponentExample demo="FlowVerticalParallelDemo">
+  <FlowVerticalParallelDemo client:visible />
+</ComponentExample>
+
+### Custom Node Styling
+
+<p>
+  Use the `render` prop to completely customize node appearance. The render prop
+  accepts a React element that will be used instead of the default styled node.
+</p>
+<ComponentExample demo="FlowCustomContentDemo">
+  <FlowCustomContentDemo client:visible />
+</ComponentExample>
+
+### Centered Alignment
+
+<p>
+  Use the `align` prop to vertically center nodes. This is useful when nodes
+  have different heights.
+</p>
+<ComponentExample demo="FlowCenteredDemo">
+  <FlowCenteredDemo client:visible />
+</ComponentExample>
+
+### Complex Flow
+
+<p>Combine sequential and parallel nodes to build complex workflows.</p>
+<ComponentExample demo="FlowComplexDemo">
+  <FlowComplexDemo client:visible />
+</ComponentExample>
+
+### Custom Anchor Points
+
+<p>
+  By default, connectors attach to the center of each node. Use `Flow.Anchor`
+  with its `render` prop to specify custom attachment points. The `type` prop
+  controls whether the anchor serves as a `"start"` point (where connectors
+  leave) or `"end"` point (where connectors arrive).
+</p>
+<ComponentExample demo="FlowAnchorDemo">
+  <FlowAnchorDemo client:visible />
+</ComponentExample>
+
+### Panning Large Diagrams
+
+<p>
+  When a diagram exceeds its container, Flow automatically enables panning. Drag
+  to pan the viewport, or use the scroll wheel. Scrollbars appear on hover to
+  indicate available scroll area.
+</p>
+<ComponentExample demo="FlowPanningDemo">
+  <FlowPanningDemo client:visible />
+</ComponentExample>
+
+### Disabled Nodes
+
+<p>
+  Use the `disabled` prop on a node to visually indicate it's inactive.
+  Connectors linking to disabled nodes are rendered with reduced opacity.
+</p>
+<ComponentExample demo="FlowDisabledDemo">
+  <FlowDisabledDemo client:visible />
+</ComponentExample>
+
+### Parallel Node Alignment
+
+  <p>
+    Use the
+    `align` prop on
+    `Flow.Parallel`
+    to control how nodes with different widths are aligned. Use
+    `"start"`
+    (default) to align left, or
+    `"end"` to align
+    right.
+  </p>
+  <ComponentExample demo="FlowParallelAlignEndDemo">
+    <FlowParallelAlignEndDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Other Examples */}
+
+<ComponentSection>
+
+## Other Examples
+
+### Nested Node Lists in Parallel
+
+  <p>
+    Use
+    `Flow.List`
+    inside
+    `Flow.Parallel`
+    to create parallel branches where each branch contains a sequence of connected
+    nodes.
+  </p>
+  <ComponentExample demo="FlowParallelNestedListDemo">
+    <FlowParallelNestedListDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Components */}
+
+<ComponentSection>
+
+## Components
+
+### Flow
+
+<p>
+  The root container for flow diagrams. Provides panning and scrolling for large
+  diagrams.
+</p>
+<div class="overflow-x-auto">
+  <table class="w-full">
+    <thead>
+      <tr class="border-b border-kumo-hairline">
+        <th class="px-4 py-3 text-left font-semibold">Prop</th>
+        <th class="px-4 py-3 text-left font-semibold">Type</th>
+        <th class="px-4 py-3 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">orientation</td>
+        <td class="px-4 py-3 font-mono">"horizontal" | "vertical"</td>
+        <td class="px-4 py-3">
+          Layout direction of the flow. `"horizontal"` (default) lays nodes out
+          left-to-right, `"vertical"` lays them out top-to-bottom.
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">align</td>
+        <td class="px-4 py-3 font-mono">"start" | "center"</td>
+        <td class="px-4 py-3">
+          Cross-axis alignment of nodes. In horizontal orientation this is
+          vertical alignment; in vertical orientation it is horizontal
+          alignment. `"start"` (default) aligns to the start of the cross axis,
+          `"center"` centers nodes.
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">className</td>
+        <td class="px-4 py-3 font-mono">string</td>
+        <td class="px-4 py-3">Additional CSS classes for the container</td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">children</td>
+        <td class="px-4 py-3 font-mono">ReactNode</td>
+        <td class="px-4 py-3">Flow.Node and Flow.Parallel components</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Flow.Node
+
+<p>
+  A single node in the flow diagram. Renders as a styled card with automatic
+  connector points. Use the `render` prop to customize the element.
+</p>
+<div class="overflow-x-auto">
+  <table class="w-full">
+    <thead>
+      <tr class="border-b border-kumo-hairline">
+        <th class="px-4 py-3 text-left font-semibold">Prop</th>
+        <th class="px-4 py-3 text-left font-semibold">Type</th>
+        <th class="px-4 py-3 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">render</td>
+        <td class="px-4 py-3 font-mono">ReactElement</td>
+        <td class="px-4 py-3">
+          Custom element to render instead of the default styled node
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">disabled</td>
+        <td class="px-4 py-3 font-mono">boolean</td>
+        <td class="px-4 py-3">
+          When true, connectors linking to this node are rendered with reduced
+          opacity
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">children</td>
+        <td class="px-4 py-3 font-mono">ReactNode</td>
+        <td class="px-4 py-3">Content to display inside the node</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Flow.Anchor
+
+<p>
+  A component that marks a custom attachment point for connectors within a
+  Flow.Node. Use this to control exactly where connector lines attach instead of
+  the default node center by providing a custom element via the `render` prop.
+</p>
+<div class="overflow-x-auto">
+  <table class="w-full">
+    <thead>
+      <tr class="border-b border-kumo-hairline">
+        <th class="px-4 py-3 text-left font-semibold">Prop</th>
+        <th class="px-4 py-3 text-left font-semibold">Type</th>
+        <th class="px-4 py-3 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">type</td>
+        <td class="px-4 py-3 font-mono">"start" | "end"</td>
+        <td class="px-4 py-3">
+          Whether this anchor serves as a "start" point (outgoing connectors) or
+          "end" point (incoming connectors). When omitted, serves as both.
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">render</td>
+        <td class="px-4 py-3 font-mono">ReactElement</td>
+        <td class="px-4 py-3">Custom element to render for the anchor point</td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">children</td>
+        <td class="px-4 py-3 font-mono">ReactNode</td>
+        <td class="px-4 py-3">Content to render at the anchor point</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Flow.Parallel
+
+<p>
+  A container for parallel branches. Child Flow.Node components are displayed in
+  parallel with junction connectors.
+</p>
+<div class="overflow-x-auto">
+  <table class="w-full">
+    <thead>
+      <tr class="border-b border-kumo-hairline">
+        <th class="px-4 py-3 text-left font-semibold">Prop</th>
+        <th class="px-4 py-3 text-left font-semibold">Type</th>
+        <th class="px-4 py-3 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">align</td>
+        <td class="px-4 py-3 font-mono">"start" | "end"</td>
+        <td class="px-4 py-3">
+          Controls horizontal alignment of nodes within the parallel group.
+          `"start"` (default) aligns left, `"end"` aligns right.
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="px-4 py-3 font-mono">children</td>
+        <td class="px-4 py-3 font-mono">ReactNode</td>
+        <td class="px-4 py-3">
+          Flow.Node or Flow.List components to display in parallel
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Flow.List
+
+  <p>
+    A container for a sequence of Flow.Node components with automatic
+    connectors between them. Use inside Flow.Parallel to create branches
+    with multiple sequential steps.
+  </p>
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-kumo-hairline">
+          <th class="px-4 py-3 text-left font-semibold">Prop</th>
+          <th class="px-4 py-3 text-left font-semibold">Type</th>
+          <th class="px-4 py-3 text-left font-semibold">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono">children</td>
+          <td class="px-4 py-3 font-mono">ReactNode</td>
+          <td class="px-4 py-3">Flow.Node components to display in sequence</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ComponentSection>

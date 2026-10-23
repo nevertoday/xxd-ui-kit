@@ -1,0 +1,32 @@
+/* 没有数据（网页版 .xxd-viz-empty 在构成条的样式里；用不到构成条的项目也要有这一行） */
+.xxd-viz-empty {
+  display: block;
+  grid-column: 1 / -1;
+  padding: var(--space-4) 0;
+  font-size: var(--text-sm);
+  text-align: center;
+  color: var(--muted);
+}
+
+/* 小程序就是手机：名字单独一行；变化换到数字下面（CHART-REVIEW-PLAN D53） */
+.xxd-dumbbell__item {
+  grid-template-columns: minmax(0, 1fr) var(--dumbbell-value, 9em);
+  row-gap: var(--space-1);
+}
+
+.xxd-dumbbell__item > .xxd-dumbbell__label {
+  grid-column: 1 / -1;
+}
+
+.xxd-dumbbell__item > .xxd-dumbbell__track {
+  grid-column: 1;
+}
+
+.xxd-dumbbell__item > .xxd-dumbbell__value {
+  grid-column: 2;
+}
+
+.xxd-dumbbell__delta {
+  display: block;
+  margin-inline-start: 0;
+}

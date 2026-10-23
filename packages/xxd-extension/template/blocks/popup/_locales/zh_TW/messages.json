@@ -1,0 +1,8 @@
+{
+  "popupOpenPanel": {
+    "message": "在側邊欄開啟"
+  },
+  "popupHint": {
+    "message": "這裡放最常用的一兩個操作，完整功能在側邊欄。"
+  }
+}

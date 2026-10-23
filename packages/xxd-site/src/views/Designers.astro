@@ -1,0 +1,154 @@
+---
+// 设计师从这里开始（设计师评审 V6-1）：先看哪几页、令牌怎么用、出稿宽度、规格和素材去哪拿、和开发怎么交接。
+// 不讲装包和命令行（那是 /start）。中文 / 英文共用，语言看路径。
+import Site from "../layouts/Site.astro";
+import { langOf, withLang } from "../i18n/index.js";
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const L = (href: string) => withLang(href, lang);
+const T = en
+  ? {
+      title: "For designers", caption: "Get started",
+      lead: "Everything you need to design with XXD UI without opening the code: what to read first, how tokens work, which widths to design at, where specs and icons are, and what to hand over. There is no Figma library on purpose — the site is the source, measured from the real CSS.",
+      h: { read: "Read these first", tokens: "Tokens: name things, don't measure them", widths: "Widths to design at", appearance: "The five appearance settings", assets: "Specs and assets", handoff: "Handing over to development" },
+      read: [
+        ["/principles", "Design principles", "The rules every visual decision maps back to, each with a do / don't pair rendered from real components."],
+        ["/foundations/colors", "Color", "The 12-step scales (every step has one job), paper, ink, lines, meaning colors, the raised layer for overlays, disabled colors and the 12 accents. Try your own brand color there."],
+        ["/foundations/type", "Typography", "Eight sizes, each paired with a line height on the 4px grid."],
+        ["/foundations/spacing", "Spacing and sizing", "The 4px scale, the two half steps, control heights and densities, and the three breakpoints."],
+        ["/foundations/radius", "Corners", "Square by default; five radius steps in rounded mode."],
+        ["/foundations/icons", "Icons", "501 icons in one drawing style; download them all as SVG."],
+        ["/tools/parity", "HTML and React side by side", "Both implementations look the same, so one design fits both."],
+      ],
+      tokens: [
+        "Every color, size, spacing and radius in the components comes from a token in tokens.css. In a spec, write the token name (--space-3, --control-h, --text-sm / --leading-sm), not the pixel value: the value changes with density and corners, the name doesn't.",
+        "Spacing uses the 4px scale (--space-1 to --space-8). Two half steps are for optical gaps only: 2px and 6px.",
+        "Type sizes come in pairs with a line height: 13 / 20 for body and controls, 12 / 20 for descriptions that can wrap, 16 / 28 for reading text.",
+        "Colors: --ink for text, --muted for secondary text (never --muted-2), --line for dividers, --line-control for the edges of inputs and checkboxes, --paper-raised for anything floating. Tints, borders and fills of the accent and meaning colors use role names from the scales: --danger-tint for a soft background, --danger-border for an outline, --danger-solid for a fill, --danger-text for colored text. Don't mix colors with a percentage.",
+        "Exact values for every token in all 8 appearances (light / dark × square / rounded × standard / compact) are in tokens.resolved.json.",
+      ],
+      widths: [
+        ["380", "Chrome side panel (compact density)"],
+        ["480", "Phone: compact pagination, one column"],
+        ["640", "Narrow: dialogs and the details panel become bottom drawers"],
+        ["1024", "Desktop: sidebar and table of contents both visible"],
+        ["1280", "Roomy desktop, to check nothing stretches"],
+        ["375 × 1", "Mini program (WeChat): design at 375 wide, 1×, use the numbers as they are — no rpx"],
+      ],
+      appearance: [
+        ["Theme", "light / dark / follow the system"],
+        ["Corners", "square (default) / rounded"],
+        ["Accent", "ink (default), one of 11 presets or any color; auto (adjusted for contrast) or exact (your brand color as is)"],
+        ["Density", "standard (40px controls) / compact (32px, side panels and popups)"],
+        ["Finish", "flat (default) / material: only changes solid buttons"],
+      ],
+      assets: [
+        ["Spec", "Every common component page has a Spec section: height, padding, gap, corners, size and line height, measured in your browser in four appearances and named by token."],
+        ["Icons", "Download all icons as SVG (24 grid, 1.5 stroke) with a Chinese / English keyword list."],
+        ["Tokens", "tokens.resolved.json: the exact value of every token in 8 appearances."],
+        ["Templates", "Whole pages (settings, list, details panel, article, extension side panel) to start from; each can be copied as HTML."],
+      ],
+      download: { icons: "Download icons (.zip)", tokens: "Download tokens.resolved.json" },
+      handoff: [
+        "Name the component (Button, SettingsGroup…) and its variant, not a screenshot of it.",
+        "Say which appearance the design is in (e.g. dark · rounded · compact · accent Lake blue) — the same screen works in all of them.",
+        "Use token names for anything custom (gap --space-4, text --text-xs / --leading-sm, color --muted).",
+        "If a value has no token, that's a question for the design system, not a one-off number — ask before inventing one.",
+      ],
+      sample: "Settings page · dark · square · compact · accent Lake blue. SettingsGroup \"Writing\": Switch rows; between groups --space-6; the help under API key is .xxd-help (--text-xs / --leading-sm, --muted).",
+    }
+  : {
+      title: "设计师从这里开始", caption: "开始",
+      lead: "不打开代码，用小小东 UI 做设计需要的都在这一页：先看哪几页、令牌怎么用、出稿按多宽、规格和素材去哪拿、交给开发时给什么。特意没有 Figma 库：展示站就是来源，数字都是从真的 CSS 量出来的。",
+      h: { read: "先看这几页", tokens: "令牌：说名字，不量像素", widths: "出稿的宽度", appearance: "五个外观设置", assets: "规格和素材", handoff: "交给开发" },
+      read: [
+        ["/principles", "设计原则", "每个视觉决定都能回到这里；每条都有用真组件渲染的「好 / 不好」。"],
+        ["/foundations/colors", "颜色", "12 级色阶（每一级用途固定）、纸、墨、线、语义色、浮层抬起的一层、禁用色、12 个主色。可以在那里试自己的品牌色。"],
+        ["/foundations/type", "字体与层级", "八档字号，每档配一个落在 4px 网格上的行高。"],
+        ["/foundations/spacing", "间距与尺寸", "4px 刻度和两个半档、控件高度和两档密度、三个断点。"],
+        ["/foundations/radius", "圆角", "缺省直角；圆角模式下五档。"],
+        ["/foundations/icons", "图标", "501 个，同一种画法；可以一次下载全部 SVG。"],
+        ["/tools/parity", "两种实现对照", "原生 HTML 和 React 长得一样，一份设计稿两边都成立。"],
+      ],
+      tokens: [
+        "组件里的颜色、尺寸、间距、圆角都来自 tokens.css 的令牌。标注时写令牌名（--space-3、--control-h、--text-sm / --leading-sm），不写像素：像素会随密度和圆角变，名字不变。",
+        "间距用 4px 刻度（--space-1 到 --space-8）；两个半档只给光学上的小间隔：2px 和 6px。",
+        "字号和行高成对：正文和控件 13 / 20，会折行的说明 12 / 20，阅读正文 16 / 28。",
+        "颜色：正文用 --ink，次要文字用 --muted（不用 --muted-2），分隔线用 --line，输入框和复选框的边用 --line-control，浮起来的东西用 --paper-raised。主色、语义色的淡底、边、实心底用色阶的用途名：淡底 --danger-tint、描边 --danger-border、实心底 --danger-solid、带颜色的字 --danger-text。不要按百分比混色。",
+        "每个令牌在 8 种外观（亮 / 暗 × 直角 / 圆角 × 标准 / 紧凑）下的具体值在 tokens.resolved.json 里。",
+      ],
+      widths: [
+        ["380", "Chrome 侧边栏（紧凑密度）"],
+        ["480", "手机：分页收紧、一列"],
+        ["640", "窄屏：对话框和详情面板变成底部抽屉"],
+        ["1024", "桌面：侧栏和目录同时出现"],
+        ["1280", "宽松的桌面，看有没有东西被拉得太开"],
+        ["375 × 1", "小程序（微信）：按 375 宽、1 倍出稿，数字直接用，不用 rpx"],
+      ],
+      appearance: [
+        ["主题", "亮 / 暗 / 跟随系统"],
+        ["圆角", "直角（缺省）/ 圆角"],
+        ["主色", "墨色（缺省）、11 个预设或任意颜色；自动（为对比度调整）或原样（品牌色不变）"],
+        ["密度", "标准（控件 40px）/ 紧凑（32px，侧边栏和 popup）"],
+        ["质感", "平面（缺省）/ 立体：只影响实心按钮"],
+      ],
+      assets: [
+        ["规格", "常用组件页都有「规格」一节：高、内边距、间隔、圆角、字号和行高，按四种外观在你的浏览器里量出来，并标出是哪个令牌。"],
+        ["图标", "一次下载全部 SVG（24 网格、1.5 线宽），附中英关键词表。"],
+        ["令牌", "tokens.resolved.json：每个令牌在 8 种外观下的具体值。"],
+        ["模板", "整页（设置、列表、详情面板、文章、插件侧边栏）可以直接当起点；每个都能复制成 HTML。"],
+      ],
+      download: { icons: "下载图标（.zip）", tokens: "下载 tokens.resolved.json" },
+      handoff: [
+        "说组件名（Button、SettingsGroup…）和变体，不给截图。",
+        "写明设计稿是哪种外观（比如「暗 · 圆角 · 紧凑 · 主色湖蓝」）——同一屏在每种外观下都成立。",
+        "自己加的东西用令牌名标（间隔 --space-4、字 --text-xs / --leading-sm、颜色 --muted）。",
+        "某个值找不到令牌，那是设计系统要回答的问题，不是一个特例数字——先问，不要自己发明。",
+      ],
+      sample: "设置页 · 暗 · 直角 · 紧凑 · 主色湖蓝。SettingsGroup「写入」：开关行；组与组之间 --space-6；API 密钥下面的说明是 .xxd-help（--text-xs / --leading-sm，--muted）。",
+    };
+const headings = Object.entries(T.h).map(([slug, text]) => ({ slug, text }));
+---
+
+<Site title={T.title} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  <h2 class="site-h2" id="read">{T.h.read}</h2>
+  <div class="xxd-group__body">
+    {T.read.map(([href, name, desc]) => (
+      <a class="xxd-row" href={L(href)}><div class="xxd-row__text"><div class="xxd-row__title">{name}</div><div class="xxd-row__desc">{desc}</div></div></a>
+    ))}
+  </div>
+
+  <h2 class="site-h2" id="tokens">{T.h.tokens}</h2>
+  <ul class="site-list">{T.tokens.map((t) => <li>{t}</li>)}</ul>
+
+  <h2 class="site-h2" id="widths">{T.h.widths}</h2>
+  <div class="xxd-table-wrap">
+    <table class="xxd-table">
+      <tbody>{T.widths.map(([w, use]) => <tr><td><b>{w}</b></td><td data-wrap>{use}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <h2 class="site-h2" id="appearance">{T.h.appearance}</h2>
+  <div class="xxd-table-wrap">
+    <table class="xxd-table">
+      <tbody>{T.appearance.map(([k, v]) => <tr><td><b>{k}</b></td><td data-wrap>{v}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <h2 class="site-h2" id="assets">{T.h.assets}</h2>
+  <ul class="site-list">{T.assets.map(([k, v]) => <li><b>{k}</b>　{v}</li>)}</ul>
+  <div class="xxd-cluster" style="margin-top:var(--space-3)">
+    <a class="xxd-btn" href="/xxd/xxd-icons-svg.zip" download="xxd-icons-svg.zip">{T.download.icons}</a>
+    <a class="xxd-btn" href="/xxd/tokens.resolved.json" download="tokens.resolved.json">{T.download.tokens}</a>
+  </div>
+
+  <h2 class="site-h2" id="handoff">{T.h.handoff}</h2>
+  <ul class="site-list">{T.handoff.map((t) => <li>{t}</li>)}</ul>
+  <pre class="xxd-code" style="margin-top:var(--space-3);white-space:pre-wrap">{T.sample}</pre>
+</Site>

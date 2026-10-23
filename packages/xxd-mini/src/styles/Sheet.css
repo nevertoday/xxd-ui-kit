@@ -1,0 +1,157 @@
+/* 小程序里面板从屏幕底边升起（网页版从 dock 上方升起 10px）：贴底、占满宽度、留出安全区，只有上面两个角跟着圆角开关 */
+.xxd-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  background: var(--backdrop);
+}
+
+.xxd-sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: calc(var(--z-dialog) + 1);
+  max-height: 85vh;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-width: 1px 0 0;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  box-shadow: var(--shadow-popover);
+  transform: translateY(100%);
+  opacity: 1;
+}
+
+.xxd-sheet.is-open {
+  transform: none;
+}
+
+/* 收起动画的那 200ms 里不再挡住下面的东西（MINI-REVIEW-PLAN I7） */
+.xxd-sheet:not(.is-open),
+.xxd-scrim:not(.is-open) {
+  pointer-events: none;
+}
+
+/* 拖动中：跟手，不要过渡 */
+.xxd-sheet.is-dragging {
+  transition: none;
+}
+
+/* 顶上一条把手：按住往下拖可以关（D28）。只在能拖的面板上画，不能拖就不画，免得用户去拖 */
+.xxd-sheet__grip {
+  display: none;
+}
+
+.xxd-sheet.is-draggable > .xxd-sheet__grip {
+  display: flex;
+  justify-content: center;
+  height: var(--space-4);
+  padding-top: var(--space-2);
+}
+
+.xxd-sheet.is-draggable > .xxd-sheet__grip:before {
+  content: "";
+  width: 36px;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+}
+
+/* 键盘弹出：整个面板升到键盘上面，底部安全区被键盘盖住了不用再留 */
+.xxd-sheet.is-keyboard {
+  bottom: var(--kb, 0px);
+  padding-bottom: 0;
+  max-height: calc(100vh - var(--kb, 0px) - 48px);
+}
+
+.xxd-sheet.is-keyboard .xxd-sheet__body {
+  max-height: calc(100vh - var(--kb, 0px) - 168px);
+}
+
+.xxd-sheet__head {
+  /* 右边也是 --inset-md：关闭按钮自己往外让（按钮 − 图标）/ 2，图标落在内容右边那条线上（D58） */
+  padding: var(--space-2) var(--inset-md);
+  min-height: 48px;
+}
+
+.xxd-sheet__title {
+  font-size: var(--text-lg);
+}
+
+.xxd-sheet__body {
+  box-sizing: border-box;
+  max-height: calc(85vh - 120px);
+  padding: 0 var(--inset-md) var(--inset-md);
+}
+
+.xxd-sheet__foot {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--inset-md-y) var(--inset-md);
+  border-top: 1px solid var(--line);
+}
+
+.xxd-sheet__foot > .xxd-btn {
+  flex: 1;
+}
+
+/* 一列操作 */
+.xxd-sheet.is-actions .xxd-sheet__body {
+  padding: 0;
+}
+
+.xxd-sheet__actions {
+  border-top: 1px solid var(--line);
+}
+
+.xxd-sheet__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: var(--space-2) var(--inset-md);
+  color: var(--ink);
+  font-size: var(--text-lg);
+  text-align: center;
+}
+
+.xxd-sheet__action + .xxd-sheet__action {
+  border-top: 1px solid var(--line);
+}
+
+.xxd-sheet__action.is-hover {
+  background: var(--wash);
+}
+
+.xxd-sheet__action.is-tone-danger {
+  color: var(--danger);
+}
+
+.xxd-sheet__action.is-disabled {
+  color: var(--disabled-ink);
+}
+
+.xxd-sheet__action-desc {
+  margin-top: var(--space-0-5);
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+/* 取消和上面的操作隔开一条粗一点的底色 */
+.xxd-sheet__action.is-cancel {
+  border-top: 8px solid var(--wash);
+}
+
+/* 一列操作：标题和操作一样居中（MINI-REVIEW-PLAN A4） */
+.xxd-sheet.is-actions .xxd-sheet__head {
+  justify-content: center;
+  padding-right: var(--space-4);
+}
+
+.xxd-sheet.is-actions .xxd-sheet__title {
+  flex: none;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}

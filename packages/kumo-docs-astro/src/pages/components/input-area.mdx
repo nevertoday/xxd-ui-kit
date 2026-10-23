@@ -1,0 +1,231 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "InputArea"
+description: "A multi-line text input for longer content with built-in label, description, and error support."
+sourceFile: "components/input"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  InputAreaBasicDemo,
+  InputAreaWithLabelDemo,
+  InputAreaErrorStringDemo,
+  InputAreaErrorObjectDemo,
+  InputAreaSizesDemo,
+  InputAreaDisabledDemo,
+  InputAreaBareDemo,
+  InputAreaRowsDemo,
+  InputAreaAutoResizeDemo,
+  InputAreaOptionalFieldDemo,
+  InputAreaLabelTooltipDemo,
+  InputAreaReactNodeLabelDemo,
+} from "~/components/demos/InputAreaDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="InputAreaBasicDemo">
+    <InputAreaBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { InputArea } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { InputArea } from "@cloudflare/kumo/components/input";
+```
+
+`Textarea` is also exported as an alias for `InputArea` for discoverability when migrating from other libraries.
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+### With Built-in Field (Recommended)
+
+<p>
+  Use the `label` prop to enable the built-in Field wrapper with label,
+  description, and error support.
+</p>
+
+```tsx
+import { InputArea } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <InputArea
+      label="Description"
+      placeholder="Enter a description..."
+      description="Provide details about your project"
+    />
+  );
+}
+```
+
+### Bare InputArea (Custom Layouts)
+
+<p>
+  For custom form layouts, use InputArea without `label`. Must provide
+  `aria-label` or `aria-labelledby` for accessibility.
+</p>
+
+```tsx
+import { InputArea } from "@cloudflare/kumo";
+
+export default function Example() {
+  return <InputArea placeholder="Add notes..." aria-label="Notes" rows={3} />;
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### With Label
+
+<ComponentExample demo="InputAreaWithLabelDemo">
+  <InputAreaWithLabelDemo client:visible />
+</ComponentExample>
+
+### Custom Row Count
+
+<p>Use the `rows` prop to control the initial height.</p>
+<ComponentExample demo="InputAreaRowsDemo">
+  <InputAreaRowsDemo client:visible />
+</ComponentExample>
+
+### Error State (String)
+
+<p>Error styling is automatically applied when the `error` prop is truthy.</p>
+<ComponentExample demo="InputAreaErrorStringDemo">
+  <InputAreaErrorStringDemo client:visible />
+</ComponentExample>
+
+### Error State (Object)
+
+<p>Use an error object with `match` for constraint validation.</p>
+<ComponentExample demo="InputAreaErrorObjectDemo">
+  <InputAreaErrorObjectDemo client:visible />
+</ComponentExample>
+
+### Sizes
+
+<p>Four sizes available: `xs`, `sm`, `base` (default), `lg`.</p>
+<ComponentExample demo="InputAreaSizesDemo">
+  <InputAreaSizesDemo client:visible />
+</ComponentExample>
+
+### Disabled
+
+<ComponentExample demo="InputAreaDisabledDemo">
+  <InputAreaDisabledDemo client:visible />
+</ComponentExample>
+
+### Auto Resize
+
+<p>
+  Use `autoResize` to let the textarea grow vertically as users type or paste
+  multi-line content. `minRows` sets the minimum height, and the optional
+  `maxRows` caps growth — content beyond the cap scrolls.
+</p>
+<ComponentExample demo="InputAreaAutoResizeDemo">
+  <InputAreaAutoResizeDemo client:visible />
+</ComponentExample>
+
+### Bare InputArea
+
+<p>
+  InputArea without `label` renders as a bare textarea. Must provide
+  `aria-label` for accessibility.
+</p>
+<ComponentExample demo="InputAreaBareDemo">
+  <InputAreaBareDemo client:visible />
+</ComponentExample>
+
+### Optional Field
+
+<p>Set `required={false}` to show "(optional)" text after the label.</p>
+<ComponentExample demo="InputAreaOptionalFieldDemo">
+  <InputAreaOptionalFieldDemo client:visible />
+</ComponentExample>
+
+### Label with Tooltip
+
+<p>Use `labelTooltip` to add an info icon with additional context on hover.</p>
+<ComponentExample demo="InputAreaLabelTooltipDemo">
+  <InputAreaLabelTooltipDemo client:visible />
+</ComponentExample>
+
+### React Node Label
+
+<p>The `label` prop accepts ReactNode for rich formatting.</p>
+<ComponentExample demo="InputAreaReactNodeLabelDemo">
+  <InputAreaReactNodeLabelDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+<p>
+  InputArea accepts all standard HTML textarea attributes plus the following:
+</p>
+
+<PropsTable component="InputArea" />
+
+</ComponentSection>
+
+{/* Accessibility */}
+
+<ComponentSection>
+
+## Accessibility
+
+### Label Requirement
+
+<p>InputArea requires an accessible name via one of:</p>
+
+<ul class="ml-4 list-disc space-y-1">
+  <li>`label` prop (recommended)</li>
+  <li>`placeholder` + `aria-label` for bare textareas</li>
+  <li>`aria-labelledby` for custom label association</li>
+</ul>
+
+<p class="mt-2">
+  Missing accessible names trigger console warnings in development.
+</p>
+
+### Error Association
+
+<p>
+  Error messages are automatically associated with the textarea via ARIA
+  attributes for screen reader announcement.
+</p>
+
+</ComponentSection>

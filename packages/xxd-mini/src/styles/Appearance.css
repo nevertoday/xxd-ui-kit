@@ -1,0 +1,39 @@
+/* 手机上的色块：一行 6 个、两行排满 12 个预设（MINI-REVIEW-PLAN A3）。看得见的是 32px 的圆，
+   每个占一行的六分之一，点按区撑到 --hit-min。不用 grid：Skyline 会把 grid 退成一列 */
+.xxd-swatches {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  /* 占满一行：色块的左右外边距按这一行的宽算，宽度不能再由色块撑 */
+  width: 100%;
+  gap: var(--space-3) 0;
+}
+
+.xxd-swatch {
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  margin: 0 calc((100% / 6 - var(--control-h-sm)) / 2);
+}
+
+.xxd-swatch:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--hit-min);
+  height: var(--hit-min);
+  transform: translate(-50%, -50%);
+}
+
+.xxd-swatch.is-hover {
+  opacity: 0.8;
+}
+
+/* Cell 的 stack：控件占满一行 */
+.xxd-row.is-stack > .xxd-row__control {
+  width: 100%;
+}
+
+.xxd-row.is-stack > .xxd-row__control > .xxd-segmented {
+  flex: 1;
+}

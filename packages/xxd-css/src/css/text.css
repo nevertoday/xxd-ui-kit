@@ -1,0 +1,88 @@
+/* 文字层级。字重只有 400 / 500 / 600；不改字距；相关的字靠得更近。
+ *   <h2 class="xxd-text" data-variant="heading2">外观</h2>
+ *   variant: display | heading1 | heading2 | heading3 | body（缺省）| secondary | caption | mono | mono-secondary | success | danger | warning
+ *   size（只用于 body / secondary）: xs | sm | base | lg */
+@layer xxd.components {
+  .xxd-text {
+    margin: 0;
+    color: var(--ink);
+    font: var(--weight-regular) var(--text-sm) / var(--leading-sm) var(--font-body);
+  }
+
+  /* 字号阶梯：28 / 24 / 20 / 16 / 13，每一档差 1.2 倍左右，标题之间、标题和正文之间都分得开 */
+  .xxd-text[data-variant="display"] {
+    font: var(--weight-strong) var(--text-display) / var(--leading-display) var(--font-title);
+  }
+
+  .xxd-text[data-variant="heading1"] {
+    font: var(--weight-strong) var(--text-xxl) / var(--leading-xl) var(--font-body);
+  }
+
+  .xxd-text[data-variant="heading2"] {
+    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-body);
+  }
+
+  .xxd-text[data-variant="heading3"] {
+    font: var(--weight-medium) var(--text-lg) / var(--leading-md) var(--font-body);
+  }
+
+  .xxd-text[data-variant="secondary"] {
+    color: var(--muted);
+  }
+
+  .xxd-text[data-variant="caption"] {
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .xxd-text[data-variant="mono"],
+  .xxd-text[data-variant="mono-secondary"] {
+    font-family: var(--font-mono);
+    font-size: max(var(--text-xs), calc(1em - clamp(1px, 1em - 14px, 4px))); /* 比周围小一档，落在阶梯上（D69）：13 → 12、16 → 14、28 → 24；不小于 12（D71） */
+  }
+
+  .xxd-text[data-variant="mono-secondary"] {
+    color: var(--muted);
+  }
+
+  .xxd-text[data-variant="success"] {
+    color: var(--success);
+  }
+
+  .xxd-text[data-variant="danger"] {
+    color: var(--danger);
+  }
+
+  .xxd-text[data-variant="warning"] {
+    color: var(--warning);
+  }
+
+  .xxd-text[data-size="xs"] {
+    font-size: var(--text-xs);
+  }
+
+  .xxd-text[data-size="sm"] {
+    font-size: var(--text-sm);
+  }
+
+  .xxd-text[data-size="base"] {
+    font-size: var(--text-base);
+  }
+
+  .xxd-text[data-size="lg"] {
+    font-size: var(--text-lg);
+  }
+
+  .xxd-text[data-truncate] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 标题和它的说明：说明紧贴标题（相关的字靠得更近） */
+  .xxd-text-pair {
+    display: grid;
+    gap: var(--space-0-5);
+  }
+}

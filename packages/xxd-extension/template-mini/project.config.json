@@ -1,0 +1,16 @@
+{
+  "miniprogramRoot": "./dist",
+  "projectname": "__SLUG__",
+  "description": "__APP_NAME__",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "enhance": false,
+    "compileHotReLoad": false,
+    "postcss": false,
+    "minified": false
+  },
+  "libVersion": "3.0.0",
+  "compileType": "miniprogram"
+}

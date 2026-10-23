@@ -1,0 +1,246 @@
+---
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = "小小东 UI", description = "小小东 UI Kit：小小东提示词与 Chrome 插件共用的设计系统（基于 Kumo）" } =
+  Astro.props;
+
+// Build info is injected via Vite define in astro.config.mjs
+// These are replaced at build time with actual values
+declare const __KUMO_VERSION__: string;
+declare const __DOCS_VERSION__: string;
+declare const __BUILD_COMMIT__: string;
+declare const __BUILD_DATE__: string;
+
+const kumoVersion =
+  typeof __KUMO_VERSION__ !== "undefined" ? __KUMO_VERSION__ : "dev";
+const docsVersion =
+  typeof __DOCS_VERSION__ !== "undefined" ? __DOCS_VERSION__ : "dev";
+const buildCommit =
+  typeof __BUILD_COMMIT__ !== "undefined" ? __BUILD_COMMIT__ : "local";
+const buildDate =
+  typeof __BUILD_DATE__ !== "undefined"
+    ? __BUILD_DATE__
+    : new Date().toISOString();
+---
+
+<!doctype html>
+<html class="bg-kumo-canvas text-kumo-default" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="kumo-version" content={kumoVersion} />
+    <meta name="docs-version" content={docsVersion} />
+    <meta name="build-commit" content={buildCommit} />
+    <meta name="build-date" content={buildDate} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.svg"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon-white.svg"
+      media="(prefers-color-scheme: dark)"
+    />
+    <!-- 小小东：不加载网络字体。外观（圆角 / 主色 / 密度）首帧前由 @xxd/tokens 的 boot.js 应用。 -->
+    <script is:inline src="/xxd/boot.js" data-key="xxd-docs"></script>
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <ClientRouter />
+    <style is:global>
+      /* Keep soft navigation + prefetch, but drop Astro's default cross-fade
+         so pages swap instantly instead of fading in/out. */
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation: none;
+      }
+    </style>
+    <script is:inline>
+      // Initialize theme from localStorage or system preference.
+      // Runs immediately (blocking) to prevent flash of unstyled content, and
+      // must be re-applied after each view-transition swap because the <html>
+      // attributes are replaced during navigation.
+      (function () {
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+        function setTheme(theme) {
+          const resolvedTheme =
+            theme === "system"
+              ? systemTheme.matches
+                ? "dark"
+                : "light"
+              : theme;
+
+          localStorage.setItem("theme", theme);
+          document.documentElement.setAttribute("data-mode", resolvedTheme);
+          document.documentElement.setAttribute("data-theme", resolvedTheme);
+          if (window.XxdTheme) window.XxdTheme.apply({ ...window.XxdTheme.read(), theme: resolvedTheme });
+          window.dispatchEvent(
+            new CustomEvent("kumo:theme-change", {
+              detail: { theme, resolvedTheme },
+            }),
+          );
+        }
+
+        function applyStoredTheme() {
+          const stored = localStorage.getItem("theme");
+          const theme = ["light", "dark", "system"].includes(stored)
+            ? stored
+            : "system";
+          const resolvedTheme =
+            theme === "system"
+              ? systemTheme.matches
+                ? "dark"
+                : "light"
+              : theme;
+
+          document.documentElement.setAttribute("data-mode", resolvedTheme);
+          document.documentElement.setAttribute("data-theme", resolvedTheme);
+          if (window.XxdTheme) window.XxdTheme.apply({ ...window.XxdTheme.read(), theme: resolvedTheme });
+        }
+
+        // Apply on this (initial or freshly-swapped) document immediately.
+        applyStoredTheme();
+
+        // Register global listeners exactly once across soft navigations.
+        if (!window.__kumoThemeInit) {
+          window.__kumoThemeInit = true;
+
+          // Reapply theme before each swap paints, so there's no light flash.
+          document.addEventListener("astro:before-swap", applyStoredTheme);
+          document.addEventListener("astro:after-swap", applyStoredTheme);
+          systemTheme.addEventListener("change", function () {
+            const stored = localStorage.getItem("theme");
+            if (!stored || stored === "system") setTheme("system");
+          });
+
+          document.addEventListener("keydown", function (event) {
+            if (event.defaultPrevented || event.repeat) return;
+            if (event.metaKey || event.ctrlKey || event.altKey) return;
+            if (event.key?.toLowerCase() !== "d") return;
+
+            const target = event.target;
+            if (
+              target instanceof HTMLElement &&
+              (target.isContentEditable ||
+                target.closest("input, textarea, select, [contenteditable]"))
+            ) {
+              return;
+            }
+
+            event.preventDefault();
+            const current = localStorage.getItem("theme");
+            const nextTheme =
+              current === "light"
+                ? "dark"
+                : current === "dark"
+                  ? "system"
+                  : "light";
+            setTheme(nextTheme);
+          });
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+    <script>
+      // Wraps code blocks and injects a copy button. Safe to run on every page
+      // load — the `.code-block` parent check prevents double-wrapping.
+      function wrapCodeBlocks() {
+        document.querySelectorAll("pre.astro-code").forEach((pre) => {
+          // Skip <pre> elements already inside a .code-block parent
+          if (pre.parentElement?.classList.contains("code-block")) return;
+
+          // Wrap in .code-block relative
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-block relative";
+
+          if (!pre.parentNode) return;
+
+          pre.parentNode.insertBefore(wrapper, pre);
+          wrapper.appendChild(pre);
+
+          // Create button with innerHTML for simplicity
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "code-block-copy-btn";
+          button.setAttribute("aria-label", "Copy code to clipboard");
+          button.innerHTML = `
+            <span class="code-block-copy-btn__icons">
+              <span class="code-block-copy-btn__icon code-block-copy-btn__icon--check" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                  <path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"></path>
+                </svg>
+              </span>
+              <span class="code-block-copy-btn__icon code-block-copy-btn__icon--copy" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                  <path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"></path>
+                </svg>
+              </span>
+            </span>
+          `;
+
+          // Append button to the wrapper, as a sibling of <pre>
+          wrapper.appendChild(button);
+        });
+      }
+
+      // Click handler via event delegation — registered ONCE for the lifetime
+      // of the document (survives soft navigations), so it must live outside
+      // wrapCodeBlocks() to avoid stacking duplicate listeners on each nav.
+      const timers = new WeakMap<Element, ReturnType<typeof setTimeout>>();
+      document.addEventListener("click", async (e) => {
+        const btn = (e.target as Element).closest(".code-block-copy-btn");
+
+        if (!btn) return;
+
+        const pre = btn.closest(".code-block")?.querySelector("pre");
+
+        if (!pre) return;
+
+        const code = pre.textContent || "";
+
+        const existingTimer = timers.get(btn);
+
+        if (existingTimer) clearTimeout(existingTimer);
+
+        // Set animation immediately (optimistic)
+        btn.setAttribute("data-copied", "");
+        btn.setAttribute("aria-label", "Copied!");
+
+        try {
+          await navigator.clipboard.writeText(code);
+        } catch {
+          // Roll back on failure
+          btn.removeAttribute("data-copied");
+          btn.setAttribute("aria-label", "Copy code to clipboard");
+          return;
+        }
+
+        timers.set(
+          btn,
+          setTimeout(() => {
+            btn.removeAttribute("data-copied");
+            btn.setAttribute("aria-label", "Copy code to clipboard");
+            timers.delete(btn);
+          }, 1500),
+        );
+      });
+
+      // Re-wrap code blocks after every navigation. `astro:page-load` fires on
+      // the initial load and after each ClientRouter soft navigation.
+      document.addEventListener("astro:page-load", wrapCodeBlocks);
+    </script>
+  </body>
+</html>

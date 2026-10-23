@@ -1,0 +1,321 @@
+{
+  "$comment": "小小东模式（O4）：展示站 /patterns/* 和注册表测试都读它。",
+  "patterns": [
+    {
+      "name": "DropZone",
+      "slug": "drop-zone",
+      "zh": "拖放区与拖入遮罩",
+      "from": "图片排序",
+      "summary": "空的时候是一块虚线区：把东西拖进来、或选择文件、或粘贴；有内容之后，拖到面板任何地方都会出现「松手，放进来」。",
+      "classes": [
+        "xxd-dropzone",
+        "xxd-dropzone__title",
+        "xxd-dropveil"
+      ],
+      "markup": "<div id=\"drop-demo\" class=\"xxd-frame\" data-surface=\"page\" style=\"position:relative;padding:var(--inset-md);min-height:220px\">\n  <div class=\"xxd-dropzone\" id=\"drop-zone\">\n    <i data-xxd-icon=\"ImagePlus\" data-size=\"24\"></i>\n    <p class=\"xxd-dropzone__title\">把图片拖到这里</p>\n    <p class=\"xxd-help\">也可以 <button class=\"xxd-link\" type=\"button\">选择图片文件</button>，或直接粘贴链接 ⌘V</p>\n  </div>\n  <p class=\"xxd-help\" id=\"drop-out\" style=\"margin-top:var(--space-3)\"></p>\n</div>\n<script>\n  Xxd.bindDrop(document.getElementById(\"drop-demo\"), {\n    zone: document.getElementById(\"drop-zone\"),\n    onFiles: (files) => (document.getElementById(\"drop-out\").textContent = `收到 ${files.length} 个文件`),\n    onText: (text) => (document.getElementById(\"drop-out\").textContent = `收到文字：${text.slice(0, 40)}`),\n  });\n</script>",
+      "anatomy": [
+        "虚线区：图标 · 一句话 · 其他方式（选择文件 / 粘贴）",
+        "遮罩：盖住整个面板，一句话，拖出去就消失"
+      ],
+      "rules": [
+        "每种进来的方式在点之前就说清会带来什么",
+        "粘贴在输入框里时不接管"
+      ],
+      "js": "const off = Xxd.bindDrop(panel, { zone, onFiles(files) {…}, onText(text) {…}, veil: \"松手，加到这一组\" })"
+    },
+    {
+      "name": "Viewer",
+      "slug": "viewer",
+      "zh": "图片查看器",
+      "from": "图片排序、会员站",
+      "summary": "点开大图，← → 翻，Esc 回到同一张；底部一个深色胶囊放操作。",
+      "classes": [
+        "xxd-viewer",
+        "xxd-viewer__bar",
+        "xxd-viewer__stage",
+        "xxd-viewer__nav",
+        "xxd-pill"
+      ],
+      "markup": "<div class=\"xxd-cluster\" id=\"viewer-demo\">\n  <button class=\"xxd-btn\" data-i=\"0\">打开第 1 张</button><button class=\"xxd-btn\" data-i=\"2\">打开第 3 张</button>\n</div>\n<script>\n  const pics = [\"#d65f32\", \"#3b74b8\", \"#5a8a3c\", \"#7b61b0\"].map((c, i) => ({ src: `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='800' height='560'><rect width='800' height='560' fill='${c}'/><text x='400' y='300' font-size='64' fill='white' text-anchor='middle' font-family='sans-serif'>${i + 1}</text></svg>`)}`, alt: `第 ${i + 1} 张` }));\n  document.getElementById(\"viewer-demo\").addEventListener(\"click\", (e) => {\n    const b = e.target.closest(\"[data-i]\");\n    if (b) Xxd.openViewer(pics, Number(b.dataset.i), { actions: [{ label: \"复制图片\", run: () => Xxd.toast(\"已复制图片\", { tone: \"success\" }) }, { label: \"下载\", run: () => Xxd.toast(\"开始下载\") }] });\n  });\n</script>",
+      "rules": [
+        "关闭后焦点回到打开它的那个缩略图",
+        "操作胶囊：深色半透明，像 X 自己的图片控件"
+      ],
+      "js": "Xxd.openViewer(items, startIndex, { actions: [{ label, icon, run(item, i) }] })"
+    },
+    {
+      "name": "Sortable",
+      "slug": "sortable",
+      "zh": "拖拽排序",
+      "from": "会员站导航排序、图片排序",
+      "summary": "拖把手排序，其余项滑到新位置（FLIP）。触屏长按；键盘：把手上按空格拿起，↑ ↓ 移动，空格放下，Esc 取消。",
+      "classes": [
+        "xxd-sortable",
+        "xxd-sort-handle",
+        "xxd-sort-moves"
+      ],
+      "markup": "<ul class=\"xxd-list xxd-group__body xxd-sortable\" data-xxd-sortable style=\"width:100%;max-width:300px\" id=\"sort-demo\">\n  <li class=\"xxd-list__item\" data-sort-item data-id=\"write\"><button class=\"xxd-sort-handle\" aria-label=\"拖动排序：写作\" aria-pressed=\"false\"><i data-xxd-icon=\"GripVertical\" data-size=\"16\"></i></button>写作</li>\n  <li class=\"xxd-list__item\" data-sort-item data-id=\"prompts\"><button class=\"xxd-sort-handle\" aria-label=\"拖动排序：提示词\" aria-pressed=\"false\"><i data-xxd-icon=\"GripVertical\" data-size=\"16\"></i></button>提示词</li>\n  <li class=\"xxd-list__item\" data-sort-item data-id=\"history\"><button class=\"xxd-sort-handle\" aria-label=\"拖动排序：记录\" aria-pressed=\"false\"><i data-xxd-icon=\"GripVertical\" data-size=\"16\"></i></button>记录</li>\n  <li class=\"xxd-list__item\" data-sort-item data-id=\"settings\"><button class=\"xxd-sort-handle\" aria-label=\"拖动排序：设置\" aria-pressed=\"false\"><i data-xxd-icon=\"GripVertical\" data-size=\"16\"></i></button>设置</li>\n</ul>\n<p class=\"xxd-help\" id=\"sort-out\"></p>\n<script>document.getElementById(\"sort-demo\").addEventListener(\"xxd:change\", (e) => (document.getElementById(\"sort-out\").textContent = \"新顺序：\" + e.detail.order.join(\" · \")));</script>",
+      "rules": [
+        "动画只动 transform（FLIP），减少动效时直接到位",
+        "所有排序都能不用拖拽完成（键盘）"
+      ],
+      "js": "list.addEventListener(\"xxd:change\", (e) => e.detail.order)\nawait Xxd.flip(container, () => reorderDom())  // 通用的「滑到新位置」"
+    },
+    {
+      "name": "History",
+      "slug": "history",
+      "zh": "按天分组的记录",
+      "from": "长文发布、图片排序",
+      "summary": "「今天 / 昨天 / 9月12日」小标题下一行一条：缩略图叠放、标题、方式 · 时间；hover 出删除（点两次确认）。",
+      "classes": [
+        "xxd-history",
+        "xxd-history__day",
+        "xxd-thumbs"
+      ],
+      "markup": "<div class=\"xxd-history\" style=\"max-width:420px\">\n  <section><h3 class=\"xxd-history__day\">今天</h3>\n    <ul class=\"xxd-list xxd-group__body\" data-interactive>\n      <li class=\"xxd-list__item\"><span class=\"xxd-thumbs\"><img src=\"/demo/poster-1.svg\" alt=\"\"><img src=\"/demo/poster-2.svg\" alt=\"\"><img src=\"/demo/poster-3.svg\" alt=\"\"></span><div class=\"xxd-list__main\"><div class=\"xxd-list__title\">24 张图片</div><div class=\"xxd-list__meta\">渐变 · 14:02</div></div><button class=\"xxd-btn xxd-reveal\" data-variant=\"ghost\" data-size=\"xs\" data-confirm-twice=\"确认删除\">删除</button><button class=\"xxd-btn\" data-size=\"xs\">打开</button></li>\n      <li class=\"xxd-list__item\"><span class=\"xxd-thumbs\"><img src=\"/demo/poster-4.svg\" alt=\"\"><img src=\"/demo/poster-5.svg\" alt=\"\"></span><div class=\"xxd-list__main\"><div class=\"xxd-list__title\">8 张图片</div><div class=\"xxd-list__meta\">原样 · 09:40</div></div><button class=\"xxd-btn xxd-reveal\" data-variant=\"ghost\" data-size=\"xs\" data-confirm-twice=\"确认删除\">删除</button><button class=\"xxd-btn\" data-size=\"xs\">打开</button></li>\n    </ul></section>\n  <section><h3 class=\"xxd-history__day\">昨天</h3>\n    <ul class=\"xxd-list xxd-group__body\" data-interactive>\n      <li class=\"xxd-list__item\"><span class=\"xxd-thumbs\"><img src=\"/demo/poster-6.svg\" alt=\"\"></span><div class=\"xxd-list__main\"><div class=\"xxd-list__title\">一篇关于设计系统的长文</div><div class=\"xxd-list__meta\">已写入 X · 21:15</div></div><button class=\"xxd-btn xxd-reveal\" data-variant=\"ghost\" data-size=\"xs\" data-confirm-twice=\"确认删除\">删除</button><button class=\"xxd-btn\" data-size=\"xs\">打开</button></li>\n    </ul></section>\n  <button class=\"xxd-link\" data-confirm-twice=\"确认清空全部记录\" data-tone=\"danger\">清空全部记录</button>\n</div>",
+      "rules": [
+        "最多 50 行；同一组再做一次只更新那一行",
+        "删除点两次（不弹对话框）"
+      ]
+    },
+    {
+      "name": "ConfirmTwice",
+      "slug": "confirm-twice",
+      "zh": "两次确认",
+      "from": "图片排序",
+      "summary": "可撤销性低但不严重的删除：第一次点按钮变成「确认删除」（危险色），3 秒内再点才执行；不弹对话框。",
+      "classes": [],
+      "markup": "<button class=\"xxd-btn\" data-confirm-twice=\"确认删除\" id=\"twice-demo\">删除这一组</button>\n<script>document.getElementById(\"twice-demo\").addEventListener(\"xxd:confirm\", () => Xxd.toast(\"已删除\", { tone: \"success\" }));</script>",
+      "rules": [
+        "3 秒没再点就恢复原样",
+        "真正不可恢复、影响大的，用「输入名字确认删除」（Dialog）"
+      ],
+      "js": "button.addEventListener(\"xxd:confirm\", () => remove())"
+    },
+    {
+      "name": "SignIn",
+      "slug": "sign-in",
+      "zh": "登录",
+      "from": "各插件",
+      "summary": "没登录时侧边栏只有这一屏：标志、名字、一句话、新账号福利、Google 继续、或用邮箱（两步：邮箱 → 密码）、条款。",
+      "classes": [
+        "xxd-auth",
+        "xxd-auth__name",
+        "xxd-auth__line",
+        "xxd-auth__gift",
+        "xxd-auth__or",
+        "xxd-auth__terms"
+      ],
+      "markup": "<div class=\"xxd-auth xxd-frame\" data-xxd-auth>\n  <span class=\"xxd-logo\" data-size=\"lg\"><span class=\"xxd-logo__mark\"></span></span>\n  <h2 class=\"xxd-auth__name\">小小东 · 长文发布</h2>\n  <p class=\"xxd-auth__line\">把 Markdown 写进 X 文章，排版、图片一起带过去。</p>\n  <span class=\"xxd-auth__gift\">新账号送 7 天完整体验</span>\n  <form>\n    <button class=\"xxd-btn\" data-block type=\"button\"><svg class=\"ui-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"#FFC107\" d=\"M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z\"/><path fill=\"#FF3D00\" d=\"m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z\"/><path fill=\"#4CAF50\" d=\"M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z\"/><path fill=\"#1976D2\" d=\"M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z\"/></svg>使用 Google 继续</button>\n    <div class=\"xxd-auth__or\">或使用邮箱</div>\n    <div data-step=\"email\" data-active>\n      <input class=\"xxd-input\" type=\"email\" placeholder=\"you@example.com\" aria-label=\"邮箱\" required>\n      <button class=\"xxd-btn\" data-variant=\"primary\" data-block data-auth-next=\"password\">继续</button>\n    </div>\n    <div data-step=\"password\">\n      <p class=\"xxd-help\">登录 <b data-auth-email></b></p>\n      <input class=\"xxd-input\" type=\"password\" placeholder=\"密码\" aria-label=\"密码\">\n      <div class=\"xxd-cluster\"><button class=\"xxd-btn ui-dialog-cancel\" data-auth-back=\"email\">返回</button><button class=\"xxd-btn\" data-variant=\"primary\" style=\"flex:1\">继续</button></div>\n      <button class=\"xxd-link\" type=\"button\" style=\"justify-self:start\">忘记密码？</button>\n    </div>\n  </form>\n  <p class=\"xxd-auth__terms\">继续即表示同意 <a class=\"xxd-link\" href=\"#\">服务条款</a> 和 <a class=\"xxd-link\" href=\"#\">隐私政策</a></p>\n</div>",
+      "rules": [
+        "<html data-account> 在首帧前就设好（不闪登录页）",
+        "「继续」一直在；邮箱格式不对时在输入框下面说清楚怎么改（Xxd.setFieldError），焦点回到输入框",
+        "会话过期回到这里时，要说一句为什么"
+      ]
+    },
+    {
+      "name": "Membership",
+      "slug": "membership",
+      "zh": "会员计划与购买",
+      "from": "长文发布、图片排序",
+      "summary": "账号卡上一行计划；「开通会员 / 续费」在原地展开购买面板：选计划 · 选支付方式 · 二维码 · 「我已支付，立即查询」。每种结果一句话。",
+      "classes": [
+        "xxd-account",
+        "xxd-account__main",
+        "xxd-account__name",
+        "xxd-plan-line",
+        "xxd-plans",
+        "xxd-plan",
+        "xxd-plan__name",
+        "xxd-plan__price",
+        "xxd-qr",
+        "xxd-qr__code"
+      ],
+      "markup": "<div class=\"xxd-stack\" style=\"max-width:380px\">\n  <div class=\"xxd-group__body\"><div class=\"xxd-account\"><span class=\"xxd-avatar\" data-member style=\"--avatar-size:36px\">东</span><div class=\"xxd-account__main\"><div class=\"xxd-account__name\">小小东</div><div class=\"xxd-plan-line\" data-tone=\"member\" id=\"plan-line\">完整体验 · 还剩 6 天</div></div><button class=\"xxd-btn\" data-size=\"sm\" data-variant=\"primary\" id=\"buy\">开通会员</button></div></div>\n  <div class=\"xxd-plans\" role=\"radiogroup\" aria-label=\"计划\">\n    <label class=\"xxd-plan\"><input type=\"radio\" class=\"xxd-radio\" name=\"plan\" checked><span class=\"xxd-plan__name\">月度会员<small>每月自动提醒续费</small></span><span class=\"xxd-plan__price\">¥29</span></label>\n    <label class=\"xxd-plan\"><input type=\"radio\" class=\"xxd-radio\" name=\"plan\"><span class=\"xxd-plan__name\">年度会员<small>相当于每月 ¥19</small></span><span class=\"xxd-plan__price\">¥228</span></label>\n  </div>\n  <p class=\"xxd-help\">体验剩下的天数会保留；续费从当前到期日往后算。</p>\n  <div class=\"xxd-segmented\" data-xxd-segmented data-block aria-label=\"支付方式\"><button role=\"radio\" aria-checked=\"true\">微信</button><button role=\"radio\">支付宝</button><button role=\"radio\">银行卡</button></div>\n  <div class=\"xxd-qr\"><svg class=\"xxd-qr__code\" viewBox=\"-2 -2 37 37\" role=\"img\" aria-label=\"付款二维码\" shape-rendering=\"crispEdges\"><path fill=\"#111\" d=\"M0 0h7v1h-7zM9 0h1v1h-1zM12 0h3v1h-3zM16 0h5v1h-5zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM11 1h1v1h-1zM13 1h5v1h-5zM20 1h2v1h-2zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM12 2h2v1h-2zM15 2h1v1h-1zM17 2h6v1h-6zM24 2h1v1h-1zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM14 3h3v1h-3zM19 3h2v1h-2zM22 3h3v1h-3zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h3v1h-3zM15 4h1v1h-1zM17 4h2v1h-2zM21 4h3v1h-3zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM12 5h1v1h-1zM14 5h4v1h-4zM20 5h2v1h-2zM24 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h2v1h-2zM11 7h2v1h-2zM15 7h1v1h-1zM18 7h1v1h-1zM21 7h2v1h-2zM24 7h1v1h-1zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h7v1h-7zM17 8h1v1h-1zM22 8h3v1h-3zM26 8h5v1h-5zM0 9h1v1h-1zM4 9h2v1h-2zM7 9h2v1h-2zM14 9h1v1h-1zM16 9h1v1h-1zM18 9h4v1h-4zM23 9h1v1h-1zM26 9h2v1h-2zM29 9h2v1h-2zM32 9h1v1h-1zM0 10h1v1h-1zM3 10h2v1h-2zM6 10h2v1h-2zM9 10h2v1h-2zM12 10h1v1h-1zM15 10h1v1h-1zM18 10h1v1h-1zM21 10h1v1h-1zM24 10h3v1h-3zM28 10h1v1h-1zM30 10h2v1h-2zM1 11h2v1h-2zM4 11h1v1h-1zM7 11h2v1h-2zM10 11h1v1h-1zM12 11h1v1h-1zM14 11h2v1h-2zM20 11h2v1h-2zM24 11h2v1h-2zM28 11h3v1h-3zM32 11h1v1h-1zM1 12h1v1h-1zM3 12h2v1h-2zM6 12h2v1h-2zM10 12h1v1h-1zM12 12h1v1h-1zM15 12h1v1h-1zM18 12h1v1h-1zM21 12h1v1h-1zM23 12h3v1h-3zM27 12h3v1h-3zM0 13h1v1h-1zM7 13h1v1h-1zM10 13h1v1h-1zM13 13h4v1h-4zM20 13h1v1h-1zM23 13h1v1h-1zM26 13h1v1h-1zM29 13h1v1h-1zM31 13h2v1h-2zM0 14h3v1h-3zM4 14h3v1h-3zM11 14h2v1h-2zM17 14h1v1h-1zM19 14h1v1h-1zM22 14h1v1h-1zM25 14h2v1h-2zM31 14h1v1h-1zM0 15h1v1h-1zM2 15h3v1h-3zM8 15h1v1h-1zM10 15h1v1h-1zM16 15h1v1h-1zM19 15h8v1h-8zM29 15h2v1h-2zM0 16h1v1h-1zM2 16h3v1h-3zM6 16h1v1h-1zM8 16h1v1h-1zM12 16h3v1h-3zM16 16h4v1h-4zM22 16h1v1h-1zM25 16h1v1h-1zM27 16h3v1h-3zM32 16h1v1h-1zM2 17h4v1h-4zM10 17h2v1h-2zM13 17h2v1h-2zM16 17h5v1h-5zM22 17h2v1h-2zM25 17h3v1h-3zM29 17h4v1h-4zM2 18h2v1h-2zM6 18h1v1h-1zM9 18h2v1h-2zM12 18h2v1h-2zM15 18h3v1h-3zM20 18h1v1h-1zM22 18h1v1h-1zM24 18h1v1h-1zM27 18h2v1h-2zM30 18h2v1h-2zM0 19h1v1h-1zM3 19h2v1h-2zM7 19h1v1h-1zM11 19h1v1h-1zM16 19h5v1h-5zM23 19h1v1h-1zM26 19h6v1h-6zM2 20h1v1h-1zM4 20h3v1h-3zM8 20h1v1h-1zM10 20h1v1h-1zM16 20h1v1h-1zM19 20h5v1h-5zM25 20h1v1h-1zM27 20h3v1h-3zM31 20h1v1h-1zM0 21h3v1h-3zM8 21h1v1h-1zM12 21h4v1h-4zM17 21h2v1h-2zM23 21h1v1h-1zM26 21h1v1h-1zM30 21h1v1h-1zM32 21h1v1h-1zM0 22h1v1h-1zM3 22h1v1h-1zM5 22h2v1h-2zM10 22h1v1h-1zM12 22h2v1h-2zM15 22h3v1h-3zM20 22h2v1h-2zM24 22h2v1h-2zM29 22h1v1h-1zM31 22h1v1h-1zM0 23h1v1h-1zM7 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM14 23h2v1h-2zM18 23h1v1h-1zM21 23h1v1h-1zM23 23h3v1h-3zM28 23h1v1h-1zM30 23h1v1h-1zM32 23h1v1h-1zM0 24h1v1h-1zM3 24h4v1h-4zM9 24h1v1h-1zM11 24h1v1h-1zM15 24h1v1h-1zM17 24h1v1h-1zM22 24h1v1h-1zM24 24h5v1h-5zM31 24h2v1h-2zM8 25h1v1h-1zM10 25h1v1h-1zM14 25h1v1h-1zM18 25h4v1h-4zM24 25h1v1h-1zM28 25h1v1h-1zM30 25h1v1h-1zM32 25h1v1h-1zM0 26h7v1h-7zM10 26h1v1h-1zM12 26h1v1h-1zM15 26h2v1h-2zM18 26h1v1h-1zM20 26h2v1h-2zM23 26h2v1h-2zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h2v1h-2zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h2v1h-2zM11 27h1v1h-1zM13 27h3v1h-3zM21 27h2v1h-2zM24 27h1v1h-1zM28 27h3v1h-3zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h3v1h-3zM12 28h3v1h-3zM18 28h1v1h-1zM21 28h1v1h-1zM24 28h6v1h-6zM31 28h1v1h-1zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM8 29h3v1h-3zM12 29h1v1h-1zM15 29h2v1h-2zM20 29h1v1h-1zM22 29h4v1h-4zM28 29h2v1h-2zM32 29h1v1h-1zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM8 30h6v1h-6zM18 30h2v1h-2zM21 30h1v1h-1zM26 30h2v1h-2zM29 30h1v1h-1zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h3v1h-3zM13 31h2v1h-2zM16 31h1v1h-1zM19 31h5v1h-5zM25 31h1v1h-1zM28 31h3v1h-3zM0 32h7v1h-7zM8 32h1v1h-1zM10 32h1v1h-1zM17 32h1v1h-1zM19 32h1v1h-1zM22 32h4v1h-4zM27 32h1v1h-1zM31 32h1v1h-1z\"/></svg>微信扫码支付 · 二维码 2 小时内有效<button class=\"xxd-link\" type=\"button\" id=\"paid\">我已支付，立即查询</button></div>\n</div>\n<script>\n  document.getElementById(\"paid\").addEventListener(\"click\", (e) => Xxd.runBusy(e.target, () => new Promise((r) => setTimeout(r, 900))).then(() => { Xxd.rollText(document.getElementById(\"plan-line\"), \"会员 · 到 2027年11月8日\"); Xxd.celebrate(document.getElementById(\"buy\")); Xxd.toast(\"会员已开通\", { tone: \"success\" }); }));\n</script>",
+      "rules": [
+        "不说「额度 / 配额 / 试用」：说「完整体验」「今天还能写入 N 篇」「开通会员」",
+        "门槛在用户动手的地方说话，从不弹窗",
+        "每种结果都有自己的一句话（已支付、还没付、已关闭、网络问题……），没有沉默的失败",
+        "计划行变化时旧字上滚出、新字上滚进；减少动效时直接换"
+      ]
+    },
+    {
+      "name": "StatusLine",
+      "slug": "status-line",
+      "zh": "状态行",
+      "from": "图片排序、长文发布",
+      "summary": "dock 上方的一行：空着，除非有事要说 —— 一句话，最多一个动作。",
+      "classes": [
+        "xxd-statusline"
+      ],
+      "markup": "<div class=\"xxd-frame\" style=\"max-width:420px\">\n  <div class=\"xxd-statusline\" id=\"status-demo\" hidden></div>\n  <footer class=\"xxd-dock\" style=\"position:static\"><div class=\"xxd-dock__status\">24 张 · 来自 mp.weixin.qq.com</div><div class=\"xxd-dock__primary\"><button class=\"xxd-btn\" data-variant=\"primary\" data-size=\"sm\">复制 24 个链接</button></div></footer>\n</div>\n<div class=\"xxd-cluster\" style=\"margin-top:var(--space-3)\">\n  <button class=\"xxd-btn\" data-size=\"sm\" onclick=\"Xxd.setStatus(document.getElementById('status-demo'), '正在读取颜色 12 / 40', { action: { label: '停止' } })\">进行中</button>\n  <button class=\"xxd-btn\" data-size=\"sm\" onclick=\"Xxd.setStatus(document.getElementById('status-demo'), '今天的 5 组颜色排序用完了（原样和倒过来不受限制）', { tone: 'warning', action: { label: '开通会员' } })\">用完了</button>\n  <button class=\"xxd-btn\" data-size=\"sm\" onclick=\"Xxd.setStatus(document.getElementById('status-demo'), '')\">清空</button>\n</div>",
+      "rules": [
+        "一句话，最多一个动作；没事就整行消失",
+        "不用弹窗、不用系统通知"
+      ],
+      "js": "Xxd.setStatus(el, text, { tone: \"warning\", action: { label, onClick } })"
+    },
+    {
+      "name": "ProgressPill",
+      "slug": "progress-pill",
+      "zh": "写入进度胶囊",
+      "from": "长文发布",
+      "summary": "在别人的网页上（X 编辑器）写入时，一个细细的深色胶囊：转圈 · 进度 · 数字。放在 Shadow DOM 里。",
+      "classes": [
+        "xxd-progress-pill"
+      ],
+      "markup": "<div class=\"xxd-progress-pill\"><span class=\"xxd-spinner\" aria-hidden=\"true\"></span>正在写入<progress class=\"xxd-progress\" value=\"62\" max=\"100\"></progress>62%</div>",
+      "rules": [
+        "用 XxdExtension.mountXxdUI 放进 Shadow DOM，不碰宿主页面",
+        "完成后变成一个勾再淡出"
+      ]
+    },
+    {
+      "name": "Celebrate",
+      "slug": "celebrate",
+      "zh": "庆祝",
+      "from": "长文发布",
+      "summary": "会员开通、第一次写入这类时刻：画一个圈打勾、字依次升起、彩纸从勾那里散开；减少动效时直接给最终状态。",
+      "classes": [
+        "xxd-celebrate",
+        "xxd-celebrate__ring",
+        "xxd-confetti"
+      ],
+      "markup": "<div class=\"xxd-celebrate\" id=\"cele\">\n  <svg class=\"xxd-celebrate__ring\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"miter\"><circle cx=\"12\" cy=\"12\" r=\"9.5\" pathLength=\"1\"/><path d=\"m7.5 12 3 3 6-6\" pathLength=\"1\"/></svg>\n  <p class=\"xxd-text\" data-variant=\"heading2\">会员已开通</p>\n  <p class=\"xxd-text\" data-variant=\"caption\">有效期至 2027年11月8日</p>\n  <button class=\"xxd-btn\" data-variant=\"primary\" onclick=\"Xxd.celebrate(this.closest('.xxd-celebrate').querySelector('svg'))\">开始写作</button>\n</div>",
+      "rules": [
+        "只在真正值得的时刻；一次",
+        "只动 opacity / transform；减少动效时不放彩纸"
+      ],
+      "js": "Xxd.celebrate(anchorElement)"
+    },
+    {
+      "name": "SettingsSearch",
+      "slug": "settings-search",
+      "zh": "设置搜索",
+      "from": "长文发布",
+      "summary": "搜索框钉在设置页顶部（⌘F 跳过来，Esc 清空）：过滤到匹配的行并标出字；每行带几个别人可能搜的词（暗色 / dark / 夜间 都能找到主题）。",
+      "classes": [],
+      "markup": "<div style=\"max-width:440px\">\n  <div class=\"xxd-input-wrap\" style=\"margin-bottom:var(--space-4)\"><i data-xxd-icon=\"Search\" data-size=\"16\"></i><input class=\"xxd-input\" type=\"search\" id=\"ss-input\" placeholder=\"搜索设置（⌘F）\" aria-label=\"搜索设置\"><button class=\"xxd-input-clear\" aria-label=\"清空\"><i data-xxd-icon=\"X\" data-size=\"14\"></i></button></div>\n  <div class=\"xxd-settings\" id=\"ss-box\">\n    <section class=\"xxd-group\"><h2 class=\"xxd-group__title\">外观</h2><div class=\"xxd-group__body\">\n      <div class=\"xxd-row\" data-keywords=\"暗色 dark 夜间 主题\"><div class=\"xxd-row__text\"><div class=\"xxd-row__title\">主题</div><div class=\"xxd-row__desc\">亮 · 暗 · 跟随系统</div></div></div>\n      <div class=\"xxd-row\" data-keywords=\"圆角 rounded 直角\"><div class=\"xxd-row__text\"><div class=\"xxd-row__title\">圆角</div></div><div class=\"xxd-row__control\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" aria-label=\"圆角\"></div></div>\n    </div></section>\n    <section class=\"xxd-group\"><h2 class=\"xxd-group__title\">写入</h2><div class=\"xxd-group__body\">\n      <div class=\"xxd-row\" data-keywords=\"标点 引号 punctuation\"><div class=\"xxd-row__text\"><div class=\"xxd-row__title\">智能标点</div></div><div class=\"xxd-row__control\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" checked aria-label=\"智能标点\"></div></div>\n    </div></section>\n  </div>\n</div>\n<script>Xxd.bindSettingsSearch(document.getElementById(\"ss-input\"), document.getElementById(\"ss-box\"), { hotkey: false });</script>",
+      "rules": [
+        "没有匹配的行和整组藏起来",
+        "放在别处的设置也作为捷径出现在结果里"
+      ],
+      "js": "Xxd.bindSettingsSearch(input, settingsContainer)"
+    },
+    {
+      "name": "AccountCard",
+      "slug": "account-card",
+      "zh": "账号卡",
+      "from": "各插件",
+      "summary": "头像（会员有一圈主色环）· 名字 · 计划行 · 一个动作。",
+      "classes": [],
+      "markup": "<div class=\"xxd-group__body\" style=\"max-width:380px\"><div class=\"xxd-account\"><span class=\"xxd-avatar\" style=\"--avatar-size:36px\">东</span><div class=\"xxd-account__main\"><div class=\"xxd-account__name\">小小东</div><div class=\"xxd-plan-line\">免费版 · 今天还能写入 3 篇</div></div><button class=\"xxd-btn\" data-size=\"sm\">开通会员</button></div>\n<div class=\"xxd-account\"><span class=\"xxd-avatar\" data-member style=\"--avatar-size:36px\">东</span><div class=\"xxd-account__main\"><div class=\"xxd-account__name\">小小东</div><div class=\"xxd-plan-line\" data-tone=\"warning\">会员 · 还剩 3 天到期</div></div><button class=\"xxd-btn\" data-size=\"sm\">续费</button></div></div>",
+      "rules": [
+        "数字只在有用时出现：会员看不到次数",
+        "最后一周用警告色"
+      ]
+    },
+    {
+      "name": "RollText",
+      "slug": "roll-text",
+      "zh": "字的滚动替换",
+      "from": "长文发布",
+      "summary": "计划行、计数变化时：旧的字往上滚出、新的往上滚进，一道光扫过（这里只做滚动）。",
+      "classes": [
+        "xxd-roll"
+      ],
+      "markup": "<p class=\"xxd-plan-line\"><span id=\"roll-demo\">免费版 · 今天还能写入 3 篇</span></p>\n<button class=\"xxd-btn\" data-size=\"sm\" onclick=\"const el=document.getElementById('roll-demo'); Xxd.rollText(el, el.textContent.includes('免费') ? '会员 · 到 2027年11月8日' : '免费版 · 今天还能写入 3 篇')\">换一下</button>",
+      "rules": [
+        "减少动效时直接换字"
+      ],
+      "js": "Xxd.rollText(element, newText)"
+    },
+    {
+      "name": "Permission",
+      "slug": "permission",
+      "zh": "需要权限",
+      "from": "插件（MV3）",
+      "summary": "功能要用到一项可选权限时：先说清楚为什么要，按钮在用户点击时才申请；允许了按钮变成「已允许」，拒绝了说明少了什么、怎么再开。不在安装时就把权限全要走。",
+      "classes": [],
+      "markup": "<div class=\"xxd-banner\" data-tone=\"info\">\n  <div><p class=\"xxd-banner__title\">要读取当前标签页的地址</p><p class=\"xxd-banner__text\">用来把这一页加进清单；只在你点按钮时读，不会记录浏览历史。</p><p class=\"xxd-banner__text\" role=\"status\" id=\"perm-status\"></p></div>\n  <div class=\"xxd-banner__actions\"><button class=\"xxd-btn\" data-size=\"sm\" data-variant=\"primary\" id=\"perm-btn\">允许读取</button></div>\n</div>\n<script>XxdExtension.bindPermission(document.getElementById(\"perm-btn\"), { permissions: [\"tabs\"], status: document.getElementById(\"perm-status\") });</script>",
+      "rules": [
+        "manifest 里把它写进 optional_permissions / optional_host_permissions，而不是 permissions",
+        "chrome.permissions.request 只能在用户点击里调用",
+        "说清楚为什么要、只在什么时候用；拒绝之后不反复弹"
+      ],
+      "a11y": [
+        "结果写进 role=\"status\" 的那一行，读屏会念出来",
+        "允许之后按钮禁用并标 aria-pressed=\"true\""
+      ],
+      "js": "await XxdExtension.bindPermission(button, { permissions: [\"tabs\"], origins: [\"https://*.example.com/*\"], status, onChange: (granted) => … })"
+    },
+    {
+      "name": "Shortcuts",
+      "slug": "shortcuts",
+      "zh": "快捷键",
+      "from": "插件（MV3）",
+      "summary": "设置页里列出插件的快捷键（manifest 的 commands），没设的写「没设置」；快捷键只能在 Chrome 的快捷键页改，所以最后一个按钮直接打开那一页。",
+      "classes": [],
+      "markup": "<section class=\"xxd-group\" style=\"width:100%\">\n  <h2 class=\"xxd-group__title\">快捷键</h2>\n  <div class=\"xxd-group__body\" id=\"shortcuts\"></div>\n</section>\n<script>XxdExtension.mountShortcuts(document.getElementById(\"shortcuts\"), { names: { _execute_action: \"打开侧边栏\", save: \"保存当前页\" } });</script>",
+      "rules": [
+        "用 chrome.commands.getAll() 读当前的快捷键，不要在界面里写死",
+        "按键用 xxd-kbd 显示，组合键之间是「+」"
+      ],
+      "a11y": [
+        "每一行的名字是正文，快捷键在右边；没设置时写字，不留空"
+      ],
+      "js": "await XxdExtension.mountShortcuts(container, { names: { _execute_action: \"打开侧边栏\" } })"
+    },
+    {
+      "name": "ImportExport",
+      "slug": "import-export",
+      "zh": "导入导出设置",
+      "from": "插件（MV3）",
+      "summary": "换电脑、重装插件时把设置带走：导出成一个 JSON 文件，导入时只收认得的格式和键，结果用 toast 说一声。",
+      "classes": [],
+      "markup": "<div class=\"xxd-row\" style=\"width:100%\">\n  <div class=\"xxd-row__text\"><div class=\"xxd-row__title\">设置备份</div><div class=\"xxd-row__desc\">导出成文件，换电脑后导入</div></div>\n  <div class=\"xxd-row__control xxd-cluster\"><button class=\"xxd-btn\" data-size=\"sm\" id=\"export-btn\">导出</button><button class=\"xxd-btn\" data-size=\"sm\" id=\"import-btn\">导入…</button></div>\n</div>\n<script>\n  document.getElementById(\"export-btn\").addEventListener(\"click\", () => XxdExtension.exportSettings({ filename: \"today-settings.json\" }));\n  document.getElementById(\"import-btn\").addEventListener(\"click\", () => {\n    const input = Object.assign(document.createElement(\"input\"), { type: \"file\", accept: \"application/json\" });\n    input.addEventListener(\"change\", () => input.files[0] && XxdExtension.importSettings(input.files[0]));\n    input.click();\n  });\n</script>",
+      "rules": [
+        "只导入 format 是 xxd-settings 的文件；传 keys 只收认得的键",
+        "导入以后各页面通过 chrome.storage.onChanged 自己更新，不要求重开"
+      ],
+      "a11y": [
+        "结果用 toast 说（读屏会念）"
+      ],
+      "js": "await XxdExtension.exportSettings({ keys: [\"today-ui\", \"today-rules\"], filename: \"today-settings.json\" })\nawait XxdExtension.importSettings(file, { keys: [\"today-ui\", \"today-rules\"] })"
+    },
+    {
+      "name": "WhatsNew",
+      "slug": "whats-new",
+      "zh": "更新说明",
+      "from": "插件（MV3）",
+      "summary": "更新到新版本后第一次打开时，在最上面放一条横幅，用两三句话说新版本有什么不同；点「知道了」以后这个版本不再出现。不弹窗、不开新标签页。",
+      "classes": [],
+      "markup": "<div id=\"whats-new\" style=\"width:100%\"></div>\n<script>XxdExtension.showWhatsNew(document.getElementById(\"whats-new\"), { version: \"1.3.\" + Date.now(), title: \"1.3 更新了这些\", notes: [\"记录可以按天折叠\", \"导出的文件带上了标题\"] });</script>",
+      "rules": [
+        "只写用户能感觉到的变化，最多三条",
+        "版本号缺省取 manifest 的 version；记在 chrome.storage.local"
+      ],
+      "a11y": [
+        "横幅是 role=\"status\"，出现时读屏念一次"
+      ],
+      "js": "await XxdExtension.showWhatsNew(container, { title: \"1.3 更新了这些\", notes: [\"…\", \"…\"] })"
+    },
+    {
+      "name": "Reload",
+      "slug": "reload",
+      "zh": "插件已更新，请刷新",
+      "from": "插件（MV3）",
+      "summary": "内容脚本里：插件被更新或重新加载以后，网页里还留着的旧脚本调用 chrome.* 会报「Extension context invalidated」。用 guardContext 包一层，失效时在自己的 Shadow 里说一声并给一个刷新按钮，而不是悄悄坏掉。",
+      "classes": [],
+      "markup": "<div class=\"xxd-stack\" id=\"reload-demo\" style=\"width:100%\"><button class=\"xxd-btn\" id=\"reload-try\">保存（模拟插件已更新）</button></div>\n<script>\n  const safe = XxdExtension.guardContext(document.getElementById(\"reload-demo\"));\n  document.getElementById(\"reload-try\").addEventListener(\"click\", () => safe(() => { throw new Error(\"Extension context invalidated.\"); }));\n</script>",
+      "rules": [
+        "所有 chrome.* 调用（sendMessage、storage）都走 safe(…)",
+        "失效以后不要再重试；只给「刷新页面」一个出路"
+      ],
+      "a11y": [
+        "横幅是 role=\"alert\"，焦点移到刷新按钮上"
+      ],
+      "js": "const safe = XxdExtension.guardContext(ui.root);\nbutton.onclick = () => safe(() => chrome.runtime.sendMessage({ type: \"save\" }));"
+    }
+  ]
+}

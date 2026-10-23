@@ -1,0 +1,243 @@
+---
+// 展示站的外壳：顶栏（外观开关 + 搜索）、左侧导航、正文、右侧目录。界面本身全部用 @xxd/css。
+import { navFor, flatPagesFor } from "../data/nav.js";
+import { icon, ACCENT_PRESETS } from "../lib/data.js";
+import { HTML_LANG, counterpart, langOf, mdHref as mdOf, t, withLang } from "../i18n/index.js";
+
+interface Props {
+  /** 这页要用 ECharts（图表组件页） */
+  charts?: boolean;
+  title: string;
+  description?: string;
+  headings?: { slug: string; text: string; depth?: number }[];
+  wide?: boolean;
+}
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+const { title, description = L.description, headings = [], wide = false, charts = false } = Astro.props;
+// 当前页（不带结尾斜杠）；导航里的 href 也是这个形式，英文首页是 /en
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isCurrent = (href) => (href.replace(/\/$/, "") || "/") === path;
+const nav = navFor(lang);
+const searchIndex = JSON.stringify(flatPagesFor(lang).map((p) => ({ label: p.label, hint: p.sub ? `${p.sub} · ${p.group}` : p.group, href: p.href, keywords: p.keywords })));
+const mdHref = mdOf(path, lang);
+const other = counterpart(path, lang);
+const otherLang = lang === "en" ? "zh" : "en";
+const site = Astro.site ? Astro.site.href.replace(/\/$/, "") : "";
+const accentNames = JSON.stringify(Object.fromEntries(ACCENT_PRESETS.map((p) => [p.id, lang === "en" ? p.name : p.zh])));
+// 仓库地址；GitHub 的标志用它官方的实心图形（品牌标志不是界面图标，不套 24 网格线条规则）
+const REPO = "https://github.com/nevertoday/xxd-ui-kit";
+const GITHUB_MARK = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>';
+const strings = JSON.stringify({ placeholder: L.searchPlaceholder, empty: L.searchEmpty });
+---
+
+<!doctype html>
+<html lang={HTML_LANG[lang]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title === L.brand ? title : `${title} · ${L.brand}`}</title>
+    <meta name="description" content={description} />
+    <!-- 网站图标：和顶栏的品牌方块同一个图形；不写的话浏览器会去要 /favicon.ico，得到 404 -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="text/markdown" href={mdHref} />
+    <link rel="alternate" hreflang="zh-CN" href={`${site}${lang === "zh" ? path : other}`} />
+    <link rel="alternate" hreflang="en" href={`${site}${lang === "en" ? (path === "/en" ? "/en/" : path) : other}`} />
+    <!-- 层顺序：Tailwind（React 演示用）在前，小小东在后 —— 小小东的组件永远赢过 Tailwind 的重置 -->
+    <style is:inline>@layer properties, theme, base, xxd, components, utilities, site;</style>
+    <script is:inline src="/xxd/boot.js" data-key="xxd-site" data-default-theme="system"></script>
+    <link rel="stylesheet" href="/xxd/kumo.css" />
+    <link rel="stylesheet" href="/xxd/xxd.css" />
+    <link rel="stylesheet" href="/xxd/forced-states.css" />
+    <link rel="stylesheet" href="/site.css" />
+    <script is:inline src="/xxd/icons.js"></script>
+    <script is:inline src="/xxd/xxd.js"></script>
+    <script is:inline src="/xxd/viz.js"></script>
+    <script is:inline src="/xxd/extension.js"></script>
+    {charts && <script is:inline src="/xxd/echarts.js"></script>}
+  </head>
+  <body class="xxd-page">
+    <a class="site-skip xxd-sr-only-focusable" href="#main">{L.skip}</a>
+    <header class="site-top">
+      <button class="xxd-btn site-menu" data-variant="ghost" data-icon-only aria-label={L.openNav} id="site-menu" aria-controls="site-nav" aria-expanded="false" set:html={icon("Menu", 18)} />
+      <a class="site-brand" href={withLang("/", lang)}><span class="site-mark" aria-hidden="true"></span><span class="site-brand__name">{L.brand}</span></a>
+      <button class="site-search" id="site-search" type="button">
+        <Fragment set:html={icon("Search", 14)} /><span>{L.search}</span><kbd class="xxd-kbd">⌘K</kbd>
+      </button>
+      <div class="site-appearance" id="site-appearance" role="group" aria-label={L.appearance}>
+        <div class="xxd-segmented" data-xxd-segmented data-name="theme" aria-label={L.theme}>
+          <button role="radio" data-value="light" aria-label={L.light} data-tooltip={L.light} set:html={icon("Sun", 14)} />
+          <button role="radio" data-value="dark" aria-label={L.dark} data-tooltip={L.dark} set:html={icon("Moon", 14)} />
+          <button role="radio" data-value="system" aria-label={L.system} data-tooltip={L.system} set:html={icon("Contrast", 14)} />
+        </div>
+        <div class="xxd-segmented" data-xxd-segmented data-name="corners" aria-label={L.corners}>
+          <button role="radio" data-value="square">{L.square}</button>
+          <button role="radio" data-value="rounded">{L.rounded}</button>
+        </div>
+        <button class="xxd-btn site-accent" data-size="sm" data-variant="ghost" data-xxd-popover="site-accents" aria-label={L.appearanceMore}>
+          <span class="site-accent-dot" aria-hidden="true"></span><span class="site-accent__label">{L.appearanceButton}</span>
+        </button>
+        <div class="xxd-popover site-accents" id="site-accents" popover data-placement="bottom-end" aria-label={L.appearanceMore}>
+          {/* 窄屏：顶栏放不下的主题、圆角收进这里（设计师评审 V3-8），宽屏不显示 */}
+          <div class="site-more__compact" data-show="phone">
+            <p class="site-more__label">{L.theme}</p>
+            <div class="xxd-segmented" data-xxd-segmented data-name="theme" aria-label={L.theme}>
+              <button role="radio" data-value="light">{L.light}</button>
+              <button role="radio" data-value="dark">{L.dark}</button>
+              <button role="radio" data-value="system">{L.system}</button>
+            </div>
+          </div>
+          <div class="site-more__compact" data-show="narrow">
+            <p class="site-more__label">{L.corners}</p>
+            <div class="xxd-segmented" data-xxd-segmented data-name="corners" aria-label={L.corners}>
+              <button role="radio" data-value="square">{L.square}</button>
+              <button role="radio" data-value="rounded">{L.rounded}</button>
+            </div>
+          </div>
+          <p class="site-more__label">{L.accent}</p>
+          <div class="xxd-swatches" role="radiogroup" aria-label={L.accent} id="site-swatches"></div>
+          <div class="site-more">
+            <p class="site-more__label">{L.density} · {L.finish}</p>
+            <div class="xxd-segmented" data-xxd-segmented data-name="density" aria-label={L.density}>
+              <button role="radio" data-value="comfortable">{L.comfortable}</button>
+              <button role="radio" data-value="compact">{L.compact}</button>
+            </div>
+            <div class="xxd-segmented" data-xxd-segmented data-name="finish" aria-label={L.finish}>
+              <button role="radio" data-value="flat">{L.flat}</button>
+              <button role="radio" data-value="material">{L.material}</button>
+            </div>
+          </div>
+          <div class="site-more__compact site-more__github" data-show="phone"><a class="xxd-link" href={REPO}>{L.github}</a></div>
+        </div>
+        <a class="xxd-btn site-lang" data-size="sm" data-variant="ghost" href={other} hreflang={HTML_LANG[otherLang]} lang={HTML_LANG[otherLang]} aria-label={L.switchLangLabel}><span class="site-lang__full">{L.switchLang}</span><span class="site-lang__short" aria-hidden="true">{lang === "en" ? "中" : "EN"}</span></a>
+        <a class="xxd-btn site-github" data-size="sm" data-variant="ghost" data-icon-only href={REPO} aria-label={L.github} data-tooltip={L.github} set:html={GITHUB_MARK} />
+      </div>
+    </header>
+
+    <div class="site-body">
+      <nav class="site-nav" id="site-nav" aria-label={L.nav}>
+        {
+          nav.map((group) => (
+            <section class="site-nav__group">
+              <h2>{group.title}</h2>
+              <ul>
+                {group.items.map((item) => (
+                  <li>
+                    <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+                      {item.label}
+                      {item.sub && <span>{item.sub}</span>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </nav>
+
+      <main id="main" class:list={["site-main", { "site-main--wide": wide }]}>
+        <slot />
+      </main>
+
+      {
+        headings.length > 1 && (
+          <aside class="site-toc" aria-label={L.onThisPage}>
+            <h2>{L.onThisPage}</h2>
+            <ul>
+              {headings.map((h) => (
+                <li class={h.depth === 3 ? "is-sub" : undefined}>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ul>
+            <a class="site-toc__md" href={mdHref}>{L.mdLink}</a>
+          </aside>
+        )
+      }
+    </div>
+    <div class="site-nav-scrim" id="site-nav-scrim"></div>
+
+    <script is:inline define:vars={{ searchIndex, accentNames, strings }}>
+      (() => {
+        const T = window.XxdTheme;
+        const X = window.Xxd;
+        if (!T || !X) return;
+        const pages = JSON.parse(searchIndex);
+        const names = JSON.parse(accentNames);
+        const S = JSON.parse(strings);
+        const current = () => ({ ...T.DEFAULT_SETTINGS, ...T.read() });
+
+        // 外观开关：读当前设置，改了就写回（boot.js 已在首帧前应用）
+        const root = document.getElementById("site-appearance");
+        const sync = () => {
+          const s = current();
+          for (const g of root.querySelectorAll("[data-name]")) {
+            for (const b of g.querySelectorAll('[role="radio"]')) {
+              const on = b.dataset.value === String(s[g.dataset.name]);
+              b.setAttribute("aria-checked", String(on));
+              b.tabIndex = on ? 0 : -1;
+            }
+          }
+          for (const b of document.querySelectorAll("#site-swatches .xxd-swatch")) b.setAttribute("aria-checked", String((s.accent || "") === b.dataset.value));
+          document.documentElement.style.setProperty("--site-accent", s.accent || "var(--ink)");
+        };
+        const sw = document.getElementById("site-swatches");
+        for (const p of T.ACCENT_PRESETS) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "xxd-swatch";
+          b.setAttribute("role", "radio");
+          b.dataset.value = p.id;
+          b.dataset.tooltip = names[p.id];
+          b.setAttribute("aria-label", names[p.id]);
+          if (p.id) b.style.setProperty("--swatch", p.id);
+          b.addEventListener("click", () => { T.set({ accent: p.id }); sync(); });
+          sw.append(b);
+        }
+        root.addEventListener("xxd:change", (e) => {
+          const name = e.target.dataset && e.target.dataset.name;
+          if (name) { T.set({ [name]: e.detail.value }); sync(); }
+        });
+        X.init(document);
+        sync();
+        window.addEventListener("xxd:settings", sync);
+
+        // 搜索：⌘K / 点按钮，用小小东自己的命令面板
+        const items = pages.map((p) => ({ label: p.label, hint: p.hint, keywords: p.keywords, run: () => { location.href = p.href; } }));
+        const open = () => X.openCommandPalette({ items, placeholder: S.placeholder, empty: S.empty });
+        document.getElementById("site-search").addEventListener("click", open);
+        X.bindCommandPalette(items, { placeholder: S.placeholder, empty: S.empty });
+
+        // 窄屏导航抽屉
+        const nav = document.getElementById("site-nav");
+        const scrim = document.getElementById("site-nav-scrim");
+        const menu = document.getElementById("site-menu");
+        // 打开时焦点进抽屉（当前页那一项）、Tab 在抽屉里循环、Esc 关；关掉后焦点回到菜单按钮
+        const toggle = (on) => {
+          nav.toggleAttribute("data-open", on);
+          scrim.toggleAttribute("data-open", on);
+          menu.setAttribute("aria-expanded", String(on));
+          if (on) (nav.querySelector('[aria-current="page"]') || nav.querySelector("a"))?.focus();
+          else if (nav.contains(document.activeElement)) menu.focus();
+        };
+        menu.addEventListener("click", () => toggle(!nav.hasAttribute("data-open")));
+        scrim.addEventListener("click", () => toggle(false));
+        nav.addEventListener("keydown", (event) => {
+          if (!nav.hasAttribute("data-open")) return;
+          if (event.key === "Escape") { event.preventDefault(); toggle(false); return; }
+          if (event.key !== "Tab") return;
+          const links = [...nav.querySelectorAll("a")];
+          const first = links[0], last = links[links.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        });
+
+        // 代码块的复制按钮、活演示里的 JS 行为
+        for (const pre of document.querySelectorAll(".site-code")) {
+          const btn = pre.querySelector("[data-copy-target]");
+          if (btn) btn.setAttribute("data-copy-target", `#${pre.id} code`);
+        }
+      })();
+    </script>
+  </body>
+</html>

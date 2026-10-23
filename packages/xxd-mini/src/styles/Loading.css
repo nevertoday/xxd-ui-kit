@@ -1,0 +1,22 @@
+.xxd-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 64px;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.xxd-skeleton-lines {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.xxd-skeleton.is-line {
+  height: 12px;
+}
+
+.xxd-skeleton.is-circle {
+  border-radius: var(--r-pill);
+}

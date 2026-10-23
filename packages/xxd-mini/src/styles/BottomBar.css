@@ -1,0 +1,31 @@
+/* 底部按钮条：贴在屏幕底部（有标签栏时贴在标签栏上面），一排 --hit-min 高的按钮 */
+.xxd-bottombar {
+  position: fixed;
+  right: 0;
+  bottom: var(--xxd-bar-bottom, 0px);
+  left: 0;
+  z-index: var(--z-dock);
+  padding: 0 var(--space-4) var(--xxd-bar-safe, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.xxd-bottombar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--bottombar-h);
+}
+
+.xxd-bottombar__actions > .xxd-btn {
+  flex: 1;
+  min-width: 0;
+  height: var(--hit-min);
+}
+
+.xxd-bottombar__note {
+  padding-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}

@@ -1,0 +1,64 @@
+---
+// 小程序演示：手机大小的框里放演示小程序编出的 H5（/mini/），和微信里同一份代码、同一套样式。
+// 外观跟着展示站走：第一帧用地址上的参数，之后展示站切外观时 postMessage 过去（演示小程序的 src/embed.tsx 接）。
+// 框滚到眼前（或者所在的标签页打开）时才加载。
+import { miniFrameSrc } from "../lib/mini.js";
+import { langOf, t } from "../i18n/index.js";
+
+interface Props {
+  name: string;
+  label: string;
+  height?: number;
+}
+const { name, label, height = 600 } = Astro.props;
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+---
+
+<figure class="site-mini" style={`--mini-h:${height}px`}>
+  <div class="site-mini__phone">
+    <iframe class="site-mini__frame" title={L.miniFrameTitle(label)} data-mini-src={miniFrameSrc(name, lang)} loading="lazy"></iframe>
+  </div>
+  <figcaption class="site-mini__note">{L.miniFrameNote}</figcaption>
+</figure>
+
+<script is:inline>
+  (() => {
+    if (window.__xxdMiniFrames) return;
+    window.__xxdMiniFrames = true;
+    const settings = () => {
+      const T = window.XxdTheme;
+      const s = T ? { ...T.DEFAULT_SETTINGS, ...T.read() } : {};
+      return { theme: s.theme, corners: s.corners, accent: s.accent || "", density: s.density, finish: s.finish };
+    };
+    const query = () => {
+      const s = settings();
+      return Object.entries(s).filter(([, v]) => v != null).map(([k, v]) => `&${k}=${encodeURIComponent(k === "accent" ? String(v).replace(/^#/, "") : v)}`).join("");
+    };
+    const frames = () => [...document.querySelectorAll(".site-mini__frame")];
+    const post = (f) => f.contentWindow && f.contentWindow.postMessage({ type: "xxd:appearance", settings: settings() }, location.origin);
+    // 看得见了才加载（标签页没打开时它是隐藏的，不会加载）
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const f = e.target;
+        io.unobserve(f);
+        if (!f.src) f.src = f.dataset.miniSrc + query();
+      }
+    }, { rootMargin: "200px" });
+    const watch = () => frames().forEach((f) => !f.src && io.observe(f));
+    watch();
+    document.addEventListener("DOMContentLoaded", watch);
+    // 演示小程序说它准备好了：把现在的外观发过去
+    addEventListener("message", (e) => {
+      if (e.origin !== location.origin || !e.data || e.data.type !== "xxd:mini-ready") return;
+      const f = frames().find((x) => x.contentWindow === e.source);
+      if (f) post(f);
+    });
+    const all = () => frames().forEach(post);
+    addEventListener("xxd:settings", all);
+    document.addEventListener("xxd:appearance", all);
+    // 别的标签页里改了外观（存储变了）也跟着变
+    addEventListener("storage", all);
+  })();
+</script>

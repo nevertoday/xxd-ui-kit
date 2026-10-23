@@ -1,0 +1,75 @@
+.xxd-uploader__veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  background: rgba(var(--shadow-rgb), 0.45);
+  color: #ffffff;
+  font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.xxd-uploader__veil.is-error {
+  /* 出错：淡底、危险色的图标和字，不整块上红（MINI-REVIEW-PLAN A6） */
+  background: rgba(var(--paper-rgb), 0.86);
+  color: var(--danger);
+}
+
+/* 上传中：底部一条细进度条（只动 transform） */
+.xxd-uploader__bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--paper);
+  transform-origin: left center;
+  transition: transform var(--motion-panel) ease;
+}
+
+.xxd-uploader__remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  background: rgba(var(--shadow-rgb), 0.55);
+  color: #ffffff;
+}
+
+/* 移除按钮看得见的是 32px，点按区往图里撑到 --hit-min */
+.xxd-uploader__remove:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--hit-min);
+  height: var(--hit-min);
+}
+
+.xxd-uploader__add {
+  border: 1px dashed var(--line-strong);
+  background: var(--paper);
+  color: var(--muted);
+}
+
+.xxd-uploader__add.is-hover {
+  background: var(--wash);
+}
+
+.xxd-uploader__add-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1-5);
+  font-size: var(--text-xs);
+}

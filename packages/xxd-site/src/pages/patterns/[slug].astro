@@ -1,0 +1,11 @@
+---
+// 正文在 src/views/Pattern.astro（中文 / 英文共用）。
+import Pattern from "../../views/Pattern.astro";
+import { patternsFor } from "../../data/patterns.js";
+export function getStaticPaths() {
+  return patternsFor("zh").map((p) => ({ params: { slug: p.slug }, props: { p } }));
+}
+const { p } = Astro.props;
+---
+
+<Pattern p={p} />

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>小小东组件</title>
+  <script src="dist/boot.js" data-key="xxd-playground"></script>
+  <link rel="stylesheet" href="dist/xxd.css">
+  <script src="dist/icons.js"></script>
+  <script src="dist/xxd.js"></script>
+  <style>
+    .pg { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .pg-side { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 16px; border-right: 1px solid var(--line); }
+    .pg-main { padding: 24px 32px 120px; min-width: 0; }
+    .pg-sec { padding: 24px 0; border-bottom: 1px solid var(--line); }
+    .pg-sec > h2 { margin: 0 0 14px; color: var(--muted); font: 500 12px/1.4 var(--font-body); }
+    .pg-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .pg-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .pg-frame { position: relative; height: 340px; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; background: var(--bg); }
+    @media (max-width: 760px) { .pg { grid-template-columns: 1fr; } .pg-side { position: static; height: auto; } .pg-main { padding: 16px; } }
+  </style>
+</head>
+<body class="xxd-page">
+<div class="pg">
+  <aside class="pg-side">
+    <div id="appearance"></div>
+  </aside>
+  <main class="pg-main">
+    <h1 class="xxd-title">小小东组件</h1>
+    <p class="xxd-muted">@xxd/css · 原生 CSS + 极少行为 JS。左边切换外观。</p>
+
+    <section class="pg-sec" data-sec="button"><h2>按钮</h2>
+      <div class="pg-row">
+        <button class="xxd-btn" data-variant="primary">写入 X</button>
+        <button class="xxd-btn">保存草稿</button>
+        <button class="xxd-btn" data-variant="ghost">稍后</button>
+        <button class="xxd-btn" data-variant="danger">删除</button>
+        <button class="xxd-btn" data-variant="danger-outline">清空记录</button>
+        <button class="xxd-btn" aria-pressed="true">已全选</button>
+        <button class="xxd-btn" aria-busy="true">正在生成…</button>
+        <button class="xxd-btn" disabled>不可用</button>
+        <button class="xxd-btn" data-icon-only aria-label="搜索" data-tooltip="搜索 ⌘F"><i data-xxd-icon="Search"></i></button>
+        <button class="xxd-btn" data-size="sm"><i data-xxd-icon="Plus" data-size="14"></i>新建</button>
+        <button class="xxd-btn" data-size="lg" data-variant="primary">开通会员</button>
+        <button class="xxd-link">改为新建一篇</button>
+      </div>
+      <div class="pg-row" style="margin-top:12px">
+        <div class="xxd-btn-group"><button class="xxd-btn" data-size="sm">左</button><button class="xxd-btn" data-size="sm">中</button><button class="xxd-btn" data-size="sm">右</button></div>
+      </div>
+    </section>
+
+    <section class="pg-sec" data-sec="form"><h2>表单</h2>
+      <div class="pg-cols">
+        <div class="xxd-field"><label class="xxd-label" for="f1">标题</label><input class="xxd-input" id="f1" placeholder="给这篇文章起个名字"><p class="xxd-help">最多 100 个字</p></div>
+        <div class="xxd-field"><label class="xxd-label" for="f2">邮箱</label><input class="xxd-input" id="f2" value="not-an-email" aria-invalid="true"><p class="xxd-error">请输入有效的邮箱地址</p></div>
+        <div class="xxd-field"><label class="xxd-label" for="f3">图片质量</label><label class="xxd-select"><select id="f3"><option>高</option><option>标准</option></select></label></div>
+        <div class="xxd-field"><span class="xxd-label">搜索</span><div class="xxd-input-wrap"><i data-xxd-icon="Search" data-size="16"></i><input class="xxd-input" type="search" id="search" placeholder="搜索设置（⌘F）"><button class="xxd-input-clear" aria-label="清空"><i data-xxd-icon="X" data-size="14"></i></button></div></div>
+        <div class="xxd-field"><label class="xxd-label" for="f4" data-optional="可选">备注</label><textarea class="xxd-textarea" id="f4" placeholder="写点什么"></textarea></div>
+        <div class="xxd-field"><span class="xxd-label">标签</span><div class="xxd-taginput" data-xxd-taginput><span class="xxd-chip" data-value="海报">海报<button type="button" aria-label="删除 海报"><i data-xxd-icon="X" data-size="12"></i></button></span><input placeholder="回车添加"></div></div>
+        <div class="xxd-field"><label class="xxd-label">主色（combobox）</label><div data-xxd-combobox><input class="xxd-input" placeholder="输入筛选"><ul class="xxd-listbox"><li class="xxd-option" data-value="ink">墨色</li><li class="xxd-option" data-value="#1d9bf0">X 蓝</li><li class="xxd-option" data-value="#3b74b8">湖蓝</li><li class="xxd-option" data-value="#5a8a3c">苔绿</li></ul></div></div>
+        <div class="xxd-field"><label class="xxd-label" for="f5">同时生成</label><input type="range" class="xxd-range" id="f5" min="1" max="4" value="2"></div>
+        <div class="xxd-field"><label class="xxd-label" for="f6">发布时间</label><input class="xxd-input" type="date" id="f6"></div>
+      </div>
+      <div class="pg-row" style="margin-top:18px">
+        <label class="xxd-choice"><input type="checkbox" class="xxd-check" checked>智能标点</label>
+        <label class="xxd-choice"><input type="checkbox" class="xxd-check" id="indet">部分选中</label>
+        <label class="xxd-choice"><input type="radio" class="xxd-radio" name="r" checked>只写这一篇</label>
+        <label class="xxd-choice"><input type="radio" class="xxd-radio" name="r">全部写入</label>
+        <label class="xxd-choice"><input type="checkbox" role="switch" class="xxd-switch" checked>完成音效</label>
+        <label class="xxd-choice"><input type="checkbox" role="switch" class="xxd-switch">庆祝动画</label>
+      </div>
+    </section>
+
+    <section class="pg-sec" data-sec="nav"><h2>导航</h2>
+      <div class="xxd-tabs" data-xxd-tabs>
+        <button role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true">写作</button>
+        <button role="tab" id="tab-b" aria-controls="panel-b">提示词<span class="xxd-count">12</span></button>
+        <button role="tab" id="tab-c" aria-controls="panel-c">记录</button>
+        <button role="tab" id="tab-d" aria-controls="panel-d">设置</button>
+      </div>
+      <div id="panel-a" style="padding:12px 0" class="xxd-muted">写作面板</div>
+      <div id="panel-b" style="padding:12px 0" class="xxd-muted">提示词面板</div>
+      <div id="panel-c" style="padding:12px 0" class="xxd-muted">记录面板</div>
+      <div id="panel-d" style="padding:12px 0" class="xxd-muted">设置面板</div>
+      <div class="pg-row">
+        <div class="xxd-segmented" data-xxd-segmented><button role="radio" aria-checked="true">文本</button><button role="radio">图片</button><button role="radio">视频</button></div>
+        <ol class="xxd-breadcrumbs"><li><a href="#">设置</a></li><li><a href="#">外观</a></li><li aria-current="page">主色</li></ol>
+        <nav class="xxd-pagination" aria-label="分页"><button disabled aria-label="上一页"><i data-xxd-icon="ChevronLeft" data-size="14"></i></button><button aria-current="page">1</button><button>2</button><button>3</button><span class="xxd-pagination__gap">…</span><button>9</button><button aria-label="下一页"><i data-xxd-icon="ChevronRight" data-size="14"></i></button></nav>
+      </div>
+    </section>
+
+    <section class="pg-sec" data-sec="settings"><h2>设置组与列表</h2>
+      <div class="pg-cols">
+        <div class="xxd-settings">
+          <section class="xxd-group">
+            <h3 class="xxd-group__title">写入</h3>
+            <div class="xxd-group__body">
+              <div class="xxd-row"><div class="xxd-row__text"><div class="xxd-row__title">写入标题</div><div class="xxd-row__desc">第一行 # 标题作为文章标题</div></div><div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" checked aria-label="写入标题"></div></div>
+              <div class="xxd-row"><div class="xxd-row__text"><div class="xxd-row__title">图片质量</div></div><div class="xxd-row__control"><label class="xxd-select" data-variant="bare"><select aria-label="图片质量"><option>高</option><option>标准</option></select></label></div></div>
+              <a class="xxd-row" href="#"><div class="xxd-row__text"><div class="xxd-row__title">本地图片文件夹</div><div class="xxd-row__desc">未连接</div></div></a>
+            </div>
+          </section>
+        </div>
+        <div class="xxd-group__body">
+          <ul class="xxd-list" data-interactive>
+            <li class="xxd-list__item"><div class="xxd-list__main"><div class="xxd-list__title">一篇关于设计系统的长文</div><div class="xxd-list__meta">今天 14:02 · 3,240 字</div></div><span class="xxd-badge" data-tone="success">已写入</span></li>
+            <li class="xxd-list__item" aria-selected="true"><div class="xxd-list__main"><div class="xxd-list__title">提示词工程的 12 个反直觉</div><div class="xxd-list__meta">昨天 · 1,820 字</div></div><span class="xxd-badge">草稿</span></li>
+            <li class="xxd-list__item"><div class="xxd-list__main"><div class="xxd-list__title">Chrome 插件上架清单</div><div class="xxd-list__meta">10 月 3 日</div></div><span class="xxd-badge" data-tone="warning">待更新</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="pg-sec" data-sec="overlay"><h2>浮层</h2>
+      <div class="pg-row">
+        <button class="xxd-btn" data-xxd-dialog-open="demo-dialog">打开对话框</button>
+        <button class="xxd-btn" id="confirm-btn">确认删除</button>
+        <button class="xxd-btn" data-xxd-menu="demo-menu">更多<i data-xxd-icon="ChevronDown" data-size="14"></i></button>
+        <button class="xxd-btn" data-xxd-popover="demo-pop">这是什么？</button>
+        <button class="xxd-btn" id="toast-btn">弹个 toast</button>
+        <button class="xxd-btn" data-xxd-panel-open="demo-panel">右侧详情</button>
+        <button class="xxd-btn" id="palette-btn">命令面板 ⌘K</button>
+      </div>
+      <dialog class="xxd-dialog" id="demo-dialog" aria-labelledby="dd-title" data-light-dismiss>
+        <div class="xxd-dialog__head"><h2 class="xxd-dialog__title" id="dd-title">写入哪篇文章？</h2><button class="xxd-btn" data-variant="ghost" data-icon-only data-size="sm" data-xxd-dialog-close aria-label="关闭"><i data-xxd-icon="X"></i></button></div>
+        <div class="xxd-dialog__body"><p>X 里已经打开了另一篇有内容的文章。默认不会替换它。</p></div>
+        <div class="xxd-dialog__actions"><button class="xxd-btn ui-dialog-cancel" data-xxd-dialog-close>取消</button><button class="xxd-btn" data-variant="primary" data-xxd-dialog-close="new">写入为新文章</button></div>
+      </dialog>
+      <div class="xxd-menu" id="demo-menu" role="menu" popover>
+        <div class="xxd-menu__label">这篇文章</div>
+        <button class="xxd-menu__item" role="menuitem"><i data-xxd-icon="Pen" data-size="14"></i>重命名<span class="xxd-menu__kbd">F2</span></button>
+        <button class="xxd-menu__item" role="menuitem"><i data-xxd-icon="Copy" data-size="14"></i>复制 Markdown</button>
+        <button class="xxd-menu__item" role="menuitemcheckbox" aria-checked="true">智能标点</button>
+        <div class="xxd-menu__sep" role="separator"></div>
+        <button class="xxd-menu__item" role="menuitem" data-tone="danger"><i data-xxd-icon="Trash2" data-size="14"></i>删除</button>
+      </div>
+      <div class="xxd-popover" id="demo-pop" popover>主色会被自动提亮或加深，保证在亮暗两种纸上都看得清。</div>
+      <aside class="xxd-panel" id="demo-panel" aria-labelledby="dp-title" aria-hidden="true">
+        <div class="xxd-panel__head"><h2 class="xxd-panel__title" id="dp-title">提示词详情</h2><button class="xxd-btn" data-variant="ghost" data-icon-only data-xxd-panel-close aria-label="关闭"><i data-xxd-icon="X"></i></button></div>
+        <div class="xxd-panel__body"><div class="xxd-prose"><h2>编辑式海报</h2><p>克制的编辑式粗野主义：纸色背景、清晰的黑线、干净的无衬线字。</p><blockquote>动效用来揭示层级和给反馈，不是装饰。</blockquote><pre><code>--r-sm: 0px; /* 默认直角 */</code></pre></div><button class="xxd-btn" id="panel-toast" style="margin-top:16px">在面板里保存</button></div>
+      </aside>
+      <div class="pg-cols" style="margin-top:20px">
+        <div class="pg-frame xxd-sheet-host">
+          <div style="padding:16px" class="xxd-muted">侧边栏内容区……</div>
+          <div class="xxd-scrim"></div>
+          <section class="xxd-sheet" id="demo-sheet" aria-labelledby="ds-title" aria-hidden="true">
+            <div class="xxd-sheet__head"><h3 class="xxd-sheet__title" id="ds-title">封面</h3><button class="xxd-btn" data-variant="ghost" data-icon-only data-size="sm" data-xxd-sheet-close aria-label="关闭"><i data-xxd-icon="X"></i></button></div>
+            <div class="xxd-sheet__body"><div class="xxd-segmented" data-xxd-segmented data-block><button role="radio" aria-checked="true">AI 生成</button><button role="radio">模板</button></div></div>
+          </section>
+          <footer class="xxd-dock" style="position:absolute;left:0;right:0">
+            <div class="xxd-dock__status">30 字符 · 已保存</div>
+            <div class="xxd-dock__tools"><button class="xxd-btn" data-variant="ghost" data-icon-only data-size="sm" aria-label="封面" data-xxd-sheet-open="demo-sheet" data-tooltip="封面"><i data-xxd-icon="Image"></i></button></div>
+            <div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" data-size="sm">写入 X</button></div>
+          </footer>
+        </div>
+      </div>
+    </section>
+
+    <section class="pg-sec" data-sec="feedback"><h2>反馈</h2>
+      <div class="pg-row">
+        <span class="xxd-badge">草稿</span><span class="xxd-badge" data-tone="action">会员</span><span class="xxd-badge" data-tone="success">已写入</span><span class="xxd-badge" data-tone="danger">失败</span><span class="xxd-badge" data-tone="warning">待更新</span><span class="xxd-badge" data-variant="solid">NEW</span><span class="xxd-badge" data-variant="outline">v0.1</span>
+        <button class="xxd-chip" aria-pressed="true">海报</button><button class="xxd-chip">封面</button>
+        <span class="xxd-dot" data-tone="success"></span><span class="xxd-dot" data-tone="warning"></span><span class="xxd-dot" data-tone="danger"></span>
+        <span class="xxd-spinner"></span>
+        <kbd class="xxd-kbd">⌘</kbd><kbd class="xxd-kbd">K</kbd>
+        <span class="xxd-avatar">东</span><span class="xxd-avatar" data-member>X</span>
+      </div>
+      <div class="pg-cols" style="margin-top:16px">
+        <div class="xxd-banner"><i data-xxd-icon="Info"></i><div><p class="xxd-banner__title">X 页面里还在跑旧的粘贴脚本</p><p class="xxd-banner__text">刷新 X 标签页后再写入。</p></div></div>
+        <div class="xxd-banner" data-tone="warning"><i data-xxd-icon="TriangleAlert"></i><div><p class="xxd-banner__title">今天还能写入 1 篇</p></div></div>
+        <div class="xxd-banner" data-tone="danger"><i data-xxd-icon="CircleAlert"></i><div><p class="xxd-banner__title">写入失败</p><p class="xxd-banner__text">没找到文章光标。</p></div></div>
+        <div class="xxd-banner" data-tone="success"><i data-xxd-icon="CircleCheck"></i><div><p class="xxd-banner__title">会员已开通</p></div></div>
+      </div>
+      <div class="pg-cols" style="margin-top:16px">
+        <div class="xxd-stack"><progress class="xxd-progress" value="60" max="100"></progress><div class="xxd-loadbar" role="progressbar" aria-label="正在加载"></div><span class="xxd-skeleton" style="width:70%"></span><span class="xxd-skeleton" style="width:40%"></span></div>
+        <div class="xxd-meter"><div class="xxd-meter__head"><span>今天的写入</span><span>3 / 5</span></div><div class="xxd-meter__track"><div class="xxd-meter__fill" style="--value:.6"></div></div></div>
+        <div class="xxd-empty"><i data-xxd-icon="FileText"></i><p class="xxd-empty__title">还没有记录</p><p class="xxd-empty__text">写入 X 的文章会出现在这里。</p><div class="xxd-empty__actions"><button class="xxd-btn" data-size="sm">打开 X 文章</button></div></div>
+      </div>
+    </section>
+
+    <section class="pg-sec" data-sec="content"><h2>内容</h2>
+      <div class="xxd-table-wrap"><table class="xxd-table" data-interactive><thead><tr><th>插件</th><th>版本</th><th data-align="end">用户</th></tr></thead><tbody><tr><td>长文发布</td><td>1.8.2</td><td data-align="end">2,410</td></tr><tr aria-selected="true"><td>排序链接</td><td>0.9.0</td><td data-align="end">830</td></tr><tr><td>批量存图</td><td>2.1.0</td><td data-align="end">5,102</td></tr></tbody></table></div>
+      <div class="pg-cols" style="margin-top:16px">
+        <div><details class="xxd-collapse" open><summary>为什么默认直角？</summary><p>会员站的硬规则：对话框、卡片、按钮、输入框都不许圆角。</p></details><details class="xxd-collapse"><summary>主色怎么挑？</summary><p>18 个预设，墨色是第一个也是默认。</p></details></div>
+        <div><pre class="xxd-code"><code>import { toast } from "@xxd/css";
+toast("已保存", { tone: "success" });</code><button class="xxd-btn xxd-copy" data-variant="ghost" data-icon-only data-size="sm" aria-label="复制" data-copy='import { toast } from "@xxd/css";'><i data-xxd-icon="Copy" data-size="14"></i></button></pre><p style="margin-top:10px">行内代码 <code class="xxd-code-inline">--r-sm</code></p></div>
+      </div>
+      <div class="xxd-grid" style="--grid-min:200px;margin-top:16px">
+        <div class="xxd-card" data-interactive><div class="xxd-card__media" style="--ratio:3/4;background:linear-gradient(160deg,var(--wash),var(--wash-strong))"><div class="xxd-card__marks"><span class="xxd-dot" style="background:#ff3f6d"></span><span class="xxd-dot" data-tone="success"></span></div><span class="xxd-card__rating"></span><button class="xxd-card__action"><i data-xxd-icon="Download" data-size="14"></i>下载</button></div><div class="xxd-card__body"><p class="xxd-card__title">编辑式海报 001</p><span class="xxd-card__meta">xxd-panel-001</span></div></div>
+        <div class="xxd-card" data-interactive aria-selected="true"><div class="xxd-card__media" style="--ratio:3/4;background:linear-gradient(200deg,var(--wash-strong),var(--selected-bg))"></div><div class="xxd-card__body"><p class="xxd-card__title">旅行海报</p><span class="xxd-card__meta">已选中</span></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+  Xxd.mountAppearance(document.getElementById("appearance"), { showDensity: true, languages: [{ value: "zh-CN", label: "简体中文" }, { value: "zh-Hant", label: "繁體中文" }, { value: "en", label: "English" }], language: "zh-CN" });
+  Xxd.init(document);
+  document.getElementById("indet").indeterminate = true;
+  document.getElementById("toast-btn").onclick = () => Xxd.toast("已保存草稿", { tone: "success" });
+  document.getElementById("panel-toast").onclick = (e) => Xxd.toast("已保存到提示词", { tone: "success", within: e.target.closest(".xxd-panel__body") });
+  document.getElementById("confirm-btn").onclick = async () => {
+    const ok = await Xxd.confirmDialog({ title: "删除这条记录？", message: "删除后不能恢复。", confirmLabel: "删除", tone: "danger" });
+    Xxd.toast(ok ? "已删除" : "已取消", { tone: ok ? "success" : "neutral" });
+  };
+  const items = [{ label: "新建文章", hint: "⌘N", run: () => Xxd.toast("新建") }, { label: "切换主题", run: () => XxdTheme.set({ theme: XxdTheme.read().theme === "dark" ? "light" : "dark" }) }, { label: "切换圆角", run: () => XxdTheme.set({ corners: XxdTheme.read().corners === "rounded" ? "square" : "rounded" }) }];
+  document.getElementById("palette-btn").onclick = () => Xxd.openCommandPalette({ items });
+  Xxd.bindCommandPalette(items);
+  Xxd.bindSearch(document.getElementById("search"), { onQuery: (q) => Xxd.markMatches(document.querySelector(".pg-main"), q) });
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+/* 小程序的页面底：系统字体、墨色、页面底色。网页版的 .xxd-page 规则改写后在前面，这里补小程序才有的 */
+page,
+.xxd-h5-root {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 网页版靠 .xxd-page * { box-sizing: border-box }；小程序里不写通配符，逐个写会用到的标签 */
+view,
+text,
+button,
+input,
+textarea,
+image,
+scroll-view,
+.xxd-page,
+.xxd-overlay {
+  box-sizing: border-box;
+}
+
+.xxd-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font: var(--weight-regular) var(--text-sm) / var(--leading-sm) var(--font-body);
+}
+
+.xxd-page.is-surface-paper {
+  background: var(--paper);
+}
+
+.xxd-page.is-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 浮层的根：本身不占位置，只带外观变量 */
+.xxd-overlay {
+  color: var(--ink);
+  font: var(--weight-regular) var(--text-sm) / var(--leading-sm) var(--font-body);
+}
+
+/* 微信的原生按钮自带边框（::after）、外边距和行高：清掉，样式全由 .xxd-btn 定 */
+button.xxd-btn,
+button.xxd-chip {
+  margin: 0;
+  line-height: 1;
+  overflow: visible;
+}
+
+button.xxd-btn::after,
+button.xxd-chip::after {
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  width: auto;
+  height: auto;
+}
+
+/* 手机上的字不小于 12px（MINI-REVIEW-PLAN D29）：网页版 11px 的那一档在小程序里抬到 12px；
+   只有标签栏的字和角标数字用 --text-tab（11px），和系统自带的标签栏一样 */
+page,
+.xxd-h5-root,
+.xxd-overlay,
+.xxd-tabbar-host {
+  --text-2xs: var(--text-xs);
+}

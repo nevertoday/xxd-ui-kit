@@ -1,0 +1,240 @@
+/* 高对比模式（Windows「对比度主题」，forced-colors: active）（优化计划 O8）。
+ * 这时浏览器把所有颜色换成系统色、背景色几乎全变成 Canvas：靠背景色画出来的东西
+ * （勾、开关滑块、tab 下划线、进度条、选中的分段）都会消失。这里用系统色重画，
+ * 并且让「选中」总有一个不靠颜色深浅的记号（边框 / 描边）。 */
+@layer xxd.components {
+  @media (forced-colors: active) {
+    /* 自绘控件：自己控制颜色 */
+    .xxd-switch,
+    .xxd-check,
+    .xxd-radio,
+    .xxd-progress,
+    .xxd-loadbar,
+    .xxd-meter,
+    .xxd-dot,
+    .xxd-tabs__ink {
+      forced-color-adjust: none;
+    }
+
+    .xxd-switch,
+    .xxd-check,
+    .xxd-radio {
+      border-color: CanvasText;
+      background: Canvas;
+    }
+
+    .xxd-switch::before {
+      background: CanvasText;
+      box-shadow: none;
+    }
+
+    .xxd-switch:checked,
+    .xxd-check:checked,
+    .xxd-check:indeterminate,
+    .xxd-radio:checked {
+      border-color: Highlight;
+      background: Highlight;
+    }
+
+    .xxd-switch:checked::before,
+    .xxd-check:checked::after,
+    .xxd-check:indeterminate::after {
+      background: HighlightText;
+    }
+
+    .xxd-radio:checked {
+      box-shadow: inset 0 0 0 3.5px Canvas;
+    }
+
+    .xxd-switch:disabled,
+    .xxd-check:disabled,
+    .xxd-radio:disabled {
+      border-color: GrayText;
+    }
+
+    /* 进度：轨道描边，进度是 Highlight */
+    .xxd-progress,
+    .xxd-loadbar,
+    .xxd-meter {
+      border: 1px solid CanvasText;
+      background: Canvas;
+    }
+
+    .xxd-progress::-webkit-progress-bar {
+      background: Canvas;
+    }
+
+    .xxd-progress::-webkit-progress-value,
+    .xxd-loadbar::after,
+    .xxd-meter__fill {
+      background: Highlight;
+    }
+
+    .xxd-progress::-moz-progress-bar {
+      background: Highlight;
+    }
+
+    .xxd-dot {
+      background: CanvasText;
+    }
+
+    /* 量表：轨道 GrayText，填充 Highlight，其余的线 CanvasText；分段、多环靠图例的文字分 */
+    .xxd-gauge__svg,
+    .xxd-gauge__pointer,
+    .xxd-legend__key,
+    .xxd-bars__fill,
+    .xxd-proportion__part,
+    .xxd-waffle__cell,
+    .xxd-heatmap__cell,
+    .xxd-dumbbell__line,
+    .xxd-dumbbell__from,
+    .xxd-dumbbell__to {
+      forced-color-adjust: none;
+    }
+
+    .xxd-gauge__track,
+    .xxd-gauge__tick {
+      stroke: GrayText;
+    }
+
+    .xxd-gauge__fill,
+    .xxd-gauge__fill-warning,
+    .xxd-gauge__fill-danger,
+    .xxd-gauge__fill-success,
+    .xxd-gauge__part-0,
+    .xxd-gauge__part-2,
+    .xxd-gauge__part-4 {
+      stroke: Highlight;
+    }
+
+    .xxd-gauge__part-1,
+    .xxd-gauge__part-3,
+    .xxd-gauge__zone-warning,
+    .xxd-gauge__zone-danger,
+    .xxd-gauge__zone-success,
+    .xxd-gauge__target,
+    .xxd-gauge__needle-line {
+      stroke: CanvasText;
+    }
+
+    .xxd-gauge__hub {
+      fill: CanvasText;
+    }
+
+    /* 图（CHART-TYPES-PLAN）：分类只剩两种系统色，靠图例的文字分；热力用描边的有无和粗细分档 */
+    .xxd-legend__key,
+    .xxd-legend__key[data-part="2"],
+    .xxd-legend__key[data-part="4"],
+    .xxd-bars__fill,
+    .xxd-bars[data-emphasis] .xxd-bars__item[data-highlight] .xxd-bars__fill,
+    .xxd-proportion__part,
+    .xxd-proportion__part[data-part="2"],
+    .xxd-proportion__part[data-part="4"],
+    .xxd-waffle__cell[data-part],
+    .xxd-waffle__cell[data-part="2"],
+    .xxd-waffle__cell[data-part="4"],
+    .xxd-dumbbell__to {
+      background: Highlight;
+    }
+
+    .xxd-legend__key[data-part="1"],
+    .xxd-legend__key[data-part="3"],
+    .xxd-bars[data-emphasis] .xxd-bars__fill,
+    .xxd-proportion__part[data-part="1"],
+    .xxd-proportion__part[data-part="3"],
+    .xxd-waffle__cell[data-part="1"],
+    .xxd-waffle__cell[data-part="3"],
+    .xxd-dumbbell__line {
+      background: CanvasText;
+    }
+
+    .xxd-waffle__cell,
+    .xxd-heatmap__cell {
+      border: 1px solid GrayText;
+      background: Canvas;
+    }
+
+    /* 热力五档：空心 · 灰 · 墨 · 高亮 · 高亮加墨框（每档不一样；矩阵里的数换成底色上看得见的字色） */
+    .xxd-heatmap__cell[data-level="1"] {
+      background: GrayText;
+    }
+
+    .xxd-heatmap__cell[data-level="2"] {
+      background: CanvasText;
+    }
+
+    .xxd-heatmap__cell[data-level="3"],
+    .xxd-heatmap__cell[data-level="4"] {
+      background: Highlight;
+    }
+
+    .xxd-heatmap__cell[data-level="4"] {
+      outline: 2px solid CanvasText;
+      outline-offset: -3px;
+    }
+
+    .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="1"],
+    .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="2"] {
+      color: Canvas;
+    }
+
+    .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="3"],
+    .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="4"] {
+      color: HighlightText;
+    }
+
+    .xxd-heatmap__cell[data-active] {
+      outline-color: Highlight;
+    }
+
+    .xxd-dumbbell__from {
+      border-color: CanvasText;
+      background: Canvas;
+    }
+
+    /* tab：选中的那一个有 2px 下边框（伪元素的背景会被抹掉） */
+    .xxd-tabs__ink {
+      background: Highlight;
+    }
+
+    .xxd-tabs > [role="tab"][aria-selected="true"] {
+      color: Highlight;
+      text-decoration: underline 2px;
+      text-underline-offset: 6px;
+    }
+
+    /* 选中 / 按下：描边，不靠底色 */
+    .xxd-segmented > [aria-checked="true"],
+    .xxd-segmented > [aria-pressed="true"],
+    .xxd-chip[aria-pressed="true"],
+    .xxd-btn[aria-pressed="true"],
+    .xxd-option[aria-selected="true"],
+    .xxd-list > .xxd-list__item[aria-selected="true"],
+    .xxd-list > .xxd-list__item[aria-current],
+    .xxd-rail > [aria-current="page"],
+    .xxd-rail > [aria-selected="true"],
+    .xxd-menu__item[aria-checked="true"] {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
+
+    /* 原本只靠底色区分的面：给一条边 */
+    .xxd-badge,
+    .xxd-chip,
+    .xxd-segmented,
+    .xxd-kbd {
+      border: 1px solid CanvasText;
+    }
+
+    .xxd-btn[data-variant="primary"],
+    .xxd-btn[data-variant="danger"] {
+      border-color: ButtonText;
+    }
+
+    .xxd-btn:disabled,
+    .xxd-btn[aria-disabled="true"] {
+      border-color: GrayText;
+      color: GrayText;
+    }
+  }
+}

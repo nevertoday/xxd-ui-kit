@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+.react-router/
+.build-complete
+
+# Cloudflare
+.wrangler/
+.dev.vars
+wrangler.toml.local
+
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+.cache/
+
+# Codex
+.codex/environments
+
+# OpenCode generated files
+.opencode/plans/
+.opencode/package-lock.json
+
+# Generated component registry files (built during CI)
+packages/kumo/ai/component-registry.json
+packages/kumo/ai/component-registry.md
+packages/kumo/ai/schemas.ts
+
+# Vitest browser-mode artifacts (attachments, failure screenshots)
+.vitest-attachments/
+__screenshots__/
+
+# Browser visual-contract baselines are intentional test fixtures. Keep them
+# alongside their component tests so snapshot updates are visible in review.
+!packages/kumo/src/components/**/__screenshots__/
+!packages/kumo/src/components/**/__screenshots__/**
+
+# CI report artifacts
+ci/reports/
+
+# 小程序：@xxd/mini 的样式由 scripts/build-mini.mjs 生成；演示小程序的 H5 产物
+packages/xxd-mini/styles/
+packages/xxd-mini/test/.out/
+packages/xxd-mini-demo/dist-h5/
+packages/xxd-mini-demo/shots/
+.swc/

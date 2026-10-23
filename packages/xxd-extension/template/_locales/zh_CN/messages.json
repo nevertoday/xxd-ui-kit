@@ -1,0 +1,79 @@
+{
+  "xxdLocale": {
+    "message": "zh-CN"
+  },
+  "appName": {
+    "message": "__APP_NAME__"
+  },
+  "appDescription": {
+    "message": "__APP_DESC__"
+  },
+  "actionTitle": {
+    "message": "打开 __APP_NAME__"
+  },
+  "tabMain": {
+    "message": "主页"
+  },
+  "tabHistory": {
+    "message": "记录"
+  },
+  "tabSettings": {
+    "message": "设置"
+  },
+  "historyEmpty": {
+    "message": "还没有记录"
+  },
+  "primaryAction": {
+    "message": "开始"
+  },
+  "doneToast": {
+    "message": "完成了"
+  },
+  "searchPlaceholder": {
+    "message": "搜索设置"
+  },
+  "dropTitle": {
+    "message": "把文件拖到这里"
+  },
+  "dropOr": {
+    "message": "也可以"
+  },
+  "dropPick": {
+    "message": "选择文件"
+  },
+  "dropVeil": {
+    "message": "松手，放进来"
+  },
+  "groupAbout": {
+    "message": "关于"
+  },
+  "version": {
+    "message": "版本"
+  },
+  "today": {
+    "message": "今天"
+  },
+  "yesterday": {
+    "message": "昨天"
+  },
+  "navMain": {
+    "message": "主导航"
+  },
+  "clear": {
+    "message": "清空"
+  },
+  "delete": {
+    "message": "删除"
+  },
+  "confirmDelete": {
+    "message": "确认删除"
+  },
+  "itemCount": {
+    "message": "$COUNT$ 项",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  }
+}

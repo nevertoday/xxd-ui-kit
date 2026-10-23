@@ -1,0 +1,60 @@
+---
+// 一个小程序组件一页（/miniprogram/<组件>/）：手机框里的演示、用法代码、对应的网页版组件。中文 / 英文共用。
+import Site from "../layouts/Site.astro";
+import Code from "../components/Code.astro";
+import MiniFrame from "../components/MiniFrame.astro";
+import { componentsFor } from "../lib/data.js";
+import { miniCode, miniFor } from "../lib/mini.js";
+import { langOf, t, withLang } from "../i18n/index.js";
+
+const { c } = Astro.props;
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+const en = lang === "en";
+const web = componentsFor(lang).filter((w) => c.web.includes(w.name));
+const all = miniFor(lang);
+const i = all.findIndex((x) => x.name === c.name);
+const near = [all[i - 1], all[i + 1]].filter(Boolean);
+const title = en ? `${c.label} (mini program)` : `${c.label} ${c.name}（小程序）`;
+const headings = [
+  { slug: "demo", text: L.miniDemo },
+  { slug: "usage", text: L.miniUsage },
+  ...(web.length ? [{ slug: "web", text: L.miniWeb }] : []),
+];
+---
+
+<Site title={title} description={c.summary} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption"><a class="xxd-link" href={withLang("/miniprogram", lang)}>{L.pageMini}</a> · {L.miniCaption}</p>
+    <h1 class="xxd-text" data-variant="display">{c.label} {(!en || c.label !== c.name) && <span class="xxd-text" data-variant="mono-secondary">{c.name}</span>}</h1>
+    <p class="site-lead">{c.summary}</p>
+    <p class="site-names"><span>@xxd/mini <code class="xxd-code-inline">{`<${c.name}>`}</code></span></p>
+  </header>
+
+  <h2 class="site-h2" id="demo">{L.miniDemo}</h2>
+  <MiniFrame name={c.name} label={c.label} height={600} />
+
+  <h2 class="site-h2" id="usage">{L.miniUsage}</h2>
+  <Code code={miniCode(c.name, lang)} />
+
+  {
+    web.length > 0 && (
+      <>
+        <h2 class="site-h2" id="web">{L.miniWeb}</h2>
+        <ul class="site-rules">
+          {web.map((w) => (
+            <li>
+              <a class="xxd-link" href={withLang(`/components/${w.slug}`, lang)}>{w.label}{!en && ` ${w.name}`}</a>
+              {w.summary && <span> —— {w.summary}</span>}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <nav class="site-mini-near" aria-label={L.miniAll}>
+    {near.map((x) => <a class="xxd-btn" data-variant="ghost" href={withLang(`/miniprogram/${x.slug}`, lang)}>{x.label}</a>)}
+    <a class="xxd-btn" data-variant="ghost" href={withLang("/miniprogram#components", lang)}>{L.miniAll}</a>
+  </nav>
+</Site>

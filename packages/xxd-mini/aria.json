@@ -1,0 +1,28 @@
+{
+  "$comment": "微信小程序的读屏属性（基础库 2.7.1 起）。taro-plugin（构建时，写进模板）和 src/aria.ts（运行时，登记属性编号）用同一张表：两边必须一样，不然 Taro 的属性编号会错位。",
+  "attributes": [
+    "aria-busy",
+    "aria-checked",
+    "aria-disabled",
+    "aria-expanded",
+    "aria-hidden",
+    "aria-label",
+    "aria-level",
+    "aria-live",
+    "aria-modal",
+    "aria-pressed",
+    "aria-role",
+    "aria-selected",
+    "aria-valuemax",
+    "aria-valuemin",
+    "aria-valuenow"
+  ],
+  "components": [
+    "View",
+    "Text",
+    "Button",
+    "Image",
+    "Input",
+    "Textarea"
+  ]
+}

@@ -1,0 +1,11 @@
+---
+// 正文在 src/views/Component.astro（中文 / 英文共用）。
+import Component from "../../views/Component.astro";
+import { componentsFor } from "../../lib/data.js";
+export function getStaticPaths() {
+  return componentsFor("zh").map((c) => ({ params: { slug: c.slug }, props: { c } }));
+}
+const { c } = Astro.props;
+---
+
+<Component c={c} />

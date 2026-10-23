@@ -1,0 +1,638 @@
+import { useState } from "react";
+import { CaretUpDownIcon } from "@phosphor-icons/react";
+import { Combobox, Text, Button } from "@cloudflare/kumo";
+import { languages, type Language } from "./data/languages";
+
+// Basic fruits list for simple demos (expanded to test scrolling)
+const fruits = [
+  "Apple",
+  "Apricot",
+  "Avocado",
+  "Banana",
+  "Blackberry",
+  "Blueberry",
+  "Cantaloupe",
+  "Cherry",
+  "Coconut",
+  "Cranberry",
+  "Date",
+  "Dragon Fruit",
+  "Fig",
+  "Grape",
+  "Grapefruit",
+  "Guava",
+  "Honeydew",
+  "Kiwi",
+  "Lemon",
+  "Lime",
+  "Lychee",
+  "Mango",
+  "Nectarine",
+  "Orange",
+  "Papaya",
+  "Passion Fruit",
+  "Peach",
+  "Pear",
+  "Persimmon",
+  "Pineapple",
+  "Plum",
+  "Pomegranate",
+  "Raspberry",
+  "Starfruit",
+  "Strawberry",
+  "Tangerine",
+  "Watermelon",
+];
+
+// Server locations for grouped demo
+type ServerLocation = {
+  label: string;
+  value: string;
+};
+
+type ServerLocationGroup = {
+  value: string;
+  items: ServerLocation[];
+};
+
+const servers: ServerLocationGroup[] = [
+  {
+    value: "Asia",
+    items: [
+      { label: "Japan", value: "japan" },
+      { label: "China", value: "china" },
+      { label: "Singapore", value: "singapore" },
+      { label: "South Korea", value: "south-korea" },
+      { label: "India", value: "india" },
+      { label: "Hong Kong", value: "hong-kong" },
+      { label: "Taiwan", value: "taiwan" },
+      { label: "Thailand", value: "thailand" },
+    ],
+  },
+  {
+    value: "Europe",
+    items: [
+      { label: "Germany", value: "germany" },
+      { label: "France", value: "france" },
+      { label: "Italy", value: "italy" },
+      { label: "United Kingdom", value: "uk" },
+      { label: "Netherlands", value: "netherlands" },
+      { label: "Spain", value: "spain" },
+      { label: "Poland", value: "poland" },
+      { label: "Sweden", value: "sweden" },
+    ],
+  },
+  {
+    value: "North America",
+    items: [
+      { label: "United States (East)", value: "us-east" },
+      { label: "United States (West)", value: "us-west" },
+      { label: "Canada", value: "canada" },
+      { label: "Mexico", value: "mexico" },
+    ],
+  },
+  {
+    value: "South America",
+    items: [
+      { label: "Brazil", value: "brazil" },
+      { label: "Argentina", value: "argentina" },
+      { label: "Chile", value: "chile" },
+    ],
+  },
+  {
+    value: "Oceania",
+    items: [
+      { label: "Australia", value: "australia" },
+      { label: "New Zealand", value: "new-zealand" },
+    ],
+  },
+];
+
+type DatabaseItem = {
+  value: string;
+  label: string;
+};
+
+const databases: DatabaseItem[] = [
+  { value: "postgres", label: "PostgreSQL" },
+  { value: "mysql", label: "MySQL" },
+  { value: "mariadb", label: "MariaDB" },
+  { value: "mongodb", label: "MongoDB" },
+  { value: "redis", label: "Redis" },
+  { value: "sqlite", label: "SQLite" },
+  { value: "cassandra", label: "Apache Cassandra" },
+  { value: "dynamodb", label: "Amazon DynamoDB" },
+  { value: "couchdb", label: "CouchDB" },
+  { value: "neo4j", label: "Neo4j" },
+  { value: "elasticsearch", label: "Elasticsearch" },
+  { value: "cockroachdb", label: "CockroachDB" },
+  { value: "timescaledb", label: "TimescaleDB" },
+  { value: "clickhouse", label: "ClickHouse" },
+  { value: "firestore", label: "Google Firestore" },
+  { value: "supabase", label: "Supabase" },
+  { value: "planetscale", label: "PlanetScale" },
+  { value: "fauna", label: "Fauna" },
+  { value: "d1", label: "Cloudflare D1" },
+  { value: "turso", label: "Turso" },
+];
+
+const databaseItems = Combobox.createItems(databases, {
+  getValue: (database) => database.value,
+  getLabel: (database) => database.label,
+});
+
+// Basic demo with TriggerInput
+export function ComboboxDemo() {
+  const [value, setValue] = useState<string | null>("Apple");
+
+  return (
+    <Combobox
+      value={value}
+      onValueChange={(v) => setValue(v as string | null)}
+      items={fruits}
+    >
+      <Combobox.TriggerInput placeholder="Please select" />
+      <Combobox.Content>
+        <Combobox.Empty />
+        <Combobox.List>
+          {(item: string) => (
+            <Combobox.Item key={item} value={item}>
+              {item}
+            </Combobox.Item>
+          )}
+        </Combobox.List>
+      </Combobox.Content>
+    </Combobox>
+  );
+}
+
+/** Demonstrates deriving Combobox values and labels from application objects. */
+export function ComboboxCreateItemsDemo() {
+  const [value, setValue] = useState<DatabaseItem | null>(null);
+
+  return (
+    <Combobox
+      value={value}
+      onValueChange={(nextValue) => setValue(nextValue as DatabaseItem | null)}
+      items={databaseItems}
+    >
+      <Combobox.TriggerValue
+        className="w-[240px]"
+        placeholder="Select a database"
+      />
+      <Combobox.Content>
+        <Combobox.Input placeholder="Search databases" />
+        <Combobox.Empty>No databases found.</Combobox.Empty>
+        <Combobox.List>
+          {(database: DatabaseItem) => (
+            <Combobox.Item key={database.value} value={database}>
+              {database.label}
+            </Combobox.Item>
+          )}
+        </Combobox.List>
+      </Combobox.Content>
+    </Combobox>
+  );
+}
+
+// Searchable inside popup with TriggerValue
+export function ComboboxSearchableInsideDemo() {
+  const [value, setValue] = useState<Language>(languages[0]);
+
+  return (
+    <Combobox
+      value={value}
+      onValueChange={(v) => setValue(v as Language)}
+      items={languages}
+    >
+      <Combobox.TriggerValue className="w-[200px]" />
+      <Combobox.Content>
+        <Combobox.Input placeholder="Search languages" />
+        <Combobox.Empty />
+        <Combobox.List>
+          {(item: Language) => (
+            <Combobox.Item key={item.value} value={item}>
+              {item.emoji} {item.label}
+            </Combobox.Item>
+          )}
+        </Combobox.List>
+      </Combobox.Content>
+    </Combobox>
+  );
+}
+
+/** Demonstrates using TriggerValue with a placeholder, behaving like a
+ * searchable Select field. The placeholder is shown until a value is selected. */
+export function ComboboxSearchableSelectDemo() {
+  const [value, setValue] = useState<Language | null>(null);
+
+  return (
+    <Combobox
+      value={value}
+      onValueChange={(v) => setValue(v as Language | null)}
+      items={languages}
+    >
+      <Combobox.TriggerValue
+        className="w-[200px]"
+        placeholder="Select a language"
+      />
+      <Combobox.Content>
+        <Combobox.Input placeholder="Search languages" />
+        <Combobox.Empty />
+        <Combobox.List>
+          {(item: Language) => (
+            <Combobox.Item key={item.value} value={item}>
+              {item.emoji} {item.label}
+            </Combobox.Item>
+          )}
+        </Combobox.List>
+      </Combobox.Content>
+    </Combobox>
+  );
+}
+
+// Grouped items demo
+export function ComboboxGroupedDemo() {
+  const [value, setValue] = useState<ServerLocation | null>(null);
+
+  return (
+    <Combobox
+      value={value}
+      onValueChange={(v) => setValue(v as ServerLocation | null)}
+      items={servers}
+    >
+      <Combobox.TriggerInput
+        className="w-[200px]"
+        placeholder="Select server"
+      />
+      <Combobox.Content>
+        <Combobox.Empty />
+        <Combobox.List>
+          {(group: ServerLocationGroup) => (
+            <Combobox.Group key={group.value} items={group.items}>
+              <Combobox.GroupLabel>{group.value}</Combobox.GroupLabel>
+              <Combobox.Collection>
+                {(item: ServerLocation) => (
+                  <Combobox.Item key={item.value} value={item}>
+                    {item.label}
+                  </Combobox.Item>
+                )}
+              </Combobox.Collection>
+            </Combobox.Group>
+          )}
+        </Combobox.List>
+      </Combobox.Content>
+    </Combobox>
+  );
+}
+
+type BotItem = {
+  value: string;
+  label: string;
+  author: string;
+};
+
+const bots: BotItem[] = [
+  { value: "googlebot", label: "Googlebot", author: "Google" },
+  { value: "bingbot", label: "Bingbot", author: "Microsoft" },
+  { value: "yandexbot", label: "YandexBot", author: "Yandex" },
+  { value: "duckduckbot", label: "DuckDuckBot", author: "DuckDuckGo" },
+  { value: "baiduspider", label: "Baiduspider", author: "Baidu" },
+  { value: "slurp", label: "Yahoo Slurp", author: "Yahoo" },
+  { value: "applebot", label: "Applebot", author: "Apple" },
+  { value: "facebookbot", label: "Facebookbot", author: "Meta" },
+  { value: "twitterbot", label: "Twitterbot", author: "X" },
+  { value: "linkedinbot", label: "LinkedInBot", author: "LinkedIn" },
+  { value: "pinterestbot", label: "Pinterest", author: "Pinterest" },
+  { value: "discordbot", label: "Discordbot", author: "Discord" },
+  { value: "slackbot", label: "Slackbot", author: "Slack" },
+  { value: "telegrambot", label: "TelegramBot", author: "Telegram" },
+  { value: "whatsapp", label: "WhatsApp", author: "Meta" },
+  { value: "semrushbot", label: "SemrushBot", author: "Semrush" },
+  { value: "ahrefsbot", label: "AhrefsBot", author: "Ahrefs" },
+  { value: "mj12bot", label: "MJ12bot", author: "Majestic" },
+  { value: "dotbot", label: "DotBot", author: "Moz" },
+  { value: "petalbot", label: "PetalBot", author: "Huawei" },
+];
+
+export function ComboboxMultipleDemo() {
+  const [value, setValue] = useState<BotItem[]>([]);
+
+  return (
+    <div className="flex gap-2">
+      <Combobox
+        value={value}
+        onValueChange={setValue}
+        items={bots}
+        isItemEqualToValue={(bot: BotItem, selected: BotItem) =>
+          bot.value === selected.value
+        }
+        multiple
+      >
+        <Combobox.TriggerMultipleWithInput
+          className="w-[400px]"
+          placeholder="Select bots"
+          renderItem={(selected: BotItem) => (
+            <Combobox.Chip key={selected.value}>{selected.label}</Combobox.Chip>
+          )}
+          inputSide="right"
+        />
+        <Combobox.Content className="max-h-[200px] min-w-auto overflow-y-auto">
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: BotItem) => (
+              <Combobox.Item key={item.value} value={item}>
+                <div className="flex gap-2">
+                  <Text>{item.label}</Text>
+                  <Text variant="secondary">{item.author}</Text>
+                </div>
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+      <Button variant="primary">Submit</Button>
+    </div>
+  );
+}
+
+export function ComboboxWithFieldDemo() {
+  const [value, setValue] = useState<DatabaseItem | null>(null);
+
+  return (
+    <div className="w-80">
+      <Combobox
+        items={databases}
+        value={value}
+        onValueChange={setValue}
+        label="Database"
+        description="Select your preferred database"
+      >
+        <Combobox.TriggerInput placeholder="Select database" />
+        <Combobox.Content>
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: DatabaseItem) => (
+              <Combobox.Item key={item.value} value={item}>
+                {item.label}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+    </div>
+  );
+}
+
+export function ComboboxDisabledDemo() {
+  return (
+    <div className="flex flex-wrap items-start gap-4">
+      <Combobox value="Apple" items={fruits} disabled>
+        <Combobox.TriggerInput
+          className="w-[200px]"
+          placeholder="Select fruit"
+        />
+        <Combobox.Content>
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: string) => (
+              <Combobox.Item key={item} value={item}>
+                {item}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+
+      <Combobox value={languages[0]} items={languages} disabled>
+        <Combobox.TriggerValue className="w-[200px]" />
+        <Combobox.Content>
+          <Combobox.Input placeholder="Search" />
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: Language) => (
+              <Combobox.Item key={item.value} value={item}>
+                {item.emoji} {item.label}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+    </div>
+  );
+}
+
+/** Demonstrates disabled individual items. The `disabled` prop on
+ * `Combobox.Item` blocks click and keyboard selection, and renders the row
+ * with muted text + a not-allowed cursor. Useful for surfacing options that
+ * exist but the user can't pick (e.g. permission-gated, read-only, or
+ * already in use elsewhere). */
+export function ComboboxDisabledItemsDemo() {
+  type DatabaseItemWithDisabled = DatabaseItem & {
+    disabled?: boolean;
+    reason?: string;
+  };
+
+  const items: DatabaseItemWithDisabled[] = [
+    { value: "postgres", label: "PostgreSQL" },
+    { value: "mysql", label: "MySQL" },
+    { value: "mariadb", label: "MariaDB", disabled: true, reason: "Beta" },
+    { value: "mongodb", label: "MongoDB" },
+    {
+      value: "cassandra",
+      label: "Apache Cassandra",
+      disabled: true,
+      reason: "Coming soon",
+    },
+    { value: "redis", label: "Redis" },
+    { value: "d1", label: "Cloudflare D1" },
+  ];
+
+  const [value, setValue] = useState<DatabaseItemWithDisabled | null>(null);
+
+  return (
+    <div className="w-80">
+      <Combobox value={value} onValueChange={setValue} items={items}>
+        <Combobox.TriggerInput placeholder="Select database" />
+        <Combobox.Content>
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: DatabaseItemWithDisabled) => (
+              <Combobox.Item
+                key={item.value}
+                value={item}
+                disabled={item.disabled}
+              >
+                <span>
+                  {item.label}
+                  {item.reason && (
+                    <Text variant="secondary" size="xs" as="span">
+                      {" — "}
+                      {item.reason}
+                    </Text>
+                  )}
+                </span>
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+    </div>
+  );
+}
+
+export function ComboboxErrorDemo() {
+  const [value, setValue] = useState<DatabaseItem | null>(null);
+
+  return (
+    <div className="w-80">
+      <Combobox
+        items={databases}
+        value={value}
+        onValueChange={setValue}
+        label="Database"
+        error={{ message: "Please select a database", match: true }}
+      >
+        <Combobox.TriggerInput placeholder="Select database" />
+        <Combobox.Content>
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: DatabaseItem) => (
+              <Combobox.Item key={item.value} value={item}>
+                {item.label}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+    </div>
+  );
+}
+
+/** Demonstrates the different size variants: xs, sm, base, and lg. */
+export function ComboboxSizesDemo() {
+  const [smValue, setSmValue] = useState<string | null>(null);
+  const [baseValue, setBaseValue] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      <Combobox
+        size="sm"
+        value={smValue}
+        onValueChange={(v) => setSmValue(v as string | null)}
+        items={fruits.slice(0, 8)}
+      >
+        <Combobox.TriggerInput placeholder="Small (sm)" />
+        <Combobox.Content>
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: string) => (
+              <Combobox.Item key={item} value={item}>
+                {item}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+      <Combobox
+        size="base"
+        value={baseValue}
+        onValueChange={(v) => setBaseValue(v as string | null)}
+        items={fruits.slice(0, 8)}
+      >
+        <Combobox.TriggerInput placeholder="Base (default)" />
+        <Combobox.Content>
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: string) => (
+              <Combobox.Item key={item} value={item}>
+                {item}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+    </div>
+  );
+}
+
+/** Demonstrates size variants with TriggerValue (searchable inside). */
+export function ComboboxSizesSearchableInsideDemo() {
+  const [smValue, setSmValue] = useState<Language>(languages[0]);
+  const [baseValue, setBaseValue] = useState<Language>(languages[1]);
+
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      <Combobox
+        size="sm"
+        value={smValue}
+        onValueChange={(v) => setSmValue(v as Language)}
+        items={languages}
+      >
+        <Combobox.TriggerValue className="w-[160px]" />
+        <Combobox.Content>
+          <Combobox.Input placeholder="Search" />
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: Language) => (
+              <Combobox.Item key={item.value} value={item}>
+                {item.emoji} {item.label}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+      <Combobox
+        size="base"
+        value={baseValue}
+        onValueChange={(v) => setBaseValue(v as Language)}
+        items={languages}
+      >
+        <Combobox.TriggerValue className="w-[180px]" />
+        <Combobox.Content>
+          <Combobox.Input placeholder="Search" />
+          <Combobox.Empty />
+          <Combobox.List>
+            {(item: Language) => (
+              <Combobox.Item key={item.value} value={item}>
+                {item.emoji} {item.label}
+              </Combobox.Item>
+            )}
+          </Combobox.List>
+        </Combobox.Content>
+      </Combobox>
+    </div>
+  );
+}
+
+export function ComboboxCustomTriggerDemo() {
+  const [value, setValue] = useState<Language>(languages[0]);
+
+  return (
+    <Combobox
+      value={value}
+      onValueChange={(v) => setValue(v as Language)}
+      items={languages}
+    >
+      <Combobox.Trigger render={<Button variant="ghost" size="sm" />}>
+        <Combobox.Value>
+          <span className="truncate">
+            {value.emoji} {value.label}
+          </span>
+        </Combobox.Value>
+        <CaretUpDownIcon size={14} className="shrink-0 text-kumo-subtle" />
+      </Combobox.Trigger>
+      <Combobox.Content>
+        <Combobox.Input placeholder="Search languages" />
+        <Combobox.Empty />
+        <Combobox.List>
+          {(item: Language) => (
+            <Combobox.Item key={item.value} value={item}>
+              {item.emoji} {item.label}
+            </Combobox.Item>
+          )}
+        </Combobox.List>
+      </Combobox.Content>
+    </Combobox>
+  );
+}

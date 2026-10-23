@@ -1,0 +1,839 @@
+/* 浮层：对话框、dock + sheet、菜单、popover、tooltip、toast、右侧详情面板。
+ * 只有浮层有阴影；浮层保留一条安静的边（--line），因为阴影已经把它托起来了。 */
+@layer xxd.components {
+  /* 抬起来的一层：浮层里面的纸、悬停底、线都换成 *-raised（亮色时值不变；暗色亮一档，层次不靠看不见的阴影）。
+     里面的输入框、菜单项、分隔线跟着一起抬，不用一个个改（设计师评审 V4-3） */
+  :is(.xxd-surface-float, .xxd-dialog, .xxd-menu, .xxd-popover, .xxd-sheet, .xxd-panel, .xxd-toast, .xxd-palette) {
+    --paper: var(--paper-raised);
+    --wash: var(--wash-raised);
+    --wash-strong: var(--wash-strong-raised);
+    --line: var(--line-raised);
+  }
+
+  .xxd-surface-float {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-popover);
+  }
+
+  /* 对话框：<dialog class="xxd-dialog">（js/dialog.js）。
+   * 底部按钮：取消在前（ui-dialog-cancel，内容宽度、安静），主操作在后、最右。 */
+  .xxd-dialog {
+    width: min(440px, calc(100vw - 32px));
+    /* 放在页面里的一块（预览、插件侧边栏）比视口窄时也不伸出去；在弹性布局里也不被按钮那一行的最小宽度撑开 */
+    min-width: 0;
+    max-width: 100%;
+    max-height: min(680px, calc(100dvh - 48px));
+    /* 居中写明白：不靠浏览器默认的 margin:auto（Tailwind 等 reset 会把它清成 0） */
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-dialog);
+    overflow: auto;
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--motion-medium) var(--ease-out-expo),
+      transform var(--motion-medium) var(--ease-out-expo),
+      overlay var(--motion-medium) allow-discrete,
+      display var(--motion-medium) allow-discrete;
+  }
+
+  .xxd-dialog:not([open]) {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  @starting-style {
+    .xxd-dialog[open] {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  /* 模态对话框开着时，背后的页面不跟着滚（ACCEPTANCE-REVIEW）；留出滚动条的位置，页面不左右跳 */
+  :root:has(dialog.xxd-dialog:modal) {
+    overflow: hidden;
+    scrollbar-gutter: stable;
+  }
+
+  .xxd-dialog::backdrop {
+    background: var(--backdrop);
+  }
+
+  .xxd-dialog[data-size="lg"] {
+    width: min(640px, calc(100vw - 32px));
+  }
+
+  .xxd-dialog__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--inset-lg-y) var(--inset-lg) 0;
+  }
+
+  .xxd-dialog__title {
+    flex: 1;
+    margin: 0;
+    font: var(--weight-strong) var(--text-lg) / var(--leading-md) var(--font-body);
+  }
+
+  .xxd-dialog__body {
+    padding: var(--space-2) var(--inset-lg) var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-dialog__body > * + * {
+    margin-top: var(--space-3);
+  }
+
+  /* 说明和下面的表单字段分开（说明属于标题，字段是另一件事）：至少 --space-4 */
+  .xxd-dialog__body > .xxd-field,
+  .xxd-dialog__body > * + .xxd-field {
+    margin-top: var(--space-4);
+  }
+
+  .xxd-dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--gap-items);
+    /* 底下是按钮（没有半行距），上下左右写成一样 */
+    padding: var(--inset-lg-y) var(--inset-lg) var(--inset-lg);
+  }
+
+  .xxd-dialog__actions > .xxd-btn {
+    min-height: var(--hit-min);
+  }
+
+  @media (max-width: 480px) {
+    /* 主操作占剩余宽度；和取消放不进一行时整个换到下一行（flex-basis 是自己的宽，不是 0），不把自己的字挤成省略号 */
+    .xxd-dialog__actions > .xxd-btn:last-child:not(.ui-dialog-cancel) {
+      flex: 1 1 auto;
+    }
+  }
+
+  /* 底部 dock：紧凑的任务控制台。
+   *   上下文和实时状态在开头 · 可撤销的选择工具成一组 · 后果最大的下一步在末尾。 */
+  .xxd-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: var(--z-dock);
+    display: flex;
+    align-items: center;
+    /* 窄了放不下：状态留一行，按钮换到下一行靠右（TRUNCATION-REVIEW-PLAN D91；以前状态被省略，或被按钮挤成一字一行） */
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    min-height: 56px;
+    padding: var(--inset-md-y) var(--inset-md);
+    border-top: 1px solid var(--line);
+    background: rgba(var(--paper-rgb), 0.96);
+    backdrop-filter: blur(10px);
+  }
+
+  .xxd-dock__status {
+    flex: 1 1 8em;
+    min-width: 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    /* 状态是内容（D91）：放不下就折行，dock 跟着变高；以前省略，「2,410 …」截掉的是数字 */
+    overflow-wrap: anywhere;
+  }
+
+  .xxd-dock__status[data-tone="danger"] {
+    color: var(--danger);
+  }
+
+  .xxd-dock__status[data-tone="warning"] {
+    color: var(--warning);
+  }
+
+  .xxd-dock__status + * {
+    margin-inline-start: auto;
+  }
+
+  .xxd-dock__tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .xxd-dock__primary {
+    flex: none;
+  }
+
+  /* 破坏性操作单独放，并写清楚 */
+  .xxd-dock__danger {
+    padding-right: var(--space-3);
+    border-right: 1px solid var(--line);
+  }
+
+  /* Sheet：从 dock 升起 10px 并淡入（200ms），收回 120ms。
+   *   <div class="xxd-sheet-host">…内容… <div class="xxd-scrim"></div> <section class="xxd-sheet">…</section> <footer class="xxd-dock">…</footer></div> */
+  .xxd-sheet-host {
+    position: relative;
+  }
+
+  .xxd-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: calc(var(--z-dock) + 1);
+    background: rgba(var(--shadow-rgb), 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-sheet-out) ease;
+  }
+
+  .xxd-scrim[data-open] {
+    opacity: 1;
+    pointer-events: auto;
+    transition-duration: var(--motion-sheet);
+  }
+
+  .xxd-sheet {
+    position: absolute;
+    right: 8px;
+    bottom: 64px;
+    left: 8px;
+    z-index: calc(var(--z-dock) + 2);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100% - 96px);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-popover);
+    opacity: 0;
+    transform: translateY(10px);
+    visibility: hidden;
+    transition:
+      opacity var(--motion-sheet-out) ease,
+      transform var(--motion-sheet-out) ease,
+      visibility 0s linear var(--motion-sheet-out);
+  }
+
+  .xxd-sheet[data-open] {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition:
+      opacity var(--motion-sheet) var(--ease-out-expo),
+      transform var(--motion-sheet) var(--ease-out-expo),
+      visibility 0s;
+  }
+
+  .xxd-sheet__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--inset-md-y) var(--inset-md) var(--space-2);
+  }
+
+  /* 角上的关闭按钮按图标对齐，不按按钮框（SPACING-REVIEW-PLAN D58）：
+     往外让出（按钮 − 图标）/ 2，图标的右边正好落在内容的右边那条线上；上下也让出来，按钮不把标题那一行撑高 */
+  :is(.xxd-dialog__head, .xxd-sheet__head, .xxd-panel__head) > .xxd-btn[data-icon-only]:last-child {
+    margin-inline-end: calc((var(--icon-lg) - var(--btn-box)) / 2);
+  }
+
+  .xxd-dialog__head > .xxd-btn[data-icon-only]:last-child {
+    margin-block: calc((var(--leading-md) - var(--btn-box)) / 2);
+  }
+
+  .xxd-sheet__head > .xxd-btn[data-icon-only]:last-child {
+    margin-block: calc((var(--leading-sm) - var(--btn-box)) / 2);
+  }
+
+  .xxd-sheet__title {
+    flex: 1;
+    margin: 0;
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+  }
+
+  .xxd-sheet__body {
+    flex: 1;
+    min-height: 0;
+    /* 底下一般是字：和面板一样小一档，看起来和左右一样（D55） */
+    padding: 0 var(--inset-md) var(--inset-md-y);
+    overflow: auto;
+  }
+
+  /* 菜单：<div class="xxd-menu" role="menu" popover>（js/menu.js 负责定位与键盘） */
+  /* 菜单 / popover：从锚点方向长出来（D4）。floating.js 写 --xxd-origin（锚点中心相对浮层的位置）。 */
+  .xxd-menu,
+  .xxd-popover {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    min-width: 180px;
+    max-width: min(320px, calc(100vw - 16px));
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-popover);
+    opacity: 1;
+    transform: none;
+    transform-origin: var(--xxd-origin, top left);
+    transition:
+      opacity var(--motion-quick) ease,
+      transform var(--motion-quick) var(--ease-out-expo),
+      overlay var(--motion-quick) allow-discrete,
+      display var(--motion-quick) allow-discrete;
+  }
+
+  .xxd-menu:not(:popover-open),
+  .xxd-popover:not(:popover-open) {
+    opacity: 0;
+    transform: scale(0.96);
+    transition-duration: var(--motion-out);
+  }
+
+  @starting-style {
+    .xxd-menu:popover-open,
+    .xxd-popover:popover-open {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  .xxd-popover__title {
+    margin: 0 0 var(--space-1);
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+  }
+
+  .xxd-popover__text {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-popover__close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+  }
+
+  /* 小箭头（可选）：data-arrow；floating.js 写 --xxd-arrow-x 和 data-side。旋转的小方块，跟随圆角开关。 */
+  :is(.xxd-popover, .xxd-tooltip)[data-arrow]::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--xxd-arrow-x, 50%) - 4px);
+    width: 8px;
+    height: 8px;
+    background: inherit;
+    border: inherit;
+    border-radius: 0;
+    transform: rotate(45deg);
+  }
+
+  :is(.xxd-popover, .xxd-tooltip)[data-arrow][data-side="bottom"]::before {
+    top: -5px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  :is(.xxd-popover, .xxd-tooltip)[data-arrow][data-side="top"]::before {
+    bottom: -5px;
+    border-top: 0;
+    border-left: 0;
+  }
+
+  .xxd-menu {
+    padding: var(--space-1);
+  }
+
+  .xxd-popover {
+    padding: var(--inset-md-y) var(--inset-md);
+    font-size: var(--text-sm);
+  }
+
+  .xxd-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: var(--control-h-sm); /* 跟着密度（以前写死 32） */
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--r-xs);
+    background: transparent;
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .xxd-menu__item:hover,
+  .xxd-menu__item:focus-visible {
+    background: var(--wash);
+    outline: none;
+  }
+
+  /* 键盘焦点：淡底之外一圈 ≥ 3:1 的边（鼠标悬停只要淡底，D76） */
+  .xxd-menu__item:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--line-control);
+  }
+
+  .xxd-menu__item > .ui-icon {
+    color: var(--muted);
+  }
+
+  .xxd-menu__item[aria-checked="true"]::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    margin-left: auto;
+    background: var(--action);
+    -webkit-mask: var(--xxd-check) center / contain no-repeat;
+    mask: var(--xxd-check) center / contain no-repeat;
+  }
+
+  .xxd-menu__item[data-tone="danger"] {
+    color: var(--danger);
+  }
+
+  .xxd-menu__item[data-tone="danger"] > .ui-icon {
+    color: inherit;
+  }
+
+  .xxd-menu__item:disabled,
+  .xxd-menu__item[aria-disabled="true"] {
+    color: var(--disabled-ink);
+    pointer-events: none;
+  }
+
+  .xxd-menu__kbd {
+    margin-left: auto;
+    color: var(--muted);
+    font: var(--text-2xs) / var(--leading-xs) var(--font-mono);
+  }
+
+  .xxd-menu__label {
+    padding: var(--space-2) var(--space-3) var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-menu__sep {
+    height: 1px;
+    margin: var(--space-1) -4px;
+    background: var(--line);
+  }
+
+  /* Tooltip：11px，小阴影（js/tooltip.js，挂在 [data-tooltip] 上） */
+  .xxd-tooltip {
+    position: fixed;
+    z-index: var(--z-toast);
+    max-width: 240px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--r-xs);
+    background: var(--ink);
+    color: var(--on-ink);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.16);
+    opacity: 0;
+    transform: scale(0.96);
+    transform-origin: var(--xxd-origin, bottom center);
+    pointer-events: none;
+    transition: opacity var(--motion-out) ease, transform var(--motion-out) var(--ease-out-expo);
+  }
+
+  /* 打开时鼠标能移上去（WCAG 1.4.13 可悬停） */
+  .xxd-tooltip[data-open] {
+    pointer-events: auto;
+  }
+
+  .xxd-tooltip[data-open] {
+    opacity: 1;
+    transform: none;
+    transition-duration: var(--motion-quick);
+  }
+
+  /* 连续出现（tooltip 组）时不再缩放，原地换字 */
+  .xxd-tooltip[data-open][data-instant] {
+    transition: none;
+  }
+
+  /* Toast：就地出现。在面板里做的操作，toast 出现在面板里，不盖住主内容区。 */
+  .xxd-toast-region {
+    position: fixed;
+    right: 0;
+    bottom: 16px;
+    left: 0;
+    z-index: var(--z-toast);
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-4);
+    pointer-events: none;
+  }
+
+  .xxd-toast-region[data-scoped] {
+    position: absolute;
+    bottom: var(--toast-offset, 16px);
+  }
+
+  /* 整页的 toast 区放进顶层（popover="manual"）：盖在对话框和宿主网页的高 z-index 元素上面。去掉浏览器给 popover 的默认样式。 */
+  .xxd-toast-region[popover] {
+    top: auto;
+    width: auto;
+    height: auto;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    overflow: visible;
+  }
+
+  .xxd-tooltip[popover] {
+    inset: auto;
+    margin: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  .xxd-toast {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: min(420px, 100%);
+    min-height: 40px;
+    padding: var(--space-2) var(--inset-md);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    box-shadow: var(--shadow-popover);
+    pointer-events: auto;
+    animation: xxd-rise var(--motion-medium) var(--ease-out-expo);
+  }
+
+  .xxd-toast[data-leaving] {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity var(--motion-sheet-out) ease, transform var(--motion-sheet-out) ease;
+  }
+
+  .xxd-toast[data-tone="success"] > .ui-icon {
+    color: var(--success);
+  }
+
+  .xxd-toast[data-tone="danger"] > .ui-icon {
+    color: var(--danger);
+  }
+
+  .xxd-toast[data-tone="warning"] > .ui-icon {
+    color: var(--warning);
+  }
+
+  .xxd-toast__action {
+    margin-left: var(--space-1);
+  }
+
+  /* 右侧详情面板（会员站同一个详情壳）。手机上变成全宽 sheet。 */
+  .xxd-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-dialog);
+    display: flex;
+    flex-direction: column;
+    /* 100% 而不是 100vw：fixed 时就是视口宽；放进容器里（模板预览、局部面板）时按容器宽，不撑出去 */
+    width: min(var(--panel-w, 560px), 100%);
+    border-left: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: var(--shadow-sheet);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition:
+      transform var(--motion-panel) var(--ease-out-quart),
+      visibility 0s linear var(--motion-panel);
+  }
+
+  /* 面板打开时，旁边的内容让出位置（不被盖住半张卡片，设计师评审 V3-4）：
+       <div class="xxd-panel-room">内容</div><aside class="xxd-panel" data-open>…</aside>。窄屏上面板是全宽的底部抽屉，不让位。 */
+  .xxd-panel-room:has(~ .xxd-panel[data-open]) {
+    padding-right: min(var(--panel-w, 560px), 100%);
+  }
+
+  .xxd-panel[data-open] {
+    transform: none;
+    visibility: visible;
+    transition: transform var(--motion-panel) var(--ease-out-quart), visibility 0s;
+  }
+
+  .xxd-panel__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    /* 一排控件 + 上下各 8：标准 56，紧凑 48（跟密度走，标题看起来离上边和离左边一样远） */
+    height: calc(var(--control-h) + var(--space-2) * 2);
+    padding: 0 var(--inset-lg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .xxd-panel__title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    /* 标题是内容（D91）：折行，不省略 */
+    overflow-wrap: anywhere;
+  }
+
+  .xxd-panel__body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: var(--inset-lg-y) var(--inset-lg);
+    overflow: auto;
+  }
+
+  .xxd-panel-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-dialog) - 1);
+    background: rgba(var(--shadow-rgb), 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-panel) ease;
+  }
+
+  .xxd-panel-scrim[data-open] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  @keyframes xxd-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+/* sheet 打开时，dock 上的主操作藏起来，免得从 sheet 和 dock 之间的缝里露出来。 */
+@layer xxd.components {
+  .xxd-sheet-host[data-sheet-open] .xxd-dock__primary {
+    visibility: hidden;
+  }
+}
+
+/* O2：对话框尺寸与说明、菜单子菜单 / 单选组、toast 堆叠与滑动。 */
+@layer xxd.components {
+  .xxd-dialog[data-size="sm"] {
+    width: min(360px, calc(100vw - 32px));
+  }
+
+  .xxd-dialog[data-size="xl"] {
+    width: min(880px, calc(100vw - 32px));
+  }
+
+  .xxd-dialog__desc {
+    margin: var(--space-1) 0 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  /* 子菜单：<button class="xxd-menu__item" role="menuitem" aria-haspopup="menu" data-submenu="id">导出</button> */
+  .xxd-menu__item[data-submenu]::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    margin-left: auto;
+    background: var(--muted);
+    -webkit-mask: var(--xxd-chevron-right) center / contain no-repeat;
+    mask: var(--xxd-chevron-right) center / contain no-repeat;
+  }
+
+  .xxd-menu__item[aria-expanded="true"] {
+    background: var(--wash);
+  }
+
+  /* 前置槽：菜单里只要有图标、单选或勾选，每一项前面都留 16px 的一格，放图标 / 单选点 / 勾，
+   * 所有项的文字从同一条线开始；右边只放快捷键和子菜单箭头。 */
+  .xxd-menu__item > .ui-icon:first-child {
+    flex: none;
+    margin-inline: 1px;
+  }
+
+  .xxd-menu:has(.xxd-menu__item > .ui-icon:first-child, [role="menuitemradio"], [role="menuitemcheckbox"]) .xxd-menu__item:not(:has(> .ui-icon:first-child), [role="menuitemradio"], [role="menuitemcheckbox"])::before {
+    content: "";
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* 单选组：<div role="group" aria-label="排序"><button class="xxd-menu__item" role="menuitemradio" aria-checked="true">…</button></div> */
+  .xxd-menu__item[role="menuitemradio"]::before,
+  .xxd-menu__item[role="menuitemcheckbox"]::before {
+    content: "";
+    flex: none;
+    width: 16px;
+    height: 16px;
+    background: transparent;
+  }
+
+  .xxd-menu__item[role="menuitemradio"][aria-checked="true"]::before {
+    background: radial-gradient(circle, var(--action) 0 3px, transparent 3.5px);
+  }
+
+  /* 勾选项的勾也放在前置槽里 */
+  .xxd-menu__item[role="menuitemcheckbox"][aria-checked="true"]::before {
+    background: var(--action);
+    -webkit-mask: var(--xxd-check) center / 14px no-repeat;
+    mask: var(--xxd-check) center / 14px no-repeat;
+  }
+
+  .xxd-menu__item:is([role="menuitemradio"], [role="menuitemcheckbox"])[aria-checked="true"]::after {
+    content: none;
+  }
+
+  /* Toast 堆叠：最多叠 3 张，旧的往上缩一点；hover / 聚焦展开。同一句话再来时不加新的，只轻轻动一下。 */
+  .xxd-toast-region[data-stack] {
+    display: grid;
+    grid-template-areas: "stack";
+    align-items: end;
+  }
+
+  .xxd-toast-region[data-stack] > .xxd-toast {
+    grid-area: stack;
+    transform: translateY(calc(var(--i, 0) * -8px)) scale(calc(1 - var(--i, 0) * 0.04));
+    transform-origin: bottom center;
+    transition: transform var(--motion-medium) var(--ease-out-expo), opacity var(--motion-quick) ease;
+  }
+
+  .xxd-toast-region[data-stack] > .xxd-toast[data-hidden-in-stack] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 收起叠放时，后面几张只露出边：里面的字藏起来（以前后面那张更高时，字露在前一张周围、压在一起，ACCEPTANCE-REVIEW） */
+  .xxd-toast-region[data-stack]:not(:hover, :focus-within) > .xxd-toast[data-behind] > * {
+    visibility: hidden;
+  }
+
+  .xxd-toast-region[data-stack]:is(:hover, :focus-within) {
+    grid-template-areas: none;
+    gap: var(--space-2);
+  }
+
+  .xxd-toast-region[data-stack]:is(:hover, :focus-within) > .xxd-toast {
+    grid-area: auto;
+    transform: none;
+  }
+
+  .xxd-toast-region[data-stack]:is(:hover, :focus-within) > .xxd-toast[data-hidden-in-stack] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .xxd-toast[data-bump] {
+    animation: xxd-bump var(--motion-medium) var(--ease-out-expo);
+  }
+
+  .xxd-toast-region > .xxd-toast[data-swiping],
+  .xxd-toast-region[data-stack] > .xxd-toast[data-swiping] {
+    transition: none;
+    transform: translateX(var(--swipe-x, 0px));
+    opacity: calc(1 - min(1, var(--swipe-p, 0)));
+  }
+
+  .xxd-toast[data-tone="info"] > .ui-icon {
+    color: var(--muted);
+  }
+
+  @keyframes xxd-bump {
+    40% {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* 窄屏抽屉（I12）：对话框、右侧面板在 640px 以下变成底部抽屉，顶部一条把手，可以下滑关闭 */
+@layer xxd.components {
+  @media (max-width: 640px) {
+    .xxd-dialog {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: 88dvh;
+      margin: auto 0 0;
+      border-bottom: 0;
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    .xxd-dialog:not([open]),
+    .xxd-dialog[open]:not(.xxd-palette) {
+      transform-origin: bottom center;
+    }
+
+    .xxd-dialog:not(.xxd-palette)::before,
+    .xxd-panel::before {
+      content: "";
+      display: block;
+      width: 36px;
+      height: 4px;
+      margin: var(--space-2) auto 0;
+      border-radius: var(--r-pill);
+      background: var(--line-strong);
+    }
+
+    .xxd-panel-room:has(~ .xxd-panel[data-open]) {
+      padding-right: 0;
+    }
+
+    .xxd-panel {
+      top: auto;
+      width: 100%;
+      max-height: 88dvh;
+      border-top: 1px solid var(--line);
+      border-left: 0;
+      border-start-start-radius: var(--r-lg);
+      border-start-end-radius: var(--r-lg);
+      transform: translateY(100%);
+    }
+
+    .xxd-palette {
+      margin-top: 0;
+    }
+  }
+}
+
+/* 静态展开（展示用，比如首页组件墙）：浮层就在原地显示，不定位、不隐藏、不动画 */
+@layer xxd.components {
+  :is(.xxd-dialog, .xxd-menu, .xxd-popover, .xxd-tooltip, .xxd-panel, .xxd-sheet)[data-static] {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    display: block;
+    max-width: 100%;
+    margin: 0;
+    max-height: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    translate: none;
+    animation: none;
+    pointer-events: auto;
+  }
+
+  .xxd-menu[data-static] {
+    display: grid;
+  }
+}
+

@@ -1,0 +1,90 @@
+{
+  "name": "@xxd/css",
+  "version": "0.1.0",
+  "private": true,
+  "description": "小小东 UI 的原生组件：一个 CSS 加一个 JS，不依赖框架，照顾 Chrome 插件 / XXD UI native components",
+  "license": "MIT",
+  "author": "小小东 (nevertoday)",
+  "homepage": "https://ui.xiaoxiaodong.ai",
+  "bugs": {
+    "url": "https://github.com/nevertoday/xxd-ui-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nevertoday/xxd-ui-kit.git",
+    "directory": "packages/xxd-css"
+  },
+  "keywords": [
+    "css",
+    "components",
+    "ui-kit",
+    "chrome-extension",
+    "shadow-dom",
+    "chinese",
+    "xxd-ui"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css",
+    "./src/js/global.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/js/index.d.ts",
+      "import": "./src/js/index.js"
+    },
+    "./labels": {
+      "types": "./src/js/labels.d.ts",
+      "import": "./src/js/labels.js"
+    },
+    "./gauge": {
+      "types": "./src/js/gauge.d.ts",
+      "import": "./src/js/gauge.js"
+    },
+    "./viz": {
+      "types": "./src/js/viz.d.ts",
+      "import": "./src/js/viz.js"
+    },
+    "./index.css": "./src/index.css",
+    "./css/*.css": "./src/css/*.css",
+    "./dist/boot.js": "./dist/boot.js",
+    "./dist/components.css": "./dist/components.css",
+    "./dist/viz.js": "./dist/viz.js",
+    "./dist/icons.js": "./dist/icons.js",
+    "./dist/xxd.css": "./dist/xxd.css",
+    "./dist/xxd.esm.js": "./dist/xxd.esm.js",
+    "./dist/xxd.js": "./dist/xxd.js",
+    "./dist/xxd.min.css": "./dist/xxd.min.css",
+    "./dist/xxd.shadow.css": "./dist/xxd.shadow.css",
+    "./dist/xxd.shadow.css.js": "./dist/xxd.shadow.css.js",
+    "./dist/xxd.shadow.min.css": "./dist/xxd.shadow.min.css",
+    "./registry.json": "./registry.json",
+    "./patterns.json": "./patterns.json",
+    "./registry.en.js": "./registry.en.js",
+    "./patterns.en.js": "./patterns.en.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "dist",
+    "registry.json",
+    "patterns.json",
+    "registry.en.js",
+    "patterns.en.js"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "vitest run",
+    "prepack": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@xxd/icons": "workspace:*",
+    "@xxd/tokens": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1",
+    "happy-dom": "catalog:",
+    "lightningcss": "1.33.0",
+    "vitest": "catalog:"
+  }
+}

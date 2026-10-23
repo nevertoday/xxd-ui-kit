@@ -1,0 +1,99 @@
+{
+  "signinGift": {
+    "message": "新账号送 7 天完整体验"
+  },
+  "signinGoogle": {
+    "message": "使用 Google 继续"
+  },
+  "signinOr": {
+    "message": "或使用邮箱"
+  },
+  "signinAs": {
+    "message": "登录"
+  },
+  "continue": {
+    "message": "继续"
+  },
+  "back": {
+    "message": "返回"
+  },
+  "terms": {
+    "message": "继续即表示同意服务条款和隐私政策"
+  },
+  "groupAccount": {
+    "message": "账号"
+  },
+  "upgrade": {
+    "message": "开通会员"
+  },
+  "planMonth": {
+    "message": "月度会员"
+  },
+  "planYear": {
+    "message": "年度会员"
+  },
+  "planKeep": {
+    "message": "体验剩下的天数会保留。"
+  },
+  "pay": {
+    "message": "去支付"
+  },
+  "paid": {
+    "message": "我已支付，立即查询"
+  },
+  "payOpened": {
+    "message": "已在新标签页打开支付页"
+  },
+  "memberDone": {
+    "message": "会员已开通"
+  },
+  "signout": {
+    "message": "退出登录"
+  },
+  "emailLabel": {
+    "message": "邮箱"
+  },
+  "passwordLabel": {
+    "message": "密码"
+  },
+  "signinLabel": {
+    "message": "登录"
+  },
+  "plansLabel": {
+    "message": "计划"
+  },
+  "confirmSignout": {
+    "message": "确认退出"
+  },
+  "memberUntil": {
+    "message": "会员 · 到 $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "trialLeft": {
+    "message": "完整体验 · 还剩 $DAYS$ 天",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "manage": {
+    "message": "管理"
+  },
+  "priceMonth": {
+    "message": "¥29"
+  },
+  "priceYear": {
+    "message": "¥228"
+  },
+  "accountName": {
+    "message": "你的名字"
+  },
+  "avatarText": {
+    "message": "你"
+  }
+}

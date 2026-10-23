@@ -1,0 +1,76 @@
+---
+import Site from "../layouts/Site.astro";
+import { langOf } from "../i18n/index.js";
+// D1：平面（缺省）和立体（data-finish="material"）并排看，再决定插件里默认哪一种。
+const en = langOf(Astro.url.pathname) === "en";
+const sets = en
+  ? [
+      { finish: "flat", name: "Flat", note: "The default. A solid button is one block of color; border and fill match." },
+      { finish: "material", name: "Material", note: "Solid buttons get a 1px inner highlight on top, a slightly darker edge, and sink 0.5px when pressed. No outer shadow — it's material, not elevation." },
+    ]
+  : [
+      { finish: "flat", name: "平面", note: "缺省。实心按钮就是一块颜色，边和底同色。" },
+      { finish: "material", name: "立体", note: "实心按钮顶部 1px 内高光、边深一点、按下沉 0.5px。没有外阴影 —— 是材质，不是浮起。" },
+    ];
+const w = en
+  ? { post: "Post to X", draft: "Save draft", del: "Delete", cancel: "Cancel", copy: "Copy 24 links", member: "Become a member", status: "24 images · from mp.weixin.qq.com", links: "Copy links" }
+  : { post: "写入 X", draft: "保存草稿", del: "删除", cancel: "取消", copy: "复制 24 个链接", member: "开通会员", status: "24 张 · 来自 mp.weixin.qq.com", links: "复制链接" };
+const sample = `<div class="xxd-cluster"><button class="xxd-btn" data-variant="primary">${w.post}</button><button class="xxd-btn">${w.draft}</button><button class="xxd-btn" data-variant="danger">${w.del}</button><button class="xxd-btn" data-variant="ghost">${w.cancel}</button></div>
+<div class="xxd-cluster"><button class="xxd-btn" data-variant="primary" data-size="sm">${w.copy}</button><button class="xxd-btn" data-variant="primary" data-size="lg">${w.member}</button></div>
+<footer class="xxd-dock" style="position:static;border:1px solid var(--line)"><div class="xxd-dock__status">${w.status}</div><div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" data-size="sm">${w.links}</button></div></footer>`;
+const T = en
+  ? {
+      title: "Button style", h1: "Button style: flat / material", caption: "Foundations", compare: "Side by side", zoom: "Up close", use: "How to turn it on",
+      zoomLead: "At 1× the difference is a single pixel, so here it's 3× — resting and pressed, in light and dark.", rest: "Resting", pressed: "Pressed", light: "Light", dark: "Dark",
+      lead: "Only affects solid buttons (primary, danger). Both render in the current theme, corners and accent — switch the appearance in the top bar to compare.",
+      code: `<html data-finish="material">          <!-- the whole product -->
+<section data-finish="material">…</section>  <!-- one area; data-finish="flat" inside turns it off again -->
+Xxd.mountAppearance(el, { showFinish: true })   // let users choose under Appearance`,
+    }
+  : {
+      title: "质感", h1: "质感：平面 / 立体", caption: "基础", compare: "并排", zoom: "放大看", use: "怎么开",
+      zoomLead: "1 倍下差别只有一个像素，这里放大 3 倍：平时和按下，亮色和暗色各一组。", rest: "平时", pressed: "按下", light: "亮", dark: "暗",
+      lead: "只影响实心按钮（主操作、危险）。两种都在当前主题、圆角、主色下渲染 —— 用顶栏切换外观对比。",
+      code: `<html data-finish="material">          <!-- 整个产品 -->
+<section data-finish="material">…</section>  <!-- 局部；里面再写 data-finish="flat" 可以关掉 -->
+Xxd.mountAppearance(el, { showFinish: true })   // 让用户在「外观」里选`,
+    };
+---
+
+<Site title={T.title} headings={[{ slug: "compare", text: T.compare }, { slug: "zoom", text: T.zoom }, { slug: "use", text: T.use }]}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.h1}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <h2 class="site-h2" id="compare">{T.compare}</h2>
+  <div class="site-dodont">
+    {sets.map((s) => (
+      <figure data-kind="do">
+        <div class="site-dodont__stage" data-finish={s.finish} style="display:grid;gap:14px;justify-items:start" set:html={sample} />
+        <figcaption><b>{s.name}</b>{s.note}</figcaption>
+      </figure>
+    ))}
+  </div>
+  <h2 class="site-h2" id="zoom">{T.zoom}</h2>
+  <p class="site-p">{T.zoomLead}</p>
+  <div class="site-finish-zoom">
+    {sets.map((s) => (
+      <figure>
+        <figcaption><b>{s.name}</b></figcaption>
+        {[["light", T.light], ["dark", T.dark]].map(([theme, label]) => (
+          <div class="site-finish-zoom__row xxd-force-scope" data-theme={theme} data-finish={s.finish}>
+            <span class="xxd-text" data-variant="caption">{label}</span>
+            <div class="site-finish-zoom__lens">
+              <button class="xxd-btn" data-variant="primary" data-size="sm" tabindex="-1" aria-label={`${s.name} · ${label} · ${T.rest}`}>{w.post}</button>
+              <button class="xxd-btn" data-variant="primary" data-size="sm" data-force="active" tabindex="-1" aria-label={`${s.name} · ${label} · ${T.pressed}`}>{w.post}</button>
+            </div>
+            <span class="xxd-text" data-variant="caption">{T.rest} · {T.pressed}</span>
+          </div>
+        ))}
+      </figure>
+    ))}
+  </div>
+  <h2 class="site-h2" id="use">{T.use}</h2>
+  <pre class="xxd-code" tabindex="0"><code>{T.code}</code></pre>
+</Site>

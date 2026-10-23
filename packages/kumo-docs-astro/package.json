@@ -1,0 +1,63 @@
+{
+  "name": "@cloudflare/kumo-docs-astro",
+  "version": "1.5.22",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./demo-metadata.json": "./dist/demo-metadata.json"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @xxd/tokens build && pnpm --filter @xxd/css build && pnpm run xxd:assets && astro dev",
+    "build": "pnpm --filter @xxd/tokens build && pnpm --filter @xxd/css build && pnpm run xxd:assets && pnpm run codegen:demos && pnpm run generate-design-skill && astro build",
+    "codegen:demos": "tsx scripts/extract-demo-examples.ts",
+    "generate-design-skill": "node scripts/generate-design-skill.mjs",
+    "preview": "astro preview",
+    "astro": "astro",
+    "typecheck": "astro check",
+    "test": "vp test run",
+    "lint": "vp lint src/ && node ../../lint/lint-astro-colors.js src/",
+    "lint:oxlint": "vp lint src/",
+    "lint:astro": "node ../../lint/lint-astro-colors.js src/",
+    "xxd:assets": "node scripts/xxd-assets.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.2.1",
+    "@astrojs/mdx": "^7.0.3",
+    "@astrojs/sitemap": "^3.7.3",
+    "@cloudflare/kumo": "workspace:*",
+    "@phosphor-icons/react": "catalog:",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/turndown": "5.0.6",
+    "@xxd/css": "workspace:*",
+    "@xxd/tokens": "workspace:*",
+    "astro": "7.2.8",
+    "clsx": "catalog:",
+    "echarts": "^6.0.0",
+    "marked": "^18.0.6",
+    "match-sorter": "^8.2.0",
+    "motion": "^12.34.1",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "tailwind-merge": "catalog:",
+    "turndown": "7.2.2",
+    "turndown-plugin-gfm": "1.0.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/react": "^6.0.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/mdast": "4.0.4",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "^4.3.3",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

@@ -1,0 +1,29 @@
+---
+// React 属性表的一张表（ReactProps 用）：属性 · 类型 · 缺省 · 说明（Kumo 的英文原文）
+import { langOf, t } from "../i18n/index.js";
+interface Props {
+  rows: [string, { type?: string; values?: string[]; default?: string; optional?: boolean; description?: string }][];
+}
+const { rows } = Astro.props;
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+// Kumo 的说明是 Markdown：只认 `代码`
+const esc = (x) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const desc = (x = "") => esc(x).replace(/`([^`]+)`/g, '<code class="xxd-code-inline">$1</code>');
+// 类型可能很长（ToolbarRoot.Orientation）：只在「.」和「|」后面换行，不在单词中间断开
+const typeOf = (p) => esc(p.values ? p.values.map((v) => `"${v}"`).join(" | ") : p.type ?? "").replace(/\./g, ".<wbr>").replace(/ \| /g, " |<wbr> ");
+---
+
+<div class="xxd-table-wrap site-props-wrap"><table class="site-props">
+  <thead><tr><th>{L.reactProp}</th><th>{L.reactType}</th><th>{L.reactDefault}</th><th>{L.propsDesc}</th></tr></thead>
+  <tbody>
+    {rows.map(([k, p]) => (
+      <tr>
+        <td>{k}{p.optional ? "?" : ""}</td>
+        <td class="xxd-text site-type" data-variant="mono-secondary" set:html={typeOf(p)} />
+        <td class="xxd-text" data-variant="mono-secondary">{p.default ?? "—"}</td>
+        <td lang={lang === "en" || !p.description || /[\u4e00-\u9fff]/.test(p.description) ? undefined : "en"} set:html={desc(p.description) || "—"} />
+      </tr>
+    ))}
+  </tbody>
+</table></div>

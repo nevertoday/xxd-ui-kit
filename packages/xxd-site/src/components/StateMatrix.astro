@@ -1,0 +1,22 @@
+---
+// 状态矩阵：同一个元素的各种状态静态并排（悬停 / 聚焦 / 按下用 forced-states.css 里由真实规则生成的版本）。
+import { STATES, withAttr } from "../lib/markup.js";
+import { langOf } from "../i18n/index.js";
+interface Props {
+  sample: string;
+  states: (keyof typeof STATES)[];
+}
+const { sample, states } = Astro.props;
+const en = langOf(Astro.url.pathname) === "en";
+---
+
+<div class="site-matrix xxd-force-scope">
+  {
+    states.map((s) => (
+      <div>
+        <span class="site-matrix__label">{en ? STATES[s].en : STATES[s].label}</span>
+        <Fragment set:html={STATES[s].attrs ? withAttr(sample, STATES[s].attrs) : sample} />
+      </div>
+    ))
+  }
+</div>

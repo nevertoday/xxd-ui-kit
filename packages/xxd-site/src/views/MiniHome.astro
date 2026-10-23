@@ -1,0 +1,170 @@
+---
+// 小程序版总说明（/miniprogram/）：是什么、怎么开始、和网页版的关系、手机上的规则、全部组件。中文 / 英文共用。
+import Site from "../layouts/Site.astro";
+import Code from "../components/Code.astro";
+import MiniFrame from "../components/MiniFrame.astro";
+import { miniFor } from "../lib/mini.js";
+import { langOf, t, withLang } from "../i18n/index.js";
+
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+const en = lang === "en";
+const items = miniFor(lang);
+const T = en
+  ? {
+      title: "Mini program kit", caption: "@xxd/mini",
+      lead: "XXD UI for WeChat mini programs: React components on Taro 4.2, with the same tokens and styles as the web kit — square corners, ink, warm dark, system fonts. The CSS is rewritten for mini programs at build time instead of being copied by hand.",
+      h: { start: "Get started", same: "Same as the web kit", rules: "Rules on phones", design: "Designing for it", components: "Components", limits: "What's not there yet" },
+      design: [
+        "Design at <strong>375 wide, 1×</strong>, and use the numbers as they are: a 40px control is 40px in code. Don't design at 750 and halve, and don't convert to rpx — the kit uses px, so 1px lines stay crisp.",
+        "Leave the <strong>top right</strong> free: the WeChat capsule button (about 87 × 32) sits there. A custom nav bar centres its title on the capsule's vertical centre.",
+        "Leave the <strong>bottom</strong> free on phones with a home indicator: tab bars, button bars and bottom sheets add the safe area (34px on most iPhones).",
+        "Tap targets are at least <strong>44 × 44</strong>, even where the control looks smaller (a 20px switch has a 44px hit area).",
+        "No hover: anything you'd put in a tooltip goes on the page; menus become bottom sheets.",
+        "Tokens, type pairs and spacing are the same as the web kit; see <a class=\"xxd-link\" href=\"/en/designers\">For designers</a>.",
+      ],
+      fig: { status: "Status bar", nav: "Nav bar 44", capsule: "Capsule ≈ 87 × 32", content: "Content · 375 wide", tab: "Tab bar 52", safe: "Safe area 34" },
+      start: "Create a project (home page, settings, tab bar and system dark mode included), install it and build; then import the folder in WeChat DevTools.",
+      startExisting: "In an existing Taro 4.2 + React project, install @xxd/mini and add the plugin:",
+      same: [
+        "<strong>Tokens</strong>: the same file (packages/xxd-tokens/tokens.css). Colors that the web works out with <code class=\"xxd-code-inline\">color-mix()</code> are computed ahead of time, and again in JS when the accent changes — checked against Chrome.",
+        "<strong>Styles</strong>: each component's CSS comes from @xxd/css. Attribute selectors become classes (<code class=\"xxd-code-inline\">[data-variant=primary]</code> → <code class=\"xxd-code-inline\">.is-variant-primary</code>), <code class=\"xxd-code-inline\">:root</code> becomes <code class=\"xxd-code-inline\">page</code>, <code class=\"xxd-code-inline\">:hover</code> becomes the pressed class. Anything that can't be rewritten fails the build.",
+        "<strong>Appearance</strong>: follows the system theme by default; theme, accent, corners, density and finish are stored on the device and apply to every page at once, with no flash on the first frame.",
+        "<strong>Sizes</strong>: px, not rpx — the same numbers as the web kit, and 1px lines stay crisp.",
+      ],
+      rules: [
+        "Tap targets are at least 44 × 44px.",
+        "A custom nav bar leaves room for the capsule button (NavBar does it).",
+        "Bottom bars and tab bars add the safe area.",
+        "Menus and popovers become bottom sheets; tooltips aren't used — put the explanation on the page; right-click becomes long-press.",
+        "The phone's back gesture closes the top sheet or dialog first, one layer at a time (XxdPage keeps one stack per page).",
+        "Pressing gives a light tint — no bolder text, no scaling.",
+        "In a list row with a switch or checkbox, tapping anywhere on the row toggles it; screen readers hear one switch, not two things.",
+        "Bottom space is shared: the tab bar, the bottom button bar (BottomBar) and the safe area add up to --bottom-inset, and the page end, toasts and anything floating use it. Put the main action in a BottomBar rather than a floating button.",
+        "Use the built-in tab bar with custom: true and put <TabBarHost> in src/custom-tab-bar; write <XxdPage tabBar={TABS}> on each tab page. Switching tabs then keeps the page, its scroll position and what was typed.",
+        "Sheets close by dragging the grip down; a sheet that can't be dismissed shows no grip.",
+        "A long press gives a light vibration (useLongPress).",
+        "Text is at least 12px; only tab bar labels and badge numbers are 11px.",
+        "Settings pages run groups edge to edge; a lone action in a form (Sign out) uses the inset group.",
+      ],
+      limits: [
+        "WeChat only for now; the code avoids WeChat-only APIs, so Alipay and Douyin need only the differences.",
+        "The default WebView renderer is guaranteed. The build report has a Skyline column with what's left to do.",
+        "Screen readers: every control carries its role and state (aria-* from base library 2.7.1); try VoiceOver and TalkBack on a real phone.",
+      ],
+    }
+  : {
+      title: "小程序版", caption: "@xxd/mini",
+      lead: "小小东 UI 的微信小程序版：基于 Taro 4.2 的 React 组件，令牌和样式和网页版是同一套——直角、墨色、暖黑、系统字体。样式在构建时从网页版改写过来，不是手抄一份。",
+      h: { start: "开始", same: "和网页版一样的地方", rules: "手机上的规则", design: "出稿规范", components: "组件", limits: "还没有的" },
+      design: [
+        "按 <strong>375 宽、1 倍</strong>出稿，数字直接用：稿子里 40px 的控件，代码里就是 40px。不要按 750 出再除以 2，也不要换成 rpx——组件用 px，1px 的线不发虚。",
+        "<strong>右上角</strong>留给微信的胶囊按钮（约 87 × 32）。自定义导航栏的标题和胶囊垂直居中对齐。",
+        "有底部横条的手机，<strong>底部</strong>留出安全区：标签栏、按钮条、底部面板都加上它（大多数 iPhone 是 34px）。",
+        "能点的东西至少 <strong>44 × 44</strong>，看起来小的控件也一样（20px 高的开关，点击区是 44px）。",
+        "没有悬停：要写在提示里的话直接写在页面上；菜单换成底部面板。",
+        "令牌、字号行高、间距和网页版一样，见<a class=\"xxd-link\" href=\"/designers\">设计师从这里开始</a>。",
+      ],
+      fig: { status: "状态栏", nav: "导航栏 44", capsule: "胶囊约 87 × 32", content: "内容 · 375 宽", tab: "标签栏 52", safe: "安全区 34" },
+      start: "新建一个项目（首页、设置页、底部标签栏、跟随系统暗色都放好了），装好依赖、编一次，然后在微信开发者工具里导入这个目录。",
+      startExisting: "已有的 Taro 4.2 + React 项目：装上 @xxd/mini，加一个插件：",
+      same: [
+        "<strong>令牌</strong>：同一份（packages/xxd-tokens/tokens.css）。网页版用 <code class=\"xxd-code-inline\">color-mix()</code> 算的颜色，小程序版在构建时算好，换主色时再用 JS 算——和 Chrome 算的对过。",
+        "<strong>样式</strong>：每个组件的 CSS 都从 @xxd/css 来。属性选择器换成类名（<code class=\"xxd-code-inline\">[data-variant=primary]</code> → <code class=\"xxd-code-inline\">.is-variant-primary</code>），<code class=\"xxd-code-inline\">:root</code> 换成 <code class=\"xxd-code-inline\">page</code>，<code class=\"xxd-code-inline\">:hover</code> 换成按下时的类名。改写不了的，构建直接失败。",
+        "<strong>外观</strong>：缺省跟随系统亮暗；主题、主色、圆角、密度、按钮质感存在手机上，改了所有页面一起变，第一帧就是对的。",
+        "<strong>尺寸</strong>：写 px，不换算成 rpx——和网页版是同一组数字，1px 的线不发虚。",
+      ],
+      rules: [
+        "能点的东西至少 44 × 44px。",
+        "自定义导航栏给右上角的胶囊按钮让位（NavBar 已经做好）。",
+        "底部的按钮条、标签栏留出安全区。",
+        "菜单、浮动卡片换成底部面板；不做悬停提示，说明直接写在界面上；右键换成长按。",
+        "浮层打开时，手机的返回键先关最上面的那层，一层一层关（XxdPage 每页管一个浮层栈）。",
+        "按下时给一层淡色，不加粗、不放大。",
+        "带开关、复选框的列表行，点整行就是切换；读屏上整行是一个开关，不是两个东西。",
+        "底部的空间大家一起算：标签栏、底部按钮条（BottomBar）、安全区加起来是 --bottom-inset，页面底部、轻提示、浮动的东西都按它留位置。主操作放底部按钮条，少用浮动按钮。",
+        "底部标签栏用小程序自带的（custom: true），在 src/custom-tab-bar 里放 <TabBarHost>，每个标签页写 <XxdPage tabBar={TABS}>。切页不销毁页面，滚动位置和输入的内容都在。",
+        "底部面板按住把手往下拖就关；不能关的面板不画把手。",
+        "长按生效时轻震一下（useLongPress）。",
+        "字不小于 12px；只有标签栏的字和角标数字是 11px。",
+        "设置页的组贴满两边；表单里单独一个操作（退出登录）用两边留白的组。",
+      ],
+      limits: [
+        "先只做微信。代码不写微信专有的东西，以后加支付宝、抖音只补差异。",
+        "保证默认的 WebView 渲染引擎；构建报告里有一列 Skyline，列着还差什么。",
+        "读屏：每个控件都带角色和状态（基础库 2.7.1 起的 aria-* 属性）；真机上的旁白、TalkBack 要自己试一遍。",
+      ],
+    };
+const headings = [
+  { slug: "start", text: T.h.start },
+  { slug: "same", text: T.h.same },
+  { slug: "rules", text: T.h.rules },
+  { slug: "design", text: T.h.design },
+  { slug: "components", text: T.h.components },
+  { slug: "limits", text: T.h.limits },
+];
+---
+
+<Site title={T.title} description={T.lead} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  <div class="site-mini-intro">
+    <div>
+      <h2 class="site-h2" id="start">{T.h.start}</h2>
+      <p>{T.start}</p>
+      <Code code={`xxd-ui new-mini ./today-mini --name ${en ? '"Today"' : "今日待办"}\ncd ./today-mini\npnpm install\npnpm dev:weapp`} />
+      <p style="margin-top:var(--space-4)">{T.startExisting}</p>
+      <Code code={`// config/index.ts\nplugins: ["@xxd/mini/taro-plugin"],\nmini: { postcss: { pxtransform: { enable: false } } },\n\n// src/app.tsx\nimport "@xxd/mini/tokens.css";\nimport { XxdProvider } from "@xxd/mini";\n\n// ${en ? "every page" : "每一页"}\nimport { XxdPage, Button, Cell, CellGroup } from "@xxd/mini";`} />
+    </div>
+    <div>
+      <MiniFrame name="Cell" label={items.find((c) => c.name === "Cell")?.label ?? "Cell"} height={560} />
+    </div>
+  </div>
+
+  <h2 class="site-h2" id="same">{T.h.same}</h2>
+  <ul class="site-rules">{T.same.map((x) => <li set:html={x} />)}</ul>
+
+  <h2 class="site-h2" id="rules">{T.h.rules}</h2>
+  <ul class="site-rules">{T.rules.map((x) => <li>{x}</li>)}</ul>
+
+  <h2 class="site-h2" id="design">{T.h.design}</h2>
+  <div class="site-mini-design">
+    <ul class="site-rules">{T.design.map((x) => <li set:html={x} />)}</ul>
+    <figure class="site-phone-fig" aria-hidden="true">
+      <div class="site-phone">
+        <div class="site-phone__status">{T.fig.status}</div>
+        <div class="site-phone__nav"><span>{T.fig.nav}</span><span class="site-phone__capsule"></span></div>
+        <div class="site-phone__content">{T.fig.content}</div>
+        <div class="site-phone__tab">{T.fig.tab}</div>
+        <div class="site-phone__safe">{T.fig.safe}</div>
+      </div>
+      <figcaption>{T.fig.capsule}</figcaption>
+    </figure>
+  </div>
+
+  <h2 class="site-h2" id="components">{T.h.components}</h2>
+  {
+    [1, 2, 3].map((batch) => (
+      <section class="site-mini-group">
+        <h3 class="site-h3">{batch === 1 ? L.miniBatch1 : batch === 2 ? L.miniBatch2 : L.miniBatch3}</h3>
+        <ul class="site-mini-list">
+          {items.filter((c) => c.batch === batch).map((c) => (
+            <li>
+              <a class="site-mini-list__item" href={withLang(`/miniprogram/${c.slug}`, lang)}>
+                <span class="site-mini-list__name">{c.label}{!en && <span class="xxd-text" data-variant="mono-secondary"> {c.name}</span>}</span>
+                <span class="site-mini-list__desc">{c.summary}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <h2 class="site-h2" id="limits">{T.h.limits}</h2>
+  <ul class="site-rules">{T.limits.map((x) => <li>{x}</li>)}</ul>
+</Site>

@@ -1,0 +1,202 @@
+---
+// 开始使用：准备 → 普通网页 → Chrome 插件 → 已有网站 → React。中文 / 英文共用；代码块里只有注释和示例名字随语言变。
+import Site from "../layouts/Site.astro";
+import Code from "../components/Code.astro";
+import { langOf, withLang } from "../i18n/index.js";
+import { CDN_VERSION } from "../lib/data.js";
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const CDN = `https://ui.xiaoxiaodong.ai/v/${CDN_VERSION}`;
+const T = en
+  ? {
+      title: "Get started",
+      caption: "Get started",
+      lead: "One set of tokens, one set of components. Set up once, then pick the path that fits your project: a plain page, a Chrome extension, a site that already has its own variables, or React.",
+      h: { prep: "0. Set up", web: "Plain web page", ext: "Chrome extension", existing: "A site with its own variables", react: "React", rules: "Rules to keep while coding", terms: "Terms" },
+      terms: [
+        ["Tokens", "Design variables: the CSS custom properties for color, type size, spacing and radius. The single source is tokens.css."],
+        ["Components", "One piece of UI: a button, a dialog, a list."],
+        ["Patterns", "A fixed combination of components for a common job: drop zone, two-step confirm, sign-in."],
+        ["Templates", "A whole page put together, ready to copy."],
+        ["Density", "Comfortable (40px controls, for sites) or compact (32px, for side panels and popups)."],
+        ["Finish", "Flat or material: only changes solid buttons."],
+        ["vendor", "The built files copied into a project (vendor/xxd/); update them with sync, never by hand."],
+        ["init / sync / doctor", "Bring a project in / copy in the latest build / check it against the rules."],
+      ],
+      prep: "Not on npm yet (alpha, 0.x), so you use it from source. You need Node 24.12+ and pnpm 12.",
+      prepAfter: "Commands below are written as <code class=\"xxd-code-inline\">xxd-ui …</code>; without <code class=\"xxd-code-inline\">link</code>, run them inside the repo as <code class=\"xxd-code-inline\">pnpm xxd …</code>.",
+      webTry: "<strong>Try it</strong> with the versioned files hosted on this site:",
+      webReal: "<strong>For real</strong>, copy the files into your project and update them with one command:",
+      webBundler: "<strong>With a bundler</strong> (Vite etc.), install the packed <code class=\"xxd-code-inline\">@xxd/css</code> (see React below) and import it:",
+      ext: "Load it right away with “Load unpacked”. The components are copied into the extension's own <code class=\"xxd-code-inline\">vendor/xxd/</code> (MV3 can't load remote code). Add <code class=\"xxd-code-inline\">--popup</code>, <code class=\"xxd-code-inline\">--content \"&lt;match&gt;\"</code> or <code class=\"xxd-code-inline\">--account</code> when you need them.",
+      extPage: "Each page loads these, <code class=\"xxd-code-inline\">boot.js</code> first so the very first frame already uses the user's theme:",
+      existing: "Adopt it without changing how anything looks: the tokens go in a layer, so your own variables always win; identical declarations can be handed over to the tokens; icons are synced from @xxd/icons.",
+      existingMore: "Step by step, and how to prove nothing changed:",
+      existingLink: "bringing in an existing site",
+      react: "Not on npm yet: pack the packages in xxd-ui-kit and install the .tgz files in your project.",
+      reactApp: "A complete <code class=\"xxd-code-inline\">App.tsx</code>:",
+      reactBoot: "To avoid a flash on first load, also put <code class=\"xxd-code-inline\">boot.js</code> in <code class=\"xxd-code-inline\">&lt;head&gt;</code> with the same key:",
+      reactTw: "With Tailwind v4, put the layer order first so utilities can override XXD components:",
+    }
+  : {
+      title: "开始使用",
+      caption: "开始",
+      lead: "同一份令牌、同一套组件。先准备一次，再按项目选一条路：普通网页、Chrome 插件、已经有一套变量的网站，或者 React。",
+      h: { prep: "0. 准备", web: "普通网页", ext: "Chrome 插件", existing: "已经有一套变量的网站", react: "React", rules: "写代码时守住", terms: "术语" },
+      terms: [
+        ["令牌", "设计变量（design token）：颜色、字号、间距、圆角这些 CSS 变量，唯一来源是 tokens.css。"],
+        ["组件", "一个界面零件：按钮、对话框、列表。"],
+        ["模式（patterns）", "几个组件拼成的固定做法：拖放区、两次确认、登录。"],
+        ["模板", "拼好的整页，可以整页复制。"],
+        ["密度", "标准（控件 40px，网站用）或紧凑（32px，侧边栏和 popup 用）。"],
+        ["质感", "平面或立体：只影响实心按钮。"],
+        ["vendor", "拷进项目的构建文件（vendor/xxd/）；用 sync 更新，不要手改。"],
+        ["init / sync / doctor", "接入一个项目 / 拷入最新版 / 按规则体检。"],
+      ],
+      prep: "还没发布到 npm（alpha，0.x），目前从源码用。需要 Node 24.12 以上和 pnpm 12。",
+      prepAfter: "下面的命令写成 <code class=\"xxd-code-inline\">xxd-ui …</code>；没有 <code class=\"xxd-code-inline\">link</code> 的话，在仓库里换成 <code class=\"xxd-code-inline\">pnpm xxd …</code>。",
+      webTry: "<strong>先试一下</strong>：直接引用展示站上带版本号的文件：",
+      webReal: "<strong>正式用</strong>：把文件拷进自己的项目，以后一条命令更新：",
+      webBundler: "<strong>有打包工具</strong>（Vite 等）：装上打包好的 <code class=\"xxd-code-inline\">@xxd/css</code>（见下面 React 一节），然后引入：",
+      ext: "建好就能在 Chrome 里「加载已解压的扩展程序」。组件拷进插件自己的 <code class=\"xxd-code-inline\">vendor/xxd/</code>（MV3 不能加载远程代码）。需要时加 <code class=\"xxd-code-inline\">--popup</code>、<code class=\"xxd-code-inline\">--content \"&lt;match&gt;\"</code>、<code class=\"xxd-code-inline\">--account</code>。",
+      extPage: "每个页面这样引入，<code class=\"xxd-code-inline\">boot.js</code> 放最前面，页面第一帧就是用户选的主题：",
+      existing: "不改样子地接入：令牌放在层里，你已有的变量永远优先；和令牌完全相同的声明可以改由令牌提供；图标从 @xxd/icons 同步。",
+      existingMore: "一步步怎么做、怎么证明零变化：",
+      existingLink: "已有网站怎么接入",
+      react: "npm 还没发布：在 xxd-ui-kit 里打包，再把 .tgz 装进你的项目。",
+      reactApp: "一个完整的 <code class=\"xxd-code-inline\">App.tsx</code>：",
+      reactBoot: "首帧不闪：在 <code class=\"xxd-code-inline\">&lt;head&gt;</code> 里放 <code class=\"xxd-code-inline\">boot.js</code>，用同一个 key：",
+      reactTw: "用 Tailwind v4 时，层顺序写在最前面，工具类才能盖住小小东的组件：",
+    };
+const headings = Object.entries(T.h).map(([slug, text]) => ({ slug, text }));
+const repo = "https://github.com/nevertoday/xxd-ui-kit";
+const existingDoc = `${repo}/blob/main/docs/${en ? "en/" : ""}existing-site.md`;
+---
+
+<Site title={T.title} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  <h2 class="site-h2" id="prep">{T.h.prep}</h2>
+  <p class="site-p">{T.prep}</p>
+  <Code code={`git clone ${repo}.git
+cd xxd-ui-kit
+pnpm install
+pnpm xxd:build
+pnpm xxd link      # ${en ? "optional: the global command xxd-ui" : "可选：装成全局命令 xxd-ui"}`} />
+  <p class="site-p" set:html={T.prepAfter} />
+
+  <h2 class="site-h2" id="web">{T.h.web}</h2>
+  <p class="site-p" set:html={T.webTry} />
+  <Code code={`<script src="${CDN}/boot.js" data-key="my-site-ui"></script>
+<link rel="stylesheet" href="${CDN}/xxd.css">
+<script src="${CDN}/icons.js"></script>
+<script src="${CDN}/xxd.js"></script>
+
+<body class="xxd-page">
+  <button class="xxd-btn" data-variant="primary">${en ? "Save" : "保存"}</button>
+</body>`} />
+  <p class="site-p" set:html={T.webReal} />
+  <Code code={`xxd-ui init ./my-site     # ${en ? "writes xxd.config.json, copies the components, prints the <head> lines" : "写 xxd.config.json、拷组件，打印要放进 <head> 的几行"}
+xxd-ui sync ./my-site     # ${en ? "later: copy in the latest version" : "以后：拷入最新版"}`} />
+  <p class="site-p" set:html={T.webBundler} />
+  <Code code={`import "@xxd/css/dist/xxd.css";
+import { install, toast } from "@xxd/css";
+install();
+toast("${en ? "Saved" : "已保存"}", { tone: "success" });`} />
+
+  <h2 class="site-h2" id="ext">{T.h.ext}</h2>
+  <p class="site-p" set:html={T.ext} />
+  <Code code={`xxd-ui new ./today ${en ? '--name "Today"' : '--name 今日待办 --name-en "Today"'} --slug today
+xxd-ui doctor ./today     # ${en ? "check it after you change things" : "改完体检一下"}
+xxd-ui status             # ${en ? "who is behind (every remembered project)" : "谁落后了（记住的全部项目）"}
+xxd-ui sync --all         # ${en ? "update all of them" : "全部更新"}`} />
+  <p class="site-p" set:html={T.extPage} />
+  <Code code={`<script src="vendor/xxd/boot.js" data-key="today-ui" data-default-density="compact"></script>
+<link rel="stylesheet" href="vendor/xxd/xxd.css">
+<script src="vendor/xxd/icons.js"></script>
+<script src="vendor/xxd/xxd.js"></script>
+<script src="vendor/xxd/extension.js"></script>
+<body class="xxd-page">…</body>`} />
+
+  <h2 class="site-h2" id="existing">{T.h.existing}</h2>
+  <p class="site-p">{T.existing}</p>
+  <Code code={`// xxd.config.json
+{
+  "vendorDir": false,
+  "layeredTokensRegions": ["public/styles.css"],
+  "iconNodesTargets": ["src/lib/xxd-icon-nodes.js"]
+}
+
+xxd-ui sync  ./my-site
+xxd-ui adopt ./my-site    # ${en ? "optional" : "可选"}`} />
+  <p class="site-p">{T.existingMore} <a class="xxd-link" href={existingDoc}>{T.existingLink}</a></p>
+
+  <h2 class="site-h2" id="react">{T.h.react}</h2>
+  <p class="site-p">{T.react}</p>
+  <Code code={`xxd-ui pack ./packs          # ${en ? "in xxd-ui-kit: tokens, icons, css, react" : "在 xxd-ui-kit 里：tokens、icons、css、react"}
+npm install ./packs/*.tgz    # ${en ? "in your project" : "在你的项目里"}`} />
+  <p class="site-p" set:html={T.reactApp} />
+  <Code code={`import { Button, Dialog, DialogActions, XxdAppearanceProvider, XxdLocaleProvider, AppearanceSettings } from "@xxd/react";
+import "@xxd/react/standalone.css";
+import "@xxd/react/xxd.css";
+
+export function App() {
+  return (
+    <XxdAppearanceProvider storageKey="my-app-ui">
+      <XxdLocaleProvider locale="${en ? "en" : "zh-CN"}">
+        <main className="xxd-page">
+          <Dialog.Root>
+            <Dialog.Trigger render={(p) => <Button variant="destructive" {...p}>${en ? "Delete…" : "删除…"}</Button>} />
+            <Dialog className="p-6">
+              <Dialog.Title>${en ? "Delete this note?" : "删除这条笔记？"}</Dialog.Title>
+              <DialogActions className="mt-6">
+                <Dialog.Close render={(p) => <Button variant="ghost" {...p}>${en ? "Cancel" : "取消"}</Button>} />
+                <Dialog.Close render={(p) => <Button variant="destructive" {...p}>${en ? "Delete" : "删除"}</Button>} />
+              </DialogActions>
+            </Dialog>
+          </Dialog.Root>
+          <AppearanceSettings />
+        </main>
+      </XxdLocaleProvider>
+    </XxdAppearanceProvider>
+  );
+}`} />
+  <p class="site-p" set:html={T.reactBoot} />
+  <Code code={`<script src="/boot.js" data-key="my-app-ui"></script>   <!-- @xxd/tokens/dist/boot.js -->`} />
+  <p class="site-p" set:html={T.reactTw} />
+  <Code code={`@layer properties, theme, base, xxd, components, utilities;
+@import "tailwindcss";
+@import "@xxd/react/styles.css";`} />
+
+  <h2 class="site-h2" id="terms">{T.h.terms}</h2>
+  <dl class="site-terms">
+    {T.terms.map(([term, text]) => (
+      <div><dt>{term}</dt><dd>{text}</dd></div>
+    ))}
+  </dl>
+
+  <h2 class="site-h2" id="rules">{T.h.rules}</h2>
+  {
+    en ? (
+      <ul class="site-rules">
+        <li>Colors, radii, shadows and font sizes come from tokens only; rectangles use only <code class="xxd-code-inline">--r-xs/sm/md/lg/pill</code>, <code class="xxd-code-inline">--r-circle</code> is only for radios and spinners (avatars, dots and swatches follow the corner switch).</li>
+        <li>Cards, rows and buttons have no shadow; weights are 400 / 500 / 600 only; selection changes color, never weight.</li>
+        <li>Hover changes instantly on enter and fades back on leave; motion animates opacity / transform only.</li>
+        <li>In dialogs Cancel comes first and stays quiet; a button's label says what the next click will do.</li>
+        <li>Look up a component: <code class="xxd-code-inline">xxd-ui doc Dialog</code>; check a project: <code class="xxd-code-inline">xxd-ui doctor</code>; read the <a class="xxd-link" href={withLang("/principles", lang)}>design principles</a>.</li>
+      </ul>
+    ) : (
+      <ul class="site-rules">
+        <li>颜色、圆角、阴影、字号只用令牌；矩形圆角只用 <code class="xxd-code-inline">--r-xs/sm/md/lg/pill</code>；<code class="xxd-code-inline">--r-circle</code> 只给单选和转圈（头像、点、色块跟圆角开关走）。</li>
+        <li>卡片、行、按钮没有阴影；字重只有 400 / 500 / 600；选中改颜色不加粗。</li>
+        <li>hover 进入立即、离开淡回；动效只动 opacity / transform。</li>
+        <li>对话框取消在前、安静；按钮文字说下一次点击会做什么。</li>
+        <li>查组件：<code class="xxd-code-inline">xxd-ui doc 对话框</code>；体检项目：<code class="xxd-code-inline">xxd-ui doctor</code>；看原则：<a class="xxd-link" href="/principles">设计原则</a>。</li>
+      </ul>
+    )
+  }
+</Site>

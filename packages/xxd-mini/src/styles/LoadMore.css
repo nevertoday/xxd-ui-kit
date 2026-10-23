@@ -1,0 +1,31 @@
+.xxd-loadmore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.xxd-loadmore.is-status-idle,
+.xxd-loadmore.is-status-error {
+  color: var(--action-text);
+}
+
+.xxd-loadmore.is-status-error {
+  color: var(--danger);
+}
+
+.xxd-loadmore.is-hover {
+  opacity: 0.7;
+}
+
+/* 没有更多了：两边各一条短线 */
+.xxd-loadmore.is-status-done:before,
+.xxd-loadmore.is-status-done:after {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--line);
+}

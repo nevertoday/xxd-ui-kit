@@ -1,0 +1,20 @@
+/* 页面的一段：左右页边距 16px，段与段之间 24px */
+.xxd-section {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4) 0;
+}
+
+.xxd-section__title {
+  color: var(--muted);
+  font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+}
+
+.xxd-cluster {
+  align-items: center;
+}
+
+/* 页面底部留出标签栏、按钮条和安全区（XxdPage 算好的 --bottom-inset） */
+.xxd-page.is-has-bottom {
+  padding-bottom: var(--bottom-inset);
+}

@@ -1,0 +1,328 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Input"
+description: "A text input field for user input with built-in label, description, and error support."
+sourceFile: "components/input"
+baseUIComponent: "input"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import CodeBlock from "~/components/docs/CodeBlock.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  InputBasicDemo,
+  InputWithLabelDemo,
+  InputErrorStringDemo,
+  InputErrorObjectDemo,
+  InputSizesDemo,
+  InputDisabledDemo,
+  InputBareDemo,
+  InputErrorWithoutLabelDemo,
+  InputPasswordManagerIgnoreDemo,
+  InputTypesDemo,
+  InputOptionalFieldDemo,
+  InputLabelTooltipDemo,
+  InputReactNodeLabelDemo,
+  InputControlledOnChangeDemo,
+  InputControlledOnValueChangeDemo,
+} from "~/components/demos/InputDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="InputBasicDemo">
+    <InputBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+<CodeBlock code={`import { Input } from "@cloudflare/kumo";`} lang="tsx" />
+
+### Granular
+
+  <CodeBlock
+    code={`import { Input } from "@cloudflare/kumo/components/input";`}
+    lang="tsx"
+  />
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+### With Built-in Field (Recommended)
+
+<p>
+  Use the `label` prop to enable the built-in Field wrapper with label,
+  description, and error support.
+</p>
+
+```tsx
+import { Input } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <Input
+      label="Email"
+      placeholder="you@example.com"
+      description="We'll never share your email"
+    />
+  );
+}
+```
+
+### Bare Input (Custom Layouts)
+
+<p>
+  For custom form layouts, use Input without `label`. Must provide `aria-label`
+  or `aria-labelledby` for accessibility.
+</p>
+
+```tsx
+import { Input } from "@cloudflare/kumo";
+
+export default function Example() {
+  return <Input placeholder="Search..." aria-label="Search products" />;
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### With Label and Description
+
+<p>
+  The `label` prop enables the built-in Field wrapper with automatic vertical
+  layout (label above input).
+</p>
+<ComponentExample demo="InputWithLabelDemo">
+  <InputWithLabelDemo client:visible />
+</ComponentExample>
+
+### With Error (String)
+
+<p>
+  Pass `error` as a string for simple error messages. Error styling is
+  automatically applied when the `error` prop is truthy.
+</p>
+<ComponentExample demo="InputErrorStringDemo">
+  <InputErrorStringDemo client:visible />
+</ComponentExample>
+
+### With Error (Validation Object)
+
+<p>
+  Pass `error` as an object with `message` and `match` for HTML5 validation.
+  Error shows when field validity matches.
+</p>
+<ComponentExample demo="InputErrorObjectDemo">
+  <InputErrorObjectDemo client:visible />
+</ComponentExample>
+
+### Input Sizes
+
+<p>Four sizes available: `xs`, `sm`, `base` (default), `lg`.</p>
+<ComponentExample demo="InputSizesDemo">
+  <InputSizesDemo client:visible />
+</ComponentExample>
+
+### Disabled
+
+<ComponentExample demo="InputDisabledDemo">
+  <InputDisabledDemo client:visible />
+</ComponentExample>
+
+### Optional Field
+
+<p>Set `required={false}` to show "(optional)" text after the label.</p>
+<ComponentExample demo="InputOptionalFieldDemo">
+  <InputOptionalFieldDemo client:visible />
+</ComponentExample>
+
+### With Label Tooltip
+
+<p>Use `labelTooltip` to add an info icon with additional context on hover.</p>
+<ComponentExample demo="InputLabelTooltipDemo">
+  <InputLabelTooltipDemo client:visible />
+</ComponentExample>
+
+### ReactNode Label
+
+<p>The `label` prop accepts ReactNode for rich formatting.</p>
+<ComponentExample demo="InputReactNodeLabelDemo">
+  <InputReactNodeLabelDemo client:visible />
+</ComponentExample>
+
+### Controlled with onChange
+
+<p>
+  The standard React `onChange` handler receives the full event object. Use
+  `e.target.value` to get the value.
+</p>
+<ComponentExample demo="InputControlledOnChangeDemo">
+  <InputControlledOnChangeDemo client:load />
+</ComponentExample>
+
+### Controlled with onValueChange
+
+<p>
+  `onValueChange` is a convenience handler from Base UI that gives you the
+  string value directly — no event unwrapping needed. This is the same pattern
+  used by `Select`, `Combobox`, and `Radio.Group`.
+</p>
+<ComponentExample demo="InputControlledOnValueChangeDemo">
+  <InputControlledOnValueChangeDemo client:load />
+</ComponentExample>
+
+### Bare Input (No Label)
+
+<p>
+  Input without `label` renders as a bare input. Must provide `aria-label` for
+  accessibility.
+</p>
+<ComponentExample demo="InputBareDemo">
+  <InputBareDemo client:visible />
+</ComponentExample>
+
+### Error Without Label
+
+<p>
+  Error messages and descriptions render even without a visible `label` — use
+  `aria-label` to keep the input accessible.
+</p>
+<ComponentExample demo="InputErrorWithoutLabelDemo">
+  <InputErrorWithoutLabelDemo client:visible />
+</ComponentExample>
+
+### Input Types
+
+<p>
+  Supports all HTML input types: `text`, `email`, `password`, `number`, `tel`,
+  `url`, etc.
+</p>
+<ComponentExample demo="InputTypesDemo">
+  <InputTypesDemo client:visible />
+</ComponentExample>
+
+### Password Manager Overlays
+
+<p>
+  Set `passwordManagerIgnore` on non-credential inputs that password managers
+  might incorrectly classify as login fields.
+</p>
+<ComponentExample demo="InputPasswordManagerIgnoreDemo">
+  <InputPasswordManagerIgnoreDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+<p>Input accepts all standard HTML input attributes plus the following:</p>
+<PropsTable component="Input" />
+
+### Validation Error Types
+
+  <p>
+    When using `error` as an object, the `match` property corresponds to HTML5 ValidityState values:
+  </p>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-kumo-hairline">
+          <th class="px-4 py-3 text-left font-semibold">Match</th>
+          <th class="px-4 py-3 text-left font-semibold">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">valueMissing</td>
+          <td class="px-4 py-3 text-xs">Required field is empty</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">typeMismatch</td>
+          <td class="px-4 py-3 text-xs">Value doesn't match type (e.g., invalid email)</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">patternMismatch</td>
+          <td class="px-4 py-3 text-xs">Value doesn't match pattern attribute</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">tooShort</td>
+          <td class="px-4 py-3 text-xs">Value shorter than minLength</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">tooLong</td>
+          <td class="px-4 py-3 text-xs">Value longer than maxLength</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">rangeUnderflow</td>
+          <td class="px-4 py-3 text-xs">Value less than min</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">rangeOverflow</td>
+          <td class="px-4 py-3 text-xs">Value greater than max</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">true</td>
+          <td class="px-4 py-3 text-xs">Always show error (for server-side validation)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ComponentSection>
+
+{/* Accessibility */}
+
+<ComponentSection>
+
+## Accessibility
+
+  <div class="space-y-4 text-sm">
+    <div>
+
+      ### Label Requirement
+
+      <p>
+        Inputs require an accessible name via one of:
+      </p>
+      <ul class="mt-2 ml-4 list-disc space-y-1">
+        <li>`label` prop (recommended)</li>
+        <li>`placeholder` + `aria-label` for bare inputs</li>
+        <li>`aria-labelledby` for custom label association</li>
+      </ul>
+      <p class="mt-2">
+        Missing accessible names trigger console warnings in development.
+      </p>
+    </div>
+    <div>
+
+      ### Error Association
+
+      <p>
+        Error messages are automatically associated with the input via ARIA
+        attributes for screen reader announcement.
+      </p>
+    </div>
+
+  </div>
+</ComponentSection>

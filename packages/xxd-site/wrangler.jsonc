@@ -1,0 +1,13 @@
+// 展示站部署到 Cloudflare（纯静态，Workers 静态资源）：https://ui.xiaoxiaodong.ai
+// 部署：pnpm --filter @xxd/site run release（先构建再 wrangler deploy）
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "xxd-ui",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+  },
+  "routes": [{ "pattern": "ui.xiaoxiaodong.ai", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
+}

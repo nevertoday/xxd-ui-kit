@@ -1,0 +1,19 @@
+---
+import DocLayout from "~/layouts/DocLayout.astro";
+import { Content as Principles, getHeadings } from "../../../../../docs/DESIGN-PRINCIPLES.md";
+
+const headings = getHeadings().filter((h) => h.depth === 2);
+---
+
+<DocLayout
+  title="小小东设计原则"
+  description="xxd-ui-kit 的审美宪法：每个组件、每条令牌、每个检查规则都能回到这里找到依据。原文在仓库 docs/DESIGN-PRINCIPLES.md。"
+  headings={headings}
+>
+  <p>
+    右上角可以切换 <strong>直角 / 圆角</strong> 和 <strong>主色</strong>，主题在最右边。所有组件页都跟着变。
+    其他入口：<a href="/xxd/native">原生组件</a> · <a href="/xxd/showcase">React 换皮总览</a> ·
+    <a href="/xxd/extension">Chrome 插件套件</a>。
+  </p>
+  <Principles />
+</DocLayout>

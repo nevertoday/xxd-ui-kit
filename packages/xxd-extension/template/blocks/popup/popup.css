@@ -1,0 +1,23 @@
+/* popup 只写自己的布局；颜色、圆角、字号用令牌。宽度固定 360，高度由内容决定（上限 600）。 */
+body {
+  width: 360px;
+  margin: 0;
+}
+
+.popup {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.popup__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.popup__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}

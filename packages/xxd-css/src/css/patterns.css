@@ -1,0 +1,604 @@
+/* 小小东模式（优化计划 O4）：各插件里反复写的那些，收成一份。 */
+@layer xxd.components {
+  /* ── 拖放区 + 拖入遮罩（图片排序）：「把图片拖到这里 · 选择文件」；拖到面板任何地方出现「松手，放进来」 ── */
+  .xxd-dropzone {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: var(--space-8) var(--space-4);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--muted);
+    text-align: center;
+    transition: border-color var(--motion-quick) ease, background-color var(--motion-quick) ease;
+  }
+
+  .xxd-dropzone > .ui-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--muted-2);
+  }
+
+  .xxd-dropzone__title {
+    margin: 0;
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+  }
+
+  .xxd-dropzone[data-over] {
+    border-color: var(--action);
+    background: var(--accent-bg);
+  }
+
+  .xxd-dropveil {
+    position: absolute;
+    inset: 8px;
+    z-index: var(--z-dialog);
+    display: grid;
+    place-items: center;
+    border: 1px dashed var(--action);
+    border-radius: var(--r-lg);
+    background: rgba(var(--paper-rgb), 0.88);
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-base) / var(--leading-sm) var(--font-body);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-quick) ease;
+  }
+
+  .xxd-dropveil[data-open] {
+    opacity: 1;
+  }
+
+  /* ── 图片查看器：← → 翻，Esc 回到同一张；底部一个操作胶囊 ── */
+  .xxd-viewer {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(12, 11, 9, 0.92);
+    color: #ffffff;
+    overflow: hidden;
+  }
+
+  .xxd-viewer::backdrop {
+    background: transparent;
+  }
+
+  .xxd-viewer[open] {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    animation: xxd-fade-in var(--motion-medium) ease;
+  }
+
+  .xxd-viewer__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-3);
+    font-size: var(--text-xs);
+    color: rgba(255, 255, 255, 0.72);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-viewer__stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    padding: 0 calc(var(--icon-button) + var(--space-4)); /* 两边留出翻页按钮 */
+  }
+
+  .xxd-viewer__stage img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    animation: xxd-fade-in var(--motion-quick) ease;
+  }
+
+  .xxd-viewer__nav {
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .xxd-viewer__nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .xxd-viewer__nav[data-dir="prev"] {
+    left: 8px;
+  }
+
+  .xxd-viewer__nav[data-dir="next"] {
+    right: 8px;
+  }
+
+  .xxd-viewer .xxd-pill {
+    justify-self: center;
+    margin: var(--space-3);
+  }
+
+  .xxd-viewer .xxd-btn[data-variant="ghost"] {
+    --btn-fg: #ffffff;
+    --btn-bg-hover: rgba(255, 255, 255, 0.12);
+  }
+
+  /* 图片上的深色半透明操作胶囊（复制图片 · 下载 · 拿掉） */
+  .xxd-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-0-5);
+    padding: var(--space-1);
+    border-radius: var(--r-pill);
+    background: rgba(5, 5, 5, 0.64);
+    color: #ffffff;
+  }
+
+  .xxd-pill > button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    height: 28px;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: inherit;
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    cursor: pointer;
+  }
+
+  .xxd-pill > button:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  /* ── 拖拽排序：把手、被拖的那一项、占位 ── */
+  .xxd-sortable > [data-sort-item] {
+    position: relative;
+    touch-action: pan-y;
+  }
+
+  /* 拿起后出现的「上移 / 下移」（不用拖也能排，WCAG 2.5.7） */
+  .xxd-sort-moves {
+    display: inline-flex;
+    flex: none;
+    gap: var(--gap-tight);
+  }
+
+  .xxd-sort-handle {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 28px;
+    color: var(--muted);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .xxd-sort-handle:hover {
+    color: var(--ink);
+  }
+
+  [data-sort-item][data-dragging] {
+    z-index: 2;
+    background: var(--paper);
+    box-shadow: var(--shadow-popover);
+    cursor: grabbing;
+  }
+
+  [data-sort-item][data-grabbed] {
+    background: var(--selected-bg);
+  }
+
+  /* ── 按天分组的记录：「今天 / 昨天 / 9月12日」；缩略图叠放；hover 出删除 ── */
+  .xxd-history {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  /* 「清空全部记录」这类收尾的链接和列表左边对齐，不在中间飘着 */
+  .xxd-history > .xxd-link {
+    justify-self: start;
+  }
+
+  /* 框外面的字贴外线，和下面列表的框对齐（D57） */
+  .xxd-history__day {
+    margin: 0 0 var(--space-1-5);
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+  }
+
+  /* 固定宽度（最多叠 3 张）：一张、两张、三张的行，标题都从同一条线开始 */
+  .xxd-thumbs {
+    display: flex;
+    flex: none;
+    width: 64px;
+  }
+
+  .xxd-thumbs > * {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--paper);
+    border-radius: var(--r-xs);
+    background: var(--wash-strong);
+    object-fit: cover;
+  }
+
+  .xxd-thumbs > * + * {
+    margin-left: -10px;
+  }
+
+  /* ── 两次确认：第一次点变成「确认删除」（危险色），3 秒内再点才执行 ── */
+  .xxd-btn[data-confirming] {
+    --btn-fg: #ffffff;
+    --btn-bg: var(--danger-strong);
+    --btn-bd: var(--danger-strong);
+    --btn-bg-hover: var(--danger-strong);
+  }
+
+  /* ── 登录 ── */
+  .xxd-auth {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+  }
+
+  .xxd-auth__name {
+    margin: var(--space-1) 0 0;
+    font: var(--weight-strong) var(--text-lg) / var(--leading-md) var(--font-body);
+  }
+
+  .xxd-auth__line {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-auth__gift {
+    color: var(--action-text);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-auth form {
+    display: grid;
+    gap: var(--space-3);
+    width: 100%;
+    margin-top: var(--space-2);
+    text-align: left;
+  }
+
+  .xxd-auth__or {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-auth__or::before,
+  .xxd-auth__or::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* 占满卡片宽度（卡片是 justify-items: center）：里面不拆行的链接才有 max-width 的参照，超长时出省略号 */
+  .xxd-auth__terms {
+    justify-self: stretch;
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  /* 「服务条款」「隐私政策」这类短链接不拆成两行 */
+  .xxd-auth__terms a {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+    white-space: nowrap;
+  }
+
+  .xxd-auth [data-step]:not([data-active]) {
+    display: none;
+  }
+
+  .xxd-auth [data-step][data-active] {
+    display: grid;
+    gap: var(--space-3);
+    animation: xxd-fade-in var(--motion-quick) ease;
+  }
+
+  /* ── 账号卡与计划行 ── */
+  .xxd-account {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .xxd-account__main {
+    flex: 1 1 8em;
+    min-width: 0;
+  }
+
+  .xxd-account__name {
+    overflow: hidden;
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .xxd-plan-line {
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-plan-line[data-tone="warning"] {
+    color: var(--warning);
+  }
+
+  .xxd-plan-line[data-tone="member"] {
+    color: var(--action-text);
+  }
+
+  /* ── 购买面板：计划（单选卡片列表）、支付方式、二维码、结果一句话 ── */
+  .xxd-plans {
+    display: grid;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    overflow: hidden;
+  }
+
+  .xxd-plan {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    cursor: pointer;
+  }
+
+  .xxd-plan + .xxd-plan {
+    border-top: 1px solid var(--line);
+  }
+
+  .xxd-plan:has(:checked) {
+    background: var(--selected-bg);
+  }
+
+  /* 名字可以收窄、折行；价格是数字，永远完整（TRUNCATION-REVIEW-PLAN D94；以前长名字把价格挤出卡片、被圆角裁掉） */
+  .xxd-plan__name {
+    flex: 1;
+    min-width: 0;
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    overflow-wrap: anywhere;
+  }
+
+  .xxd-plan__name small {
+    display: block;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+  }
+
+  .xxd-plan__price {
+    /* 能收缩，但不比数字本身窄（数字里没有能断开的地方） */
+    flex: 0 1 auto;
+    overflow-wrap: break-word;
+    font: var(--weight-strong) var(--text-base) / 1 var(--font-body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-qr {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    text-align: center;
+  }
+
+  .xxd-qr__code {
+    width: 148px;
+    height: 148px;
+    padding: var(--space-2);
+    background: #ffffff;
+  }
+
+  /* ── 状态行：dock 上方，空着，除非有事要说（一句话，最多一个动作） ── */
+  .xxd-statusline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 32px;
+    padding: var(--space-1-5) var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-statusline:empty,
+  .xxd-statusline[hidden] {
+    display: none;
+  }
+
+  .xxd-statusline[data-tone="danger"] {
+    color: var(--danger);
+  }
+
+  .xxd-statusline[data-tone="warning"] {
+    color: var(--warning);
+  }
+
+  .xxd-statusline[data-tone="success"] {
+    color: var(--success);
+  }
+
+  .xxd-statusline > .xxd-link {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ── 进度胶囊（在别人网页上写入时）：细、深色、半透明 ── */
+  .xxd-progress-pill {
+    display: inline-flex;
+    /* 是状态不是标签（D91）：长了折行、变高，进度数字不被省略掉 */
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 30px;
+    overflow-wrap: anywhere;
+    padding: 0 var(--space-3) 0 var(--space-3);
+    border-radius: var(--r-pill);
+    background: rgba(17, 17, 17, 0.86);
+    color: #ffffff;
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  }
+
+  .xxd-progress-pill > .xxd-progress {
+    width: 72px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .xxd-progress-pill > .xxd-progress::-webkit-progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .xxd-progress-pill > .xxd-progress::-webkit-progress-value {
+    background: #ffffff;
+  }
+
+  /* ── 数字滚动：旧的上滚出、新的上滚进（Xxd.rollText） ── */
+  .xxd-roll {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+  }
+
+  .xxd-roll > span {
+    display: inline-block;
+  }
+
+  .xxd-roll > [data-out] {
+    position: absolute;
+    left: 0;
+    animation: xxd-roll-out var(--motion-medium) var(--ease-out-expo) forwards;
+  }
+
+  .xxd-roll > [data-in] {
+    animation: xxd-roll-in var(--motion-medium) var(--ease-out-expo);
+  }
+
+  @keyframes xxd-roll-out {
+    to {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+
+  @keyframes xxd-roll-in {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+
+  /* ── 庆祝：画一个圈、打勾、字依次升起；彩纸从勾那里散开（减少动效时直接静止） ── */
+  .xxd-celebrate {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .xxd-celebrate__ring {
+    width: 44px;
+    height: 44px;
+    color: var(--success);
+  }
+
+  .xxd-celebrate__ring circle,
+  .xxd-celebrate__ring path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  .xxd-celebrate[data-play] .xxd-celebrate__ring {
+    animation: xxd-pop var(--motion-medium) var(--ease-out-expo);
+  }
+
+  .xxd-celebrate[data-play] > :not(.xxd-celebrate__ring) {
+    animation: xxd-rise var(--motion-medium) var(--ease-out-expo) both;
+  }
+
+  .xxd-celebrate[data-play] > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  .xxd-celebrate[data-play] > :nth-child(4) {
+    animation-delay: 160ms;
+  }
+
+  .xxd-confetti {
+    position: fixed;
+    z-index: var(--z-toast);
+    width: 6px;
+    height: 6px;
+    pointer-events: none;
+    animation: xxd-confetti 900ms var(--ease-out-quart) forwards;
+  }
+
+  @keyframes xxd-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+
+  @keyframes xxd-confetti {
+    to {
+      opacity: 0;
+      transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    }
+  }
+
+  /* ── 设置搜索：没有匹配的行和整组藏起来 ── */
+  [data-search-hidden] {
+    display: none;
+  }
+}

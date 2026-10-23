@@ -1,0 +1,13 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import { XxdShowcase } from "~/components/xxd/XxdShowcase";
+import { XxdAppearance } from "~/components/XxdAppearance";
+import { ThemeToggle } from "~/components/ThemeToggle";
+---
+<BaseLayout title="小小东换皮总览">
+  <header class="sticky top-0 z-10 flex items-center justify-between border-b border-kumo-line bg-kumo-canvas px-4 py-2">
+    <span class="text-sm font-medium">小小东换皮总览</span>
+    <div class="flex items-center gap-3"><XxdAppearance client:only="react" /><ThemeToggle client:only="react" /></div>
+  </header>
+  <XxdShowcase client:load />
+</BaseLayout>

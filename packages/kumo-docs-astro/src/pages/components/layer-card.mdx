@@ -1,0 +1,149 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Layer Card"
+description: "A card component with a layered visual effect, perfect for navigation or feature highlights."
+sourceFile: "components/layer-card"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  LayerCardDemo,
+  LayerCardBasicDemo,
+  LayerCardSurfaceDemo,
+  LayerCardMultipleDemo,
+  LayerCardTestIdDemo,
+} from "~/components/demos/LayerCardDemo";
+import {
+  LayerCardFilterSubrequestsDemo,
+} from "~/components/demos/LayerCardFilterMockupDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="LayerCardDemo">
+    <LayerCardDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { LayerCard } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { LayerCard } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <LayerCard className="w-[250px]">
+      <LayerCard.Secondary>Documentation</LayerCard.Secondary>
+      <LayerCard.Primary>Learn how to use Kumo components</LayerCard.Primary>
+    </LayerCard>
+  );
+}
+```
+
+<p>
+  <code>LayerCard</code> also supports a simple surface-style mode for cases
+  where you do not need a secondary header row. In those cases, render content
+  directly inside <code>LayerCard</code> instead of wrapping it in
+  <code>LayerCard.Primary</code>.
+</p>
+
+```tsx
+import { LayerCard } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <LayerCard className="w-[250px] p-4">
+      Learn how to use Kumo components
+    </LayerCard>
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Basic Card
+
+<ComponentExample demo="LayerCardBasicDemo">
+  <LayerCardBasicDemo client:visible />
+</ComponentExample>
+
+### Surface-style Card
+
+<p>
+  For simple card containers, render content directly inside <code>LayerCard</code>
+  without <code>LayerCard.Primary</code>.
+</p>
+<ComponentExample demo="LayerCardSurfaceDemo">
+  <LayerCardSurfaceDemo client:visible />
+</ComponentExample>
+
+### Multiple Cards
+
+<ComponentExample demo="LayerCardMultipleDemo">
+  <LayerCardMultipleDemo client:visible />
+</ComponentExample>
+
+### Filter Toolbar with Small Tabs
+
+<p>
+  Combine <code>Tabs size="sm"</code> with <code>Input size="sm"</code> inside a
+  LayerCard for compact filter toolbars. Both share the same <code>h-6.5</code> (26px) height.
+</p>
+
+<ComponentExample demo="LayerCardFilterSubrequestsDemo">
+  <LayerCardFilterSubrequestsDemo client:visible />
+</ComponentExample>
+
+### Test IDs
+
+<p>
+  <code>LayerCard.Primary</code> and <code>LayerCard.Secondary</code> accept all
+  standard HTML attributes, including <code>data-testid</code> for testing.
+</p>
+
+<ComponentExample demo="LayerCardTestIdDemo">
+  <LayerCardTestIdDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+  <PropsTable component="LayerCard" />
+</ComponentSection>

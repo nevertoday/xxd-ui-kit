@@ -1,0 +1,469 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Select"
+description: "Displays a list of options for the user to pick from—triggered by a button."
+sourceFile: "components/select"
+baseUIComponent: "select"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import CodeBlock from "~/components/docs/CodeBlock.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  SelectBasicDemo,
+  SelectSizesDemo,
+  SelectWithoutLabelDemo,
+  SelectWithDescriptionDemo,
+  SelectWithErrorDemo,
+  SelectPlaceholderDemo,
+  SelectWithTooltipDemo,
+  SelectCustomRenderingDemo,
+  SelectLoadingDemo,
+  SelectLoadingDataDemo,
+  SelectMultipleDemo,
+  SelectComplexDemo,
+  SelectDisabledOptionsDemo,
+  SelectDisabledItemsDemo,
+  SelectGroupedDemo,
+  SelectGroupedWithDisabledDemo,
+  SelectLongListDemo,
+  SelectPlacementDemo,
+  SelectDynamicPlacementDemo,
+} from "~/components/demos/SelectDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="SelectBasicDemo">
+    <SelectBasicDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+<CodeBlock code={`import { Select } from "@cloudflare/kumo";`} lang="tsx" />
+
+### Granular
+
+  <CodeBlock
+    code={`import { Select } from "@cloudflare/kumo/components/select";`}
+    lang="tsx"
+  />
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { Select } from "@cloudflare/kumo";
+
+export default function Example() {
+  const [value, setValue] = useState("apple");
+
+  return (
+    <Select
+      label="Favorite Fruit"
+      value={value}
+      onValueChange={(v) => setValue(v ?? "apple")}
+      items={{ apple: "Apple", banana: "Banana", cherry: "Cherry" }}
+    />
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Basic
+
+<p>
+  A select with a visible label. When you provide the `label` prop, the select
+  automatically renders inside a Field wrapper with the label displayed above
+  it.
+</p>
+
+  <ComponentExample demo="SelectBasicDemo">
+    <SelectBasicDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Sizes */}
+
+<ComponentSection>
+
+### Sizes
+
+<p>Use the `size` prop to match Input sizing (xs, sm, base, lg).</p>
+
+  <ComponentExample demo="SelectSizesDemo">
+    <SelectSizesDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Placement */}
+
+<ComponentSection>
+
+### Placement
+
+<p>
+  The popup prefers `side="bottom"` and flips automatically when that side runs
+  out of room. Use `side`, `align`, `sideOffset` and `alignOffset` to pin it
+  explicitly — collision handling still applies.
+</p>
+
+  <ComponentExample demo="SelectPlacementDemo">
+    <SelectPlacementDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Dynamic placement aligned to the selected option */}
+
+<ComponentSection>
+
+### Aligned to the selected option
+
+<p>
+  Set `alignItemWithTrigger` to overlay the popup on the trigger so the selected
+  option sits directly on top of it, the way a native `select` behaves. Options
+  before the selection render above the trigger and the rest below, so the popup
+  can extend in both directions. Both selects below have `Mars` selected
+  mid-list — open them to compare. This mode disables itself and falls back to
+  normal anchored placement when there is not enough room.
+</p>
+
+  <ComponentExample demo="SelectDynamicPlacementDemo">
+    <SelectDynamicPlacementDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Without Visible Label */}
+
+<ComponentSection>
+
+### Without Visible Label
+
+<p>
+  When a visible label isn't needed (e.g., in compact UIs or when context is
+  clear), use `aria-label` for accessibility.
+</p>
+
+  <ComponentExample demo="SelectWithoutLabelDemo">
+    <SelectWithoutLabelDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* With Description */}
+
+<ComponentSection>
+
+### With Description
+
+<p>
+  Select integrates with the Field wrapper to show description text below the
+  input.
+</p>
+
+  <ComponentExample demo="SelectWithDescriptionDemo">
+    <SelectWithDescriptionDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* With Error */}
+
+<ComponentSection>
+
+### With Error
+
+<p>
+  Pass the `error` prop to display a validation error. When an error is present,
+  it replaces the description in the UI.
+</p>
+
+  <ComponentExample demo="SelectWithErrorDemo">
+    <SelectWithErrorDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Placeholder */}
+
+<ComponentSection>
+
+### Placeholder
+
+<p>
+  Use the `placeholder` prop to show text when no value is selected. When using
+  `renderValue` to customize the display of selected values, the placeholder is
+  shown instead of calling `renderValue` when the value is `null`.
+</p>
+
+```tsx
+<Select
+  placeholder="Select a user..."
+  value={user}
+  renderValue={(user) => user.name} // Only called when user is not null
+/>
+```
+
+  <ComponentExample demo="SelectPlaceholderDemo">
+    <SelectPlaceholderDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Label Tooltip */}
+
+<ComponentSection>
+
+### Label with Tooltip
+
+<p>
+  Add a tooltip icon next to the label for additional context using
+  `labelTooltip`.
+</p>
+
+  <ComponentExample demo="SelectWithTooltipDemo">
+    <SelectWithTooltipDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Custom Rendering */}
+
+<ComponentSection>
+
+### Custom Rendering
+
+<p>
+  Use `renderValue` to customize how the selected value appears in the trigger
+  button. This is useful when working with complex object data structures
+  instead of simple string values.
+</p>
+
+<ComponentExample demo="SelectCustomRenderingDemo">
+  <SelectCustomRenderingDemo client:load />
+</ComponentExample>
+
+<p>
+  The `renderValue` function is only called when a value is selected. Use
+  `placeholder` to define what to show when no value is selected.
+</p>
+
+<p>
+  Select compares value with items to find which one is selected. For object
+  items, it will compare if the object is the same reference not by value by
+  default. If you want to compare object items by value, you can use
+  `isItemEqualToValue` prop.
+</p>
+
+```tsx
+<Select
+  className="w-[200px]"
+  placeholder="Select a language..."
+  renderValue={(v) => (
+    <span>
+      {v.emoji} {v.label}
+    </span>
+  )}
+  value={value}
+  onValueChange={(v) => setValue(v)}
+  // Provides custom comparison logic
+  isItemEqualToValue={(item, value) => item.value === value.value}
+>
+  {languages.map((language) => (
+    <Select.Option key={language.value} value={language}>
+      {language.emoji} {language.label}
+    </Select.Option>
+  ))}
+</Select>
+```
+
+</ComponentSection>
+
+{/* Loading */}
+
+<ComponentSection>
+
+### Loading
+
+<p>
+  A select component with loading state. The loading state is passed to the
+  component via the `loading` prop.
+</p>
+
+  <ComponentExample demo="SelectLoadingDemo">
+    <div class="flex flex-col gap-4">
+      <p class="text-kumo-default">Loading State</p>
+      <SelectLoadingDemo client:load />
+      <p class="text-kumo-default">Loading From Server (simulated 2s delay)</p>
+      <SelectLoadingDataDemo client:load />
+    </div>
+  </ComponentExample>
+</ComponentSection>
+
+{/* Multiple Item */}
+
+<ComponentSection>
+
+### Multiple Selection
+
+<p>
+  Enable multiple selection with the `multiple` prop. The value becomes an array
+  of selected items. Use `placeholder` for the empty state and `renderValue` to
+  customize how selections are displayed.
+</p>
+
+```tsx
+<Select
+  multiple
+  placeholder="Select columns..."
+  value={selectedColumns}
+  renderValue={(columns) => columns.join(", ")}
+  onValueChange={setSelectedColumns}
+>
+  <Select.Option value="name">Name</Select.Option>
+  <Select.Option value="email">Email</Select.Option>
+</Select>
+```
+
+  <ComponentExample demo="SelectMultipleDemo">
+    <SelectMultipleDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* More Example */}
+
+<ComponentSection>
+
+### More Example
+
+  <ComponentExample demo="SelectComplexDemo">
+    <SelectComplexDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Disabled Options */}
+
+<ComponentSection>
+
+### Disabled Options
+
+<p>
+  Options can be disabled with the `disabled` prop. Disabled options are greyed
+  out and cannot be selected.
+</p>
+
+  <ComponentExample demo="SelectDisabledOptionsDemo">
+    <SelectDisabledOptionsDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Disabled Items via Prop */}
+
+<ComponentSection>
+
+### Disabled Items (via items prop)
+
+<p>
+  The `items` object-map prop accepts descriptor objects with `disabled`
+  alongside plain string values.
+</p>
+
+  <ComponentExample demo="SelectDisabledItemsDemo">
+    <SelectDisabledItemsDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Grouped Options */}
+
+<ComponentSection>
+
+### Grouped Options
+
+<p>
+  Use `Select.Group`, `Select.GroupLabel`, and `Select.Separator` to organize
+  options under labeled headers with visual dividers.
+</p>
+
+  <ComponentExample demo="SelectGroupedDemo">
+    <SelectGroupedDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Groups with Disabled */}
+
+<ComponentSection>
+
+### Groups with Disabled Options
+
+<p>
+  Combine groups, separators, and disabled options with info tooltips to clearly
+  separate available and unavailable choices.
+</p>
+
+  <ComponentExample demo="SelectGroupedWithDisabledDemo">
+    <SelectGroupedWithDisabledDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Long List - Test scrolling behavior */}
+
+<ComponentSection>
+
+### Long List (Scrolling Test)
+
+<p>
+  A select component with many options to test popup scrolling behavior. The
+  popup should scroll smoothly without bounce/overscroll issues.
+</p>
+
+  <ComponentExample demo="SelectLongListDemo">
+    <SelectLongListDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+### Select
+
+<PropsTable component="Select" />
+
+### Select.Option
+
+<PropsTable component="Select.Option" />
+
+### Select.Group
+
+<p>
+  Groups related options together with an accessible `role="group"`. Use with
+  `Select.GroupLabel` to provide a visible heading.
+</p>
+
+### Select.GroupLabel
+
+<p>
+  A visible heading for a `Select.Group`. Automatically associated with its
+  parent group for accessibility.
+</p>
+
+### Select.Separator
+
+  <p>A visual divider line between option groups. Renders with `role="separator"`.</p>
+</ComponentSection>

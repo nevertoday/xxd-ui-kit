@@ -1,0 +1,6 @@
+/* @xxd/react 样式（不用 Tailwind 的项目）：预编译的全部组件样式 + 小小东令牌。 */
+/* xxd 放在 base 之上、components / utilities 之下（工具类能盖住 xxd 组件） */
+@layer properties, theme, base, xxd, components, utilities;
+@import "@xxd/tokens/tokens.css";
+@import "@xxd/tokens/base.css";
+@import "./dist/kumo-standalone.css";

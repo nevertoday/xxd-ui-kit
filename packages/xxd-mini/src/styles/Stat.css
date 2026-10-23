@@ -1,0 +1,23 @@
+.xxd-stats {
+  display: grid;
+  grid-template-columns: repeat(var(--stat-cols, 2), minmax(0, 1fr));
+}
+
+/* 手机上一张卡很窄：迷你图放到最下面一行，不和数字抢宽度 */
+.xxd-stat {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "label" "value" "delta" "spark";
+  align-items: start;
+}
+
+.xxd-stat__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-0-5);
+}
+
+.xxd-stat__spark {
+  justify-self: stretch;
+  width: 100%;
+  margin-top: var(--space-2);
+}

@@ -1,0 +1,313 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Toast"
+description: "A notification system for displaying brief, non-intrusive messages to users."
+sourceFile: "components/toast"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  ToastBasicDemo,
+  ToastTitleOnlyDemo,
+  ToastDescriptionOnlyDemo,
+  ToastSuccessDemo,
+  ToastMultipleDemo,
+  ToastErrorDemo,
+  ToastWarningDemo,
+  ToastInfoDemo,
+  ToastCustomContentDemo,
+  ToastActionsDemo,
+  ToastPromiseDemo,
+  ToastFunctionalUpdateDemo,
+} from "~/components/demos/ToastDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="ToastBasicDemo">
+    <ToastBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { Toasty, useKumoToastManager } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { Toasty, useKumoToastManager } from "@cloudflare/kumo/components/toast";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+  <p>
+    The toast system consists of two parts: the `Toasty` provider component and the `useKumoToastManager()` hook for triggering toasts.
+  </p>
+
+```tsx
+import { Toasty, useKumoToastManager, Button } from "@cloudflare/kumo";
+
+function ToastTrigger() {
+  const toastManager = useKumoToastManager();
+
+  return (
+    <Button
+      onClick={() =>
+        toastManager.add({
+          title: "Success!",
+          description: "Your changes have been saved.",
+        })
+      }
+    >
+      Save changes
+    </Button>
+  );
+}
+
+export default function App() {
+  return (
+    <Toasty>
+      <ToastTrigger />
+      {/* Rest of your app */}
+    </Toasty>
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Setup */}
+
+<ComponentSection>
+
+## Setup
+
+  <p>
+    Wrap your application (or a section of it) with the `Toasty` provider. This sets up the toast context and renders the toast viewport.
+  </p>
+
+```tsx
+// In your app root or layout
+import { Toasty } from "@cloudflare/kumo";
+
+export function Layout({ children }) {
+  return <Toasty>{children}</Toasty>;
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Title and Description
+
+<p>A complete toast with both title and description.</p>
+<ComponentExample demo="ToastBasicDemo">
+  <ToastBasicDemo client:visible />
+</ComponentExample>
+
+### Title Only
+
+<p>A simple toast with just a title for brief messages.</p>
+<ComponentExample demo="ToastTitleOnlyDemo">
+  <ToastTitleOnlyDemo client:visible />
+</ComponentExample>
+
+### Description Only
+
+<p>A toast with only a description for more detailed messages.</p>
+<ComponentExample demo="ToastDescriptionOnlyDemo">
+  <ToastDescriptionOnlyDemo client:visible />
+</ComponentExample>
+
+### Success Variant
+
+<p>Use the success variant for confirmations and positive outcomes.</p>
+<ComponentExample demo="ToastSuccessDemo">
+  <ToastSuccessDemo client:visible />
+</ComponentExample>
+
+### Multiple Toasts
+
+<p>
+  Multiple toasts stack and animate smoothly. Hover over the stack to expand
+  them.
+</p>
+<ComponentExample demo="ToastMultipleDemo">
+  <ToastMultipleDemo client:visible />
+</ComponentExample>
+
+### Functional Updates
+
+<p>
+  Update a toast in place from its current state. This example changes the
+  deployment toast to success after it is created.
+</p>
+<ComponentExample demo="ToastFunctionalUpdateDemo">
+  <ToastFunctionalUpdateDemo client:load />
+</ComponentExample>
+
+### Error Variant
+
+<p>Use the error variant for critical issues that need attention.</p>
+<ComponentExample demo="ToastErrorDemo">
+  <ToastErrorDemo client:visible />
+</ComponentExample>
+
+### Warning Variant
+
+<p>Use the warning variant for cautionary messages.</p>
+<ComponentExample demo="ToastWarningDemo">
+  <ToastWarningDemo client:visible />
+</ComponentExample>
+
+### Info Variant
+
+<p>Use the info variant for neutral informational messages.</p>
+<ComponentExample demo="ToastInfoDemo">
+  <ToastInfoDemo client:visible />
+</ComponentExample>
+
+### Custom Content
+
+<p>Use the content prop to render completely custom toast content.</p>
+<ComponentExample demo="ToastCustomContentDemo">
+  <ToastCustomContentDemo client:visible />
+</ComponentExample>
+
+### Action Buttons
+
+<p>Add action buttons to toasts for user interaction.</p>
+<ComponentExample demo="ToastActionsDemo">
+  <ToastActionsDemo client:visible />
+</ComponentExample>
+
+### Promise
+
+<p>
+  Use the promise method to show loading, success, and error states
+  automatically.
+</p>
+<ComponentExample demo="ToastPromiseDemo">
+  <ToastPromiseDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+### Toasty
+
+<p>The provider component that wraps your app and manages the toast system.</p>
+<PropsTable component="Toasty" />
+
+### useKumoToastManager()
+
+<p>A hook that returns the toast manager for creating toasts.</p>
+
+```tsx
+const toastManager = useKumoToastManager();
+
+// Add a toast
+toastManager.add(options);
+
+// Update from the current toast state
+toastManager.update(toastId, (toast) => ({
+  description: `Updated after ${toast.timeout ?? 5000}ms`,
+}));
+
+// Promise-based toast
+toastManager.promise(asyncFn(), {
+  loading: options,
+  success: (data) => options,
+  error: (err) => options,
+});
+```
+
+### Toast Options
+
+<p>Options passed to `toastManager.add()` and promise handlers.</p>
+<div class="overflow-x-auto">
+  <table class="w-full text-left text-sm">
+    <thead>
+      <tr class="border-b border-kumo-hairline">
+        <th class="py-3 pr-4 font-semibold">Prop</th>
+        <th class="py-3 pr-4 font-semibold">Type</th>
+        <th class="py-3 pr-4 font-semibold">Default</th>
+        <th class="py-3 font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody class="text-kumo-subtle">
+      <tr class="border-b border-kumo-hairline">
+        <td class="py-3 pr-4 font-mono text-kumo-default">title</td>
+        <td class="py-3 pr-4 font-mono">string</td>
+        <td class="py-3 pr-4">—</td>
+        <td class="py-3">The toast title displayed prominently.</td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="py-3 pr-4 font-mono text-kumo-default">description</td>
+        <td class="py-3 pr-4 font-mono">string</td>
+        <td class="py-3 pr-4">—</td>
+        <td class="py-3">Secondary text displayed below the title.</td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="py-3 pr-4 font-mono text-kumo-default">variant</td>
+        <td class="py-3 pr-4 font-mono">
+          "default" | "success" | "error" | "warning" | "info"
+        </td>
+        <td class="py-3 pr-4 font-mono">"default"</td>
+        <td class="py-3">Visual style of the toast.</td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="py-3 pr-4 font-mono text-kumo-default">content</td>
+        <td class="py-3 pr-4 font-mono">ReactNode</td>
+        <td class="py-3 pr-4">—</td>
+        <td class="py-3">
+          Custom content to render inside the toast. Overrides title and
+          description.
+        </td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="py-3 pr-4 font-mono text-kumo-default">actions</td>
+        <td class="py-3 pr-4 font-mono">ButtonProps[]</td>
+        <td class="py-3 pr-4">—</td>
+        <td class="py-3">Array of button props to render as action buttons.</td>
+      </tr>
+      <tr class="border-b border-kumo-hairline">
+        <td class="py-3 pr-4 font-mono text-kumo-default">timeout</td>
+        <td class="py-3 pr-4 font-mono">number</td>
+        <td class="py-3 pr-4 font-mono">5000</td>
+        <td class="py-3">
+          Time in milliseconds before the toast auto-dismisses.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</ComponentSection>

@@ -1,0 +1,150 @@
+/* 交互基础层（优化计划 O1）：所有组件共用的手感。
+ * - hover 进入立即变、离开 140ms 淡回（D2）：组件自己写离开时的 transition，这里把 hover 时的时长清零。
+ * - 光标与禁用：可交互的统一 pointer，禁用统一 not-allowed。
+ * - 悬停才出现的操作：.xxd-reveal（hover / focus-within 显示，触屏常显）。
+ * - 同心圆角、图标对齐首行。 */
+@layer xxd.components {
+  /* D2：进入立即。只列出颜色会变的那些元素本身（不影响它们里面 ::before 的位移过渡，比如开关的滑块）。 */
+  :is(
+      .xxd-btn,
+      .xxd-chip,
+      .xxd-input,
+      .xxd-textarea,
+      .xxd-select > select,
+      .xxd-switch,
+      .xxd-check,
+      .xxd-radio,
+      .xxd-tabs > [role="tab"],
+      .xxd-segmented > *,
+      .xxd-card,
+      .xxd-card__action,
+      .xxd-menu__item,
+      .xxd-option,
+      .xxd-row,
+      .xxd-list__item,
+      .xxd-pagination > *,
+      .xxd-rail > *,
+      .xxd-picker__trigger,
+      .xxd-input-group,
+      .xxd-sidebar__item,
+      .xxd-toolbar__item,
+      .xxd-th-sort,
+      .xxd-toc a,
+      .xxd-inline-copy,
+      .xxd-dropzone,
+      .xxd-link,
+      .xxd-glyphs > button,
+      .xxd-sort-handle,
+      .xxd-breadcrumbs__more
+    ):is(:hover, :active) {
+    transition-duration: 0s;
+  }
+
+  /* 按下立即有看得见的变化（MOTION-REVIEW-PLAN D82、D83）：手机上没有悬停，点下去要马上知道点到了。
+     没有自己按下样式的透明底控件，按下统一深一档；松开照旧 140ms 淡回。开关、复选、单选、分段、tab 按下后状态立刻变，不另加。 */
+  :is(
+      .xxd-menu__item,
+      .xxd-option,
+      .xxd-toolbar__item,
+      .xxd-sidebar__item,
+      .xxd-rail > *,
+      .xxd-pagination > button,
+      .xxd-th-sort,
+      .xxd-inline-copy,
+      .xxd-glyphs > button,
+      .xxd-sort-handle,
+      .xxd-breadcrumbs__more,
+      .xxd-picker__trigger,
+      .xxd-chip,
+      a.xxd-row,
+      a.xxd-card,
+      .xxd-card[data-interactive],
+      .xxd-list[data-interactive] > .xxd-list__item
+    ):active:not(:disabled, [aria-disabled="true"]) {
+    background: var(--wash-strong);
+  }
+
+  /* 浮层里抬起一层 */
+  :is(.xxd-menu, .xxd-listbox, .xxd-palette, .xxd-popover) :is(.xxd-menu__item, .xxd-option):active:not(:disabled, [aria-disabled="true"]) {
+    background: var(--wash-strong-raised);
+  }
+
+  /* 链接按下：下划线变成字色（和悬停一样） */
+  .xxd-link:active {
+    text-decoration-color: currentColor;
+  }
+
+  /* 光标：所有 xxd 里的可交互元素 */
+  :where([class*="xxd-"], .ui-dialog-cancel)
+    :where(a[href], button, summary, label[for], select, [role="button"], [role="tab"], [role="radio"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="switch"]):where(:not(:disabled, [aria-disabled="true"])) {
+    cursor: pointer;
+  }
+
+  :where([class*="xxd-"]) :where(:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+  }
+
+  /* 悬停才出现：父元素 hover 或里面有焦点时出现；触屏和减少动效时常显 */
+  .xxd-reveal {
+    opacity: 0;
+    transition: opacity var(--motion-quick) ease;
+  }
+
+  :is(:hover, :focus-within) > .xxd-reveal,
+  :is(:hover, :focus-within) > * > .xxd-reveal,
+  .xxd-reveal:focus-visible,
+  .xxd-reveal:focus-within {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .xxd-reveal {
+      opacity: 1;
+    }
+  }
+
+  /* 同心圆角：外圆角 = 内圆角 + 间距。<div class="xxd-concentric" style="--pad: 4px">…子元素自动用内圆角 */
+  .xxd-concentric {
+    --pad: 4px;
+    --outer-r: var(--r-md);
+    padding: var(--pad);
+    border-radius: var(--outer-r);
+  }
+
+  .xxd-concentric > * {
+    border-radius: max(0px, calc(var(--outer-r) - var(--pad)));
+  }
+
+  /* 图标与第一行文字对齐（多行时也对着第一行） */
+  .xxd-icon-line {
+    display: inline-flex;
+    align-items: center;
+    height: 1lh;
+    flex: none;
+  }
+
+  /* 数字：等宽，变化不跳 */
+  .xxd-num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 复制成功的小气泡（Xxd 的 [data-copy] 自动用；位置由 floating.js 放在按钮上方） */
+  .xxd-bubble {
+    position: fixed;
+    z-index: var(--z-toast);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--r-xs);
+    background: var(--ink);
+    color: var(--on-ink);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity var(--motion-quick) ease, transform var(--motion-quick) var(--ease-out-expo);
+  }
+
+  .xxd-bubble[data-open] {
+    opacity: 1;
+    transform: none;
+  }
+}

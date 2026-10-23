@@ -1,0 +1,1996 @@
+{
+  "$comment": "@xxd/css 原生组件注册表：文档站、pnpm xxd ls / doc、xxd-ui Skill 都读它。改组件时同步改这里（registry.test.mjs 会检查类名真的存在于 CSS）。",
+  "components": [
+    {
+      "name": "Text",
+      "zh": "文字层级",
+      "category": "基础",
+      "classes": [
+        "xxd-text",
+        "xxd-text-pair"
+      ],
+      "attributes": {
+        "data-variant": "display | heading1 | heading2 | heading3 | body | secondary | caption | mono | mono-secondary | success | danger | warning",
+        "data-size": "xs | sm | base | lg",
+        "data-truncate": "一行省略"
+      },
+      "markup": "<div class=\"xxd-stack\">\n  <div class=\"xxd-text-pair\">\n    <h2 class=\"xxd-text\" data-variant=\"heading2\">外观</h2>\n    <p class=\"xxd-text\" data-variant=\"caption\">只影响这个插件</p>\n  </div>\n  <p class=\"xxd-text\">正文 13px <span class=\"xxd-text\" data-variant=\"mono\">--r-sm</span></p>\n</div>",
+      "react": "Text",
+      "rules": [
+        "字重只有 400 / 500 / 600",
+        "相关的字靠得更近",
+        "不改字距",
+        "行内等宽字 0.92em"
+      ],
+      "summary": "标题、正文、说明、等宽字的固定几档：层级靠字号和字重，不靠颜色。",
+      "a11y": [
+        "标题用真正的 h1–h3（按页面层级，不跳级），不要用加粗的 p 冒充",
+        "说明文字用 --muted（≥ 4.5:1），不要更浅"
+      ],
+      "block": true
+    },
+    {
+      "name": "Interaction",
+      "zh": "交互工具",
+      "category": "基础",
+      "classes": [
+        "xxd-reveal",
+        "xxd-concentric",
+        "xxd-icon-line",
+        "xxd-num",
+        "xxd-bubble"
+      ],
+      "markup": "<div class=\"xxd-row xxd-frame\"><div class=\"xxd-row__text\">悬停这一行</div><button class=\"xxd-btn xxd-reveal\" data-size=\"xs\">编辑</button></div>\n<div class=\"xxd-concentric xxd-frame\" style=\"--pad:4px;width:fit-content;max-width:100%\"><button class=\"xxd-btn\" data-size=\"sm\">同心圆角</button></div>",
+      "js": "Xxd.showBubble(button, \"已复制\")",
+      "rules": [
+        "hover 进入立即变、离开 140ms 淡回",
+        "悬停才出现的操作：触屏常显、键盘能到",
+        "同心圆角：外 = 内 + 间距"
+      ],
+      "summary": "悬停才出现的操作（.xxd-reveal）、整行可点、按下下沉这类交互小工具。",
+      "a11y": [
+        "悬停才出现的按钮在键盘聚焦时也出现（:focus-within），触屏上一直显示",
+        "整行可点时行里只放一个主链接，其余按钮单独可聚焦"
+      ],
+      "block": true
+    },
+    {
+      "name": "Button",
+      "zh": "按钮",
+      "category": "操作",
+      "classes": [
+        "xxd-btn",
+        "xxd-label-text"
+      ],
+      "attributes": {
+        "data-variant": "primary（一屏一个主操作）| secondary（缺省，大多数按钮）| ghost（工具条、低优先级）| outline（彩色或图片底上）| danger（删除这类不可逆）| danger-outline（危险但不是这一屏的主操作）",
+        "data-size": "xs | sm | md | lg",
+        "data-icon-only": "纯图标（必须有 aria-label）",
+        "aria-pressed": "切换态",
+        "aria-busy": "进行中：宽度不跳，转圈居中；Xxd.runBusy(btn, task) 完成后图标变勾",
+        "data-block": "撑满一行",
+        "data-shape": "round：圆形图标按钮（跟随圆角开关）"
+      },
+      "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-btn\" data-variant=\"primary\">写入 X</button>\n  <button class=\"xxd-btn\">保存草稿</button>\n  <button class=\"xxd-btn\" data-variant=\"ghost\">稍后</button>\n  <button class=\"xxd-btn\" data-variant=\"danger\">删除</button>\n  <button class=\"xxd-btn\" data-size=\"xs\">xs</button>\n</div>",
+      "react": "Button",
+      "rules": [
+        "按钮文字描述下一次点击会做什么",
+        "一处只放一个实心按钮",
+        "破坏性操作写清楚，不只靠颜色",
+        "§9",
+        "长标签包在 <span> 里（或加 .xxd-label-text）才有省略号；按钮永远不会撑出容器，裸文字超长时只会被裁掉。"
+      ],
+      "js": "await Xxd.runBusy(button, () => save())",
+      "sample": "<button class=\"xxd-btn\" data-variant=\"primary\">写入 X</button>",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "active",
+        "disabled",
+        "busy"
+      ],
+      "summary": "按钮文字描述下一次点击会做什么。一处只放一个实心按钮。",
+      "examples": [
+        {
+          "title": "尺寸",
+          "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-btn\" data-size=\"xs\">xs</button>\n  <button class=\"xxd-btn\" data-size=\"sm\">sm</button>\n  <button class=\"xxd-btn\">md</button>\n  <button class=\"xxd-btn\" data-size=\"lg\">lg</button>\n</div>"
+        },
+        {
+          "title": "彩色底上的 outline",
+          "text": "outline 是透明底加一圈线：放在彩色横幅、图片上时比 secondary 的纸色底更融进去。纸色底上它和 secondary 看不出区别，就用 secondary。",
+          "markup": "<div class=\"xxd-banner\" data-tone=\"warning\" style=\"max-width:520px\"><i data-xxd-icon=\"TriangleAlert\"></i><div><p class=\"xxd-banner__title\">今天还能写入 1 篇</p><p class=\"xxd-banner__text\">明天 0 点恢复；会员不限。</p></div><div class=\"xxd-banner__actions\"><button class=\"xxd-btn\" data-variant=\"outline\" data-size=\"sm\">开通会员</button></div></div>"
+        },
+        {
+          "title": "图标按钮",
+          "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-btn\" data-icon-only aria-label=\"搜索\" data-tooltip=\"搜索 ⌘F\"><i data-xxd-icon=\"Search\"></i></button>\n  <button class=\"xxd-btn\" data-icon-only data-shape=\"round\" aria-label=\"新建\" data-tooltip=\"新建\"><i data-xxd-icon=\"Plus\"></i></button>\n  <button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only aria-label=\"更多\" data-tooltip=\"更多\"><i data-xxd-icon=\"Ellipsis\"></i></button>\n</div>",
+          "text": "纯图标按钮必须有 aria-label；悬停时 tooltip 连续出现。圆形图标按钮跟随圆角开关。"
+        },
+        {
+          "title": "平面 / 立体",
+          "markup": "<div class=\"xxd-cluster\" data-finish-preview=\"flat\"><button class=\"xxd-btn\" data-variant=\"primary\">写入 X</button><button class=\"xxd-btn\" data-variant=\"danger\">删除</button></div>",
+          "text": "右上角「外观」里把按钮质感切到「立体」：实心按钮多一条顶部 1px 内高光、深一点的边，按下时下沉 0.5px。"
+        },
+        {
+          "title": "进行中与完成",
+          "markup": "<button class=\"xxd-btn\" data-variant=\"primary\" onclick=\"Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 1200)))\"><i data-xxd-icon=\"Save\" data-size=\"16\"></i>保存</button>",
+          "text": "点一下：宽度不跳，转圈居中；完成后图标变勾 1 秒。"
+        }
+      ],
+      "a11y": [
+        "只有图标的按钮必须写 aria-label（tooltip 不算名字）",
+        "进行中写 aria-busy=\"true\"：文字隐藏、出 spinner，读屏仍读按钮名",
+        "切换按钮用 aria-pressed；按下 / 禁用 / 聚焦状态都不只靠颜色",
+        "紧凑模式下按钮变矮，点击区仍不小于 --hit-min（40px，触屏 44px）"
+      ],
+      "use": [
+        "做一件事：提交、保存、打开对话框。文字说下一次点击会做什么",
+        "一屏最多一个 primary；其余用缺省的 secondary，工具条和低优先级用 ghost"
+      ],
+      "avoid": [
+        "只是去另一个页面：用链接（Link）",
+        "outline 只用在彩色或图片底上；纸色底上它和 secondary 一样，直接用 secondary"
+      ]
+    },
+    {
+      "name": "Link",
+      "zh": "文字链接按钮",
+      "category": "操作",
+      "classes": [
+        "xxd-link"
+      ],
+      "markup": "<button class=\"xxd-link\">改为新建一篇</button>",
+      "react": "Link",
+      "rules": [
+        "40% 下划线，hover 变实"
+      ],
+      "attributes": {
+        "data-variant": "inline（缺省）| plain | current",
+        "data-external / target=_blank": "后面带外链图标"
+      },
+      "sample": "<a class=\"xxd-link\" href=\"#\">改为新建一篇</a>",
+      "states": [
+        "default",
+        "hover",
+        "focus"
+      ],
+      "summary": "看起来像链接的按钮：句子里的次要操作，比如「改为新建一篇」。",
+      "a11y": [
+        "跳转用 <a href>，执行操作用 <button class=\"xxd-link\">——读屏据此告诉用户会发生什么",
+        "下划线常在，不只靠颜色区分"
+      ]
+    },
+    {
+      "name": "ButtonGroup",
+      "zh": "按钮组",
+      "category": "操作",
+      "classes": [
+        "xxd-btn-group"
+      ],
+      "markup": "<div class=\"xxd-btn-group\"><button class=\"xxd-btn\" data-size=\"sm\">左</button><button class=\"xxd-btn\" data-size=\"sm\">右</button></div>",
+      "react": "ButtonGroup",
+      "summary": "几个并列的按钮拼成一条：同一件事的几种做法。",
+      "a11y": [
+        "是一组互斥选项时改用分段控件（radiogroup），不要用按钮组",
+        "需要时给外层 role=\"group\" 和 aria-label"
+      ]
+    },
+    {
+      "name": "Field",
+      "zh": "字段",
+      "category": "表单",
+      "classes": [
+        "xxd-field",
+        "xxd-label",
+        "xxd-help",
+        "xxd-error",
+        "xxd-input",
+        "xxd-textarea"
+      ],
+      "attributes": {
+        "aria-invalid": "出错时边框变危险色",
+        "data-optional": "在 label 上：后面加「可选」",
+        "data-autosize": "textarea 随内容长高"
+      },
+      "markup": "<div class=\"xxd-field\">\n  <label class=\"xxd-label\" for=\"title\">标题</label>\n  <input class=\"xxd-input\" id=\"title\" placeholder=\"给这篇文章起个名字\" aria-describedby=\"title-help\">\n  <p class=\"xxd-help\" id=\"title-help\">最多 100 个字</p>\n</div>",
+      "react": "Input",
+      "rules": [
+        "一个框只有一个框：聚焦时边框变深一次，不加外圈和内框",
+        "§4"
+      ],
+      "sample": "<input class=\"xxd-input\" style=\"width:100%;max-width:120px\" placeholder=\"标题\">",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "disabled",
+        "error",
+        "readonly"
+      ],
+      "summary": "标签 + 输入框 + 说明 / 错误：表单的一行。",
+      "a11y": [
+        "label 的 for 指向输入框；说明和错误用 aria-describedby 连上",
+        "出错时输入框写 aria-invalid=\"true\"，错误文字写清楚怎么改，不只变红"
+      ],
+      "examples": [
+        {
+          "title": "出错时",
+          "text": "输入框写 aria-invalid，错误文字有 id、连进 aria-describedby（说明也保留）；文字写清楚怎么改。JS 里用 Xxd.setFieldError(input, \"…\") 一步做完，传空字符串清掉。",
+          "markup": "<div class=\"xxd-field\" style=\"width:100%;max-width:320px\">\n  <label class=\"xxd-label\" for=\"email-x\">邮箱</label>\n  <input class=\"xxd-input\" id=\"email-x\" type=\"email\" value=\"not-an-email\" aria-invalid=\"true\" aria-describedby=\"email-x-help email-x-err\">\n  <p class=\"xxd-help\" id=\"email-x-help\">用来登录和找回密码</p>\n  <p class=\"xxd-error\" id=\"email-x-err\">请输入有效的邮箱，比如 you@example.com</p>\n</div>"
+        }
+      ],
+      "js": "Xxd.setFieldError(input, \"请输入有效的邮箱，比如 you@example.com\")  // 传 \"\" 清掉"
+    },
+    {
+      "name": "Select",
+      "zh": "选择",
+      "category": "表单",
+      "classes": [
+        "xxd-select"
+      ],
+      "attributes": {
+        "data-variant": "bare：设置行里的「一个值 + 一个 chevron」"
+      },
+      "markup": "<label class=\"xxd-select\"><select aria-label=\"图片质量\"><option>高</option><option>标准</option></select></label>",
+      "react": "Select",
+      "rules": [
+        "原生 <select>，不重写下拉",
+        "设置行里用 bare：值 + chevron，不是盒子"
+      ],
+      "sample": "<label class=\"xxd-select\"><select aria-label=\"质量\"><option>高</option></select></label>",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "disabled"
+      ],
+      "summary": "原生 <select> 换了皮：选项少、不需要说明和分组时用它。",
+      "a11y": [
+        "没有可见标签时给 <select> 写 aria-label",
+        "键盘和读屏行为都是浏览器原生的"
+      ],
+      "use": [
+        "从一串纯文字选项里选一个：原生下拉，键盘读屏最稳"
+      ],
+      "avoid": [
+        "选项要分组、带说明、带图标、多选：用 Picker",
+        "要能输入搜索：用 Combobox"
+      ]
+    },
+    {
+      "name": "Picker",
+      "zh": "自定义下拉",
+      "category": "表单",
+      "classes": [
+        "xxd-picker",
+        "xxd-picker__trigger",
+        "xxd-picker__value",
+        "xxd-option-group",
+        "xxd-option-group__label"
+      ],
+      "summary": "原生 <select> 做不到的：分组、每项说明、图标、多选。简单场景继续用 Select（原生）。",
+      "attributes": {
+        "data-multiple": "多选（勾选，列表不关）",
+        "data-placeholder": "没选时显示的字",
+        "data-size": "sm",
+        "aria-invalid": "出错",
+        "data-disabled": "禁用"
+      },
+      "markup": "<div class=\"xxd-field\" style=\"width:100%;max-width:220px\">\n<span class=\"xxd-label\">画质</span>\n<div class=\"xxd-picker\" data-xxd-picker>\n  <button class=\"xxd-picker__trigger\"><span class=\"xxd-picker__value\"></span></button>\n  <div class=\"xxd-listbox\">\n    <div class=\"xxd-option-group\" role=\"group\" aria-label=\"画质\">\n      <div class=\"xxd-option-group__label\">画质</div>\n      <div class=\"xxd-option\" data-value=\"high\" aria-selected=\"true\"><span>高<small>2K，慢一点</small></span></div>\n      <div class=\"xxd-option\" data-value=\"standard\"><span>标准<small>1K，最快</small></span></div>\n    </div>\n    <div class=\"xxd-option-group\" role=\"group\" aria-label=\"其他\">\n      <div class=\"xxd-option\" data-value=\"auto\">跟随会员计划</div>\n      <div class=\"xxd-option\" data-value=\"x\" aria-disabled=\"true\">4K（即将推出）</div>\n    </div>\n  </div>\n</div>\n</div>\n<div class=\"xxd-field\" style=\"width:100%;max-width:220px\">\n<span class=\"xxd-label\">标签</span>\n<div class=\"xxd-picker\" data-xxd-picker data-multiple data-placeholder=\"选择标签\">\n  <button class=\"xxd-picker__trigger\"><span class=\"xxd-picker__value\"></span></button>\n  <div class=\"xxd-listbox\">\n    <div class=\"xxd-option\" data-value=\"poster\" aria-selected=\"true\">海报</div>\n    <div class=\"xxd-option\" data-value=\"cover\">封面</div>\n    <div class=\"xxd-option\" data-value=\"card\">卡片</div>\n  </div>\n</div>\n</div>",
+      "js": "picker.addEventListener(\"xxd:change\", (e) => e.detail.value)  // 多选时是数组；picker.dataset.value 逗号分隔",
+      "react": "Select",
+      "a11y": [
+        "按钮是 role=combobox（APG 的仅可选择 combobox），aria-haspopup=listbox，高亮用 aria-activedescendant",
+        "名字是字段名加当前值：放在 .xxd-field 里、前面一个 .xxd-label，会自动连上（或者自己写 aria-labelledby）",
+        "↑ ↓ Home End 移动，Enter / 空格选择，Esc 关，输入首字跳转"
+      ],
+      "use": [
+        "选项要分组、每项带一句说明或图标、多选"
+      ],
+      "avoid": [
+        "纯文字的几个选项：用 Select（原生）",
+        "选项很多要搜：用 Combobox"
+      ]
+    },
+    {
+      "name": "Search",
+      "zh": "搜索框",
+      "category": "表单",
+      "classes": [
+        "xxd-input-wrap",
+        "xxd-input-clear"
+      ],
+      "markup": "<div class=\"xxd-input-wrap\">\n  <i data-xxd-icon=\"Search\" data-size=\"16\"></i>\n  <input class=\"xxd-input\" type=\"search\" placeholder=\"搜索设置（⌘F）\" aria-label=\"搜索设置\">\n  <button class=\"xxd-input-clear\" aria-label=\"清空\"><i data-xxd-icon=\"X\" data-size=\"14\"></i></button>\n</div>",
+      "js": "Xxd.bindSearch(input, { onQuery: (q) => Xxd.markMatches(container, q) })",
+      "rules": [
+        "⌘F / Ctrl+F 跳到它，Esc 清空",
+        "匹配的字用 mark.xxd-hit 标出来"
+      ],
+      "summary": "带放大镜和清空按钮的搜索框；Esc 先清空，再按一次才离开。",
+      "a11y": [
+        "type=\"search\"，没有可见标签时写 aria-label",
+        "清空按钮有 aria-label；Esc 有内容时清空、没内容时交给外层"
+      ],
+      "react": "Search（@xxd/react）"
+    },
+    {
+      "name": "InputGroup",
+      "zh": "输入组",
+      "category": "表单",
+      "classes": [
+        "xxd-input-group",
+        "xxd-input-group__addon",
+        "xxd-input-group__suffix"
+      ],
+      "summary": "前后缀、内嵌按钮。整组是一个框，聚焦时整组边框变深一次。",
+      "attributes": {
+        "data-size": "sm",
+        "aria-invalid": "出错"
+      },
+      "markup": "<div class=\"xxd-input-group\" style=\"width:100%;max-width:320px\">\n  <span class=\"xxd-input-group__addon\">https://</span>\n  <input aria-label=\"子域名\" value=\"today\">\n  <span class=\"xxd-input-group__suffix\">.xiaoxiaodong.ai</span>\n  <button class=\"xxd-btn\" data-variant=\"ghost\" data-size=\"sm\">检查</button>\n</div>",
+      "react": "InputGroup",
+      "rules": [
+        "一个框只有一个框：前后缀在框里面，不是两个框拼起来"
+      ],
+      "a11y": [
+        "前后缀是纯文字说明，输入框仍需要自己的 label 或 aria-label",
+        "组里的按钮是独立的 Tab 停留点"
+      ]
+    },
+    {
+      "name": "SecretInput",
+      "zh": "密钥输入",
+      "category": "表单",
+      "classes": [
+        "xxd-secret"
+      ],
+      "summary": "API 密钥、令牌：默认遮住，可以显示 / 隐藏、一键复制。会员站的 API 设置和插件的 AI 服务密钥都用它。",
+      "markup": "<div class=\"xxd-field\" style=\"width:100%;max-width:340px\">\n  <label class=\"xxd-label\" for=\"k1\">API 密钥</label>\n  <div class=\"xxd-input-group xxd-secret\" data-xxd-secret>\n    <input id=\"k1\" type=\"password\" value=\"sk_live_4f8a2c91d7e3b6a0\" readonly>\n    <button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" data-secret-toggle aria-label=\"显示密钥\" aria-pressed=\"false\"><i data-xxd-icon=\"Eye\" data-size=\"16\"></i></button>\n    <button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" data-secret-copy aria-label=\"复制\"><i data-xxd-icon=\"Copy\" data-size=\"16\"></i></button>\n  </div>\n  <p class=\"xxd-help\">只保存在这台电脑上。</p>\n</div>",
+      "react": "SensitiveInput",
+      "a11y": [
+        "显示 / 隐藏按钮是切换按钮（aria-pressed），文字跟着变",
+        "复制成功的「已复制」通过 live region 读出"
+      ],
+      "rules": [
+        "默认遮住；显示后不要自动再遮住（用户自己决定）"
+      ]
+    },
+    {
+      "name": "ClipboardText",
+      "zh": "可复制的值",
+      "category": "表单",
+      "classes": [
+        "xxd-clipboard"
+      ],
+      "summary": "只读的值加一个复制按钮；复制后按钮上方冒出「已复制」，图标变勾一下。",
+      "attributes": {
+        "data-size": "sm"
+      },
+      "markup": "<div class=\"xxd-clipboard\" style=\"width:100%;max-width:300px\">\n  <code>pnpm xxd new ./today</code>\n  <button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" aria-label=\"复制\" data-copy=\"pnpm xxd new ./today\"><i data-xxd-icon=\"Copy\" data-size=\"14\"></i></button>\n</div>",
+      "react": "ClipboardText",
+      "js": "[data-copy=\"文本\"] 或 [data-copy-target=\"#选择器\"]；data-copy-done 自定义气泡文字",
+      "a11y": [
+        "复制按钮有 aria-label；「已复制」通过 live region（role=status）读出",
+        "被复制的值是可选中的文字，键盘用户也能自己复制"
+      ]
+    },
+    {
+      "name": "InlineCopy",
+      "zh": "正文里可复制的字",
+      "category": "表单",
+      "classes": [
+        "xxd-inline-copy"
+      ],
+      "markup": "<p class=\"xxd-text\">命令 <button class=\"xxd-inline-copy\" data-copy=\"pnpm xxd ls\" data-copy-done=\"已复制命令\">pnpm xxd ls<i data-xxd-icon=\"Copy\" data-size=\"12\"></i></button>，一点就复制。</p>",
+      "react": "InlineCopyText",
+      "rules": [
+        "复制图标常显为淡色（看得出能复制），hover / 聚焦时加深"
+      ],
+      "summary": "句子里的一段可复制的字（命令、ID）：点一下复制，冒出「已复制」。",
+      "a11y": [
+        "本身是 <button>，读屏会读出里面的文字；需要时用 data-copy-done 换成更具体的提示",
+        "复制结果通过 live region 读出"
+      ]
+    },
+    {
+      "name": "Switch",
+      "zh": "开关",
+      "category": "表单",
+      "classes": [
+        "xxd-switch"
+      ],
+      "markup": "<label class=\"xxd-choice\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" checked>完成音效</label>",
+      "react": "Switch",
+      "rules": [
+        "直角模式下开关也是方的（--r-pill）",
+        "开 = --switch-on：墨色时是灰，有主色时是主色"
+      ],
+      "sample": "<input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" aria-label=\"开关\">",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "checked",
+        "disabled"
+      ],
+      "attributes": {
+        "data-size": "sm | （缺省）| lg",
+        "role=\"switch\"": "必须"
+      },
+      "summary": "立即生效的开 / 关。需要「保存」才生效的选项用复选。",
+      "a11y": [
+        "<input type=\"checkbox\" role=\"switch\">，读屏读「开 / 关」",
+        "标签写开着时是什么（「完成音效」），不要写「开启完成音效」"
+      ],
+      "use": [
+        "马上生效的开关：打开就是开了，不用再点保存"
+      ],
+      "avoid": [
+        "要和别的字段一起提交的选项：用 Checkbox"
+      ]
+    },
+    {
+      "name": "Checkbox",
+      "zh": "复选",
+      "category": "表单",
+      "classes": [
+        "xxd-check",
+        "xxd-choice"
+      ],
+      "markup": "<label class=\"xxd-choice\"><input type=\"checkbox\" class=\"xxd-check\" checked>智能标点</label>",
+      "react": "Checkbox",
+      "sample": "<input type=\"checkbox\" class=\"xxd-check\" aria-label=\"复选\">",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "checked",
+        "disabled"
+      ],
+      "attributes": {
+        "aria-invalid": "出错",
+        "indeterminate（JS）": "半选"
+      },
+      "summary": "多选、或需要确认后才生效的单个选项；支持半选。",
+      "a11y": [
+        "原生 checkbox，空格切换；半选用 indeterminate 属性，不是视觉样式",
+        "整个 label 都可点，点击区不小于 --hit-min"
+      ],
+      "use": [
+        "表单里的是 / 否、多选几项，和别的字段一起提交"
+      ],
+      "avoid": [
+        "马上生效的设置：用 Switch",
+        "几个里只能选一个：用 Radio 或 Segmented"
+      ]
+    },
+    {
+      "name": "Radio",
+      "zh": "单选",
+      "category": "表单",
+      "classes": [
+        "xxd-radio",
+        "xxd-choice",
+        "xxd-choices"
+      ],
+      "markup": "<fieldset class=\"xxd-choices\">\n  <legend>写入方式</legend>\n  <label class=\"xxd-choice\"><input type=\"radio\" class=\"xxd-radio\" name=\"w\" checked>只写这一篇</label>\n  <label class=\"xxd-choice\"><input type=\"radio\" class=\"xxd-radio\" name=\"w\">全部写入</label>\n</fieldset>",
+      "react": "Radio",
+      "rules": [
+        "单选永远是圆：圆 = 选一个，方 = 选几个（复选）；只有它和转圈用 --r-circle",
+        "一组选项是一个列表，不是一叠盒子"
+      ],
+      "sample": "<input type=\"radio\" class=\"xxd-radio\" aria-label=\"单选\">",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "checked",
+        "disabled"
+      ],
+      "summary": "一组里只能选一个，选项 2–5 个、要同时看到时用它；更多用选择。",
+      "a11y": [
+        "放在 <fieldset> + <legend> 里，读屏先读组名",
+        "同一组同一个 name：↑ ↓ 切换并选中，Tab 只停一次"
+      ]
+    },
+    {
+      "name": "Range",
+      "zh": "滑块",
+      "category": "表单",
+      "classes": [
+        "xxd-range",
+        "xxd-range-pair",
+        "xxd-range-value"
+      ],
+      "markup": "<div class=\"xxd-field\" style=\"width:100%;max-width:260px\"><label class=\"xxd-label\">同时生成</label><input type=\"range\" class=\"xxd-range\" data-fill min=\"1\" max=\"4\" value=\"2\" aria-label=\"同时生成\"></div>\n<div class=\"xxd-field\" style=\"width:100%;max-width:260px\"><span class=\"xxd-label\">价格区间 <span class=\"xxd-range-value\"></span></span><div class=\"xxd-range-pair\"><input type=\"range\" class=\"xxd-range\" min=\"0\" max=\"100\" value=\"20\" aria-label=\"最低\"><input type=\"range\" class=\"xxd-range\" min=\"0\" max=\"100\" value=\"70\" aria-label=\"最高\"></div></div>",
+      "react": "Slider",
+      "attributes": {
+        "data-fill": "已填部分用主色",
+        "data-ticks + --ticks": "刻度",
+        ".xxd-range-pair": "两个把手的区间（最低不会超过最高）"
+      },
+      "summary": "拖一个数；data-fill 时左边填主色。区间用两个滑块（.xxd-range-pair）。",
+      "a11y": [
+        "原生 range：← → 微调，Page Up / Down 大步，Home / End 到头",
+        "当前值要另外用文字显示（aria-valuetext 或旁边的数字），不能只靠滑块位置"
+      ]
+    },
+    {
+      "name": "TagInput",
+      "zh": "标签输入",
+      "category": "表单",
+      "classes": [
+        "xxd-taginput",
+        "xxd-chip"
+      ],
+      "markup": "<div class=\"xxd-taginput\" data-xxd-taginput><input placeholder=\"回车添加\" aria-label=\"标签\"></div>",
+      "js": "box.addEventListener(\"xxd:change\", (e) => e.detail.value)  // 字符串数组；Xxd.addTag(box, \"海报\")",
+      "react": "TagInput",
+      "summary": "回车或逗号把文字变成标签；退格删掉最后一个。",
+      "a11y": [
+        "每个标签的删除按钮有 aria-label（data-remove-label 可改）",
+        "输入框没有可见标签时写 aria-label；变化派发 xxd:change"
+      ]
+    },
+    {
+      "name": "Combobox",
+      "zh": "可输入的下拉",
+      "category": "表单",
+      "classes": [
+        "xxd-listbox",
+        "xxd-option",
+        "xxd-option__hint"
+      ],
+      "markup": "<div data-xxd-combobox style=\"width:100%;max-width:280px\"><input class=\"xxd-input\" placeholder=\"输入筛选\" aria-label=\"主色\"><ul class=\"xxd-listbox\"><li class=\"xxd-option\" data-value=\"ink\">墨色</li><li class=\"xxd-option\" data-value=\"#4386ba\">湖蓝</li><li class=\"xxd-option\" data-value=\"#638e4d\">苔绿</li><li class=\"xxd-option\" data-value=\"#b7665c\">胭脂</li></ul></div>\n<div data-xxd-combobox data-multiple data-creatable style=\"width:100%;max-width:280px\"><div class=\"xxd-taginput\"><input placeholder=\"选或新建标签\" aria-label=\"标签\"></div><ul class=\"xxd-listbox\"><li class=\"xxd-option\">海报</li><li class=\"xxd-option\">封面</li><li class=\"xxd-option\">卡片</li></ul></div>",
+      "js": "wrap.addEventListener(\"xxd:change\", (e) => e.detail.value)",
+      "react": "Combobox",
+      "attributes": {
+        "data-multiple": "多选：选中的变成前面的 chip（.xxd-taginput 包住 input）",
+        "data-creatable": "没有完全相同的项时出现「创建「xx」」",
+        "data-create-label": "自定义「创建」的字",
+        ".xxd-option-group": "分组（筛掉后整组隐藏）"
+      },
+      "summary": "可以打字筛选的下拉；data-multiple 多选成 chip，data-creatable 可以新建。",
+      "a11y": [
+        "输入框 role=combobox + aria-expanded，列表 role=listbox，高亮项用 aria-activedescendant",
+        "↑ ↓ 移动，Enter 选择，Esc 收起"
+      ],
+      "block": true
+    },
+    {
+      "name": "Tabs",
+      "zh": "标签页",
+      "category": "导航",
+      "classes": [
+        "xxd-tabs",
+        "xxd-tabs__ink",
+        "xxd-tabpanel",
+        "xxd-count"
+      ],
+      "markup": "<div class=\"xxd-tabs\" data-xxd-tabs>\n  <button role=\"tab\" id=\"t1\" aria-controls=\"p1\" aria-selected=\"true\">写作</button>\n  <button role=\"tab\" id=\"t2\" aria-controls=\"p2\">记录</button>\n</div>\n<div class=\"xxd-tabpanel\" id=\"p1\" style=\"padding-top:var(--space-3)\"><p class=\"xxd-text\" data-variant=\"secondary\">正在写的文章：一篇关于设计系统的长文。</p></div>\n<div class=\"xxd-tabpanel\" id=\"p2\" style=\"padding-top:var(--space-3)\" hidden><p class=\"xxd-text\" data-variant=\"secondary\">写入过的文章按天排在这里。</p></div>",
+      "js": "list.addEventListener(\"xxd:change\", (e) => e.detail.value)",
+      "react": "Tabs",
+      "rules": [
+        "基线上的文字 + 滑动的短墨线",
+        "选中改颜色不加粗",
+        "tab 下面不再画第二条线",
+        "放不下时两端渐隐，选中项自动滚进视野"
+      ],
+      "summary": "切换同一处的几块内容；墨线滑到选中项。",
+      "a11y": [
+        "role=tablist / tab / tabpanel 由 JS 补齐，选中项 aria-selected，面板 aria-labelledby",
+        "← → Home End 切换，Tab 只停在选中的那一个（roving tabindex）"
+      ],
+      "block": true,
+      "use": [
+        "同一个东西的几个面：主页 / 记录 / 设置"
+      ],
+      "avoid": [
+        "切换一个值（视图方式、时间范围）：用 Segmented",
+        "一步一步往下走：用分步，不要用标签页"
+      ]
+    },
+    {
+      "name": "Segmented",
+      "zh": "分段控件",
+      "category": "导航",
+      "classes": [
+        "xxd-segmented"
+      ],
+      "markup": "<div class=\"xxd-segmented\" role=\"radiogroup\" data-xxd-segmented aria-label=\"类型\">\n  <button role=\"radio\" aria-checked=\"true\">文本</button>\n  <button role=\"radio\" aria-checked=\"false\">图片</button>\n</div>",
+      "js": "group.addEventListener(\"xxd:change\", (e) => e.detail.value)",
+      "react": "Segmented（@xxd/react）",
+      "rules": [
+        "一个托盘，选中段像纸一样浮出来，多一圈 ≥ 3:1 的控件边（只靠纸色和托盘那 1.1:1 的差看不出来），托盘本身没有框"
+      ],
+      "summary": "2–4 个互斥选项挤在一条里：视图切换、类型选择。",
+      "a11y": [
+        "role=radiogroup + aria-label，每段 role=radio + aria-checked",
+        "← → 切换，Tab 只停一次；选中态在高对比模式下有描边"
+      ],
+      "use": [
+        "两到五个互斥的值，马上切换：列表 / 网格、亮 / 暗"
+      ],
+      "avoid": [
+        "切换整块内容：用 Tabs",
+        "选项很多：用 Select"
+      ]
+    },
+    {
+      "name": "Breadcrumbs",
+      "zh": "面包屑",
+      "category": "导航",
+      "classes": [
+        "xxd-breadcrumbs",
+        "xxd-breadcrumbs__more",
+        "xxd-breadcrumbs__gap"
+      ],
+      "markup": "<ol class=\"xxd-breadcrumbs\" data-collapse=\"4\"><li><a href=\"#\">首页</a></li><li><a href=\"#\">插件</a></li><li><a href=\"#\">长文发布</a></li><li><a href=\"#\">版本</a></li><li><a href=\"#\">1.8</a></li><li aria-current=\"page\">1.8.2</li></ol>",
+      "react": "Breadcrumbs",
+      "attributes": {
+        "data-collapse": "超过 N 项（缺省 4）时中间折叠成「…」菜单",
+        "data-size": "sm"
+      },
+      "summary": "当前页在哪：一行路径；data-collapse=\"4\" 时中间几级折进「…」菜单。",
+      "a11y": [
+        "外层 <nav aria-label=\"面包屑\">；当前页写 aria-current=\"page\"，不做成链接",
+        "折叠按钮的 aria-label 写清还有几级，菜单项可用方向键"
+      ],
+      "rules": [
+        "不换行：放不下时前面的项先缩成省略号，当前页最后才缩"
+      ]
+    },
+    {
+      "name": "Pagination",
+      "zh": "分页",
+      "category": "导航",
+      "classes": [
+        "xxd-pagination",
+        "xxd-pagination__gap",
+        "xxd-pagination-bar",
+        "xxd-pagination__info",
+        "xxd-pagination__size",
+        "xxd-pagination__status"
+      ],
+      "markup": "<div class=\"xxd-pagination-bar\">\n  <span class=\"xxd-pagination__info\"></span>\n  <nav class=\"xxd-pagination\" data-xxd-pagination data-page=\"3\" data-total=\"230\" data-per-page=\"20\" aria-label=\"分页\"></nav>\n  <label class=\"xxd-pagination__size\">每页<span class=\"xxd-select\" data-size=\"sm\"><select><option>20</option><option>50</option></select></span></label>\n</div>\n<nav class=\"xxd-pagination\" data-simple aria-label=\"分页（简洁）\"><button aria-label=\"上一页\"><i data-xxd-icon=\"ChevronLeft\" data-size=\"14\"></i></button><button aria-current=\"page\">2</button><button aria-label=\"下一页\"><i data-xxd-icon=\"ChevronRight\" data-size=\"14\"></i></button></nav>",
+      "react": "Pagination",
+      "attributes": {
+        "data-xxd-pagination": "按 data-page / data-total / data-per-page 生成按钮",
+        "data-simple": "只留上一页 / 下一页"
+      },
+      "js": "nav.addEventListener(\"xxd:change\", (e) => e.detail.page)\nXxd.renderPagination(nav, { page: 1, total: 230, perPage: 20 })",
+      "block": true,
+      "summary": "页码、上一页 / 下一页、每页条数；JS 按 data-total 生成按钮，派发 xxd:change。",
+      "a11y": [
+        "<nav> 写 aria-label；当前页 aria-current=\"page\"；上一页 / 下一页按钮有文字标签（三语）",
+        "首页和末页时对应按钮 disabled"
+      ],
+      "rules": [
+        "页码不折行；分页栏窄于 420px（或手机上）只留「‹ 3 / 12 ›」"
+      ]
+    },
+    {
+      "name": "Rail",
+      "zh": "侧栏导航",
+      "category": "导航",
+      "classes": [
+        "xxd-rail",
+        "xxd-rail__spacer"
+      ],
+      "markup": "<nav class=\"xxd-rail\" aria-label=\"主导航\"><a href=\"#\" aria-current=\"page\"><i data-xxd-icon=\"House\"></i>首页</a><a href=\"#\"><i data-xxd-icon=\"Bookmark\"></i>收藏</a></nav>",
+      "react": "Rail（@xxd/react）",
+      "rules": [
+        "图标 20px、标签 12px（中文不小于 12px）",
+        "激活改颜色和底色，不改线宽"
+      ],
+      "summary": "窄的图标侧栏导航（插件侧边栏左边那一条）。",
+      "a11y": [
+        "<nav aria-label>；当前项 aria-current=\"page\"",
+        "只有图标时每项都要有 aria-label 和 tooltip"
+      ]
+    },
+    {
+      "name": "Sidebar",
+      "zh": "侧栏",
+      "category": "导航",
+      "classes": [
+        "xxd-sidebar",
+        "xxd-sidebar__head",
+        "xxd-sidebar__body",
+        "xxd-sidebar__foot",
+        "xxd-sidebar__group",
+        "xxd-sidebar__label",
+        "xxd-sidebar__item",
+        "xxd-sidebar__sub",
+        "xxd-sidebar__resize"
+      ],
+      "summary": "完整的侧栏：分组、子菜单、徽标、折叠成 56px 图标栏（标签淡出、悬停出 tooltip）、拖动宽度；浮动 / 内嵌两种变体。",
+      "block": true,
+      "attributes": {
+        "data-collapsed": "折叠成图标栏",
+        "data-variant": "floating | inset",
+        "--sidebar-w": "宽度（拖动时更新）",
+        "data-min / data-max": "拖动范围（缺省 200–400）",
+        "[data-xxd-sidebar-toggle=\"id\"]": "折叠 / 展开按钮",
+        "data-sidebar-sub=\"id\"": "有子菜单的项"
+      },
+      "markup": "<div class=\"xxd-frame\" style=\"display:flex;height:420px\">\n<aside class=\"xxd-sidebar\" data-xxd-sidebar id=\"sb1\" style=\"--sidebar-w:232px\">\n  <div class=\"xxd-sidebar__head\"><span class=\"xxd-logo\"><span class=\"xxd-logo__mark\"></span><span data-sidebar-hide>小小东</span></span></div>\n  <nav class=\"xxd-sidebar__body\">\n    <div class=\"xxd-sidebar__group\">\n      <div class=\"xxd-sidebar__label\">内容</div>\n      <a class=\"xxd-sidebar__item\" href=\"#\" aria-current=\"page\"><i data-xxd-icon=\"House\" data-size=\"18\"></i><span>首页</span></a>\n      <a class=\"xxd-sidebar__item\" href=\"#\"><i data-xxd-icon=\"Bookmark\" data-size=\"18\"></i><span>收藏</span><span class=\"xxd-badge\">12</span></a>\n      <button class=\"xxd-sidebar__item\" aria-expanded=\"true\" data-sidebar-sub=\"sb1-sub\"><i data-xxd-icon=\"Folder\" data-size=\"18\"></i><span>风格库</span></button>\n      <div class=\"xxd-sidebar__sub\" id=\"sb1-sub\">\n        <a class=\"xxd-sidebar__item\" href=\"#\"><span>海报</span></a>\n        <a class=\"xxd-sidebar__item\" href=\"#\"><span>封面</span></a>\n      </div>\n    </div>\n    <div class=\"xxd-sidebar__group\">\n      <div class=\"xxd-sidebar__label\">账号</div>\n      <a class=\"xxd-sidebar__item\" href=\"#\"><i data-xxd-icon=\"Settings\" data-size=\"18\"></i><span>设置</span></a>\n    </div>\n  </nav>\n  <div class=\"xxd-sidebar__foot\"><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" data-xxd-sidebar-toggle=\"sb1\" aria-label=\"折叠侧栏\"><i data-xxd-icon=\"PanelsTopLeft\" data-size=\"16\"></i></button></div>\n  <div class=\"xxd-sidebar__resize\" data-sidebar-resize></div>\n</aside>\n<main style=\"flex:1;min-width:6em;padding:var(--inset-md)\" class=\"xxd-muted\">内容区</main>\n</div>",
+      "react": "Sidebar",
+      "a11y": [
+        "折叠时每个项的名字自动变成 aria-label 和 tooltip",
+        "子菜单按钮带 aria-expanded"
+      ],
+      "rules": [
+        "折叠切换即时，标签淡出、图标不动（只动 opacity）",
+        "激活改颜色和底色，不改线宽、不加粗"
+      ]
+    },
+    {
+      "name": "Topbar",
+      "zh": "顶栏",
+      "category": "导航",
+      "classes": [
+        "xxd-topbar",
+        "xxd-topbar__title"
+      ],
+      "markup": "<header class=\"xxd-topbar\"><span class=\"xxd-topbar__title\">提示词</span><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only aria-label=\"搜索\"><i data-xxd-icon=\"Search\"></i></button></header>",
+      "rules": [
+        "56px，分隔线属于这一行"
+      ],
+      "summary": "页面顶部一条：标题 + 少量图标按钮。",
+      "a11y": [
+        "只有图标的按钮都要有 aria-label",
+        "整页只有一个顶栏时可以用 <header>（banner）"
+      ],
+      "block": true
+    },
+    {
+      "name": "Toolbar",
+      "zh": "工具条",
+      "category": "导航",
+      "classes": [
+        "xxd-toolbar",
+        "xxd-toolbar__item",
+        "xxd-toolbar__sep",
+        "xxd-toolbar__spacer"
+      ],
+      "summary": "编辑器的格式工具栏这类：一组小按钮，← → 在项之间移动（roving tabindex）。",
+      "attributes": {
+        "role=\"toolbar\"": "开启键盘移动",
+        "data-framed": "带框",
+        "data-size": "sm | lg",
+        "aria-pressed": "切换态（加粗等）"
+      },
+      "markup": "<div class=\"xxd-toolbar\" role=\"toolbar\" aria-label=\"格式\" data-framed>\n  <button class=\"xxd-toolbar__item\" aria-label=\"加粗\" aria-pressed=\"true\" data-tooltip=\"加粗 ⌘B\"><i data-xxd-icon=\"Bold\" data-size=\"16\"></i></button>\n  <button class=\"xxd-toolbar__item\" aria-label=\"斜体\" data-tooltip=\"斜体 ⌘I\"><i data-xxd-icon=\"Italic\" data-size=\"16\"></i></button>\n  <button class=\"xxd-toolbar__item\" aria-label=\"标题\" data-tooltip=\"标题\"><i data-xxd-icon=\"Heading1\" data-size=\"16\"></i></button>\n  <span class=\"xxd-toolbar__sep\"></span>\n  <button class=\"xxd-toolbar__item\" aria-label=\"链接\" data-tooltip=\"链接 ⌘K\"><i data-xxd-icon=\"Link\" data-size=\"16\"></i></button>\n  <button class=\"xxd-toolbar__item\" aria-label=\"图片\" data-tooltip=\"图片\"><i data-xxd-icon=\"Image\" data-size=\"16\"></i></button>\n  <span class=\"xxd-toolbar__spacer\"></span>\n  <button class=\"xxd-toolbar__item\"><i data-xxd-icon=\"Eye\" data-size=\"14\"></i>预览</button>\n</div>",
+      "react": "Toolbar",
+      "a11y": [
+        "← → Home End 在项之间移动；Tab 进出整个工具条只停一次"
+      ]
+    },
+    {
+      "name": "PageHeader",
+      "zh": "页面头",
+      "category": "导航",
+      "classes": [
+        "xxd-page-header",
+        "xxd-page-header__row",
+        "xxd-page-header__title",
+        "xxd-page-header__desc",
+        "xxd-page-header__actions"
+      ],
+      "summary": "面包屑、标题、说明、操作、tab —— 资源页、设置页的顶部。",
+      "block": true,
+      "markup": "<header class=\"xxd-page-header\">\n  <ol class=\"xxd-breadcrumbs\"><li><a href=\"#\">插件</a></li><li aria-current=\"page\">长文发布</li></ol>\n  <div class=\"xxd-page-header__row\">\n    <h1 class=\"xxd-page-header__title\">长文发布</h1>\n    <div class=\"xxd-page-header__actions\"><button class=\"xxd-btn\">打开商店页</button><button class=\"xxd-btn\" data-variant=\"primary\">发布新版本</button></div>\n  </div>\n  <p class=\"xxd-page-header__desc\">把 Markdown 写进 X 文章。v1.8.2 · 2,410 位用户</p>\n  <div class=\"xxd-tabs\" role=\"tablist\" aria-label=\"插件\" data-xxd-tabs><button role=\"tab\" aria-selected=\"true\">概览</button><button role=\"tab\">版本</button><button role=\"tab\">设置</button></div>\n</header>",
+      "react": "PageHeader（区块）",
+      "a11y": [
+        "标题是页面的 h1；面包屑和 tab 各自带语义（nav / tablist）",
+        "操作按钮按重要性从左到右，主操作在最后"
+      ]
+    },
+    {
+      "name": "SettingsGroup",
+      "zh": "设置组",
+      "category": "设置",
+      "classes": [
+        "xxd-settings",
+        "xxd-group",
+        "xxd-group__title",
+        "xxd-group__body",
+        "xxd-group__note",
+        "xxd-row",
+        "xxd-row__text",
+        "xxd-row__title",
+        "xxd-row__desc",
+        "xxd-row__control"
+      ],
+      "markup": "<section class=\"xxd-group\">\n  <h2 class=\"xxd-group__title\">写入</h2>\n  <div class=\"xxd-group__body\">\n    <div class=\"xxd-row\">\n      <div class=\"xxd-row__text\"><div class=\"xxd-row__title\">写入标题</div><div class=\"xxd-row__desc\">第一行 # 标题作为文章标题</div></div>\n      <div class=\"xxd-row__control\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" aria-label=\"写入标题\"></div>\n    </div>\n  </div>\n</section>",
+      "rules": [
+        "灰色小标题 + 一个带框的主体，行之间细线",
+        "整个 tab 外面不画框",
+        "a.xxd-row 整行可点，自动带 chevron",
+        "§5"
+      ],
+      "summary": "设置页的一组：组名 + 若干行（标题、说明、控件）。",
+      "a11y": [
+        "组名用 h2（在页面 h1 下面），控件的 aria-label 和行标题一致",
+        "说明文字可以用 aria-describedby 连到控件"
+      ],
+      "block": true,
+      "react": "SettingsGroup + SettingsRow（@xxd/react）"
+    },
+    {
+      "name": "Appearance",
+      "zh": "外观设置组",
+      "category": "设置",
+      "classes": [
+        "xxd-swatches",
+        "xxd-swatch"
+      ],
+      "markup": "<div id=\"appearance\" style=\"width:100%;max-width:440px\"></div>\n<script>Xxd.mountAppearance(document.getElementById(\"appearance\"), { showDensity: true, showFinish: true });</script>",
+      "js": "Xxd.mountAppearance(el, { locale: \"zh-CN\", showDensity: false, lockCorners: false, languages, onLanguage })\n// 插件里：get/set 接 XxdExtension.createAppearanceStore({ key })",
+      "rules": [
+        "主题 · 圆角 · 主色 ·（密度）·（语言）—— 每个插件都要的那一组",
+        "会员站 lockCorners: true"
+      ],
+      "summary": "主题、圆角、主色、密度、质感的现成设置组：Xxd.mountAppearance(container)。",
+      "a11y": [
+        "每个选项都是分段控件或开关，带 aria-label；色块是 radio，名字读得出来",
+        "文字跟 <html lang> 或 locale 参数走三语"
+      ],
+      "block": true,
+      "react": "AppearanceSettings（@xxd/react）"
+    },
+    {
+      "name": "List",
+      "zh": "列表",
+      "category": "设置",
+      "classes": [
+        "xxd-list",
+        "xxd-list__item",
+        "xxd-list__main",
+        "xxd-list__title",
+        "xxd-list__meta"
+      ],
+      "attributes": {
+        "data-interactive": "行可点（hover 底色；正文区写成 <button class=\"xxd-list__main\"> 或 <a>，键盘才到得了）",
+        "aria-current": "当前项：淡底 + 左边一条线",
+        "aria-selected": "带单选 / 复选的选中行：一层淡色"
+      },
+      "markup": "<ul class=\"xxd-list\" data-interactive>\n  <li class=\"xxd-list__item\"><button class=\"xxd-list__main\" type=\"button\"><span class=\"xxd-list__title\">一篇长文</span><span class=\"xxd-list__meta\">今天 14:02</span></button></li>\n  <li class=\"xxd-list__item\" aria-current=\"true\"><button class=\"xxd-list__main\" type=\"button\"><span class=\"xxd-list__title\">另一篇</span></button></li>\n</ul>",
+      "rules": [
+        "只在行之间画线，第一行上、最后一行下不画",
+        "当前项（aria-current）淡底 + 左边一条线（和目录一样）；带单选 / 复选的选中行只是淡底，控件已经说了选了哪个",
+        "行里的字至少留 8 个字宽；放不下时右边的按钮整体换到下一行"
+      ],
+      "summary": "一列可点的行：标题、说明、右侧操作；当前项用 aria-current。",
+      "a11y": [
+        "选中的那一行写 aria-current=\"true\"（不是 aria-selected——那是给 listbox 选项用的）",
+        "整行可点时用一个链接 / 按钮包住主区域，其余操作单独可聚焦"
+      ],
+      "block": true,
+      "use": [
+        "一列同类的东西：记录、文件、插件；每行可以带操作"
+      ],
+      "avoid": [
+        "要按列对比、排序：用 Table",
+        "一组设置：用 SettingsGroup"
+      ]
+    },
+    {
+      "name": "Glyphs",
+      "zh": "符号格",
+      "category": "设置",
+      "classes": [
+        "xxd-glyphs"
+      ],
+      "markup": "<div class=\"xxd-glyphs\"><button aria-label=\"带圈数字一\" aria-pressed=\"true\">①</button><button aria-label=\"带圈数字二\">②</button><button aria-label=\"带圈数字三\">③</button></div>",
+      "rules": [
+        "裸字符，hover 才填色"
+      ],
+      "summary": "一格一个符号的选择网格（编号、标点、表情）。",
+      "a11y": [
+        "每个按钮的 aria-label 写符号的名字（「带圈数字一」），不要只放字符",
+        "当前选中的符号写 aria-pressed=\"true\""
+      ],
+      "block": true
+    },
+    {
+      "name": "Dialog",
+      "zh": "对话框",
+      "category": "浮层",
+      "classes": [
+        "xxd-dialog",
+        "xxd-dialog__head",
+        "xxd-dialog__title",
+        "xxd-dialog__body",
+        "xxd-dialog__actions",
+        "ui-dialog-cancel",
+        "xxd-dialog__desc"
+      ],
+      "attributes": {
+        "data-light-dismiss": "点遮罩关闭（确认类对话框不要加）",
+        "data-size": "sm | （缺省 440）| lg | xl",
+        "role=\"alertdialog\"": "必须回答的确认：不加 data-light-dismiss"
+      },
+      "markup": "<dialog class=\"xxd-dialog\" id=\"d1\" aria-labelledby=\"d1-title\">\n  <div class=\"xxd-dialog__head\"><h2 class=\"xxd-dialog__title\" id=\"d1-title\">写入哪篇文章？</h2></div>\n  <div class=\"xxd-dialog__body\"><p>默认不会替换已有内容。</p></div>\n  <div class=\"xxd-dialog__actions\">\n    <button class=\"xxd-btn ui-dialog-cancel\" data-xxd-dialog-close>取消</button>\n    <button class=\"xxd-btn\" data-variant=\"primary\" data-xxd-dialog-close=\"new\">写入为新文章</button>\n  </div>\n</dialog>\n<button class=\"xxd-btn\" data-xxd-dialog-open=\"d1\">打开</button>",
+      "js": "await Xxd.confirmDialog({ title, message, confirmLabel: \"删除\", tone: \"danger\" })  // → true / false\nawait Xxd.confirmDelete({ name: \"长文发布\", what: \"这个插件的全部记录\" })  // 输入名字才能删",
+      "react": "Dialog + DialogActions（@xxd/react）",
+      "rules": [
+        "取消在前（DOM 顺序），内容宽度、安静；主操作最后、最右",
+        "破坏性确认默认聚焦取消",
+        "§10"
+      ],
+      "summary": "必须先回答才能继续的问题：确认、选择、短表单。",
+      "a11y": [
+        "原生 <dialog> + showModal：背后的页面不可交互，Esc 关闭，焦点困在里面",
+        "关闭后焦点回到打开它的按钮；破坏性操作默认聚焦在「取消」上"
+      ],
+      "use": [
+        "必须先回答才能继续的问题：确认删除、二选一",
+        "很短的表单（一两项），做完就关"
+      ],
+      "avoid": [
+        "只是告诉一声：用 Toast",
+        "长表单、要来回看的内容：用 Panel 或新页面",
+        "插件侧边栏里的大多数浮层：用 Sheet"
+      ]
+    },
+    {
+      "name": "Dock",
+      "zh": "底部任务栏",
+      "category": "浮层",
+      "classes": [
+        "xxd-dock",
+        "xxd-dock__status",
+        "xxd-dock__tools",
+        "xxd-dock__primary",
+        "xxd-dock__danger"
+      ],
+      "markup": "<footer class=\"xxd-dock\">\n  <div class=\"xxd-dock__status\">30 字符 · 已保存</div>\n  <div class=\"xxd-dock__tools\"><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" aria-label=\"封面\"><i data-xxd-icon=\"Image\"></i></button></div>\n  <div class=\"xxd-dock__primary\"><button class=\"xxd-btn\" data-variant=\"primary\" data-size=\"sm\">写入 X</button></div>\n</footer>",
+      "rules": [
+        "状态在开头 · 可撤销的工具一组 · 后果最大的下一步在末尾",
+        "不是第二条导航"
+      ],
+      "summary": "插件侧边栏底部常驻的一条：状态 + 工具 + 主按钮。",
+      "a11y": [
+        "状态文字变化用 role=status 读出（如「已保存」）",
+        "主按钮只有一个，写清楚做什么（「写入 X」）"
+      ],
+      "block": true,
+      "react": "Dock（@xxd/react）"
+    },
+    {
+      "name": "Sheet",
+      "zh": "底部面板",
+      "category": "浮层",
+      "classes": [
+        "xxd-sheet-host",
+        "xxd-scrim",
+        "xxd-sheet",
+        "xxd-sheet__head",
+        "xxd-sheet__title",
+        "xxd-sheet__body"
+      ],
+      "markup": "<div class=\"xxd-sheet-host xxd-frame\" style=\"display:flex;flex-direction:column;width:100%;max-width:380px;height:300px;overflow:hidden\">\n  <p class=\"xxd-text\" data-variant=\"secondary\" style=\"flex:1;margin:0;padding:var(--inset-md)\">侧边栏的正文。点下面的「封面」，面板从 dock 升起。</p>\n  <div class=\"xxd-scrim\"></div>\n  <section class=\"xxd-sheet\" id=\"s1\" aria-labelledby=\"s1-title\"><div class=\"xxd-sheet__head\"><h3 class=\"xxd-sheet__title\" id=\"s1-title\">封面</h3><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" data-xxd-sheet-close aria-label=\"关闭\"><i data-xxd-icon=\"X\"></i></button></div><div class=\"xxd-sheet__body\"><p class=\"xxd-help\">选一张图作为文章封面。</p></div></section>\n  <footer class=\"xxd-dock\" style=\"position:static\"><div class=\"xxd-dock__status\">30 字符 · 已保存</div><div class=\"xxd-dock__primary\"><button class=\"xxd-btn\" data-size=\"sm\" data-xxd-sheet-open=\"s1\">封面</button></div></footer>\n</div>",
+      "js": "Xxd.openSheet(el) / Xxd.closeSheet(el)",
+      "rules": [
+        "升起 10px + 淡入 200ms，收回 120ms",
+        "打开时 dock 主操作隐藏"
+      ],
+      "summary": "从 dock 升起的面板：设置、选择这类二级内容。",
+      "a11y": [
+        "打开时焦点进到面板里第一个可聚焦元素，Tab 不出面板，Esc 关闭",
+        "关闭后焦点回到打开它的按钮；面板 aria-labelledby 指向标题"
+      ],
+      "block": true,
+      "use": [
+        "插件侧边栏、popup 里的二级操作：选封面、改设置的一组",
+        "手机上从底部升起的面板"
+      ],
+      "avoid": [
+        "要用户先回答的确认：用 Dialog",
+        "桌面网页的详情：用 Panel"
+      ],
+      "react": "Sheet + SheetHost（@xxd/react）"
+    },
+    {
+      "name": "Panel",
+      "zh": "详情面板",
+      "category": "浮层",
+      "classes": [
+        "xxd-panel",
+        "xxd-panel__head",
+        "xxd-panel__title",
+        "xxd-panel__body",
+        "xxd-panel-scrim",
+        "xxd-panel-room"
+      ],
+      "markup": "<aside class=\"xxd-panel\" id=\"pd\" aria-labelledby=\"pd-title\"><div class=\"xxd-panel__head\"><h2 class=\"xxd-panel__title\" id=\"pd-title\">详情</h2><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-xxd-panel-close aria-label=\"关闭\"><i data-xxd-icon=\"X\"></i></button></div><div class=\"xxd-panel__body\">…</div></aside>\n<button class=\"xxd-btn\" data-xxd-panel-open=\"pd\">详情</button>",
+      "js": "Xxd.openPanel(el); Xxd.toast(\"已保存\", { within: el.querySelector(\".xxd-panel__body\") })",
+      "react": "LayerDialog",
+      "rules": [
+        "面板里的操作，toast 出现在面板里"
+      ],
+      "summary": "从右侧滑出的详情面板（会员站资源详情）。",
+      "a11y": [
+        "aria-labelledby 指向标题；打开时焦点进面板，Esc 关闭并把焦点还回去",
+        "关闭按钮有 aria-label"
+      ],
+      "use": [
+        "列表里点一项看详情、改几个字段，主内容还在旁边",
+        "桌面上从右边滑出"
+      ],
+      "avoid": [
+        "要用户先回答的问题：用 Dialog",
+        "窄的插件侧边栏：用 Sheet"
+      ],
+      "attributes": {
+        ".xxd-panel-room": "放在面板旁边的内容上：面板打开时让出位置，不被盖住（窄屏上面板是底部抽屉，不让位）"
+      }
+    },
+    {
+      "name": "Menu",
+      "zh": "菜单",
+      "category": "浮层",
+      "classes": [
+        "xxd-menu",
+        "xxd-menu__item",
+        "xxd-menu__label",
+        "xxd-menu__sep",
+        "xxd-menu__kbd"
+      ],
+      "markup": "<button class=\"xxd-btn\" data-xxd-menu=\"m1\">更多<i data-xxd-icon=\"ChevronDown\" data-size=\"14\"></i></button>\n<div class=\"xxd-menu\" id=\"m1\" role=\"menu\" popover>\n  <button class=\"xxd-menu__item\" role=\"menuitem\"><i data-xxd-icon=\"Pen\" data-size=\"14\"></i>重命名<span class=\"xxd-menu__kbd\">F2</span></button>\n  <button class=\"xxd-menu__item\" role=\"menuitem\" data-submenu=\"m1-export\" aria-haspopup=\"menu\"><i data-xxd-icon=\"Download\" data-size=\"14\"></i>导出为</button>\n  <div class=\"xxd-menu\" id=\"m1-export\" role=\"menu\" popover=\"manual\">\n    <button class=\"xxd-menu__item\" role=\"menuitem\">Markdown</button>\n    <button class=\"xxd-menu__item\" role=\"menuitem\">图片（PNG）</button>\n  </div>\n  <div class=\"xxd-menu__sep\" role=\"separator\"></div>\n  <div class=\"xxd-menu__label\">排序</div>\n  <div role=\"group\" aria-label=\"排序\">\n    <button class=\"xxd-menu__item\" role=\"menuitemradio\" aria-checked=\"true\">最新在前</button>\n    <button class=\"xxd-menu__item\" role=\"menuitemradio\" aria-checked=\"false\">最早在前</button>\n  </div>\n  <button class=\"xxd-menu__item\" role=\"menuitemcheckbox\" aria-checked=\"true\">智能标点</button>\n  <div class=\"xxd-menu__sep\" role=\"separator\"></div>\n  <button class=\"xxd-menu__item\" role=\"menuitem\" data-tone=\"danger\"><i data-xxd-icon=\"Trash2\" data-size=\"14\"></i>删除</button>\n</div>",
+      "react": "DropdownMenu",
+      "rules": [
+        "方向键 / Home / End / Esc；点外面关闭（Popover API）",
+        "子菜单放在父菜单里面，popover=\"manual\"；→ 打开、← / Esc 回到父项",
+        "鼠标移进哪一项焦点就在哪一项（只有一个高亮）"
+      ],
+      "js": "group.addEventListener(\"xxd:change\", (e) => e.detail.value)  // 单选组",
+      "summary": "一列操作：更多、导出、排序；支持子菜单、单选组、勾选项。",
+      "a11y": [
+        "触发按钮 aria-haspopup + aria-expanded；↓ ↑ 打开并聚焦第一 / 最后一项",
+        "↑ ↓ 移动，→ 进子菜单，← / Esc 退出，焦点回到触发按钮"
+      ],
+      "use": [
+        "一个按钮后面的几个操作：重命名、导出、删除",
+        "选项多但不常用，不想摆在界面上"
+      ],
+      "avoid": [
+        "选一个值：用 Select 或 Picker",
+        "只有一两个操作：直接摆按钮"
+      ]
+    },
+    {
+      "name": "Popover",
+      "zh": "说明浮层",
+      "category": "浮层",
+      "classes": [
+        "xxd-popover",
+        "xxd-surface-float",
+        "xxd-popover__title",
+        "xxd-popover__text",
+        "xxd-popover__close"
+      ],
+      "markup": "<button class=\"xxd-btn\" data-xxd-popover=\"p1\">这是什么？</button>\n<div class=\"xxd-popover\" id=\"p1\" popover>主色会被自动提亮或加深。</div>",
+      "react": "Popover",
+      "attributes": {
+        "data-arrow": "带小箭头（跟随锚点）",
+        "data-placement": "top | bottom | *-start | *-end"
+      },
+      "summary": "点开的说明或小表单：比 tooltip 能放更多，比对话框轻。",
+      "a11y": [
+        "原生 popover：点外面或 Esc 关闭，触发按钮 aria-expanded 同步",
+        "里面有可交互的东西时，打开后焦点移进去；Esc 关闭后焦点回到触发按钮"
+      ],
+      "use": [
+        "点一下看一段说明，里面可以有链接或很小的表单"
+      ],
+      "avoid": [
+        "鼠标放上去就该看到的一句话：用 Tooltip",
+        "要用户先回答的：用 Dialog"
+      ]
+    },
+    {
+      "name": "Tooltip",
+      "zh": "提示",
+      "category": "浮层",
+      "classes": [
+        "xxd-tooltip"
+      ],
+      "markup": "<button class=\"xxd-btn\" data-icon-only aria-label=\"搜索\" data-tooltip=\"搜索 ⌘F\"><i data-xxd-icon=\"Search\"></i></button>",
+      "react": "Tooltip",
+      "rules": [
+        "12px，小阴影；hover 400ms，聚焦立即",
+        "连续出现：关掉后 300ms 内移到别的按钮立即出现（tooltip 组）"
+      ],
+      "attributes": {
+        "data-tooltip": "提示文字",
+        "data-tooltip-placement": "top（缺省）| bottom | top-start …",
+        "data-tooltip-arrow": "带小箭头"
+      },
+      "summary": "悬停或键盘聚焦时出现的一句话说明；只放说明，不放操作。",
+      "a11y": [
+        "键盘聚焦也会出现，Esc 收起；通过 aria-describedby 连到按钮",
+        "只有图标的按钮仍要有 aria-label——tooltip 是补充，不是名字"
+      ],
+      "use": [
+        "纯图标按钮的名字、快捷键"
+      ],
+      "avoid": [
+        "重要的信息、要点的东西：触屏上没有悬停，放进界面或用 Popover"
+      ]
+    },
+    {
+      "name": "Toast",
+      "zh": "轻提示",
+      "category": "浮层",
+      "classes": [
+        "xxd-toast",
+        "xxd-toast-region",
+        "xxd-toast__action"
+      ],
+      "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-btn\" onclick=\"Xxd.toast('已保存草稿', { tone: 'success' })\">保存</button>\n  <button class=\"xxd-btn\" onclick=\"Xxd.toast('已移到废纸篓', { action: { label: '撤销', onClick() { Xxd.toast('已恢复', { tone: 'success' }) } } })\">删除（可撤销）</button>\n  <button class=\"xxd-btn\" onclick=\"Xxd.toast('第 ' + (window.__n = (window.__n || 0) + 1) + ' 条消息', { tone: 'info' })\">连发几条</button>\n</div>",
+      "js": "Xxd.toast(message, { tone: \"success\" | \"danger\" | \"warning\" | \"info\", within, duration, action: { label: \"撤销\", onClick }, stack: true })",
+      "react": "Toasty",
+      "rules": [
+        "就地出现（within）",
+        "堆叠：多张叠成一摞，hover 展开；同一句话再来时不加新的，只轻轻动一下",
+        "横向滑动关闭",
+        "绿色只表示完成"
+      ],
+      "summary": "操作结果的一句话：已保存、已复制、失败可重试；同一句再来时只动一下。",
+      "a11y": [
+        "区域是 role=status + aria-live=polite，不打断正在读的内容",
+        "带操作（撤销、重试）的缺省停 10 秒；鼠标放上去或键盘聚焦到里面时暂停计时；按 Alt+T 跳到最新一张，Esc 关掉并回到原处"
+      ],
+      "use": [
+        "告诉一声做完了、出错了，可以带一个撤销 / 重试",
+        "在面板里做的操作：within 面板，就地出现"
+      ],
+      "avoid": [
+        "必须读完、必须选的：用 Dialog",
+        "一直要看到的状态：用 Banner 或状态行"
+      ]
+    },
+    {
+      "name": "CommandPalette",
+      "zh": "命令面板",
+      "category": "浮层",
+      "classes": [
+        "xxd-palette",
+        "xxd-palette__search",
+        "xxd-palette__list",
+        "xxd-palette__empty"
+      ],
+      "markup": "<button class=\"xxd-btn\" onclick=\"Xxd.openCommandPalette({ recentKey: 'xxd-site-demo', items: [{ label: '新建文章', hint: '⌘N', group: '写作', run(){} }, { label: '写入 X', group: '写作', run(){} }, { label: '切换主题', group: '外观', run(){ XxdTheme.set({ theme: XxdTheme.read().theme === 'dark' ? 'light' : 'dark' }) } }, { label: '切换圆角', group: '外观', run(){ XxdTheme.set({ corners: XxdTheme.read().corners === 'rounded' ? 'square' : 'rounded' }) } }] })\">命令面板 ⌘K</button>",
+      "js": "Xxd.openCommandPalette({ items: [{ label, hint, group, run }], recentKey: \"my-ext-recent\", loading: false })\nXxd.bindCommandPalette(items)  // ⌘K / Ctrl+K",
+      "react": "CommandPalette",
+      "rules": [
+        "按 group 分组，带组标题",
+        "recentKey：没有输入时「最近使用」排最前",
+        "loading：先显示「正在加载…」，再 setItems"
+      ],
+      "summary": "⌘K：搜命令、跳页面；支持分组、最近使用、异步加载。",
+      "a11y": [
+        "输入框 role=combobox，列表 role=listbox，高亮项 aria-activedescendant",
+        "↑ ↓ 移动，Enter 运行，Esc 关闭并把焦点还回去"
+      ]
+    },
+    {
+      "name": "Badge",
+      "zh": "徽标",
+      "category": "反馈",
+      "classes": [
+        "xxd-badge"
+      ],
+      "attributes": {
+        "data-tone": "action | success | danger | warning",
+        "data-variant": "solid | outline | new",
+        "data-appearance": "dot：点 + 字"
+      },
+      "markup": "<div class=\"xxd-cluster\">\n  <span class=\"xxd-badge\">草稿</span> <span class=\"xxd-badge\" data-tone=\"success\">已写入</span> <span class=\"xxd-badge\" data-tone=\"warning\">待更新</span> <span class=\"xxd-badge\" data-appearance=\"dot\" data-tone=\"success\">运行中</span> <span class=\"xxd-badge\" data-variant=\"new\">新</span>\n</div>",
+      "react": "Badge",
+      "summary": "状态或数量的小标签：草稿、已写入、12。",
+      "a11y": [
+        "颜色之外一定有文字；只有数字时补一句说明（aria-label=\"12 条未读\"）",
+        "淡底徽标的文字对比度 ≥ 4.5:1"
+      ],
+      "use": [
+        "很短的状态或数量：新、Beta、12"
+      ],
+      "avoid": [
+        "能点的筛选：用 Chip",
+        "一句话的提示：用 Banner 或文字"
+      ]
+    },
+    {
+      "name": "Chip",
+      "zh": "可选标签",
+      "category": "反馈",
+      "classes": [
+        "xxd-chip"
+      ],
+      "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-chip\" aria-pressed=\"true\">海报</button> <button class=\"xxd-chip\">封面</button>\n</div>",
+      "sample": "<button class=\"xxd-chip\">海报</button>",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "pressed"
+      ],
+      "summary": "可以点选的标签：筛选、多选标记。",
+      "a11y": [
+        "是 <button aria-pressed>，读屏读出「已按下」",
+        "选中态在高对比模式下有描边，不只靠底色"
+      ],
+      "use": [
+        "能点的筛选、能删的标签"
+      ],
+      "avoid": [
+        "只是显示状态：用 Badge"
+      ],
+      "react": "Chip（@xxd/react）",
+      "attributes": {
+        "aria-pressed": "选中",
+        "data-size": "sm：和小号输入框、按钮放在同一行时（32px，一样高）"
+      }
+    },
+    {
+      "name": "Dot",
+      "zh": "状态点",
+      "category": "反馈",
+      "classes": [
+        "xxd-dot"
+      ],
+      "markup": "<div class=\"xxd-cluster\">\n  <span class=\"xxd-cluster\" style=\"--cluster-gap:var(--space-1-5)\"><span class=\"xxd-dot\" data-tone=\"success\" aria-hidden=\"true\"></span>运行中</span>\n  <span class=\"xxd-cluster\" style=\"--cluster-gap:var(--space-1-5)\"><span class=\"xxd-dot\" data-tone=\"danger\" aria-hidden=\"true\"></span>出错</span>\n  <span class=\"xxd-cluster\" style=\"--cluster-gap:var(--space-1-5)\"><span class=\"xxd-dot\" aria-hidden=\"true\"></span>已停止</span>\n</div>",
+      "rules": [
+        "跟圆角开关走：直角时是方点，圆角时是圆点（--r-pill）"
+      ],
+      "summary": "一个小点表示状态（运行中、出错）。",
+      "a11y": [
+        "点只是装饰（aria-hidden 或旁边有文字）；状态必须同时写成文字",
+        "不要只用颜色区分两种状态"
+      ]
+    },
+    {
+      "name": "Banner",
+      "zh": "横幅",
+      "category": "反馈",
+      "classes": [
+        "xxd-banner",
+        "xxd-banner__title",
+        "xxd-banner__text",
+        "xxd-banner__actions",
+        "xxd-banner__close",
+        "xxd-banner__list"
+      ],
+      "markup": "<div class=\"xxd-banner\" data-tone=\"warning\" style=\"max-width:520px\"><i data-xxd-icon=\"TriangleAlert\"></i><div><p class=\"xxd-banner__title\">今天还能写入 1 篇</p><p class=\"xxd-banner__text\">明天 0 点恢复；会员不限。</p></div><div class=\"xxd-banner__actions\"><button class=\"xxd-btn\" data-size=\"sm\">开通会员</button></div><button class=\"xxd-btn xxd-banner__close\" data-variant=\"ghost\" data-icon-only data-size=\"xs\" data-banner-close aria-label=\"关闭\"><i data-xxd-icon=\"X\" data-size=\"14\"></i></button></div>",
+      "react": "Banner",
+      "attributes": {
+        "data-tone": "warning | danger | success",
+        "data-size": "sm",
+        "[data-banner-close]": "关闭按钮（淡出后移除，派发 xxd:banner-close）"
+      },
+      "block": true,
+      "summary": "页面或面板顶部的一条提醒：额度、更新、错误。",
+      "a11y": [
+        "重要提醒用 role=status（错误用 role=alert），图标 aria-hidden",
+        "关闭按钮有 aria-label；关闭时焦点交给后面最近的可聚焦元素，不会掉到 body 上"
+      ],
+      "rules": [
+        "横幅窄于 440px 时操作移到文字下面，不会被挤扁；关闭按钮始终在右上角"
+      ],
+      "use": [
+        "整页或整块都该知道的状态：额度快用完、离线了",
+        "可以关掉，也可以带一个操作"
+      ],
+      "avoid": [
+        "一次操作的结果：用 Toast",
+        "表单某一项的错误：写在那一项下面（Field）"
+      ]
+    },
+    {
+      "name": "Empty",
+      "zh": "空状态",
+      "category": "反馈",
+      "classes": [
+        "xxd-empty",
+        "xxd-empty__title",
+        "xxd-empty__text",
+        "xxd-empty__actions"
+      ],
+      "markup": "<div class=\"xxd-empty\" data-size=\"sm\"><i data-xxd-icon=\"FileText\"></i><p class=\"xxd-empty__title\">还没有记录</p></div>\n<div class=\"xxd-empty\"><i data-xxd-icon=\"Package\"></i><p class=\"xxd-empty__title\">还没有插件</p><p class=\"xxd-empty__text\">用一行命令新建一个。</p><div class=\"xxd-clipboard\" data-size=\"sm\"><code>pnpm xxd new ./today</code><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"xs\" aria-label=\"复制\" data-copy=\"pnpm xxd new ./today\"><i data-xxd-icon=\"Copy\" data-size=\"14\"></i></button></div></div>",
+      "react": "Empty",
+      "rules": [
+        "说明 + 一个明确的下一步",
+        "缺省只用一个图标（24 网格、1.5 线宽，和别的图标同一种画法），不用彩色插图",
+        "只有第一次使用、需要讲清楚这个功能做什么时才配插图：线稿、单色（墨色或主色的淡层）、和图标同样的线宽，不用渐变和人物",
+        "标题说状态（还没有记录），说明说原因或做法，按钮说下一步（导入第一篇）"
+      ],
+      "attributes": {
+        "data-size": "sm | lg"
+      },
+      "summary": "还没有内容时：说明为什么空、下一步做什么。",
+      "a11y": [
+        "图标是装饰（aria-hidden）；标题写事实，正文写下一步",
+        "下一步是按钮或链接，键盘可达"
+      ],
+      "block": true,
+      "use": [
+        "列表、搜索、记录还没有内容时：告诉用户为什么空、下一步做什么"
+      ],
+      "avoid": [
+        "加载中：用 Progress 或 Loading",
+        "出错：用 Banner 写清楚错在哪、怎么重试"
+      ]
+    },
+    {
+      "name": "Progress",
+      "zh": "进度",
+      "category": "反馈",
+      "classes": [
+        "xxd-progress",
+        "xxd-loadbar",
+        "xxd-spinner",
+        "xxd-skeleton",
+        "xxd-meter",
+        "xxd-meter__head",
+        "xxd-meter__track",
+        "xxd-meter__fill",
+        "xxd-meter__target"
+      ],
+      "markup": "<progress class=\"xxd-progress\" value=\"60\" max=\"100\"></progress>\n<div class=\"xxd-loadbar\" role=\"progressbar\" aria-label=\"正在加载\"></div>\n<span class=\"xxd-spinner\"></span>",
+      "react": "Loader / Meter",
+      "rules": [
+        "只动 transform"
+      ],
+      "summary": "确定进度用 <progress>，不确定用加载条 / spinner。",
+      "a11y": [
+        "<progress> 自带进度语义；加载条写 role=progressbar + aria-label",
+        "spinner 是装饰时 aria-hidden，并在旁边用文字说正在做什么",
+        "计量条写 role=meter + aria-valuenow / min / max；超限、目标写进 aria-valuetext 和旁边的字"
+      ],
+      "attributes": {
+        ".xxd-meter + --value": "计量条：--value 是 0–1",
+        "data-tone": "计量条超限变色：warning | danger | success（旁边的数字写出状态）",
+        ".xxd-meter__target + --target": "计量条的目标线（0–1）",
+        "data-segments + --segments": "计量条分格：整格才亮"
+      },
+      "examples": [
+        {
+          "title": "计量条：目标、超限、分格",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-5);width:100%;max-width:320px\">\n  <div class=\"xxd-meter\" style=\"--value:.72\" role=\"meter\" aria-label=\"空间\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"72\" aria-valuetext=\"72%，目标 80%\"><div class=\"xxd-meter__head\"><span>空间</span><span>72% · 目标 80%</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div><span class=\"xxd-meter__target\" style=\"--target:.8\"></span></div>\n  <div class=\"xxd-meter\" data-tone=\"danger\" style=\"--value:.94\" role=\"meter\" aria-label=\"本月额度\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"94\" aria-valuetext=\"94%，超限\"><div class=\"xxd-meter__head\"><span>本月额度</span><span>94% · 超限</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div></div>\n  <div class=\"xxd-meter\" data-segments style=\"--segments:5;--value:.6\" role=\"meter\" aria-label=\"设置进度\" aria-valuemin=\"0\" aria-valuemax=\"5\" aria-valuenow=\"3\" aria-valuetext=\"第 3 步，共 5 步\"><div class=\"xxd-meter__head\"><span>设置进度</span><span>3 / 5 步</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div></div>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Table",
+      "zh": "表格",
+      "category": "内容",
+      "classes": [
+        "xxd-table",
+        "xxd-table-wrap",
+        "xxd-table__check",
+        "xxd-th-sort",
+        "xxd-th-resize",
+        "xxd-table__actions"
+      ],
+      "markup": "<div class=\"xxd-table-wrap\" style=\"max-width:560px\">\n<table class=\"xxd-table\" data-interactive>\n  <thead><tr>\n    <th class=\"xxd-table__check\"><input type=\"checkbox\" class=\"xxd-check\" data-select-all aria-label=\"全选\"></th>\n    <th aria-sort=\"ascending\" data-key=\"name\" data-sticky=\"start\"><button class=\"xxd-th-sort\">插件</button><span class=\"xxd-th-resize\"></span></th>\n    <th>版本</th>\n    <th aria-sort=\"none\" data-key=\"users\" data-align=\"end\"><button class=\"xxd-th-sort\">用户</button></th>\n    <th class=\"xxd-table__actions\"><span class=\"xxd-sr-only\">操作</span></th>\n  </tr></thead>\n  <tbody>\n    <tr><td class=\"xxd-table__check\"><input type=\"checkbox\" class=\"xxd-check\" data-select-row aria-label=\"选择 长文发布\"></td><td data-sticky=\"start\">长文发布</td><td>1.8.2</td><td data-align=\"end\">2,410</td><td class=\"xxd-table__actions\"><button class=\"xxd-btn xxd-reveal\" data-variant=\"ghost\" data-size=\"xs\">编辑</button></td></tr>\n    <tr><td class=\"xxd-table__check\"><input type=\"checkbox\" class=\"xxd-check\" data-select-row checked aria-label=\"选择 排序链接\"></td><td data-sticky=\"start\">排序链接</td><td>0.9.0</td><td data-align=\"end\">830</td><td class=\"xxd-table__actions\"><button class=\"xxd-btn xxd-reveal\" data-variant=\"ghost\" data-size=\"xs\">编辑</button></td></tr>\n    <tr><td class=\"xxd-table__check\"><input type=\"checkbox\" class=\"xxd-check\" data-select-row aria-label=\"选择 批量存图\"></td><td data-sticky=\"start\">批量存图</td><td>2.1.0</td><td data-align=\"end\">5,102</td><td class=\"xxd-table__actions\"><button class=\"xxd-btn xxd-reveal\" data-variant=\"ghost\" data-size=\"xs\">编辑</button></td></tr>\n  </tbody>\n  <tfoot><tr><td></td><td colspan=\"2\">3 个插件</td><td data-align=\"end\">8,342</td><td></td></tr></tfoot>\n</table></div>",
+      "react": "Table",
+      "attributes": {
+        "data-interactive": "行可悬停",
+        "data-density": "compact：紧凑",
+        "data-sticky-head": "表头吸顶",
+        "data-sticky（th/td）": "start | end：固定首列 / 末列",
+        "aria-sort（th）": "none | ascending | descending；里面放 .xxd-th-sort",
+        "[data-select-all] / [data-select-row]": "全选与行选择（半选自动）",
+        ".xxd-th-resize": "拖动列宽",
+        "data-wrap（td/th）": "这一列换行（缺省不折行，窄了在 .xxd-table-wrap 里横向滚动）"
+      },
+      "js": "table.addEventListener(\"xxd:sort\", (e) => e.detail /* { key, direction } */)\ntable.addEventListener(\"xxd:select\", (e) => e.detail.count)",
+      "block": true,
+      "summary": "对齐的数据：排序、全选、拖列宽、固定列、页脚合计。",
+      "a11y": [
+        "表头用 <th>，可排序列写 aria-sort 并把表头文字放在按钮里",
+        "全选框 aria-label，半选是 indeterminate；横向滚动的容器键盘可聚焦"
+      ],
+      "use": [
+        "要对比、排序、批量操作的一组同类数据"
+      ],
+      "avoid": [
+        "窄的插件侧边栏：用 List",
+        "只有两三列、没有对比的需要：用 List"
+      ]
+    },
+    {
+      "name": "Collapsible",
+      "zh": "折叠",
+      "category": "内容",
+      "classes": [
+        "xxd-collapse"
+      ],
+      "markup": "<details class=\"xxd-collapse\" name=\"faq\" open><summary>为什么默认直角？</summary><p>会员站的硬规则：对话框、卡片、按钮、输入框都不许圆角。</p></details>\n<details class=\"xxd-collapse\" name=\"faq\"><summary>主色怎么挑？</summary><p>12 个预设，墨色是第一个也是默认；也可以填任意颜色。</p></details>\n<details class=\"xxd-collapse\" name=\"faq\"><summary>能用 React 吗？</summary><p>@xxd/react，同一套令牌。</p></details>",
+      "react": "Collapsible",
+      "attributes": {
+        "name（details）": "同名的一组只开一个（手风琴，浏览器原生）"
+      },
+      "rules": [
+        "展开只淡入 + 小位移，不做高度动画"
+      ],
+      "block": true,
+      "summary": "原生 <details>：常见问题、可选的高级设置；同一个 name 时只开一个。",
+      "a11y": [
+        "<summary> 本身就是按钮：Enter / 空格展开，读屏读出展开状态",
+        "不要把必须看到的信息藏在折叠里"
+      ]
+    },
+    {
+      "name": "Code",
+      "zh": "代码",
+      "category": "内容",
+      "classes": [
+        "xxd-code",
+        "xxd-code-inline",
+        "xxd-kbd",
+        "xxd-copy",
+        "xxd-code-block",
+        "xxd-code__head"
+      ],
+      "markup": "<div class=\"xxd-code-block\" style=\"max-width:520px\">\n  <div class=\"xxd-code__head\">sidepanel.js<button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"xs\" aria-label=\"复制\" data-copy-target=\"#code-demo code\"><i data-xxd-icon=\"Copy\" data-size=\"14\"></i></button></div>\n  <pre class=\"xxd-code\" id=\"code-demo\" tabindex=\"0\" data-highlight data-lines><code data-lang=\"js\">// 外观设置存在 chrome.storage\nconst store = createAppearanceStore({ key: \"today-ui\" });\nawait store.load();\nXxd.toast(\"已保存\", { tone: \"success\" });</code></pre>\n</div>\n<p>行内代码 <code class=\"xxd-code-inline\">--r-sm</code>，按键 <kbd class=\"xxd-kbd\">⌘</kbd><kbd class=\"xxd-kbd\">K</kbd></p>",
+      "js": "Xxd.highlight(codeElement, \"js\")",
+      "react": "Code / ClipboardText",
+      "rules": [
+        "行内代码 12%，代码块 6%"
+      ],
+      "attributes": {
+        "data-highlight": "轻量高亮（js / ts / json / css / html / bash，data-lang）",
+        "data-lines": "行号",
+        ".xxd-code__head": "文件名 + 复制"
+      },
+      "block": true,
+      "summary": "代码块：轻量高亮、行号、复制按钮。",
+      "a11y": [
+        "能横向滚动的代码块可以用键盘聚焦（JS 自动补 tabindex=\"0\"），方向键滚动",
+        "复制按钮有 aria-label；高亮颜色在亮暗两种外观下都 ≥ 4.5:1"
+      ]
+    },
+    {
+      "name": "Avatar",
+      "zh": "头像",
+      "category": "内容",
+      "classes": [
+        "xxd-avatar"
+      ],
+      "markup": "<div class=\"xxd-cluster\">\n  <span class=\"xxd-avatar\">东</span> <span class=\"xxd-avatar\" data-member>X</span>\n</div>",
+      "summary": "人的头像或首字；会员有一个小标记。",
+      "a11y": [
+        "头像图片写 alt（人名）；只有首字时整体给 aria-label 或旁边有名字",
+        "会员标记不能只靠颜色——旁边的文字或 aria-label 里要写出来"
+      ],
+      "attributes": {
+        "data-size": "sm（24）| 缺省 28 | lg（40）；要别的尺寸写 --avatar-size"
+      }
+    },
+    {
+      "name": "Card",
+      "zh": "卡片",
+      "category": "内容",
+      "classes": [
+        "xxd-card",
+        "xxd-card__media",
+        "xxd-card__body",
+        "xxd-card__title",
+        "xxd-card__meta",
+        "xxd-card__marks",
+        "xxd-card__rating",
+        "xxd-card__action",
+        "xxd-grid",
+        "xxd-masonry"
+      ],
+      "markup": "<div class=\"xxd-grid\" style=\"--grid-min:200px\">\n  <a class=\"xxd-card\" href=\"#\"><div class=\"xxd-card__media\" style=\"--ratio:3/4\"></div><div class=\"xxd-card__body\"><p class=\"xxd-card__title\">编辑式海报</p><span class=\"xxd-card__meta\">xxd-panel-001</span></div></a>\n</div>",
+      "react": "Card + CardGrid（@xxd/react）",
+      "rules": [
+        "卡片没有阴影，hover 只加深边线",
+        "角标贴着角（读作界面）"
+      ],
+      "summary": "瀑布流 / 网格里的一张卡：图、标题、说明；整张可点。",
+      "a11y": [
+        "整张可点时卡片是一个 <a>，里面不要再放链接",
+        "图片写 alt；纯装饰的图 alt=\"\""
+      ],
+      "block": true,
+      "use": [
+        "有图的、能点进去的一项：海报、风格、模板"
+      ],
+      "avoid": [
+        "没有图的一行字：用 List",
+        "只是给一块内容加个框：用 LayerCard 或直接留白"
+      ]
+    },
+    {
+      "name": "LayerCard",
+      "zh": "分层卡片",
+      "category": "内容",
+      "classes": [
+        "xxd-layer",
+        "xxd-layer__secondary",
+        "xxd-layer__primary"
+      ],
+      "summary": "主体（纸）+ 次要区（洗色）：卡片上方或下方的一条说明 / 操作。不要层层嵌套。",
+      "markup": "<div class=\"xxd-layer\" style=\"width:100%;max-width:300px\">\n  <div class=\"xxd-layer__secondary\">下一步<button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"xs\" aria-label=\"前往\" style=\"margin-left:auto\"><i data-xxd-icon=\"ArrowRight\" data-size=\"14\"></i></button></div>\n  <div class=\"xxd-layer__primary\">用小小东 UI 做第一个插件</div>\n</div>",
+      "react": "LayerCard",
+      "rules": [
+        "不要把分层卡片叠在分层卡片里"
+      ],
+      "a11y": [
+        "次要区里的操作按钮有文字或 aria-label",
+        "层级靠底色和分隔线，读屏按 DOM 顺序读：主体在前"
+      ]
+    },
+    {
+      "name": "Layout",
+      "zh": "布局预设",
+      "category": "内容",
+      "classes": [
+        "xxd-layout",
+        "xxd-surface"
+      ],
+      "summary": "常用的两栏 / 三栏布局，布局自己窄于 560px 时叠成一栏（看容器宽度，不看窗口，放进侧边栏也会叠）；面分三层：base（纸）、sunken（洗色）、raised（只给浮层）。",
+      "block": true,
+      "attributes": {
+        "data-cols": "2up | 3up | 4up | 1-2 | 2-1 | 1-3 | side",
+        "--layout-gap": "间距",
+        "data-level（.xxd-surface）": "base | sunken | raised"
+      },
+      "markup": "<div class=\"xxd-layout\" data-cols=\"1-2\">\n  <div class=\"xxd-surface\" data-level=\"sunken\" style=\"padding:var(--inset-md)\">侧栏 1</div>\n  <div class=\"xxd-surface\" style=\"padding:var(--inset-md)\">主体 2</div>\n</div>",
+      "react": "Grid / Surface",
+      "a11y": [
+        "布局只是 div，不带语义；页面的 main / nav / aside 由你自己的外层决定",
+        "窄屏叠成一栏时 DOM 顺序就是阅读顺序"
+      ]
+    },
+    {
+      "name": "TableOfContents",
+      "zh": "文章目录",
+      "category": "内容",
+      "classes": [
+        "xxd-toc",
+        "xxd-toc__title"
+      ],
+      "summary": "长文的目录：滚动到哪一节，哪一项高亮（data-spy）。",
+      "attributes": {
+        "data-spy": "跟着滚动高亮当前节",
+        "data-depth=\"3\"（li）": "二级缩进"
+      },
+      "markup": "<nav aria-label=\"本文目录\"><p class=\"xxd-toc__title\">本文</p>\n<ul class=\"xxd-toc\" data-spy>\n  <li><a href=\"#demo\" aria-current=\"true\">演示</a></li>\n  <li data-depth=\"3\"><a href=\"#props\">属性与类名</a></li>\n  <li><a href=\"#rules\">规则</a></li>\n</ul></nav>",
+      "react": "TableOfContents",
+      "a11y": [
+        "外层 <nav aria-label=\"本文目录\">；当前节 aria-current=\"true\"",
+        "链接指向标题的 id；标题本身用真正的 h2 / h3"
+      ]
+    },
+    {
+      "name": "Logo",
+      "zh": "小小东标志",
+      "category": "内容",
+      "classes": [
+        "xxd-logo",
+        "xxd-logo__mark"
+      ],
+      "summary": "暖黑方块上四个由满到淡的小方块，各插件同一个标；跟随主题（暗色时反过来）。",
+      "attributes": {
+        "data-size": "sm | （缺省 20px）| lg",
+        "--logo-size": "任意尺寸"
+      },
+      "markup": "<div class=\"xxd-cluster\">\n  <span class=\"xxd-logo\" data-size=\"sm\"><span class=\"xxd-logo__mark\"></span>小小东</span>\n  <span class=\"xxd-logo\"><span class=\"xxd-logo__mark\"></span>长文发布</span>\n  <span class=\"xxd-logo\" data-size=\"lg\"><span class=\"xxd-logo__mark\"></span>小小东 UI</span>\n</div>",
+      "a11y": [
+        "方块标是装饰（aria-hidden），名字是文字",
+        "放在链接里时，链接的名字就是产品名"
+      ]
+    },
+    {
+      "name": "Prose",
+      "zh": "阅读排版",
+      "category": "内容",
+      "classes": [
+        "xxd-prose",
+        "xxd-hit"
+      ],
+      "markup": "<article class=\"xxd-prose\"><h2>编辑式海报</h2><p>克制的编辑式粗野主义。</p><blockquote>动效用来揭示层级。</blockquote></article>",
+      "rules": [
+        "一个颜色四种强度：100% 指向、40% 线与标记、12% 行内代码、6% 代码块",
+        "阅读列 680px"
+      ],
+      "summary": "长文排版：标题、段落、引用、列表、代码，阅读列宽。",
+      "a11y": [
+        "用真正的 h2 / h3、ul / ol、blockquote，读屏才能按结构跳",
+        "链接有下划线；列表符号用主色只是装饰"
+      ],
+      "react": "Prose（@xxd/react）"
+    },
+    {
+      "name": "Stat",
+      "zh": "统计卡",
+      "category": "展示",
+      "summary": "标签 · 数字（等宽数字）· 和上期比的变化 · 迷你折线。变化只有涨（成功色）跌（危险色）两种含义色。",
+      "classes": [
+        "xxd-stats",
+        "xxd-stat",
+        "xxd-stat__label",
+        "xxd-stat__value",
+        "xxd-stat__unit",
+        "xxd-stat__delta",
+        "xxd-stat__spark"
+      ],
+      "markup": "<div class=\"xxd-stats\" style=\"width:100%;max-width:640px\">\n  <div class=\"xxd-stat\"><p class=\"xxd-stat__label\">本周写入</p><p class=\"xxd-stat__value\">1,284<span class=\"xxd-stat__unit\">篇</span></p><span class=\"xxd-stat__delta\" data-tone=\"up\">↑ 12.4% 比上周</span><span class=\"xxd-stat__spark\" data-spark=\"8,9,7,11,10,13,15\"></span></div>\n  <div class=\"xxd-stat\"><p class=\"xxd-stat__label\">新会员</p><p class=\"xxd-stat__value\">86</p><span class=\"xxd-stat__delta\" data-tone=\"down\">↓ 3 比上周</span><span class=\"xxd-stat__spark\" data-spark=\"12,11,13,10,9,10,8\"></span></div>\n  <div class=\"xxd-stat\"><p class=\"xxd-stat__label\">平均写入耗时</p><p class=\"xxd-stat__value\">2.4<span class=\"xxd-stat__unit\">秒</span></p><span class=\"xxd-stat__delta\">持平</span><span class=\"xxd-stat__spark\" data-spark=\"5,5,6,5,5,4,5\"></span></div>\n</div>",
+      "a11y": [
+        "迷你折线是 aria-hidden 的装饰；变化要写成文字（↑ 12.4% 比上周），不能只靠颜色。"
+      ],
+      "js": "el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // 或者 data-spark=\"3,5,4,8\" 再 Xxd.init()\n// 迷你柱（每天一个数）：Xxd.sparkline(values, { type: \"bar\" }) 或 data-spark-type=\"bar\""
+    },
+    {
+      "name": "Chart",
+      "zh": "图表",
+      "category": "展示",
+      "summary": "ECharts + Xxd.chartOptions()：一条重点线用主色，其余是墨色的深浅；发丝网格线；切主题、主色自动重画。也能直接喂给 Kumo 的 <Chart options>。",
+      "classes": [
+        "xxd-chart",
+        "xxd-chart-card",
+        "xxd-chart-card__head",
+        "xxd-chart-card__title",
+        "xxd-chart-card__meta",
+        "xxd-chart-card__note",
+        "xxd-legend",
+        "xxd-legend__item",
+        "xxd-legend__key",
+        "xxd-legend__name",
+        "xxd-legend__num",
+        "xxd-legend__share",
+        "xxd-viz-empty"
+      ],
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--gap-block);width:100%;max-width:720px\">\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">每天写入篇数</h3><span class=\"xxd-chart-card__meta\">最近 14 天</span></div>\n  <div class=\"xxd-chart\" id=\"chart-line\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">长文发布 14 天里一直在涨，从 42 篇到 96 篇；图片排序从 20 到 40。</p>\n</div>\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">各插件用户</h3></div>\n  <div class=\"xxd-chart\" id=\"chart-bar\" style=\"--chart-h:220px\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">批量存图用户最多（5,102），其次长文发布（2,410）。</p>\n</div>\n</div>\n<script>\n  if (window.echarts) {\n    const days = Array.from({ length: 14 }, (_, i) => `${i + 1}日`);\n    const line = echarts.init(document.getElementById(\"chart-line\"));\n    const lineOpt = () => Xxd.chartOptions({ legend: {}, xAxis: { type: \"category\", data: days, boundaryGap: false }, yAxis: { type: \"value\" }, series: [{ name: \"长文发布\", type: \"line\", data: [42, 48, 45, 60, 58, 66, 71, 69, 80, 78, 85, 90, 88, 96] }, { name: \"图片排序\", type: \"line\", data: [20, 22, 25, 24, 28, 27, 30, 33, 31, 35, 34, 36, 38, 40] }] });\n    line.setOption(lineOpt());\n    Xxd.watchChartTheme(line, lineOpt);\n    const bar = echarts.init(document.getElementById(\"chart-bar\"));\n    const barOpt = () => Xxd.chartOptions({ xAxis: { type: \"category\", data: [\"长文发布\", \"排序链接\", \"批量存图\", \"今日待办\"] }, yAxis: { type: \"value\" }, series: [{ type: \"bar\", data: [2410, 830, 5102, 312] }] });\n    bar.setOption(barOpt());\n    Xxd.watchChartTheme(bar, barOpt);\n    new ResizeObserver(() => { line.resize(); bar.resize(); }).observe(document.getElementById(\"chart-line\").parentElement.parentElement);\n  }\n</script>",
+      "a11y": [
+        "图表旁边要有一句话结论或一张表；颜色之外，线宽也区分重点线。"
+      ],
+      "js": "chart.setOption(Xxd.chartOptions(option))\nXxd.watchChartTheme(chart, () => Xxd.chartOptions(option))\n// React：<Chart echarts={echarts} options={Xxd.chartOptions(option)} />",
+      "react": "Chart",
+      "rules": [
+        "系列配色固定：第 1 条是主色，第 2–5 条是墨色按 78% / 64% / 54% / 46% 往纸色混（最浅的一档对纸也有 3:1）",
+        "颜色只差深浅，所以折线从第 3 条起换线型：实线、实线、虚线、点线、点划线（WCAG 1.4.1：不只靠颜色区分）；第 1 条线宽 2px，其余 1.5px",
+        "超过 5 条就该拆图或只高亮一条，其余画成 --muted-2 的背景线",
+        "图表旁边写一句结论或附数据表，读屏和不看图的人也拿得到信息"
+      ]
+    },
+    {
+      "name": "Gauge",
+      "zh": "量表",
+      "category": "展示",
+      "classes": [
+        "xxd-gauges",
+        "xxd-gauge",
+        "xxd-gauge__dial",
+        "xxd-gauge__svg",
+        "xxd-gauge__pointer",
+        "xxd-gauge__track",
+        "xxd-gauge__fill",
+        "xxd-gauge__fill-warning",
+        "xxd-gauge__fill-danger",
+        "xxd-gauge__fill-success",
+        "xxd-gauge__part-0",
+        "xxd-gauge__part-1",
+        "xxd-gauge__part-2",
+        "xxd-gauge__part-3",
+        "xxd-gauge__part-4",
+        "xxd-gauge__zone-warning",
+        "xxd-gauge__zone-danger",
+        "xxd-gauge__zone-success",
+        "xxd-gauge__target",
+        "xxd-gauge__tick",
+        "xxd-gauge__needle",
+        "xxd-gauge__needle-line",
+        "xxd-gauge__hub",
+        "xxd-gauge__center",
+        "xxd-gauge__value",
+        "xxd-gauge__unit",
+        "xxd-gauge__label",
+        "xxd-gauge__state",
+        "xxd-gauge__ends",
+        "xxd-gauge__min",
+        "xxd-gauge__max"
+      ],
+      "attributes": {
+        "data-gauge": "声明式：Xxd.init() 按下面这些 data-* 画出来；改了 data-* 再调一次 Xxd.initGauges()",
+        "data-value": "数值；同时写 data-from 就是一段区间（data-from 到 data-value）",
+        "data-min / data-max": "范围（缺省 0–100）",
+        "data-shape": "arc（缺省，270°，缺口朝下）| half（半圆）| ring（整圈）",
+        "data-unit / data-label": "单位；标签（显示在数字下面，也是读屏念的名字）",
+        "data-zones": "区段，只表意义：80-90:warning,90:danger；可以带名字：0-20:danger:电量低",
+        "data-target": "目标线，可以写几条：80,95",
+        "data-ticks": "刻度：把弧分成几份",
+        "data-segments": "分格：N 格，整格才亮",
+        "data-needle": "细线指针（arc / half）；有指针时不画填充",
+        "data-parts": "分段：图片:38;视频:22（每段自己的量，首尾相接）",
+        "data-rings": "多环，最多 3 环：写作:3/5;阅读:40/60（每环自己的满额）",
+        "data-size": "sm | lg：中间数字的字号",
+        "--gauge-size": "最大宽度（缺省 160px）；一排量表用 .xxd-gauges",
+        "data-origin": "填充从这个值往两边长（偏差、盈亏，比如 0），原点画一道刻度",
+        "data-compact": "大数字缩写：「1.2万」「12K」"
+      },
+      "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-value=\"72\" data-unit=\"%\" data-label=\"空间已用\" data-target=\"80\" data-zones=\"80-90:warning,90:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-value=\"94\" data-unit=\"%\" data-label=\"本月额度\" data-target=\"80\" data-zones=\"80-90:warning,90:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-segments=\"8\" data-max=\"8\" data-value=\"5\" data-unit=\"杯\" data-label=\"今天喝水\"></div>\n</div>",
+      "react": "Gauge",
+      "rules": [
+        "一个量表只回答一个问题：这个数在范围里的哪儿（配额用了多少、得分、完成度）。看趋势用折线，比大小用柱状，不要用一排量表凑一张图",
+        "填充是主色（没设主色就是墨色）；只有数值进了 warning / danger / success 区段才换颜色，而且数字下面写出状态，不只靠颜色",
+        "形状只有三种：arc（270°）、half（180°）、ring（整圈）。轨道和填充的线头跟圆角模式（--stroke-cap），分格、分段的缝永远是平的",
+        "数字、单位、两端的刻度数是 HTML 字（系统字体、等宽数字），不画进图里；刻度数只标两端",
+        "不做进场动画；值变了指针转过去（220ms），填充直接到位",
+        "分段、多环一定配图例写出数字；多环最多 3 环，颜色和图表的分类色是同一组",
+        "§1",
+        "§8",
+        "§14"
+      ],
+      "summary": "一个数在一个范围里的哪儿：配额、得分、完成度。三种形状（270° 弧、半圆、整圈）；轨道是淡灰、填充是主色，进了区段才换成意义色。还有目标线、刻度、分格、区间、分段、多环和细线指针。",
+      "a11y": [
+        "一个数：role=meter + aria-valuenow / min / max，aria-valuetext 是整句（「94%，超限，目标 80%」）；名字来自 data-label，或者自己写 aria-label",
+        "区间、分段、多环：role=group + aria-label；图例是普通文字，读屏照念；SVG 一律 aria-hidden",
+        "Windows 高对比模式：轨道 GrayText、填充 Highlight、目标线和指针 CanvasText"
+      ],
+      "js": "Xxd.gauge(el, { value: 72, unit: \"%\", label: \"空间已用\", zones: [{ from: 80, to: 90, tone: \"warning\" }, { from: 90, tone: \"danger\" }], target: 80 })\n// 声明式：<div class=\"xxd-gauge\" data-gauge data-value=\"72\" …></div>，Xxd.init() 画出来\n// React：<Gauge value={72} unit=\"%\" label=\"空间已用\" zones={[{ from: 90, tone: \"danger\" }]} target={80} />\n// 几何（小程序、服务端）：import { gaugeModel } from \"@xxd/css/gauge\"",
+      "examples": [
+        {
+          "title": "指针和刻度",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-needle data-ticks=\"10\" data-value=\"64\" data-unit=\"%\" data-label=\"CPU 负载\" data-zones=\"80:danger\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-needle data-ticks=\"12\" data-max=\"120\" data-value=\"38\" data-unit=\"ms\" data-label=\"响应时间\" data-zones=\"60-90:warning,90:danger\"></div>\n</div>"
+        },
+        {
+          "title": "区间",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-10\" data-max=\"40\" data-from=\"12\" data-value=\"26\" data-unit=\"°C\" data-label=\"今天气温\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-from=\"60\" data-value=\"75\" data-label=\"目标区间\" data-unit=\"kg\" data-min=\"40\" data-max=\"100\"></div>\n</div>"
+        },
+        {
+          "title": "分段",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-max=\"100\" data-unit=\"GB\" data-label=\"已用空间\" data-parts=\"图片:38;视频:22;文档:9\"></div>\n</div>"
+        },
+        {
+          "title": "多环",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-shape=\"ring\" data-label=\"本周目标\" data-rings=\"写作:3/5;阅读:40/60;运动:2/4\"></div>\n</div>"
+        },
+        {
+          "title": "尺寸",
+          "markup": "<div class=\"xxd-gauges\" style=\"width:100%;max-width:560px\">\n  <div class=\"xxd-gauge\" data-gauge data-size=\"sm\" style=\"--gauge-size:120px\" data-value=\"36\" data-unit=\"%\" data-label=\"小\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-value=\"36\" data-unit=\"%\" data-label=\"缺省\"></div>\n  <div class=\"xxd-gauge\" data-gauge data-size=\"lg\" style=\"--gauge-size:220px\" data-value=\"36\" data-unit=\"%\" data-label=\"大\"></div>\n</div>"
+        },
+        {
+          "title": "从原点往两边长",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <div class=\"xxd-gauges\">\n    <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-50\" data-max=\"50\" data-origin=\"0\" data-value=\"-12\" data-unit=\"%\" data-label=\"比预算\"></div>\n    <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-50\" data-max=\"50\" data-origin=\"0\" data-value=\"18\" data-unit=\"%\" data-label=\"比上月\"></div>\n  </div>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Bars",
+      "zh": "条形榜",
+      "category": "展示",
+      "classes": [
+        "xxd-bars",
+        "xxd-bars__item",
+        "xxd-bars__label",
+        "xxd-bars__track",
+        "xxd-bars__bar",
+        "xxd-bars__fill",
+        "xxd-bars__value",
+        "xxd-bars__note",
+        "xxd-bars__compare",
+        "xxd-bars__key",
+        "xxd-bars__swatch",
+        "xxd-bars__axis",
+        "xxd-bars__ticks",
+        "xxd-bars__tick"
+      ],
+      "attributes": {
+        "data-viz=\"bars\" + data-items": "声明式：「名字:数;名字:数」，Xxd.init() 画出来（要加载 viz.js）",
+        "data-highlight": "重点的名字（几个用逗号分开）：重点是主色，其余灰 9 级",
+        "data-step": "每格代表多少：条按单位切格（最多 60 格）",
+        "data-variant": "diverging | funnel | waterfall",
+        "data-unit / data-max / data-sort=\"false\"": "单位；满格的值（缺省是最大值）；不按大小排",
+        "data-rungs + --rungs": "手写 HTML 时按单位切格：--rungs 是满格时有几格",
+        "--value": "手写 HTML 时每行的比例（0–1；正负条 −1–1）",
+        "--bars-label": "名字那一栏的宽度（缺省 28%）",
+        "data-items: value/compare": "对照值（去年）：「长文发布:2410/1980」，主条下面一根细灰条，数字下面写出来",
+        "data-value-label / data-compare-label": "图例里主条、对照条的名字（「今年」「去年」）",
+        "data-mark + data-mark-label": "参考线（平均、目标）：横穿所有行的墨色细线，上面一行写「平均 1,800 人」",
+        "data-axis": "下面一行刻度数（取整到 1 / 2 / 5 × 10ⁿ），条后面是发丝网格线",
+        "data-total": "瀑布（data-variant=\"waterfall\"）里合计行的名字（逗号分开）：合计从 0 起、主色；其余是增减",
+        "data-compact": "大数字缩写：「1.2万」「12K」"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">批量存图的用户最多</h3><span class=\"xxd-chart-card__meta\">最近 30 天</span></div>\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-unit=\"人\" data-highlight=\"批量存图\" data-items=\"长文发布:2410;排序链接:830;批量存图:5102;今日待办:312\"></ol>\n  <p class=\"xxd-chart-card__note\">按插件统计的周活跃用户。</p>\n</div>\n</div>",
+      "react": "Bars",
+      "rules": [
+        "排名、少类目（≤ 12）用它；趋势用折线",
+        "条从 0 开始，长度和数成正比，不断轴",
+        "正负都是墨色，靠方向和「−」号分，不用红绿（涨跌不等于好坏）",
+        "瀑布的增减是灰 9 级、带 + / − 号，合计是主色；不用红绿",
+        "对照值只做背景：细灰条 + 数字下面一行字，主次靠粗细分",
+        "§14"
+      ],
+      "summary": "少类目比较、排名：名字在左、条在中、数字在右，按大小排。可以标一条重点（主色，其余是灰）；按单位切格；正负从中线往两边长；漏斗写出每一步留下多少；瀑布做增减分解。还能加对照值（去年）、参考线（平均）、刻度和旁注。条按最大值的比例，不画轨道。",
+      "a11y": [
+        "是一个有序列表：每行的字就是数据（名字、数、留下多少），读屏照念；条本身 aria-hidden",
+        "重点不只靠颜色：名字也变成正文色，标题写出结论",
+        "对照值、旁注写在数字下面（文字），读屏照念；图例和刻度那两行 aria-hidden（数据都在每行的字里）"
+      ],
+      "js": "Xxd.viz(el, \"bars\", [{ label: \"长文发布\", value: 2410 }, { label: \"批量存图\", value: 5102, highlight: true }], { unit: \"人\" })\n// 声明式：<ol class=\"xxd-bars\" data-viz=\"bars\" data-items=\"长文发布:2410;批量存图:5102\"></ol>\n// React：<Bars items={[{ label: \"长文发布\", value: 2410 }]} unit=\"人\" />",
+      "examples": [
+        {
+          "title": "按单位切格",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-step=\"1\" data-unit=\"篇\" data-items=\"周一:3;周二:5;周三:2;周四:6\" data-sort=\"false\"></ol>\n  <p class=\"xxd-chart-card__note\">1 格 = 1 篇</p>\n</div>"
+        },
+        {
+          "title": "正负",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"diverging\" data-unit=\"%\" data-items=\"海报:18;封面:6;笔记:-4;长图:-11\"></ol>\n</div>"
+        },
+        {
+          "title": "漏斗",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"funnel\" data-unit=\"人\" data-items=\"打开插件:12480;写过一篇:5210;开了会员:742\"></ol>\n</div>"
+        },
+        {
+          "title": "对照、参考线和刻度",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-unit=\"人\" data-axis data-mark=\"1800\" data-mark-label=\"平均\" data-value-label=\"今年\" data-compare-label=\"去年\" data-items=\"长文发布:2410/1980;排序链接:830/1020;批量存图:3102/2400;今日待办:312/0\"></ol>\n</div>"
+        },
+        {
+          "title": "瀑布",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"waterfall\" data-unit=\"万元\" data-total=\"毛收入,净收入\" data-items=\"毛收入:120;退款:-14;渠道分成:-22;补贴:6;净收入:90\"></ol>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Proportion",
+      "zh": "构成条",
+      "category": "展示",
+      "classes": [
+        "xxd-proportion",
+        "xxd-proportion__head",
+        "xxd-proportion__label",
+        "xxd-proportion__total",
+        "xxd-proportion__bar",
+        "xxd-proportion__part"
+      ],
+      "attributes": {
+        "data-viz=\"proportion\" + data-parts": "声明式：「名字:数;名字:数」（要加载 viz.js）",
+        "data-label / data-unit": "标题（上面一行，右边是合计）；单位",
+        "data-legend=\"false\"": "不画图例（几根并排时，只在最后一根下面画）",
+        "data-max": "几根并排时，条长按合计 ÷ max（既看构成也看总量）"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:480px\">\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-label=\"已用空间\" data-unit=\"GB\" data-parts=\"图片:38;视频:22;文档:9;其他:3\"></div>\n</div>",
+      "react": "Proportion",
+      "rules": [
+        "最多 5 段；更多的合并成「其他」",
+        "百分比用最大余数法取整，加起来正好 100%",
+        "颜色是图表的 5 种分类色，第一段是主色",
+        "§14"
+      ],
+      "summary": "一个整体分成几部分（≤ 5 段）：一根横条按比例分段，下面图例写名字、数和百分比（加起来正好 100%）。几根并排就是堆叠条。",
+      "a11y": [
+        "role=group + aria-label 是整句（「图片 53%，视频 31%……」）；条 aria-hidden，图例是文字"
+      ],
+      "js": "Xxd.viz(el, \"proportion\", [{ label: \"图片\", value: 38 }, { label: \"视频\", value: 22 }], { label: \"已用空间\", unit: \"GB\" })\n// React：<Proportion parts={[…]} label=\"已用空间\" unit=\"GB\" />",
+      "examples": [
+        {
+          "title": "几根并排",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:480px\">\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-legend=\"false\" data-label=\"华东\" data-unit=\"万元\" data-parts=\"会员:62;单篇:21;广告:9\"></div>\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-legend=\"false\" data-label=\"华南\" data-unit=\"万元\" data-parts=\"会员:41;单篇:30;广告:14\"></div>\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-label=\"华北\" data-unit=\"万元\" data-parts=\"会员:35;单篇:12;广告:18\"></div>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Waffle",
+      "zh": "百格图",
+      "category": "展示",
+      "classes": [
+        "xxd-waffle",
+        "xxd-waffle__grid",
+        "xxd-waffle__cell",
+        "xxd-waffle__side",
+        "xxd-waffle__note"
+      ],
+      "attributes": {
+        "data-viz=\"waffle\" + data-parts": "声明式：「名字:数;名字:数」（数可以是人数或百分比；要加载 viz.js）",
+        "data-cells": "格子数（缺省 100）",
+        "--waffle-size": "格子那一块的宽度（缺省 160px）"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:480px\">\n  <div class=\"xxd-waffle\" data-viz=\"waffle\" data-label=\"新会员从哪来\" data-parts=\"朋友推荐:46;搜索:27;公众号:18;其他:9\"></div>\n</div>",
+      "react": "Waffle",
+      "rules": [
+        "饼图的替代：只有占比、≤ 5 类时用它",
+        "格子数按最大余数法分，加起来正好 100 格，不凑假格子",
+        "单位写出来（「1 格 = 1%」）",
+        "§14"
+      ],
+      "summary": "占比的单位图：10 × 10，1 格 = 1%，旁边是图例和单位说明。只有几个百分比时比饼图诚实——能数。",
+      "a11y": [
+        "role=group + aria-label 是整句；格子 aria-hidden，图例写出百分比"
+      ],
+      "js": "Xxd.viz(el, \"waffle\", [{ label: \"朋友推荐\", value: 46 }, { label: \"搜索\", value: 27 }], { label: \"新会员从哪来\" })\n// React：<Waffle parts={[…]} label=\"新会员从哪来\" />"
+    },
+    {
+      "name": "Heatmap",
+      "zh": "热力格",
+      "category": "展示",
+      "classes": [
+        "xxd-heatmap",
+        "xxd-heatmap__body",
+        "xxd-heatmap__scroll",
+        "xxd-heatmap__frame",
+        "xxd-heatmap__months",
+        "xxd-heatmap__days",
+        "xxd-heatmap__grid",
+        "xxd-heatmap__cell",
+        "xxd-heatmap__scale",
+        "xxd-heatmap__readout",
+        "xxd-heatmap__matrix",
+        "xxd-heatmap__col",
+        "xxd-heatmap__row"
+      ],
+      "attributes": {
+        "data-viz=\"heatmap\" + data-values": "日历：JSON 的 {\"2026-03-02\": 5}（要加载 viz.js）",
+        "data-end / data-weeks": "最后一天（缺省今天）；显示几周（缺省 53）",
+        "data-variant=\"matrix\" + data-rows / data-cols / data-values": "矩阵：行名、列名用逗号分，数值一行一组用分号分",
+        "data-numbers": "矩阵格子里写数",
+        "--heat-cell": "日历格子大小（缺省 12px）"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:760px\">\n  <div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">工作日写得比周末多</h3><span class=\"xxd-chart-card__meta\">截至 10 月 19 日</span></div>\n  <div class=\"xxd-heatmap\" data-viz=\"heatmap\" data-end=\"2026-10-19\" data-unit=\"篇\" data-values='{\"2026-10-19\":2,\"2026-10-17\":1,\"2026-10-16\":1,\"2026-10-14\":1,\"2026-10-13\":1,\"2026-10-12\":6,\"2026-10-11\":1,\"2026-10-09\":1,\"2026-10-08\":6,\"2026-10-07\":2,\"2026-10-06\":2,\"2026-10-05\":2,\"2026-10-02\":2,\"2026-10-01\":2,\"2026-09-30\":1,\"2026-09-29\":2,\"2026-09-28\":6,\"2026-09-24\":2,\"2026-09-22\":2,\"2026-09-21\":3,\"2026-09-17\":1,\"2026-09-16\":6,\"2026-09-15\":4,\"2026-09-14\":9,\"2026-09-11\":4,\"2026-09-10\":4,\"2026-09-09\":9,\"2026-09-08\":1,\"2026-09-04\":3,\"2026-09-03\":9,\"2026-09-02\":6,\"2026-08-31\":9,\"2026-08-28\":2,\"2026-08-26\":2,\"2026-08-25\":9,\"2026-08-24\":9,\"2026-08-22\":2,\"2026-08-19\":6,\"2026-08-17\":6,\"2026-08-15\":2,\"2026-08-14\":2,\"2026-08-13\":2,\"2026-08-12\":1,\"2026-08-11\":4,\"2026-08-10\":4,\"2026-08-07\":1,\"2026-08-06\":6,\"2026-08-05\":6,\"2026-08-04\":6,\"2026-08-03\":1,\"2026-07-31\":1,\"2026-07-30\":2,\"2026-07-29\":4,\"2026-07-28\":1,\"2026-07-25\":3,\"2026-07-23\":9,\"2026-07-22\":9,\"2026-07-20\":9,\"2026-07-19\":2,\"2026-07-18\":4,\"2026-07-16\":2,\"2026-07-15\":2,\"2026-07-13\":2,\"2026-07-09\":1,\"2026-07-08\":3,\"2026-07-07\":2,\"2026-07-06\":2,\"2026-07-03\":2,\"2026-07-02\":2,\"2026-06-28\":9,\"2026-06-26\":1,\"2026-06-24\":2,\"2026-06-23\":4,\"2026-06-22\":4,\"2026-06-19\":2,\"2026-06-18\":4,\"2026-06-17\":1,\"2026-06-16\":4,\"2026-06-14\":1,\"2026-06-10\":2,\"2026-06-09\":4,\"2026-06-08\":6,\"2026-06-05\":2,\"2026-06-04\":2,\"2026-06-03\":9,\"2026-06-01\":9,\"2026-05-29\":2,\"2026-05-28\":1,\"2026-05-27\":2,\"2026-05-26\":2,\"2026-05-24\":3,\"2026-05-23\":2,\"2026-05-21\":6,\"2026-05-19\":4,\"2026-05-15\":2,\"2026-05-14\":1,\"2026-05-11\":2,\"2026-05-10\":9,\"2026-05-08\":1,\"2026-05-07\":9,\"2026-05-05\":1,\"2026-05-04\":3,\"2026-05-03\":1,\"2026-05-01\":1,\"2026-04-30\":2,\"2026-04-29\":9,\"2026-04-28\":9,\"2026-04-27\":2,\"2026-04-23\":2,\"2026-04-21\":1,\"2026-04-20\":4,\"2026-04-19\":2,\"2026-04-17\":3,\"2026-04-14\":4,\"2026-04-13\":2,\"2026-04-11\":1,\"2026-04-10\":9,\"2026-04-09\":2,\"2026-04-08\":6,\"2026-04-06\":6,\"2026-04-05\":4,\"2026-04-04\":4,\"2026-04-03\":9,\"2026-04-02\":1,\"2026-04-01\":3,\"2026-03-31\":1,\"2026-03-30\":2,\"2026-03-28\":3,\"2026-03-27\":2,\"2026-03-26\":2,\"2026-03-23\":3,\"2026-03-20\":9,\"2026-03-19\":1,\"2026-03-18\":2,\"2026-03-17\":1,\"2026-03-16\":1,\"2026-03-13\":2,\"2026-03-12\":1,\"2026-03-11\":4,\"2026-03-09\":3,\"2026-03-07\":2,\"2026-03-04\":2,\"2026-03-03\":3,\"2026-03-02\":2,\"2026-03-01\":2,\"2026-02-28\":1,\"2026-02-26\":1,\"2026-02-24\":2,\"2026-02-23\":2,\"2026-02-21\":6,\"2026-02-20\":6,\"2026-02-18\":2,\"2026-02-16\":2,\"2026-02-14\":1,\"2026-02-12\":3,\"2026-02-11\":1,\"2026-02-10\":6,\"2026-02-07\":2,\"2026-02-06\":1,\"2026-02-05\":2,\"2026-02-04\":1,\"2026-02-03\":4,\"2026-01-31\":3,\"2026-01-30\":2,\"2026-01-29\":6,\"2026-01-28\":3,\"2026-01-27\":2,\"2026-01-26\":1,\"2026-01-25\":1,\"2026-01-24\":1,\"2026-01-23\":3,\"2026-01-22\":2,\"2026-01-21\":2,\"2026-01-20\":6,\"2026-01-16\":2,\"2026-01-15\":6,\"2026-01-12\":1,\"2026-01-08\":2,\"2026-01-07\":1,\"2026-01-06\":4,\"2026-01-02\":1,\"2026-01-01\":2,\"2025-12-31\":1,\"2025-12-30\":1,\"2025-12-26\":1,\"2025-12-24\":1,\"2025-12-22\":2,\"2025-12-21\":9,\"2025-12-19\":9,\"2025-12-17\":1,\"2025-12-16\":2,\"2025-12-15\":2,\"2025-12-14\":3,\"2025-12-12\":9,\"2025-12-11\":3,\"2025-12-09\":2,\"2025-12-08\":3,\"2025-12-06\":9,\"2025-12-05\":1,\"2025-12-03\":3,\"2025-11-30\":9,\"2025-11-29\":9,\"2025-11-27\":2,\"2025-11-26\":1,\"2025-11-25\":3,\"2025-11-23\":3,\"2025-11-21\":2,\"2025-11-20\":9,\"2025-11-19\":2,\"2025-11-18\":9,\"2025-11-17\":6,\"2025-11-16\":2,\"2025-11-14\":1,\"2025-11-12\":4,\"2025-11-10\":2,\"2025-11-07\":4,\"2025-11-06\":6,\"2025-11-04\":4,\"2025-10-31\":1,\"2025-10-29\":2,\"2025-10-28\":3,\"2025-10-27\":4,\"2025-10-26\":4,\"2025-10-24\":1,\"2025-10-22\":2,\"2025-10-21\":1,\"2025-10-17\":3,\"2025-10-16\":2,\"2025-10-15\":6,\"2025-10-14\":3}'></div>\n  <p class=\"xxd-chart-card__note\">每格是一天，颜色越深写得越多。</p>\n</div>\n</div>",
+      "react": "Heatmap",
+      "rules": [
+        "只有 0 + 4 档：再多肉眼分不清",
+        "日历最近的一周在最右边，窄屏上横着滚、先滚到最右",
+        "§14"
+      ],
+      "summary": "越深越多：日历（一年 53 周 × 7 天，看哪天活跃）和矩阵（两个维度 × 数量，如星期 × 小时，格子里可以直接写数）。0 档加 4 档，墨色时是灰阶，有主色时是主色的色阶。",
+      "a11y": [
+        "格子是一张图（role=img），aria-label 是一句总结（「365 天里有 251 天有记录，合计 812 篇，最多一天 9 篇」）",
+        "横着滚的那一块是 role=region + aria-label + tabindex=0：键盘能聚焦到它，再用方向键左右滚",
+        "指到或点到一格，色阶那一行的左边写出这一格（日期和数），这一格加墨色细框；手机点一下就有，不用悬停提示（CHART-REVIEW-PLAN D50）",
+        "矩阵深的两档上的字用 --on-action，和底 ≥ 4.5:1"
+      ],
+      "js": "Xxd.viz(el, \"calendar\", { \"2026-10-18\": 3, \"2026-10-19\": 5 }, { end: \"2026-10-19\", unit: \"篇\" })\nXxd.viz(el, \"matrix\", { rows: [\"一\", \"二\"], cols: [\"9\", \"10\"], values: [[1, 4], [0, 8]] }, { numbers: true })\n// React：<Heatmap values={…} unit=\"篇\" /> 或 <Heatmap matrix={{ rows, cols, values }} numbers />",
+      "examples": [
+        {
+          "title": "矩阵",
+          "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <div class=\"xxd-heatmap\" data-viz=\"heatmap\" data-variant=\"matrix\" data-numbers data-label=\"哪个时段写得多\" data-rows=\"一,二,三,四,五,六,日\" data-cols=\"8,10,12,14,16,18,20,22\" data-values=\"2,6,4,5,7,3,9,4;1,5,6,4,6,4,8,5;2,7,5,6,8,3,10,6;1,6,4,5,7,4,9,5;3,8,6,7,9,5,6,2;0,1,2,3,2,4,5,3;0,1,1,2,3,5,7,4\"></div>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "Dumbbell",
+      "zh": "前后对比",
+      "category": "展示",
+      "classes": [
+        "xxd-dumbbell",
+        "xxd-dumbbell__key",
+        "xxd-dumbbell__list",
+        "xxd-dumbbell__item",
+        "xxd-dumbbell__label",
+        "xxd-dumbbell__track",
+        "xxd-dumbbell__line",
+        "xxd-dumbbell__from",
+        "xxd-dumbbell__to",
+        "xxd-dumbbell__value",
+        "xxd-dumbbell__delta"
+      ],
+      "attributes": {
+        "data-viz=\"dumbbell\" + data-rows": "声明式：「名字:之前>之后;…」（要加载 viz.js）",
+        "data-from-label / data-to-label": "两个点的名字（缺省「之前」「之后」）",
+        "data-min / data-max / data-unit": "位置的范围（缺省是数据的范围）；单位"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:520px\">\n  <div class=\"xxd-dumbbell\" data-viz=\"dumbbell\" data-unit=\"分钟\" data-from-label=\"改版前\" data-to-label=\"改版后\" data-rows=\"写第一篇:14>6;配好图片:9>4;排好版:21>12;发出去:5>3\"></div>\n</div>",
+      "react": "Dumbbell",
+      "rules": [
+        "两个时点、≤ 8 个类目用它；更多时点用折线",
+        "图上的点跟圆角开关走（--r-pill）：直角时是方点，和柱子、格子一样",
+        "§14"
+      ],
+      "summary": "类目级的前后对比（≤ 8 行）：一条细线连两个点，之前是空心圈、之后是实心点（主色），右边写「之前 → 之后」和变化。位置按数据的范围，不从 0 开始（比的是位置不是长度）。",
+      "a11y": [
+        "是一个有序列表：每行写「名字 之前 → 之后 变化」，读屏照念；点和线 aria-hidden",
+        "之前 / 之后不只靠颜色：一个空心、一个实心，上面有图例"
+      ],
+      "js": "Xxd.viz(el, \"dumbbell\", [{ label: \"写第一篇\", from: 14, to: 6 }], { unit: \"分钟\", fromLabel: \"改版前\", toLabel: \"改版后\" })\n// React：<Dumbbell rows={[…]} unit=\"分钟\" fromLabel=\"改版前\" toLabel=\"改版后\" />"
+    }
+  ]
+}

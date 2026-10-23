@@ -1,0 +1,276 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Button"
+description: "Displays a button or a component that looks like a button."
+sourceFile: "components/button"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import CodeBlock from "~/components/docs/CodeBlock.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  ButtonBasicDemo,
+  ButtonPrimaryDemo,
+  ButtonSecondaryDemo,
+  ButtonGhostDemo,
+  ButtonDestructiveDemo,
+  ButtonOutlineDemo,
+  ButtonSecondaryDestructiveDemo,
+  ButtonSizesDemo,
+  ButtonWithIconDemo,
+  ButtonIconOnlyDemo,
+  ButtonLoadingDemo,
+  ButtonDisabledDemo,
+  ButtonTitleDemo,
+  ButtonLinkAsButtonDemo,
+  ButtonLinkTooltipDemo,
+  ButtonDisabledLinkDemo,
+} from "~/components/demos/ButtonDemo";
+
+{/* Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="ButtonBasicDemo" vrSection="basic" vrTitle="Basic">
+    <ButtonBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+  <CodeBlock code={`import { Button } from "@cloudflare/kumo";`} lang="tsx" />
+
+### Granular
+
+  <CodeBlock
+    code={`import { Button } from "@cloudflare/kumo/components/button";`}
+    lang="tsx"
+  />
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { Button } from "@cloudflare/kumo";
+
+export default function Example() {
+  return <Button variant="secondary">Click me</Button>;
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+{/* Variants */}
+
+### Variants
+
+#### Primary
+
+<ComponentExample
+  demo="ButtonPrimaryDemo"
+  vrSection="variant-primary"
+  vrTitle="Variant: Primary"
+>
+  <ButtonPrimaryDemo client:visible />
+</ComponentExample>
+
+#### Secondary
+
+<ComponentExample
+  demo="ButtonSecondaryDemo"
+  vrSection="variant-secondary"
+  vrTitle="Variant: Secondary"
+>
+  <ButtonSecondaryDemo client:visible />
+</ComponentExample>
+
+#### Ghost
+
+<ComponentExample
+  demo="ButtonGhostDemo"
+  vrSection="variant-ghost"
+  vrTitle="Variant: Ghost"
+>
+  <ButtonGhostDemo client:visible />
+</ComponentExample>
+
+#### Destructive
+
+<ComponentExample
+  demo="ButtonDestructiveDemo"
+  vrSection="variant-destructive"
+  vrTitle="Variant: Destructive"
+>
+  <ButtonDestructiveDemo client:visible />
+</ComponentExample>
+
+#### Outline
+
+<ComponentExample
+  demo="ButtonOutlineDemo"
+  vrSection="variant-outline"
+  vrTitle="Variant: Outline"
+>
+  <ButtonOutlineDemo client:visible />
+</ComponentExample>
+
+#### Secondary Destructive
+
+<ComponentExample
+  demo="ButtonSecondaryDestructiveDemo"
+  vrSection="variant-secondary-destructive"
+  vrTitle="Variant: Secondary Destructive"
+>
+  <ButtonSecondaryDestructiveDemo client:visible />
+</ComponentExample>
+
+{/* Sizes */}
+
+### Sizes
+
+<ComponentExample demo="ButtonSizesDemo" vrSection="sizes" vrTitle="Sizes">
+  <ButtonSizesDemo client:visible />
+</ComponentExample>
+
+{/* With Icon */}
+
+### With Icon
+
+<ComponentExample
+  demo="ButtonWithIconDemo"
+  vrSection="with-icon"
+  vrTitle="With Icon"
+>
+  <ButtonWithIconDemo client:visible />
+</ComponentExample>
+
+{/* Icon Only */}
+
+### Icon Only
+
+<p>
+  For icon-only buttons, use `shape="square"` or `shape="circle"` with the
+  `icon` prop.
+  <strong>Always include `aria-label`</strong>
+  for accessibility — without visible text, screen readers need the label to
+  convey the button's purpose.
+</p>
+<ComponentExample
+  demo="ButtonIconOnlyDemo"
+  vrSection="icon-only"
+  vrTitle="Icon Only"
+>
+  <ButtonIconOnlyDemo client:visible />
+</ComponentExample>
+
+{/* Loading State */}
+
+### Loading State
+
+<ComponentExample
+  demo="ButtonLoadingDemo"
+  vrSection="loading"
+  vrTitle="Loading State"
+>
+  <ButtonLoadingDemo client:visible />
+</ComponentExample>
+
+{/* Disabled State */}
+
+### Disabled State
+
+<ComponentExample
+  demo="ButtonDisabledDemo"
+  vrSection="disabled"
+  vrTitle="Disabled State"
+>
+  <ButtonDisabledDemo client:visible />
+</ComponentExample>
+
+{/* Title (Tooltip) */}
+
+### Title
+
+  <p>
+    Use the `title` prop to wrap the button in a tooltip. This is useful for
+    icon-only buttons, disabled buttons, or whenever additional context helps
+    the user understand the action.
+  </p>
+  <ComponentExample
+    demo="ButtonTitleDemo"
+    vrSection="title"
+    vrTitle="Title"
+  >
+    <ButtonTitleDemo client:visible />
+  </ComponentExample>
+
+### Link as Button
+
+<p>
+  Use `LinkButton` when the interaction should navigate somewhere but still look
+  like a button. Use `Button` for in-place actions like submitting, opening, or
+  toggling UI.
+</p>
+<ComponentExample
+  demo="ButtonLinkAsButtonDemo"
+  vrSection="link-as-button"
+  vrTitle="Link as Button"
+>
+  <ButtonLinkAsButtonDemo client:visible />
+</ComponentExample>
+
+### Link with Tooltip
+
+<p>
+  Pass `title` to a `LinkButton` to wrap it in a tooltip, just like `Button`.
+  This surfaces extra context on hover and focus.
+</p>
+<ComponentExample
+  demo="ButtonLinkTooltipDemo"
+  vrSection="link-tooltip"
+  vrTitle="Link with Tooltip"
+>
+  <ButtonLinkTooltipDemo client:visible />
+</ComponentExample>
+
+### Disabled Link
+
+<p>
+  Set `disabled` on a `LinkButton` to render a non-interactive button styled like
+  the link. Pass `title` to explain why it's unavailable via a tooltip.
+</p>
+<ComponentExample
+  demo="ButtonDisabledLinkDemo"
+  vrSection="disabled-link"
+  vrTitle="Disabled Link"
+>
+  <ButtonDisabledLinkDemo client:visible />
+</ComponentExample>
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+  <PropsTable component="Button" />
+</ComponentSection>
+
+{/* trigger-vr */}

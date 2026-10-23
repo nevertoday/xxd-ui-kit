@@ -1,0 +1,320 @@
+/* 表单进阶（优化计划 O2）：输入组、密钥输入、可复制的值、自定义下拉。 */
+@layer xxd.components {
+  /* 输入组：前后缀、内嵌按钮。整个组是一个框；聚焦时整组边框变深一次。
+   *   <div class="xxd-input-group">
+   *     <span class="xxd-input-group__addon">https://</span>
+   *     <input aria-label="子域名">
+   *     <span class="xxd-input-group__suffix">.workers.dev</span>
+   *     <button class="xxd-btn" data-variant="ghost" data-size="sm">检查</button>
+   *   </div> */
+  .xxd-input-group {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    height: var(--control-h);
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    transition: border-color var(--motion-quick) ease;
+  }
+
+  .xxd-input-group:hover {
+    border-color: var(--line-control-hover);
+    transition-duration: 0s;
+  }
+
+  .xxd-input-group:focus-within {
+    border-color: var(--action);
+    box-shadow: inset 0 0 0 1px var(--action); /* 和输入框一样 2px */
+  }
+
+  .xxd-input-group[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  .xxd-input-group[aria-invalid="true"]:focus-within {
+    box-shadow: inset 0 0 0 1px var(--danger);
+  }
+
+  .xxd-input-group > input {
+    flex: 1;
+    min-width: 5ch;
+    height: 100%;
+    padding: 0 var(--space-3);
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: var(--weight-regular) var(--text-sm) / var(--leading-sm) var(--font-body);
+    outline: none;
+  }
+
+  .xxd-input-group > input::placeholder {
+    color: var(--muted);
+  }
+
+  /* 前后缀：放不下时出省略号（不是被硬切成「.xiaoxiaodor」）；输入框至少留 5 个字符 */
+  .xxd-input-group__addon,
+  .xxd-input-group__suffix {
+    display: block;
+    flex: 0 1 auto;
+    min-width: 2em;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 前缀（「https://」）通常很短：尽量不缩，先缩后缀 */
+  .xxd-input-group__addon {
+    flex-shrink: 0.2;
+    padding-left: var(--space-3);
+  }
+
+  .xxd-input-group__addon + input {
+    padding-left: var(--space-1);
+  }
+
+  .xxd-input-group__suffix {
+    padding-right: var(--space-3);
+  }
+
+  input + .xxd-input-group__suffix {
+    margin-left: -8px;
+  }
+
+  .xxd-input-group > .xxd-btn {
+    flex: none;
+    margin-right: var(--space-1);
+  }
+
+  .xxd-input-group > .xxd-btn + .xxd-btn {
+    margin-left: -2px;
+  }
+
+  .xxd-input-group[data-size="sm"] {
+    height: var(--control-h-sm);
+  }
+
+  .xxd-input-group[data-size="sm"] > input,
+  .xxd-input-group[data-size="sm"] .xxd-input-group__addon,
+  .xxd-input-group[data-size="sm"] .xxd-input-group__suffix {
+    font-size: var(--text-xs);
+  }
+
+  /* 密钥输入：遮住、显示 / 隐藏、复制。
+   *   <div class="xxd-input-group xxd-secret" data-xxd-secret>
+   *     <input type="password" value="sk_live_…" readonly aria-label="API 密钥">
+   *     <button class="xxd-btn" data-variant="ghost" data-icon-only data-size="sm" data-secret-toggle aria-label="显示">…</button>
+   *     <button class="xxd-btn" data-variant="ghost" data-icon-only data-size="sm" data-secret-copy aria-label="复制">…</button>
+   *   </div> */
+  .xxd-secret > input {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0;
+  }
+
+  .xxd-secret > input[type="password"] {
+    letter-spacing: 0.12em;
+  }
+
+  /* 可复制的值：只读值 + 复制按钮（复制后按钮上方冒出「已复制」）。
+   *   <div class="xxd-clipboard"><code>0c239dd2</code><button class="xxd-btn" … data-copy="0c239dd2">…</button></div> */
+  .xxd-clipboard {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    max-width: 100%;
+    height: var(--control-h);
+    padding: 0 var(--space-1) 0 var(--space-3);
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-sm);
+    background: var(--wash);
+  }
+
+  .xxd-clipboard > code {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ink);
+    font: var(--text-xs) / 1 var(--font-mono);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .xxd-clipboard[data-size="sm"] {
+    height: var(--control-h-sm);
+  }
+
+  /* 正文里一段可复制的字：hover 出复制图标 */
+  .xxd-inline-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-0-5);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: copy;
+  }
+
+  /* 复制图标常显为淡色（看得出能复制，也不会在字后面留一截空白），hover / 聚焦时加深 */
+  .xxd-inline-copy > .ui-icon {
+    opacity: 0.45;
+    color: var(--muted);
+    transition: opacity var(--motion-quick) ease;
+  }
+
+  .xxd-inline-copy:is(:hover, :focus-visible) > .ui-icon,
+  .xxd-inline-copy[data-done] > .ui-icon {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .xxd-inline-copy > .ui-icon {
+      opacity: 1;
+    }
+  }
+
+  /* 自定义下拉（Picker）：原生 <select> 做不到的 —— 分组、每项说明、图标、多选。
+   *   <div class="xxd-picker" data-xxd-picker data-name="quality">
+   *     <button class="xxd-picker__trigger" type="button"><span class="xxd-picker__value">高</span></button>
+   *     <div class="xxd-listbox" role="listbox" hidden>
+   *       <div class="xxd-option-group" role="group" aria-label="画质"><div class="xxd-option-group__label">画质</div>
+   *         <div class="xxd-option" role="option" data-value="high" aria-selected="true">高<small>2K，慢一点</small></div> …
+   *     </div>
+   *   </div>
+   * data-multiple：多选（勾选，菜单不关）。 */
+  .xxd-picker {
+    position: relative;
+    display: inline-grid;
+    min-width: 160px;
+  }
+
+  .xxd-picker__trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--control-h);
+    padding: 0 var(--field-icon-slot) 0 var(--space-3);
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    color: var(--ink);
+    font: var(--weight-regular) var(--text-sm) / 1 var(--font-body);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--motion-quick) ease;
+  }
+
+  .xxd-picker__trigger:hover {
+    border-color: var(--line-control-hover);
+    transition-duration: 0s;
+  }
+
+  .xxd-picker__trigger[aria-expanded="true"],
+  .xxd-picker__trigger:focus-visible {
+    border-color: var(--action);
+    box-shadow: inset 0 0 0 1px var(--action);
+    outline: none;
+  }
+
+  .xxd-picker__trigger::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    width: 14px;
+    height: 14px;
+    background: var(--muted);
+    -webkit-mask: var(--xxd-chevron-down) center / contain no-repeat;
+    mask: var(--xxd-chevron-down) center / contain no-repeat;
+  }
+
+  .xxd-picker__value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .xxd-picker__value[data-placeholder] {
+    color: var(--muted);
+  }
+
+  .xxd-picker[data-size="sm"] .xxd-picker__trigger {
+    height: var(--control-h-sm);
+    padding-left: var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-picker[aria-invalid="true"] .xxd-picker__trigger {
+    border-color: var(--danger);
+  }
+
+  /* 禁用用禁用令牌（和输入框一样），悬停不变深 */
+  .xxd-picker[data-disabled] .xxd-picker__trigger,
+  .xxd-picker[data-disabled] .xxd-picker__trigger:hover {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  /* 输入组里面的输入框禁用了，外框也要像禁用 */
+  .xxd-input-group:has(> input:disabled),
+  .xxd-input-group:has(> input:disabled):hover {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+    color: var(--disabled-ink);
+  }
+
+  .xxd-option-group + .xxd-option-group {
+    margin-top: var(--space-1);
+    padding-top: var(--space-1);
+    border-top: 1px solid var(--line);
+  }
+
+  .xxd-option-group__label {
+    padding: var(--space-1-5) var(--space-3) var(--space-0-5);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-option small {
+    display: block;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .xxd-option > .ui-icon {
+    color: var(--muted);
+  }
+
+  .xxd-option[aria-disabled="true"] {
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  .xxd-option:has(small) {
+    align-items: flex-start;
+    padding-block: var(--space-1-5);
+  }
+
+  .xxd-listbox[data-picker] {
+    min-width: 200px;
+    max-width: min(360px, calc(100vw - 16px));
+    transform-origin: var(--xxd-origin, top left);
+    animation: xxd-grow var(--motion-quick) var(--ease-out-expo);
+  }
+
+  @keyframes xxd-grow {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+}

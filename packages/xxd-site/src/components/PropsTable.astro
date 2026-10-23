@@ -1,0 +1,18 @@
+---
+interface Props {
+  attributes?: Record<string, string>;
+  classes: string[];
+}
+import { langOf, t } from "../i18n/index.js";
+import { richText } from "../lib/markup.js";
+const { attributes = {}, classes } = Astro.props;
+const L = t(langOf(Astro.url.pathname));
+---
+
+<div class="xxd-table-wrap site-props-wrap"><table class="site-props">
+  <thead><tr><th>{L.propsHead}</th><th>{L.propsDesc}</th></tr></thead>
+  <tbody>
+    {Object.entries(attributes).map(([k, v]) => (<tr><td>{k}</td><td set:html={richText(v)} /></tr>))}
+    <tr><td>{L.classes}</td><td class="xxd-text" data-variant="mono-secondary"><span class="site-classes">{classes.map((k) => <span>{k}</span>)}</span></td></tr>
+  </tbody>
+</table></div>

@@ -1,0 +1,545 @@
+/* 表单：字段、输入框、多行、选择、开关、复选、单选、滑块、搜索、标签输入。
+ * 一个框只有一个框：聚焦时边框变深一次就够，外面不加光圈，里面不加内框。 */
+@layer xxd.components {
+  .xxd-field {
+    display: grid;
+    gap: var(--space-1-5);
+    min-width: 0;
+  }
+
+  .xxd-label {
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+  }
+
+  .xxd-label[data-optional]::after {
+    content: attr(data-optional);
+    margin-left: var(--space-1-5);
+    color: var(--muted);
+    font-weight: var(--weight-regular);
+  }
+
+  /* 只写 data-optional、不写值：显示这个语言的「可选」（以前什么都不显示，和文档不符，ACCEPTANCE-REVIEW） */
+  .xxd-label[data-optional=""]::after {
+    content: "可选";
+  }
+
+  .xxd-label[data-optional=""]:lang(zh-Hant)::after,
+  .xxd-label[data-optional=""]:lang(zh-TW)::after,
+  .xxd-label[data-optional=""]:lang(zh-HK)::after {
+    content: "選填";
+  }
+
+  .xxd-label[data-optional=""]:lang(en)::after {
+    content: "Optional";
+  }
+
+  .xxd-help {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-error {
+    margin: 0;
+    color: var(--danger);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-input,
+  .xxd-textarea,
+  .xxd-select > select {
+    width: 100%;
+    min-width: 0;
+    height: var(--control-h);
+    padding: 0 var(--field-pad-x, 12px);
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    color: var(--ink);
+    font: var(--weight-regular) var(--text-sm) / var(--leading-sm) var(--font-body);
+    outline: none;
+    transition: border-color var(--motion-quick) ease, background-color var(--motion-quick) ease;
+  }
+
+  .xxd-input::placeholder,
+  .xxd-textarea::placeholder {
+    color: var(--muted);
+  }
+
+  .xxd-input:hover,
+  .xxd-textarea:hover,
+  .xxd-select > select:hover {
+    border-color: var(--line-control-hover);
+  }
+
+  /* 只读：底色淡一档，一眼和能改的分开（字还是正文色，能选中复制） */
+  .xxd-input[readonly],
+  .xxd-textarea[readonly] {
+    background: var(--wash);
+  }
+
+  /* 聚焦：边变成 --action，里面再贴 1px，一共 2px（还是一个框，不往外加光圈）。1px 的变化在暗色主色下只差 1.4:1（ACCEPTANCE-REVIEW） */
+  .xxd-input:focus,
+  .xxd-textarea:focus,
+  .xxd-select > select:focus {
+    border-color: var(--action);
+    box-shadow: inset 0 0 0 1px var(--action);
+    outline: none;
+  }
+
+  /* 出错：红边；出错又聚焦时红边加粗成 2px（看得出聚焦了，也还看得出出错）。状态优先级：出错 > 聚焦 */
+  .xxd-input[aria-invalid="true"],
+  .xxd-textarea[aria-invalid="true"],
+  .xxd-select > select[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  .xxd-input[aria-invalid="true"]:focus,
+  .xxd-textarea[aria-invalid="true"]:focus,
+  .xxd-select > select[aria-invalid="true"]:focus {
+    border-color: var(--danger);
+    box-shadow: inset 0 0 0 1px var(--danger);
+  }
+
+  .xxd-input:disabled,
+  .xxd-textarea:disabled,
+  .xxd-select > select:disabled {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  .xxd-input[data-size="sm"],
+  .xxd-select[data-size="sm"] > select {
+    height: var(--control-h-sm);
+    padding-inline: var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-input[data-size="xs"],
+  .xxd-select[data-size="xs"] > select {
+    height: var(--control-h-xs);
+    padding-inline: var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-input[data-size="lg"],
+  .xxd-select[data-size="lg"] > select {
+    height: calc(var(--control-h) + 4px);
+    padding-inline: var(--space-4);
+    font-size: var(--text-base);
+  }
+
+  .xxd-select[data-size="xs"] > select,
+  .xxd-select[data-size="sm"] > select {
+    padding-right: calc(var(--space-2) + var(--icon-md) + var(--space-1-5)); /* 右边距 + chevron + 间隔 */
+  }
+
+  .xxd-select:is([data-size="xs"], [data-size="sm"])::after {
+    right: 8px;
+    width: 12px;
+    height: 12px;
+  }
+
+  /* 字数：<div class="xxd-field">… <p class="xxd-help" data-counter>30 / 100</p> */
+  .xxd-help[data-counter] {
+    justify-self: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-help[data-counter][data-over] {
+    color: var(--danger);
+  }
+
+  .xxd-textarea {
+    height: auto;
+    min-height: 88px;
+    padding: var(--space-3) var(--space-3);
+    line-height: var(--leading-sm);
+    resize: vertical;
+  }
+
+  .xxd-textarea[data-autosize] {
+    field-sizing: content;
+    resize: none;
+  }
+
+  /* 选择：原生 <select> 外面包一层画 chevron。
+   *   <label class="xxd-select"><select>…</select></label>
+   *   data-variant="bare"：设置行里的「一个值 + 一个 chevron」，不是一个盒子。 */
+  .xxd-select {
+    position: relative;
+    display: inline-grid;
+    min-width: 0;
+  }
+
+  .xxd-select > select {
+    appearance: none;
+    padding-right: var(--field-icon-slot); /* 右边距 + chevron + 间隔 */
+    cursor: pointer;
+  }
+
+  .xxd-select::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    width: 14px;
+    height: 14px;
+    translate: 0 -50%;
+    background: var(--muted);
+    pointer-events: none;
+    -webkit-mask: var(--xxd-chevron-down) center / contain no-repeat;
+    mask: var(--xxd-chevron-down) center / contain no-repeat;
+  }
+
+  .xxd-select[data-variant="bare"] > select {
+    /* 和设置行里的其他控件（小按钮、分段）一样高（设计师评审 V3-2） */
+    height: var(--control-h-sm);
+    padding: var(--space-1) calc(var(--icon-md) + var(--space-2)) var(--space-1) var(--space-1);
+    border-color: transparent;
+    background: transparent;
+    text-align: right;
+    text-align-last: right;
+  }
+
+  .xxd-select[data-variant="bare"] > select:hover:not(:disabled) {
+    color: var(--ink);
+    background: var(--wash);
+  }
+
+  /* 裸下拉平时没有边：聚焦、出错时边要露出来（以前聚焦前后一模一样，WCAG 2.4.7） */
+  .xxd-select[data-variant="bare"] > select:focus-visible {
+    border-color: var(--action);
+    box-shadow: inset 0 0 0 1px var(--action);
+  }
+
+  .xxd-select[data-variant="bare"] > select[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  .xxd-select[data-variant="bare"]::after {
+    right: 4px;
+    width: 12px;
+    height: 12px;
+  }
+
+  /* 带图标的输入（搜索） */
+  .xxd-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .xxd-input-wrap > .ui-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .xxd-input-wrap > .xxd-input {
+    padding-left: var(--field-icon-slot); /* 左边距 + 图标 + 间隔 */
+  }
+
+  .xxd-input-wrap > .xxd-input-clear {
+    position: absolute;
+    right: 6px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-xs);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .xxd-input-wrap > .xxd-input-clear:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-input-wrap > .xxd-input:placeholder-shown ~ .xxd-input-clear {
+    display: none;
+  }
+
+  .xxd-input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* 开关：<input type="checkbox" role="switch" class="xxd-switch">。直角模式下开关也是方的。 */
+  .xxd-switch {
+    appearance: none;
+    position: relative;
+    flex: none;
+    /* 36 × 20：落在 4px 刻度上，长宽比 1.8，直角模式下也一眼和 16px 的方形复选框分开（设计师评审 V3-5） */
+    width: var(--switch-w);
+    height: var(--switch-h);
+    margin: 0;
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-pill);
+    background: var(--wash-strong);
+    cursor: pointer;
+    transition: background-color var(--motion-quick) ease, border-color var(--motion-quick) ease;
+  }
+
+  .xxd-switch::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(var(--switch-h) - 6px);
+    height: calc(var(--switch-h) - 6px);
+    border-radius: var(--r-pill);
+    background: var(--paper);
+    box-shadow: 0 0 0 0.5px rgba(var(--shadow-rgb), 0.18);
+    transition: transform var(--motion-medium) var(--ease-out-expo);
+  }
+
+  .xxd-switch:checked {
+    border-color: var(--switch-on);
+    background: var(--switch-on);
+  }
+
+  .xxd-switch:checked::before {
+    transform: translateX(calc(var(--switch-w) - var(--switch-h)));
+  }
+
+  .xxd-switch:disabled {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+    cursor: not-allowed;
+  }
+
+  .xxd-switch:checked:disabled {
+    border-color: var(--disabled-ink);
+    background: var(--disabled-ink);
+  }
+
+  /* 复选 / 单选：<input type="checkbox" class="xxd-check"> / <input type="radio" class="xxd-radio">
+   * 单选永远是圆（圆 = 选一个，方 = 选几个，D61）；复选跟随圆角开关。 */
+  .xxd-check,
+  .xxd-radio {
+    appearance: none;
+    position: relative;
+    flex: none;
+    width: var(--choice-size);
+    height: var(--choice-size);
+    margin: var(--space-0-5) 0 0;
+    border: 1px solid var(--line-control);
+    background: var(--paper);
+    cursor: pointer;
+    transition: background-color var(--motion-quick) ease, border-color var(--motion-quick) ease;
+  }
+
+  .xxd-check {
+    border-radius: var(--r-xs);
+  }
+
+  .xxd-radio {
+    border-radius: var(--r-circle);
+  }
+
+  .xxd-check:hover,
+  .xxd-radio:hover {
+    border-color: var(--line-control-hover);
+  }
+
+  .xxd-check:checked,
+  .xxd-check:indeterminate {
+    border-color: var(--action-fill);
+    background: var(--action-fill);
+  }
+
+  .xxd-check:checked::after,
+  .xxd-check:indeterminate::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    background: var(--on-action);
+    -webkit-mask: var(--xxd-check) center / contain no-repeat;
+    mask: var(--xxd-check) center / contain no-repeat;
+  }
+
+  .xxd-check:indeterminate::after {
+    -webkit-mask-image: var(--xxd-minus);
+    mask-image: var(--xxd-minus);
+  }
+
+  .xxd-radio:checked {
+    border-color: var(--action);
+    background: var(--action);
+    box-shadow: inset 0 0 0 3.5px var(--paper);
+  }
+
+  .xxd-check:disabled,
+  .xxd-radio:disabled {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+    cursor: not-allowed;
+  }
+
+  .xxd-check:is(:checked, :indeterminate):disabled,
+  .xxd-radio:checked:disabled {
+    border-color: var(--disabled-ink);
+    background: var(--disabled-ink);
+  }
+
+  /* 选项：控件 + 文字 */
+  .xxd-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    color: var(--ink);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    cursor: pointer;
+  }
+
+  .xxd-choice:has(:disabled) {
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  .xxd-choice > .xxd-switch {
+    margin-top: 0;
+  }
+
+  .xxd-choice small {
+    display: block;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  /* 一组选项是一个列表，不是一叠盒子 */
+  .xxd-choices {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .xxd-choices > legend {
+    margin-bottom: var(--space-2);
+    padding: 0;
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+  }
+
+  /* 滑块：<input type="range" class="xxd-range"> */
+  .xxd-range {
+    appearance: none;
+    width: 100%;
+    height: 20px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    --xxd-range-fill: var(--action);
+  }
+
+  .xxd-range::-webkit-slider-runnable-track {
+    height: 2px;
+    border-radius: var(--r-pill);
+    background: var(--line-control);
+  }
+
+  .xxd-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-pill);
+    background: var(--paper);
+  }
+
+  .xxd-range:active::-webkit-slider-thumb {
+    border-color: var(--action);
+  }
+
+  .xxd-range::-moz-range-track {
+    height: 2px;
+    border-radius: var(--r-pill);
+    background: var(--line-control);
+  }
+
+  .xxd-range::-moz-range-progress {
+    height: 2px;
+    background: var(--xxd-range-fill);
+  }
+
+  .xxd-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-pill);
+    background: var(--paper);
+  }
+
+  /* 日期：原生控件，只统一外观 */
+  .xxd-input[type="date"],
+  .xxd-input[type="time"],
+  .xxd-input[type="datetime-local"] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-input::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
+  }
+
+  :root[data-theme="dark"] .xxd-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+
+  /* 标签输入：<div class="xxd-taginput"><span class="xxd-chip">…</span><input></div>（行为见 js/taginput.js） */
+  .xxd-taginput {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1-5);
+    min-height: var(--control-h);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--line-control);
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    cursor: text;
+  }
+
+  .xxd-taginput:focus-within {
+    border-color: var(--action);
+    box-shadow: inset 0 0 0 1px var(--action);
+  }
+
+  .xxd-taginput > input {
+    flex: 1;
+    min-width: 80px;
+    height: 26px;
+    padding: 0 var(--space-1);
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    outline: none;
+  }
+}
+
+/* 控件里用到的小图标（mask），24 网格、斜接角。勾在 16px 里要 1.5px，所以 viewBox 里写 2.25。 */
+:root,
+:host {
+  /* 遮罩用的小图标：线宽固定 1.5px（vector-effect），和行内 SVG 图标一样（设计师评审 D23） */
+  --xxd-chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m6 9 6 6 6-6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --xxd-chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m9 6 6 6-6 6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --xxd-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m6 12 4 4 8-8' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --xxd-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='M11 4H4v16h16v-7M14 4h6v6m-10 4L20 4' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --xxd-minus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round'%3E%3Cpath d='M6 12h12' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}

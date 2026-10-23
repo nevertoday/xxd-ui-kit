@@ -1,0 +1,106 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Breadcrumbs"
+description: "A navigation component that shows the current page's location within a navigational hierarchy."
+sourceFile: "components/breadcrumbs"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import CodeBlock from "~/components/docs/CodeBlock.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  BreadcrumbsDemo,
+  BreadcrumbsWithIconsDemo,
+  BreadcrumbsWithClipboardDemo,
+  BreadcrumbsLoadingDemo,
+  BreadcrumbsRootDemo,
+} from "~/components/demos/BreadcrumbsDemo";
+
+<ComponentSection>
+  <ComponentExample demo="BreadcrumbsWithIconsDemo">
+    <BreadcrumbsWithIconsDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+<ComponentSection>
+
+## Installation
+
+  <CodeBlock
+    code={`import { Breadcrumbs } from "@cloudflare/kumo";`}
+    lang="tsx"
+  />
+</ComponentSection>
+
+<ComponentSection>
+
+## Usage
+
+  <ComponentExample demo="BreadcrumbsDemo">
+    <BreadcrumbsDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+<ComponentSection>
+
+## Examples
+
+### Basic
+
+  <ComponentExample demo="BreadcrumbsDemo">
+    <BreadcrumbsDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+<ComponentSection>
+
+### Loading
+
+  <ComponentExample demo="BreadcrumbsLoadingDemo">
+    <BreadcrumbsLoadingDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+<ComponentSection>
+
+### Root
+
+  <ComponentExample demo="BreadcrumbsRootDemo">
+    <BreadcrumbsRootDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+<ComponentSection>
+
+### Clipboard
+
+  <ComponentExample demo="BreadcrumbsWithClipboardDemo">
+    <BreadcrumbsWithClipboardDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+<ComponentSection>
+
+## API Reference
+
+### Breadcrumbs
+
+<PropsTable component="Breadcrumbs" />
+
+### Breadcrumbs.Link
+
+<PropsTable component="Breadcrumbs.Link" />
+
+### Breadcrumbs.Current
+
+<PropsTable component="Breadcrumbs.Current" />
+
+### Breadcrumbs.Separator
+
+<PropsTable component="Breadcrumbs.Separator" />
+
+### Breadcrumbs.Clipboard
+
+  <PropsTable component="Breadcrumbs.Clipboard" />
+</ComponentSection>

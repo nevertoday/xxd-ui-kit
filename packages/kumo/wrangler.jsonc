@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kumo-storybook",
+  "compatibility_date": "2025-12-30",
+  "preview_urls": true,
+  "routes": [
+    { "pattern": "storybook.kumo-ui.com/*", "zone_name": "kumo-ui.com" },
+  ],
+  "assets": {
+    "directory": "./storybook-static",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "env": {
+    "staging": {
+      "routes": [
+        {
+          "pattern": "storybook.staging.kumo-ui.com/*",
+          "zone_name": "kumo-ui.com",
+        },
+      ],
+    },
+  },
+}

@@ -1,0 +1,17 @@
+---
+// 一段能复制的代码（命令、片段）。
+import { icon } from "../lib/data.js";
+import { nextId } from "../lib/markup.js";
+import { langOf, t } from "../i18n/index.js";
+interface Props {
+  code: string;
+}
+const { code } = Astro.props;
+const L = t(langOf(Astro.url.pathname));
+const id = nextId("code");
+---
+
+<div class="site-codeblock">
+  <pre class="site-code" tabindex="0" id={id}><code>{code.trim()}</code></pre>
+  <button class="xxd-btn site-code__copy" data-variant="ghost" data-icon-only data-size="sm" aria-label={L.copy} data-copy-target={`#${id} code`} set:html={icon("Copy", 14)} />
+</div>

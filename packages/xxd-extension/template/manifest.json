@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "default_locale": "en",
+  "name": "__MSG_appName__",
+  "description": "__MSG_appDescription__",
+  "version": "0.1.0",
+  "minimum_chrome_version": "116",
+  "permissions": ["sidePanel", "storage"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self'"
+  },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "options_page": "options.html",
+  "action": { "default_title": "__MSG_actionTitle__" },
+  "background": { "service_worker": "background.js", "type": "module" }
+}

@@ -1,0 +1,1103 @@
+/* 图表与统计卡（优化计划 O7）。图表本身用 ECharts + Xxd.chartOptions()；这里只管容器和统计卡。 */
+@layer xxd.components {
+  .xxd-chart {
+    position: relative;
+    width: 100%;
+    height: var(--chart-h, 260px);
+  }
+
+  .xxd-chart-card {
+    display: grid;
+    /* 放进等高的网格（.xxd-grid）时内容不被拉开（空状态、骨架屏以前被撑大，ACCEPTANCE-REVIEW） */
+    align-content: start;
+    gap: var(--gap-block);
+    padding: var(--inset-md-y) var(--inset-md);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+  }
+
+  /* 窄了说明（时间范围）整块换到下一行，不拆开 */
+  .xxd-chart-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .xxd-chart-card__title {
+    margin: 0;
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    color: var(--ink);
+  }
+
+  .xxd-chart-card__meta {
+    margin-inline-start: auto;
+    /* 一行放得下就和标题同一行，放不下换到下一行，再长才折行（以前不折行，长了伸出图卡） */
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  /* 图卡的最后一行：单位、口径、来源（CHART-TYPES-PLAN：结论式标题 + 说明 + 图 + 来源） */
+  .xxd-chart-card__note {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  /* 统计卡：标签 · 数字 · 变化 · 迷你折线 */
+  .xxd-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--stat-min, 180px), 1fr));
+    gap: var(--space-3);
+  }
+
+  .xxd-stat {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "label label" "value spark" "delta spark";
+    align-items: end;
+    column-gap: var(--space-3);
+    padding: var(--inset-md-y) var(--inset-md);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+  }
+
+  .xxd-stat__label {
+    grid-area: label;
+    margin: 0 0 var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  /* 数字和单位是一个整体，不拆成两行 */
+  .xxd-stat__value {
+    grid-area: value;
+    margin: 0;
+    /* 数字永不截断（D94）：放不下时单位换到下一行，数本身不拆；实在比格子还宽才断开，不藏掉 */
+    overflow-wrap: break-word;
+    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-body);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  .xxd-stat__unit {
+    display: inline-block;
+    max-width: 100%;
+    margin-inline-start: var(--space-0-5);
+    overflow-wrap: anywhere;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    color: var(--muted);
+  }
+
+  .xxd-stat__delta {
+    grid-area: delta;
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+
+  .xxd-stat__delta[data-tone="up"] {
+    color: var(--success);
+  }
+
+  .xxd-stat__delta[data-tone="down"] {
+    color: var(--danger);
+  }
+
+  .xxd-stat__spark {
+    grid-area: spark;
+    display: block;
+    width: 96px;
+    height: 32px;
+    color: var(--action);
+  }
+
+  .xxd-stat__spark > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 卡片窄（< 260px）：折线放到最下面、撑满一行，变化那一行不被挤成两行 */
+  .xxd-stat {
+    container-type: inline-size;
+    min-width: 0;
+  }
+
+  @container (max-width: 259px) {
+    .xxd-stat > * {
+      grid-column: 1 / -1;
+    }
+
+    .xxd-stat > .xxd-stat__spark {
+      grid-row: 4;
+      width: 100%;
+      margin-top: var(--space-2);
+    }
+  }
+
+  /* 量表（GAUGE-PLAN）：一个数在一个范围里的哪儿。几何在 js/gauge.js；颜色按 GAUGE_PAINT 从令牌取（测试会对） */
+  .xxd-gauge {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    max-width: var(--gauge-size, 160px);
+    min-width: 0;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-gauge__dial {
+    position: relative;
+    width: 100%;
+  }
+
+  .xxd-gauge__svg,
+  .xxd-gauge__pointer {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .xxd-gauge__pointer {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* 轨道和填充的线头跟圆角模式；分格、分段的缝（写了 stroke-linecap 的）永远是平的 */
+  .xxd-gauge__svg path:not([stroke-linecap]) {
+    stroke-linecap: var(--stroke-cap);
+  }
+
+  .xxd-gauge__track { stroke: var(--wash-strong); }
+  .xxd-gauge__fill { stroke: var(--action); }
+  .xxd-gauge__fill-warning { stroke: var(--warning-solid); }
+  .xxd-gauge__fill-danger { stroke: var(--danger-solid); }
+  .xxd-gauge__fill-success { stroke: var(--success-solid); }
+  .xxd-gauge__part-0 { stroke: var(--action); }
+  .xxd-gauge__part-1 { stroke: var(--gray-9); }
+  .xxd-gauge__part-2 { stroke: var(--accent-8); }
+  .xxd-gauge__part-3 { stroke: var(--gray-10); }
+  .xxd-gauge__part-4 { stroke: var(--gray-11); }
+  .xxd-gauge__zone-warning { stroke: var(--warning-border-strong); }
+  .xxd-gauge__zone-danger { stroke: var(--danger-border-strong); }
+  .xxd-gauge__zone-success { stroke: var(--success-border-strong); }
+  .xxd-gauge__target { stroke: var(--ink); }
+  .xxd-gauge__tick { stroke: var(--muted-2); }
+  .xxd-gauge__needle-line { stroke: var(--ink); }
+  .xxd-gauge__hub { fill: var(--ink); }
+
+  /* 指针：只动 transform；看不见的那个圆让转轴在圆心 */
+  .xxd-gauge__needle {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--motion-medium) var(--ease-out-expo);
+  }
+
+  /* 中间的字：数字 + 单位，下面一行标签；落进区段时再一行状态（不只靠颜色） */
+  .xxd-gauge__center {
+    position: absolute;
+    left: var(--gauge-cx);
+    top: var(--gauge-cy);
+    display: grid;
+    justify-items: center;
+    max-width: 64%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    line-height: var(--leading-xs);
+  }
+
+  .xxd-gauge[data-shape="half"] .xxd-gauge__center {
+    transform: translate(-50%, -100%);
+  }
+
+  /* 有指针：字让开圆心。arc 放到缺口里，half 放到表盘下面 */
+  .xxd-gauge[data-needle][data-shape="arc"] .xxd-gauge__center {
+    transform: translate(-50%, 24%);
+  }
+
+  .xxd-gauge[data-needle][data-shape="half"] .xxd-gauge__center {
+    position: static;
+    max-width: none;
+    margin-top: var(--space-2);
+    transform: none;
+  }
+
+  .xxd-gauge__value {
+    max-width: 100%;
+    /* 地方小的大数已经缩写（viz）；还放不下就断开，不截（D94） */
+    overflow-wrap: break-word;
+    font: var(--weight-strong) var(--text-xl) / var(--leading-md) var(--font-body);
+    /* 从 0 跳到目标值时宽度不变，不左右晃（TYPE-REVIEW-PLAN D72） */
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-gauge[data-size="sm"] .xxd-gauge__value {
+    font-size: var(--text-lg);
+  }
+
+  .xxd-gauge[data-size="lg"] .xxd-gauge__value {
+    font-size: var(--text-xxl);
+    line-height: var(--leading-lg);
+  }
+
+  .xxd-gauge__unit {
+    margin-inline-start: var(--space-0-5);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    color: var(--muted);
+  }
+
+  .xxd-gauge__label,
+  .xxd-gauge__state {
+    max-width: 100%;
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .xxd-gauge__state[data-tone="warning"] { color: var(--warning-text); }
+  .xxd-gauge__state[data-tone="danger"] { color: var(--danger-text); }
+  .xxd-gauge__state[data-tone="success"] { color: var(--success-text); }
+
+  /* 两端的刻度数：在缺口两侧，各自对着弧的那一头 */
+  .xxd-gauge__ends {
+    position: relative;
+    width: 100%;
+    height: var(--leading-xs);
+    margin-top: calc(var(--space-2) * -1);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  .xxd-gauge__min,
+  .xxd-gauge__max {
+    position: absolute;
+    top: 0;
+    left: var(--gauge-ends-x);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .xxd-gauge__max {
+    left: auto;
+    right: var(--gauge-ends-x);
+    transform: translateX(50%);
+  }
+
+  /* 一排量表 */
+  .xxd-gauges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--gauge-size, 160px), 1fr));
+    align-items: start;
+    justify-items: center;
+    gap: var(--space-6) var(--space-4);
+  }
+
+  /* ── 图例：色块 · 名字 · 数字 · 占比（量表、构成条、百格图共用；CHART-TYPES-PLAN D47） ── */
+  .xxd-legend {
+    display: grid;
+    gap: var(--space-1);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 色块 · 名字 · 数 · 占比；窄了（百格图旁边、窄格子）数和占比换到下一行靠右，名字至少留 6 个字宽（以前被数挤成一行两三个字） */
+  .xxd-legend__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--space-2);
+  }
+
+  .xxd-legend__key {
+    width: 12px;
+    height: 4px;
+    background: var(--action);
+  }
+
+  .xxd-legend__key[data-part="1"] { background: var(--gray-9); }
+  .xxd-legend__key[data-part="2"] { background: var(--accent-8); }
+  .xxd-legend__key[data-part="3"] { background: var(--gray-10); }
+  .xxd-legend__key[data-part="4"] { background: var(--gray-11); }
+
+  .xxd-legend__name {
+    flex: 1 1 6em;
+    min-width: 0;
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    color: var(--muted);
+  }
+
+  /* 数靠右、留一样的宽，几行的数字对得齐 */
+  .xxd-legend__num {
+    min-width: 4em;
+    margin-inline-start: auto;
+    text-align: end;
+    color: var(--ink);
+  }
+
+  .xxd-legend__share {
+    min-width: 3.5em;
+    /* 单独换到下一行时也靠右 */
+    margin-inline-start: auto;
+    text-align: end;
+    color: var(--muted);
+  }
+
+  /* ── 条形榜（CHART-TYPES-PLAN H2）：名字 · 条 · 数字；条按最大值的比例，不画轨道 ── */
+  .xxd-bars {
+    /* 按自己的宽度换排法（窄时名字单独一行）；容器查询让「按内容定宽」的地方量不出宽度，所以给一个自然宽度（就是换排法的那个宽度） */
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 360px;
+    display: grid;
+    gap: var(--space-2);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 每行的条一样长才能比：所有行共用一套列（subgrid）；不支持时数字那一栏定宽 */
+  .xxd-bars__item,
+  .xxd-bars__axis {
+    display: grid;
+    grid-template-columns: minmax(0, var(--bars-label, 28%)) minmax(0, 1fr) var(--bars-value, 7em);
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  @supports (grid-template-columns: subgrid) {
+    .xxd-bars {
+      grid-template-columns: minmax(0, var(--bars-label, 28%)) minmax(0, 1fr) auto;
+      column-gap: var(--space-3);
+    }
+
+    .xxd-bars__item,
+    .xxd-bars__axis {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+    }
+  }
+
+  /* 三栏各自固定在自己的列（参考线、0 线是轨道上的伪元素，不占格子） */
+  .xxd-bars__label { grid-column: 1; }
+  .xxd-bars__track { grid-column: 2; }
+  .xxd-bars__value { grid-column: 3; }
+
+  /* 窄（< 360px，D53）：名字单独一行，条和数字共用下面一行；每行的条仍然一样长 */
+  @container (max-width: 359px) {
+    .xxd-bars__item {
+      row-gap: var(--space-1);
+    }
+
+    .xxd-bars__item > .xxd-bars__label {
+      grid-column: 1 / -1;
+      /* 下面那行不折（数字留在条右边），名字照样折行（D91） */
+      white-space: normal;
+    }
+
+    .xxd-bars__item > .xxd-bars__track,
+    .xxd-bars__ticks {
+      grid-column: 1 / 3;
+    }
+
+    /* 数字留在条的右边，旁注换到条下面一整行 */
+    .xxd-bars__item {
+      white-space: nowrap;
+      text-align: end;
+    }
+
+    .xxd-bars__item > .xxd-bars__value {
+      display: contents;
+    }
+
+    .xxd-bars__item .xxd-bars__note {
+      grid-column: 1 / -1;
+      max-width: none;
+      margin: 0;
+      text-align: start;
+    }
+
+    .xxd-bars__item > .xxd-bars__label {
+      text-align: start;
+    }
+
+    /* 刻度数隔一个写 */
+    .xxd-bars__tick:nth-child(even) {
+      visibility: hidden;
+    }
+  }
+
+  .xxd-bars__label {
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    color: var(--muted);
+  }
+
+  .xxd-bars__track {
+    position: relative;
+    height: var(--bars-h);
+  }
+
+  /* 条那一层（按单位切格时遮罩套在这一层，不裁对照条和参考线） */
+  .xxd-bars__bar {
+    position: absolute;
+    inset: 0;
+  }
+
+  .xxd-bars__fill {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-xs);
+    background: var(--action);
+    transform-origin: left center;
+    transform: scaleX(var(--value, 0));
+    transition: transform var(--motion-medium) var(--ease-out-expo);
+  }
+
+  .xxd-bars__value {
+    min-width: 4em;
+    text-align: end;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  /* 旁注会换行，最宽 12em，不把数字那一栏撑到挤没条 */
+  .xxd-bars__note {
+    display: block;
+    max-width: var(--bars-note, 12em);
+    margin-inline-start: auto;
+    white-space: normal;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  /* 对照值（去年）：主条下面一根 2px 的灰条 */
+  .xxd-bars__compare {
+    position: absolute;
+    right: 0;
+    bottom: calc(var(--space-1) * -1 - 2px);
+    left: 0;
+    height: 2px;
+    background: var(--gray-9);
+    transform-origin: left center;
+    transform: scaleX(var(--compare, 0));
+    transition: transform var(--motion-medium) var(--ease-out-expo);
+  }
+
+  /* 最上面一行图例：主条 · 对照 · 参考线 */
+  .xxd-bars__key {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  .xxd-bars__swatch {
+    display: inline-block;
+    width: 12px;
+    height: var(--bars-h);
+    margin-inline-end: var(--space-1-5);
+    vertical-align: middle;
+    background: var(--action);
+  }
+
+  .xxd-bars__swatch[data-kind="compare"] {
+    height: 2px;
+    background: var(--gray-9);
+  }
+
+  .xxd-bars__swatch[data-kind="mark"] {
+    width: 1.5px;
+    height: 12px;
+    background: var(--ink);
+  }
+
+  /* 参考线（平均、目标）：横穿所有行的墨色细线 */
+  .xxd-bars[data-marked] .xxd-bars__track::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--space-1) * -1);
+    bottom: calc(var(--space-1) * -1);
+    left: calc(var(--mark) * 100%);
+    width: 1.5px;
+    margin-left: -0.75px;
+    background: var(--ink);
+  }
+
+  /* 瀑布落到 0 以下：0 线 */
+  .xxd-bars[data-zero] .xxd-bars__track::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--space-1) * -1);
+    bottom: calc(var(--space-1) * -1);
+    left: calc(var(--zero) * 100%);
+    width: 1px;
+    background: var(--line-control);
+  }
+
+  /* 刻度：条后面是发丝网格线，下面一行写数 */
+  .xxd-bars[data-axis] .xxd-bars__track {
+    background: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px calc(var(--tick) * 1%));
+  }
+
+  .xxd-bars__axis {
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  .xxd-bars__ticks {
+    position: relative;
+    grid-column: 2;
+    height: var(--leading-xs);
+  }
+
+  .xxd-bars__ticks > .xxd-bars__tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .xxd-bars__ticks > .xxd-bars__tick:first-child {
+    transform: none;
+  }
+
+  /* 瀑布：合计行是主色、从 0 起；增减行是灰 9 级，从上一行的末尾接着长 */
+  .xxd-bars[data-variant="waterfall"] .xxd-bars__fill {
+    right: auto;
+    left: calc(var(--from) * 100%);
+    width: calc((var(--to) - var(--from)) * 100%);
+    min-width: 1px;
+    background: var(--gray-9);
+    transform: none;
+  }
+
+  .xxd-bars[data-variant="waterfall"] .xxd-bars__item[data-total] .xxd-bars__fill {
+    background: var(--action);
+  }
+
+  .xxd-bars[data-variant="waterfall"] .xxd-bars__item[data-total] .xxd-bars__label {
+    color: var(--ink);
+  }
+
+  /* 没有数据（所有图共用） */
+  .xxd-viz-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: var(--space-4) 0;
+    font-size: var(--text-sm);
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* 标了重点：重点是主色，其余灰 9 级（和纸 ≥ 3:1） */
+  .xxd-bars[data-emphasis] .xxd-bars__fill {
+    background: var(--gray-9);
+  }
+
+  .xxd-bars[data-emphasis] .xxd-bars__item[data-highlight] .xxd-bars__fill {
+    background: var(--action);
+  }
+
+  .xxd-bars__item[data-highlight] .xxd-bars__label {
+    color: var(--ink);
+  }
+
+  /* 按单位切格：--rungs 是满格时有几格（data-step） */
+  .xxd-bars[data-rungs] .xxd-bars__bar {
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000000 0 calc((100% + 2px) / var(--rungs) - 2px), transparent 0 calc((100% + 2px) / var(--rungs)));
+    mask-image: repeating-linear-gradient(90deg, #000000 0 calc((100% + 2px) / var(--rungs) - 2px), transparent 0 calc((100% + 2px) / var(--rungs)));
+  }
+
+  .xxd-bars[data-rungs] .xxd-bars__fill {
+    border-radius: 0;
+  }
+
+  /* 正负：从中线往两边长，正负都是墨色（D43），中线是一条发丝线 */
+  .xxd-bars[data-variant="diverging"] .xxd-bars__track {
+    height: calc(var(--bars-h) + var(--space-2));
+    background: linear-gradient(var(--line-control), var(--line-control)) center / 1px 100% no-repeat;
+  }
+
+  .xxd-bars[data-variant="diverging"] .xxd-bars__fill {
+    inset: var(--space-1) auto var(--space-1) 50%;
+    width: 50%;
+    transform: scaleX(var(--value, 0));
+  }
+
+  /* 对照值也从中线往两边 */
+  .xxd-bars[data-variant="diverging"] .xxd-bars__compare {
+    right: auto;
+    left: 50%;
+    width: 50%;
+  }
+
+  /* 漏斗：每一步写出留下多少 */
+  .xxd-bars[data-variant="funnel"] .xxd-bars__item {
+    align-items: start;
+  }
+
+  .xxd-bars[data-variant="funnel"] .xxd-bars__track {
+    margin-top: calc((var(--leading-sm) - var(--bars-h)) / 2);
+  }
+
+  /* ── 构成条：一根横条按比例分段，段间 2px 缝 ── */
+  .xxd-proportion {
+    display: grid;
+    gap: var(--space-2);
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-proportion__head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-proportion__label {
+    min-width: 0;
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    color: var(--muted);
+  }
+
+  .xxd-proportion__total {
+    /* 合计是数字：不被旁边的长名字挤窄（D94） */
+    flex: none;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  .xxd-proportion__bar {
+    display: flex;
+    gap: var(--space-0-5);
+    width: calc(var(--scale, 1) * 100%);
+    height: var(--bars-h);
+  }
+
+  .xxd-proportion__part {
+    flex: var(--v) 1 0;
+    min-width: 2px;
+    background: var(--action);
+  }
+
+  .xxd-proportion__part:first-child {
+    border-start-start-radius: var(--r-xs);
+    border-end-start-radius: var(--r-xs);
+  }
+
+  .xxd-proportion__part:last-child {
+    border-start-end-radius: var(--r-xs);
+    border-end-end-radius: var(--r-xs);
+  }
+
+  .xxd-proportion__part[data-part="1"] { background: var(--gray-9); }
+  .xxd-proportion__part[data-part="2"] { background: var(--accent-8); }
+  .xxd-proportion__part[data-part="3"] { background: var(--gray-10); }
+  .xxd-proportion__part[data-part="4"] { background: var(--gray-11); }
+
+  /* ── 百格图：10 × 10，1 格 = 1%；旁边是图例和单位说明 ── */
+  .xxd-waffle {
+    display: grid;
+    grid-template-columns: minmax(0, var(--waffle-size, 160px)) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-4);
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-waffle__grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: var(--space-0-5);
+  }
+
+  .xxd-waffle__cell {
+    aspect-ratio: 1;
+    border-radius: var(--r-xs);
+    background: var(--wash-strong);
+  }
+
+  .xxd-waffle__cell[data-part="0"] { background: var(--action); }
+  .xxd-waffle__cell[data-part="1"] { background: var(--gray-9); }
+  .xxd-waffle__cell[data-part="2"] { background: var(--accent-8); }
+  .xxd-waffle__cell[data-part="3"] { background: var(--gray-10); }
+  .xxd-waffle__cell[data-part="4"] { background: var(--gray-11); }
+
+  .xxd-waffle__side {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .xxd-waffle__note {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+  }
+
+  /* 窄：图例放到格子下面 */
+  .xxd-waffle {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 359px) {
+    .xxd-waffle__grid,
+    .xxd-waffle__side {
+      grid-column: 1 / -1;
+    }
+
+    .xxd-waffle__grid {
+      max-width: var(--waffle-size, 160px);
+    }
+  }
+
+  /* ── 热力格：越深越多（--heat-1…4，D44）；日历一周一列，矩阵带行列标题 ── */
+  .xxd-heatmap {
+    display: grid;
+    gap: var(--space-2);
+    width: 100%;
+    min-width: 0;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-heatmap__scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  /* 星期在左边、不跟着滚；月份和格子在滚动区里 */
+  .xxd-heatmap__body {
+    display: flex;
+    gap: var(--space-1-5);
+    min-width: 0;
+  }
+
+  /* 日历最近的一周在最右边：滚动区从右边开始（不靠脚本，隐藏时画的、显示出来也对） */
+  .xxd-heatmap__body > .xxd-heatmap__scroll {
+    flex: 1;
+    min-width: 0;
+    direction: rtl;
+  }
+
+  .xxd-heatmap__frame {
+    direction: ltr;
+    display: grid;
+    gap: var(--space-1);
+    width: max-content;
+  }
+
+  .xxd-heatmap__months,
+  .xxd-heatmap__days {
+    line-height: 1;
+  }
+
+  .xxd-heatmap__months {
+    display: grid;
+    grid-template-columns: repeat(var(--weeks), var(--heat-cell, 12px));
+    column-gap: var(--space-0-5);
+    white-space: nowrap;
+  }
+
+  .xxd-heatmap__days {
+    display: grid;
+    flex: none;
+    grid-template-rows: repeat(7, var(--heat-cell, 12px));
+    row-gap: var(--space-0-5);
+    padding-top: calc(var(--text-xs) + var(--space-1));
+  }
+
+  .xxd-heatmap__grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, var(--heat-cell, 12px));
+    grid-auto-columns: var(--heat-cell, 12px);
+    gap: var(--space-0-5);
+  }
+
+  .xxd-heatmap__cell {
+    display: block;
+    font-style: normal;
+    min-width: var(--heat-cell, 12px);
+    min-height: var(--heat-cell, 12px);
+    border-radius: var(--r-xs);
+    background: var(--wash);
+  }
+
+  .xxd-heatmap__cell[data-level="1"] { background: var(--heat-1); }
+  .xxd-heatmap__cell[data-level="2"] { background: var(--heat-2); }
+  .xxd-heatmap__cell[data-level="3"] { background: var(--heat-3); }
+  .xxd-heatmap__cell[data-level="4"] { background: var(--heat-4); }
+  .xxd-heatmap__cell[data-level="none"] { background: transparent; }
+
+  /* 指到 / 点到的那一格（D50） */
+  .xxd-heatmap__cell[data-active] {
+    outline: 1.5px solid var(--ink);
+    outline-offset: -1.5px;
+  }
+
+  .xxd-heatmap__scale {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-0-5);
+  }
+
+  /* 指到 / 点到的那一格写在这里（D50）；手机没有悬停提示，点一下就有 */
+  .xxd-heatmap__readout {
+    flex: 1;
+    min-width: 0;
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    color: var(--ink);
+  }
+
+  .xxd-heatmap__scale > .xxd-heatmap__cell:first-of-type {
+    margin-inline-start: var(--space-1);
+  }
+
+  .xxd-heatmap__scale > .xxd-heatmap__cell:last-of-type {
+    margin-inline-end: var(--space-1);
+  }
+
+  /* 矩阵：格子大一档，可以直接写数；深的两档上用实心底上的字色 */
+  .xxd-heatmap__matrix {
+    display: grid;
+    grid-template-columns: auto repeat(var(--cols), minmax(var(--heat-cell-lg, 28px), 1fr));
+    gap: var(--space-0-5);
+    align-items: center;
+    min-width: max-content;
+    line-height: 1;
+  }
+
+  .xxd-heatmap__matrix .xxd-heatmap__cell {
+    display: grid;
+    place-items: center;
+    min-height: var(--heat-cell-lg, 28px);
+    color: var(--ink);
+  }
+
+  /* 每一级上的数字用配好的字色（COLOR-REVIEW-PLAN D74），亮暗、每个主色下都 ≥ 4.5 */
+  .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="1"] { color: var(--heat-1-on); }
+  .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="2"] { color: var(--heat-2-on); }
+  .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="3"] { color: var(--heat-3-on); }
+  .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="4"] { color: var(--heat-4-on); }
+
+  .xxd-heatmap__col {
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 行名横着滚时固定在左边 */
+  .xxd-heatmap__row {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    padding-inline-end: var(--space-1-5);
+    white-space: nowrap;
+    background: var(--paper);
+  }
+
+  /* 缺数据：空心，写「—」（和 0 分开） */
+  .xxd-heatmap__matrix .xxd-heatmap__cell[data-level="none"] {
+    outline: 1px solid var(--line);
+    outline-offset: -1px;
+    color: var(--muted);
+  }
+
+  /* ── 前后对比：一条细线连两个点，之前空心、之后实心（主色） ── */
+  .xxd-dumbbell {
+    /* 按自己的宽度换排法（窄时名字单独一行）；容器查询让「按内容定宽」的地方量不出宽度，所以给一个自然宽度（就是换排法的那个宽度） */
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 360px;
+    display: grid;
+    gap: var(--space-3);
+    width: 100%;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-dumbbell__key {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1-5);
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .xxd-dumbbell__key > .xxd-dumbbell__to {
+    margin-inline-start: var(--space-3);
+  }
+
+  .xxd-dumbbell__list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .xxd-dumbbell__item {
+    display: grid;
+    grid-template-columns: minmax(0, var(--bars-label, 28%)) minmax(0, 1fr) var(--bars-value, 11em);
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  @supports (grid-template-columns: subgrid) {
+    .xxd-dumbbell__list {
+      grid-template-columns: minmax(0, var(--bars-label, 28%)) minmax(0, 1fr) auto;
+      column-gap: var(--space-3);
+    }
+
+    .xxd-dumbbell__item {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+    }
+  }
+
+  .xxd-dumbbell__label {
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    color: var(--muted);
+  }
+
+  .xxd-dumbbell__track {
+    position: relative;
+    height: 12px;
+    margin-inline: var(--space-1-5);
+  }
+
+  .xxd-dumbbell__line {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--lo) * 100%);
+    width: calc((var(--hi) - var(--lo)) * 100%);
+    height: 1.5px;
+    margin-top: -0.75px;
+    background: var(--line-control);
+  }
+
+  .xxd-dumbbell__from,
+  .xxd-dumbbell__to {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--r-pill);
+  }
+
+  .xxd-dumbbell__from {
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+  }
+
+  .xxd-dumbbell__to {
+    background: var(--action);
+  }
+
+  .xxd-dumbbell__track > .xxd-dumbbell__from,
+  .xxd-dumbbell__track > .xxd-dumbbell__to {
+    position: absolute;
+    top: 1px;
+    margin-left: -5px;
+  }
+
+  .xxd-dumbbell__track > .xxd-dumbbell__from {
+    left: calc(var(--a) * 100%);
+  }
+
+  .xxd-dumbbell__track > .xxd-dumbbell__to {
+    left: calc(var(--b) * 100%);
+  }
+
+  .xxd-dumbbell__value {
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  .xxd-dumbbell__delta {
+    margin-inline-start: var(--space-2);
+    color: var(--muted);
+  }
+
+  .xxd-dumbbell__label { grid-column: 1; }
+  .xxd-dumbbell__track { grid-column: 2; }
+  .xxd-dumbbell__value { grid-column: 3; text-align: end; }
+
+  /* 窄（< 360px，D53）：名字单独一行；变化换到数字下面 */
+  @container (max-width: 359px) {
+    .xxd-dumbbell__item {
+      row-gap: var(--space-1);
+    }
+
+    .xxd-dumbbell__item > .xxd-dumbbell__label {
+      grid-column: 1 / -1;
+    }
+
+    .xxd-dumbbell__item > .xxd-dumbbell__track {
+      grid-column: 1 / 3;
+    }
+
+    .xxd-dumbbell__delta {
+      display: block;
+      width: 0;
+      min-width: 100%;
+      margin-inline-start: 0;
+    }
+  }
+
+  /* 打印：图是背景色画的，浏览器缺省不印背景（D3） */
+  @media print {
+    .xxd-gauge,
+    .xxd-legend,
+    .xxd-bars,
+    .xxd-proportion,
+    .xxd-waffle,
+    .xxd-heatmap,
+    .xxd-dumbbell {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+}

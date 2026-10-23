@@ -1,0 +1,49 @@
+.xxd-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 小程序老一点的 WebView 不认 aspect-ratio：用上下内边距撑出比例 */
+.xxd-card__media {
+  height: 0;
+  padding-top: calc(100% / (var(--ratio, 4 / 3)));
+  aspect-ratio: auto;
+}
+
+.xxd-card__media > .xxd-card__img {
+  position: absolute;
+  inset: 0;
+}
+
+.xxd-card-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 2), minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.xxd-image-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.xxd-image-grid__cell {
+  position: relative;
+  height: 0;
+  padding-top: 100%;
+  border-radius: var(--r-sm);
+  background: var(--wash);
+  overflow: hidden;
+}
+
+.xxd-image-grid__cell.is-hover {
+  opacity: 0.8;
+}
+
+.xxd-image-grid__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}

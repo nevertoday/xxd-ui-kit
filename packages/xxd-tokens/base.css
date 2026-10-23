@@ -1,0 +1,29 @@
+/* @xxd/tokens 的全局规则（不是变量）：@xxd/css 和 @xxd/react 会自动带上。
+ * 只用 tokens.css 换变量、不想动页面行为的老项目，不引这个文件就行。 */
+
+/* 选中文字和输入光标也跟主色 */
+:root[data-accent] ::selection {
+  background: color-mix(in srgb, var(--action) 24%, transparent);
+}
+
+:root[data-accent] :is(input, textarea) {
+  caret-color: var(--action);
+}
+
+/* 图标的线永远是 1.5px（设计师评审 D23）：线宽写在 24 网格里，不加这条的话 16px 的图标线只有 1px、12px 的只有 0.75px，
+   小图标发灰、和设计稿标的 1.5px 对不上。vector-effect 不继承，所以写在每个图形上。 */
+:where(.ui-icon) :where(path, line, polyline, polygon, rect, circle, ellipse) {
+  vector-effect: non-scaling-stroke;
+}
+
+/* 减少动效：一次性全部静止，组件不各自例外 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,97 @@
+/* 命令面板与下拉选择列表（combobox）。 */
+@layer xxd.components {
+  .xxd-palette {
+    width: min(560px, calc(100vw - 32px));
+    margin: min(14vh, 120px) auto auto;
+    padding: 0;
+  }
+
+  .xxd-palette__search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .xxd-palette__search > .ui-icon {
+    color: var(--muted);
+  }
+
+  .xxd-palette__search > input {
+    flex: 1;
+    height: 48px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: var(--text-base) var(--font-body);
+    outline: none;
+  }
+
+  .xxd-palette__list {
+    max-height: min(360px, 50vh);
+    margin: 0;
+    padding: var(--space-1);
+    overflow: auto;
+    list-style: none;
+  }
+
+  .xxd-palette__empty {
+    padding: var(--space-6) var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    text-align: center;
+  }
+
+  .xxd-listbox {
+    position: fixed;
+    z-index: var(--z-popover);
+    margin: 0;
+    padding: var(--space-1);
+    max-height: 280px;
+    overflow: auto;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    box-shadow: var(--shadow-popover);
+  }
+
+  .xxd-listbox[hidden] {
+    display: none;
+  }
+
+  .xxd-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--control-h-sm);
+    padding: 0 var(--space-3);
+    border-radius: var(--r-xs);
+    color: var(--ink);
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+
+  /* 键盘高亮的选项就是焦点：淡底之外一圈 ≥ 3:1 的边（COLOR-REVIEW-PLAN D76） */
+  .xxd-option[data-active] {
+    background: var(--wash);
+    box-shadow: inset 0 0 0 1px var(--line-control);
+  }
+
+  .xxd-option[aria-selected="true"]::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    margin-left: auto;
+    background: var(--action);
+    -webkit-mask: var(--xxd-check) center / contain no-repeat;
+    mask: var(--xxd-check) center / contain no-repeat;
+  }
+
+  .xxd-option__hint {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+}

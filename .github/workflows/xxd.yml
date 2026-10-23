@@ -1,0 +1,61 @@
+# 小小东 UI Kit 的 CI：推到 main 和提 PR 时运行。
+#   test   单元测试、合同测试、lint、开源自查
+#   audit  在真浏览器里压展示站（无障碍、长文字、恶意宿主页、高对比、英文漏翻、细节、浮层、冒烟、读屏走查），再做一次发包验收
+# 截图对比（visual）的基线是 macOS 上截的，不在 CI 里跑。
+name: xxd
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4 # 和 package.json 的 devEngines 一致；action 不读 devEngines
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cloudflare/kumo build # @xxd/react 构建要用 Kumo 的产物，先构建
+      - run: pnpm xxd:build
+      - run: pnpm xxd:test
+      - run: pnpm --filter @cloudflare/kumo test
+      - run: pnpm lint
+      - run: node scripts/open-source-audit.mjs --check
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      # 中文字体：没有的话「孤字」「被截断」这些检查量的是豆腐块
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cloudflare/kumo build
+      - run: pnpm xxd:build
+      - run: pnpm --filter @xxd/site build
+      # ubuntu-latest 自带 Google Chrome
+      - run: pnpm --filter @xxd/site run audit | tee audit.txt
+        env:
+          CHROME_EXE: /usr/bin/google-chrome
+      # 发包验收：打成 .tgz，装进仓库外的空 Vite 项目，构建，在浏览器里查（会重新构建各包，所以放在 audit 后面）
+      - run: node scripts/pack-check.mjs
+        env:
+          CHROME_EXE: /usr/bin/google-chrome
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit
+          path: |
+            audit.txt
+            packages/xxd-site/visual/sr-transcript.txt

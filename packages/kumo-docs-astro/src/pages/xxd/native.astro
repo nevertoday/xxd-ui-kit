@@ -1,0 +1,66 @@
+---
+import DocLayout from "~/layouts/DocLayout.astro";
+import registry from "../../../../xxd-css/registry.json";
+
+type Entry = (typeof registry.components)[number] & { attributes?: Record<string, string>; js?: string; react?: string; rules?: string[] };
+const components = registry.components as Entry[];
+const categories = [...new Set(components.map((c) => c.category))];
+const headings = components.map((c) => ({ depth: 2, slug: c.name.toLowerCase(), text: `${c.zh} ${c.name}` }));
+---
+
+<DocLayout
+  title="原生组件 @xxd/css"
+  description="纯 CSS + 极少行为 JS，不依赖任何框架。Chrome 插件和会员站用这一层；示例就是真实的组件，右上角切换外观看效果。"
+  headings={headings}
+>
+  <link rel="stylesheet" href="/xxd/components.css" />
+  <script is:inline src="/xxd/icons.js" data-astro-rerun></script>
+  <script is:inline src="/xxd/xxd.js" data-manual data-astro-rerun></script>
+  <script is:inline data-astro-rerun>
+    if (window.Xxd) window.Xxd.install(document);
+  </script>
+
+  <p>
+    插件里：<code>pnpm xxd new &lt;目录&gt; --name 名字</code> 新建，<code>pnpm xxd sync &lt;目录&gt;</code> 更新。
+    命令行查用法：<code>pnpm xxd ls</code>、<code>pnpm xxd doc Dialog</code>。React 版见左侧各组件页。
+  </p>
+
+  {
+    categories.map((cat) => (
+      <section>
+        <h2 class="!mt-14 text-xs font-medium text-kumo-subtle">{cat}</h2>
+        {components
+          .filter((c) => c.category === cat)
+          .map((c) => (
+            <article class="not-prose border-b border-kumo-line py-6" id={c.name.toLowerCase()}>
+              <h3 class="mb-1 text-base font-semibold text-kumo-default">
+                {c.zh} <span class="font-mono text-xs font-normal text-kumo-subtle">{c.name}</span>
+                {c.react && <span class="ml-2 text-xs font-normal text-kumo-subtle">React：{c.react}</span>}
+              </h3>
+              {c.rules && (
+                <ul class="mb-3 list-none p-0 text-xs text-kumo-subtle">
+                  {c.rules.map((r) => (
+                    <li>· {r}</li>
+                  ))}
+                </ul>
+              )}
+              <div class="xxd-page relative mb-3 flex min-h-16 flex-wrap items-center gap-3 border border-kumo-line bg-kumo-base p-5" set:html={c.markup} />
+              <pre class="overflow-x-auto bg-kumo-recessed p-3 text-xs leading-relaxed"><code>{c.markup}</code></pre>
+              {c.js && <pre class="mt-2 overflow-x-auto bg-kumo-recessed p-3 text-xs leading-relaxed"><code>{c.js}</code></pre>}
+              {c.attributes && (
+                <dl class="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-xs">
+                  {Object.entries(c.attributes).map(([k, v]) => (
+                    <>
+                      <dt class="font-mono text-kumo-default">{k}</dt>
+                      <dd class="m-0 text-kumo-subtle">{v}</dd>
+                    </>
+                  ))}
+                </dl>
+              )}
+              <p class="mt-2 font-mono text-xs text-kumo-subtle">{c.classes.join(" ")}</p>
+            </article>
+          ))}
+      </section>
+    ))
+  }
+</DocLayout>

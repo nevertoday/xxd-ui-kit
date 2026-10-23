@@ -1,0 +1,52 @@
+---
+// 更新日志：读仓库根目录的 CHANGELOG.md / CHANGELOG.en.md（手写、发版时由 changeset 合进去），不再从 git log 拼。
+// 只认这几种写法：## 版本、### 分组、- 条目、`代码`、[链接](地址)。
+import Site from "../layouts/Site.astro";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+// 构建时的工作目录是 packages/xxd-site（打包后 import.meta.url 指向产物，不能用它找仓库根目录）
+const file = join(process.cwd(), "../..", en ? "CHANGELOG.en.md" : "CHANGELOG.md");
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const inline = (s) =>
+  esc(s)
+    .replace(/`([^`]+)`/g, '<code class="xxd-code-inline">$1</code>')
+    .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a class="xxd-link" href="$2">$1</a>')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+const releases = [];
+let intro = [];
+for (const line of readFileSync(file, "utf8").split("\n")) {
+  if (line.startsWith("## ")) releases.push({ title: line.slice(3).trim(), lead: [], groups: [] });
+  else if (!releases.length) {
+    if (line && !line.startsWith("# ") && !/^\*\*|^\[|·/.test(line)) intro.push(line);
+  } else {
+    const r = releases.at(-1);
+    if (line.startsWith("### ")) r.groups.push({ title: line.slice(4).trim(), items: [] });
+    else if (line.startsWith("- ") && r.groups.length) r.groups.at(-1).items.push(line.slice(2));
+    else if (line.trim() && !r.groups.length) r.lead.push(line);
+  }
+}
+const slug = (s) => "v" + s.split(" ")[0].replace(/[^\w.-]/g, "");
+const T = en ? { title: "Changelog", caption: "Tools" } : { title: "更新日志", caption: "工具" };
+---
+
+<Site title={T.title} headings={releases.map((r) => ({ slug: slug(r.title), text: r.title }))}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    {intro.map((p) => <p class="site-lead" set:html={inline(p)} />)}
+  </header>
+  {releases.map((r) => (
+    <section>
+      <h2 class="site-h2" id={slug(r.title)}>{r.title}</h2>
+      {r.lead.map((p) => <p class="site-p" set:html={inline(p)} />)}
+      {r.groups.map((g) => (
+        <>
+          <h3 class="site-h3">{g.title}</h3>
+          <ul class="site-rules">{g.items.map((i) => <li set:html={inline(i)} />)}</ul>
+        </>
+      ))}
+    </section>
+  ))}
+</Site>

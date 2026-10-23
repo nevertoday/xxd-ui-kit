@@ -1,0 +1,518 @@
+/* 内容：表格、折叠、代码、按键、头像、主色色块、卡片、阅读排版、复制按钮。 */
+@layer xxd.components {
+  /* 表格：表头下一条线，行与行之间细线 */
+  .xxd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-table th {
+    height: 36px;
+    padding: 0 var(--space-3);
+    border-bottom: 1px solid var(--line-strong);
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  /* 数据表不折行：窄了就在 .xxd-table-wrap 里横向滚动（「落后 2」不会拆成两行）。
+     写长段文字的列加 data-wrap，那一列才换行 */
+  .xxd-table td {
+    height: 44px;
+    padding: var(--space-1-5) var(--space-3);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .xxd-table [data-wrap] {
+    min-width: 16em;
+    white-space: normal;
+  }
+
+  /* 有会折行的格子：这一行顶端对齐，各格第一行字在一条线上（不然折成三行的格子一居中，旁边的字就比它的第一行低半截）。
+     上下内边距 = (44 - 20) / 2，只有一行时看起来和居中一样（设计师评审 V2-7 的「同一行文字不齐」） */
+  .xxd-table tr:has(> [data-wrap]) > :is(td, th) {
+    padding-block: calc((44px - var(--leading-sm)) / 2);
+    vertical-align: top;
+  }
+
+  .xxd-table tbody tr + tr td {
+    border-top: 1px solid var(--line);
+  }
+
+  /* 状态优先级：选中 > 悬停 */
+  .xxd-table[data-interactive] tbody tr:hover:not([aria-selected="true"]) td {
+    background: var(--wash);
+  }
+
+  .xxd-table tbody tr[aria-selected="true"] td {
+    background: var(--selected-bg);
+  }
+
+  .xxd-table [data-align="end"] {
+    text-align: right;
+  }
+
+  /* 格子里放「图标 + 名字」（.xxd-logo）：当块级 flex 排，不然行内块按基线对齐会把行框撑高，名字比同一行别的字高 3–4px（设计师评审 D1） */
+  .xxd-table td > .xxd-logo {
+    display: flex;
+  }
+
+  /* 表格里的状态标签用 12px：和同一行 13px 的字只差一档（11px 的角标在表格里显得太小） */
+  .xxd-table td .xxd-badge {
+    font-size: var(--text-xs);
+  }
+
+  /* 窄了横向滚动；还有内容没露出来的那一边有一道渐隐（设计师评审 V3-3：手机上最后一列被切一半、看不出能滑）。
+     纯背景做的：local 的纸色盖住 scroll 的灰影，滑到头时纸色跟着内容移过来，灰影就看不见了。这是「还有内容」的提示，不是浮起的阴影。 */
+  .xxd-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background:
+      linear-gradient(to right, var(--paper) 40%, transparent) left / var(--space-6) 100% no-repeat local,
+      linear-gradient(to left, var(--paper) 40%, transparent) right / var(--space-6) 100% no-repeat local,
+      linear-gradient(to right, rgba(var(--shadow-rgb), 0.14), transparent) left / var(--space-3) 100% no-repeat scroll,
+      linear-gradient(to left, rgba(var(--shadow-rgb), 0.14), transparent) right / var(--space-3) 100% no-repeat scroll,
+      var(--paper);
+  }
+
+  /* 折叠：<details class="xxd-collapse"><summary>标题</summary>内容</details> */
+  /* 问题折成两行时，箭头对齐第一行（不是两行的中间） */
+  .xxd-collapse > summary {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .xxd-collapse > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .xxd-collapse > summary::before {
+    content: "";
+    flex: none;
+    width: 14px;
+    height: 14px;
+    margin-top: calc((1.4em - 14px) / 2);
+    background: var(--muted);
+    -webkit-mask: var(--xxd-chevron-right) center / contain no-repeat;
+    mask: var(--xxd-chevron-right) center / contain no-repeat;
+    transition: transform var(--motion-quick) var(--ease-out-expo);
+  }
+
+  .xxd-collapse[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .xxd-collapse > :not(summary) {
+    padding: 0 0 var(--space-3) calc(var(--icon-md) + var(--space-2)); /* 和问题文字对齐：chevron + 间隔 */
+    color: var(--muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-collapse + .xxd-collapse {
+    border-top: 1px solid var(--line);
+  }
+
+  /* 代码：行内 12%，代码块 6% */
+  .xxd-code-inline,
+  .xxd-prose :not(pre) > code {
+    padding: 1px var(--space-1);
+    border-radius: var(--r-xs);
+    background: var(--accent-tint);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    /* 行内等宽字比周围小一档，落在字号阶梯上（TYPE-REVIEW-PLAN D69）：
+       13 → 12、14 → 13、16 → 14、20 → 16、24 → 20、28 → 24；不小于 12（里面可能有中文，D71）；行高跟着所在的那一行 */
+    font-size: max(var(--text-xs), calc(1em - clamp(1px, 1em - 14px, 4px)));
+  }
+
+  .xxd-code,
+  .xxd-prose pre {
+    position: relative;
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--r-md);
+    background: var(--accent-bg);
+    color: var(--ink);
+    font: var(--text-xs) / var(--leading-sm) var(--font-mono); /* 代码块是多行的：12 / 20 */
+    overflow-x: auto;
+    tab-size: 2;
+  }
+
+  .xxd-code > .xxd-copy {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+  }
+
+  /* 按键 */
+  .xxd-kbd {
+    display: inline-flex;
+    align-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 var(--space-1);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-xs);
+    background: var(--paper);
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-2xs) / 1 var(--font-mono);
+  }
+
+  /* 头像：跟圆角开关走（SHAPE-LINE-PLAN D61）——直角时是方的，圆角时 999px 让正方形变成圆 */
+  .xxd-avatar {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--avatar-size, 28px);
+    height: var(--avatar-size, 28px);
+    border-radius: var(--r-pill);
+    background: var(--wash-strong);
+    color: var(--ink);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    overflow: hidden;
+  }
+
+  /* 尺寸（ACCEPTANCE-REVIEW：以前只能写没进文档的 --avatar-size）：sm = 小号控件高，lg = 控件高 */
+  .xxd-avatar[data-size="sm"] {
+    --avatar-size: var(--control-h-xs);
+  }
+
+  .xxd-avatar[data-size="lg"] {
+    --avatar-size: var(--control-h);
+    font-size: var(--text-sm);
+  }
+
+  .xxd-avatar > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .xxd-avatar[data-member] {
+    /* 选中环：隔 2px 纸 + 环 1.5px（D64，和色块选中同一种） */
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--action);
+  }
+
+  /* 主色色块（跟圆角开关走，D61）：<div class="xxd-swatches" role="radiogroup"><button class="xxd-swatch" role="radio" aria-checked="true" style="--swatch:#3b74b8">… */
+  .xxd-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .xxd-swatch {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--swatch-edge);
+    border-radius: var(--r-pill);
+    background: var(--swatch, var(--ink));
+    cursor: pointer;
+  }
+
+  .xxd-swatch[aria-checked="true"] {
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink);
+  }
+
+  /* 卡片：没有阴影；hover 只把边线加深。图片卡片的角标贴着角（读作界面），不漂在画面里。 */
+  .xxd-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--ink);
+    text-decoration: none;
+    overflow: hidden;
+    transition: border-color var(--motion-quick) ease;
+  }
+
+  /* 状态优先级：选中 > 悬停 */
+  a.xxd-card:hover:not([aria-selected="true"]),
+  .xxd-card[data-interactive]:hover:not([aria-selected="true"]) {
+    border-color: var(--line-strong);
+  }
+
+  .xxd-card[aria-selected="true"] {
+    border-color: var(--action);
+  }
+
+  .xxd-card__media {
+    position: relative;
+    aspect-ratio: var(--ratio, 4 / 3);
+    background: var(--wash);
+    overflow: hidden;
+  }
+
+  .xxd-card__media > img,
+  .xxd-card__media > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .xxd-card__body {
+    display: grid;
+    gap: var(--gap-tight);
+    padding: var(--inset-sm-y) var(--inset-sm);
+  }
+
+  .xxd-card__title {
+    margin: 0;
+    font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
+    /* 标题是内容（D91）：折行，不省略；要一行的写 <p class="xxd-card__title xxd-text" data-truncate> */
+    overflow-wrap: anywhere;
+  }
+
+  .xxd-card__meta {
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-card__marks {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    gap: var(--space-1);
+  }
+
+  .xxd-card__marks > .xxd-dot {
+    width: 10px;
+    height: 10px;
+    box-shadow: 0 0 0 1.5px var(--paper);
+  }
+
+  .xxd-card__rating {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 11px;
+    height: 11px;
+    background: #f5b301;
+  }
+
+  /* 图片上的操作：深色半透明小圆钮，淡入在角上（像 X 自己的图片控件） */
+  .xxd-card__action {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    height: 30px;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: rgba(5, 5, 5, 0.64);
+    color: #ffffff;
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity var(--motion-quick) ease, background-color var(--motion-quick) ease;
+  }
+
+  .xxd-card:hover .xxd-card__action,
+  .xxd-card:focus-within .xxd-card__action {
+    opacity: 1;
+  }
+
+  .xxd-card__action:hover {
+    background: rgba(5, 5, 5, 0.86);
+  }
+
+  @media (hover: none) {
+    .xxd-card__action {
+      opacity: 1;
+    }
+  }
+
+  /* 瀑布流 / 网格 */
+  .xxd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min, 220px), 1fr));
+    gap: var(--grid-gap, var(--space-4));
+  }
+
+  .xxd-masonry {
+    columns: var(--grid-min, 220px);
+    column-gap: var(--grid-gap, var(--space-4));
+  }
+
+  .xxd-masonry > * {
+    margin-bottom: var(--grid-gap, var(--space-4));
+    break-inside: avoid;
+  }
+
+  /* 复制按钮：js/copy.js 把图标换成勾一会儿 */
+  .xxd-copy[data-done] {
+    color: var(--success);
+  }
+
+  /* 阅读排版：会员站文章、预览。一个颜色四种强度：100% 指向（链接、列表点），40% 线与标记，12% 行内代码，6% 代码块。 */
+  .xxd-prose {
+    max-width: var(--read-width);
+    color: var(--ink);
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg); /* 16 / 28：阅读用宽一档的行高 */
+    overflow-wrap: break-word;
+  }
+
+  .xxd-prose > * {
+    margin: 0;
+  }
+
+  /* 段距：段落之间 16px；代码块、引用、列表、表格、图前后都是 20px（设计师评审 V3-6：以前代码块像挂在段落上）。
+     标题的上距更大、和自己的内容靠得更近，写在后面的规则里 */
+  .xxd-prose > * + * {
+    margin-top: var(--space-4);
+  }
+
+  .xxd-prose > * + :is(pre, blockquote, table, figure, ul, ol, img, video),
+  .xxd-prose > :is(pre, blockquote, table, figure, ul, ol, img, video) + * {
+    margin-top: var(--space-5);
+  }
+
+  .xxd-prose h1,
+  .xxd-prose h2,
+  .xxd-prose h3 {
+    color: var(--ink);
+    font-family: var(--font-title);
+    font-weight: var(--weight-strong);
+    line-height: var(--leading-lg);
+  }
+
+  .xxd-prose h1 {
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+  }
+
+  .xxd-prose h2 {
+    margin-top: var(--space-8);
+    font-size: var(--text-xl);
+  }
+
+  .xxd-prose h3 {
+    margin-top: var(--space-6);
+    font-size: var(--text-lg);
+    line-height: var(--leading-md);
+  }
+
+  .xxd-prose h2 + *,
+  .xxd-prose h3 + * {
+    margin-top: var(--space-2);
+  }
+
+  .xxd-prose a {
+    color: var(--action-text);
+    text-decoration: underline;
+    /* 下划线 ≥ 3:1（D79）：墨色主题下链接和正文同色 */
+    text-decoration-color: var(--line-control);
+    text-underline-offset: 3px;
+  }
+
+  .xxd-prose a:hover {
+    text-decoration-color: var(--action);
+  }
+
+  /* 只管正文里的普通列表（没有类名的 ul / ol）：面包屑、目录这些带类名的组件不受影响。
+     列表符号写明（宿主页面的 CSS 重置常把 list-style 清成 none） */
+  /* 二级缩进只有一种：列表的字、引用的字都在 --space-5（SPACING-REVIEW-PLAN D57）；代码块是框，框里的字按框的内边距 */
+  .xxd-prose ul:not([class]),
+  .xxd-prose ol:not([class]) {
+    padding-left: var(--space-5);
+  }
+
+  .xxd-prose ul:not([class]) {
+    list-style: disc;
+  }
+
+  .xxd-prose ol:not([class]) {
+    list-style: decimal;
+  }
+
+  .xxd-prose :is(ul, ol):not([class]) > li::marker {
+    color: var(--action);
+  }
+
+  .xxd-prose :is(ul, ol):not([class]) > li + li {
+    margin-top: var(--space-1);
+  }
+
+  .xxd-prose blockquote {
+    padding-left: calc(var(--space-5) - 2px);
+    border-left: 2px solid var(--accent-border);
+    color: var(--muted);
+  }
+
+  .xxd-prose hr {
+    height: 1px;
+    margin: var(--space-6) 0;
+    border: 0;
+    background: var(--accent-border);
+  }
+
+  .xxd-prose img,
+  .xxd-prose video {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--r-md);
+  }
+
+  /* 表格比正文宽时自己横着滚，不把整页撑出横向滚动（WCAG 1.4.10，ACCEPTANCE-REVIEW） */
+  /* 一行放不下的长行内代码（函数名、路径）才断开，不撑出横向滚动（320 宽 = 放大 400%，WCAG 1.4.10，ACCEPTANCE-REVIEW） */
+  .xxd-prose :not(pre) > code {
+    overflow-wrap: break-word;
+  }
+
+  .xxd-prose table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .xxd-prose th {
+    border-bottom: 1px solid var(--line-strong);
+    text-align: left;
+  }
+
+  .xxd-prose th,
+  .xxd-prose td {
+    padding: var(--space-1-5) var(--space-3);
+  }
+
+  .xxd-prose tr + tr td {
+    border-top: 1px solid var(--line);
+  }
+
+  .xxd-prose mark {
+    padding: 0 var(--space-0-5);
+    background: var(--accent-tint-hover);
+    color: inherit;
+  }
+
+  /* 匹配高亮（搜索） */
+  .xxd-hit {
+    padding: 0 1px;
+    border-radius: var(--r-xs);
+    background: var(--accent-tint-active);
+    color: inherit;
+  }
+}

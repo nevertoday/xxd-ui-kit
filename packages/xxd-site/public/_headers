@@ -1,0 +1,4 @@
+# 带版本号的构建文件：内容不会变，长期缓存；别的网站可以直接引用
+/v/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@xxd/tokens",
+      "@xxd/icons",
+      "@xxd/css",
+      "@xxd/react",
+      "@xxd/extension"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@cloudflare/kumo",
+    "@cloudflare/kumo-docs-astro",
+    "@cloudflare/kumo-figma",
+    "@cloudflare/kumo-screenshot-worker",
+    "@xxd/site"
+  ]
+}

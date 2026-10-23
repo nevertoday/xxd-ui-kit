@@ -1,0 +1,99 @@
+{
+  "signinGift": {
+    "message": "新帳號送 7 天完整體驗"
+  },
+  "signinGoogle": {
+    "message": "使用 Google 繼續"
+  },
+  "signinOr": {
+    "message": "或使用電子郵件"
+  },
+  "signinAs": {
+    "message": "登入"
+  },
+  "continue": {
+    "message": "繼續"
+  },
+  "back": {
+    "message": "返回"
+  },
+  "terms": {
+    "message": "繼續即表示同意服務條款和隱私權政策"
+  },
+  "groupAccount": {
+    "message": "帳號"
+  },
+  "upgrade": {
+    "message": "開通會員"
+  },
+  "planMonth": {
+    "message": "月度會員"
+  },
+  "planYear": {
+    "message": "年度會員"
+  },
+  "planKeep": {
+    "message": "體驗剩下的天數會保留。"
+  },
+  "pay": {
+    "message": "去付款"
+  },
+  "paid": {
+    "message": "我已付款，立即查詢"
+  },
+  "payOpened": {
+    "message": "已在新分頁開啟付款頁"
+  },
+  "memberDone": {
+    "message": "會員已開通"
+  },
+  "signout": {
+    "message": "登出"
+  },
+  "emailLabel": {
+    "message": "電子郵件"
+  },
+  "passwordLabel": {
+    "message": "密碼"
+  },
+  "signinLabel": {
+    "message": "登入"
+  },
+  "plansLabel": {
+    "message": "方案"
+  },
+  "confirmSignout": {
+    "message": "確認登出"
+  },
+  "memberUntil": {
+    "message": "會員 · 到 $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "trialLeft": {
+    "message": "完整體驗 · 還剩 $DAYS$ 天",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "manage": {
+    "message": "管理"
+  },
+  "priceMonth": {
+    "message": "NT$290"
+  },
+  "priceYear": {
+    "message": "NT$2,280"
+  },
+  "accountName": {
+    "message": "你的名字"
+  },
+  "avatarText": {
+    "message": "你"
+  }
+}

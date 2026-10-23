@@ -1,0 +1,464 @@
+/* 数据（优化计划 O3）：表格进阶、分页完整、区间滑块、代码高亮、徽标点、横幅关闭、空状态尺寸、tab 溢出、面包屑折叠、开关尺寸。 */
+@layer xxd.components {
+  /* ── 表格：勾选列、固定列、拖动列宽、紧凑、排序表头、页脚 ── */
+  .xxd-table[data-density="compact"] th {
+    height: 30px;
+  }
+
+  .xxd-table[data-density="compact"] td {
+    height: 34px;
+    padding-block: var(--space-1);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-table .xxd-table__check {
+    width: 36px;
+    padding-right: 0;
+  }
+
+  .xxd-table :is(th, td)[data-sticky="start"] {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--paper);
+  }
+
+  .xxd-table :is(th, td)[data-sticky="end"] {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--paper);
+  }
+
+  /* 固定列和滚动内容之间：一条线（sticky 元素靠 border 分开） */
+  .xxd-table-wrap[data-scrolled-x] :is(th, td)[data-sticky="start"] {
+    box-shadow: inset -1px 0 0 var(--line);
+  }
+
+  .xxd-table-wrap[data-scrollable-end] :is(th, td)[data-sticky="end"] {
+    box-shadow: inset 1px 0 0 var(--line);
+  }
+
+  .xxd-table thead th {
+    position: relative;
+  }
+
+  .xxd-table[data-sticky-head] thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--paper);
+  }
+
+  .xxd-th-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    /* 上下的内边距用负外边距抵掉：按钮不把表头的行框撑高，排序表头的字和旁边普通表头的字在一条线上 */
+    margin: calc(-1 * var(--space-0-5)) calc(-1 * var(--space-1));
+    padding: var(--space-0-5) var(--space-1);
+    border: 0;
+    border-radius: var(--r-xs);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--motion-quick) ease, color var(--motion-quick) ease;
+  }
+
+  .xxd-th-sort:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-th-sort::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: var(--muted-2);
+    -webkit-mask: var(--xxd-chevron-down) center / contain no-repeat;
+    mask: var(--xxd-chevron-down) center / contain no-repeat;
+    opacity: 0.4;
+  }
+
+  th[aria-sort="ascending"] .xxd-th-sort::after,
+  th[aria-sort="descending"] .xxd-th-sort::after {
+    background: var(--ink);
+    opacity: 1;
+  }
+
+  th[aria-sort="ascending"] .xxd-th-sort::after {
+    transform: rotate(180deg);
+  }
+
+  .xxd-th-resize {
+    position: absolute;
+    top: 6px;
+    right: -3px;
+    bottom: 6px;
+    width: 6px;
+    cursor: col-resize;
+  }
+
+  .xxd-th-resize::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 2px;
+    width: 2px;
+    background: var(--line-strong);
+    opacity: 0;
+  }
+
+  th:hover .xxd-th-resize::after,
+  .xxd-th-resize[data-active]::after {
+    opacity: 1;
+  }
+
+  .xxd-th-resize[data-active]::after {
+    background: var(--action);
+  }
+
+  .xxd-table tfoot td {
+    border-top: 1px solid var(--line-strong);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-table__actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* ── 分页完整：信息、每页条数、简洁模式 ── */
+  .xxd-pagination-bar {
+    container-type: inline-size;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+  }
+
+  @container (max-width: 419px) {
+    .xxd-pagination:not([data-simple]) > [data-page-to]:not(:first-child, :last-child),
+    .xxd-pagination:not([data-simple]) > .xxd-pagination__gap,
+    .xxd-pagination__info {
+      display: none;
+    }
+
+    .xxd-pagination:not([data-simple]) > .xxd-pagination__status {
+      display: inline-block;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .xxd-pagination:not([data-simple]) > [data-page-to]:not(:first-child, :last-child),
+    .xxd-pagination:not([data-simple]) > .xxd-pagination__gap {
+      display: none;
+    }
+
+    .xxd-pagination:not([data-simple]) > .xxd-pagination__status {
+      display: inline-block;
+    }
+  }
+
+  .xxd-pagination__info {
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-pagination__size {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    margin-left: auto;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-pagination[data-simple] > :not(:first-child, :last-child) {
+    display: none;
+  }
+
+  /* ── 区间滑块：两个 range 叠在一起，中间填色 ── */
+  .xxd-range-pair {
+    position: relative;
+    height: 20px;
+  }
+
+  .xxd-range-pair > .xxd-range {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: transparent;
+  }
+
+  .xxd-range-pair > .xxd-range::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+
+  .xxd-range-pair > .xxd-range::-webkit-slider-thumb {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+  }
+
+  .xxd-range-pair > .xxd-range::-moz-range-thumb {
+    pointer-events: auto;
+  }
+
+  .xxd-range-pair::before,
+  .xxd-range-pair::after {
+    content: "";
+    position: absolute;
+    top: 9px;
+    height: 2px;
+    border-radius: var(--r-pill);
+  }
+
+  .xxd-range-pair::before {
+    right: 0;
+    left: 0;
+    background: var(--line-strong);
+  }
+
+  .xxd-range-pair::after {
+    left: calc(var(--from, 0) * 1%);
+    right: calc(100% - var(--to, 100) * 1%);
+    background: var(--action);
+  }
+
+  .xxd-range-value {
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 单个滑块的已填部分（JS 写 --fill） */
+  .xxd-range[data-fill]::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, var(--action) calc(var(--fill, 0) * 1%), var(--line-strong) 0);
+  }
+
+  .xxd-range[data-ticks] {
+    background:
+      repeating-linear-gradient(to right, var(--line-strong) 0 1px, transparent 1px calc(100% / var(--ticks, 4))) 7px 15px / calc(100% - 14px) 4px no-repeat;
+  }
+
+  /* ── 代码高亮（Xxd.highlight）：克制 —— 关键字墨色加重，字符串和数字带一点强调色，注释淡 ── */
+  .xxd-code .tok-k {
+    color: var(--ink);
+    font-weight: var(--weight-medium);
+  }
+
+  .xxd-code .tok-s {
+    color: var(--accent-text-strong);
+  }
+
+  .xxd-code .tok-n {
+    color: var(--action-text);
+  }
+
+  .xxd-code .tok-c {
+    /* 注释只靠灰色区分，不斜：中文没有斜体，浏览器会把苹方硬拉斜（TYPE-REVIEW-PLAN D70） */
+    color: var(--muted);
+  }
+
+  .xxd-code .tok-p {
+    color: var(--muted);
+  }
+
+  .xxd-code .tok-t {
+    color: var(--accent-text-strong);
+  }
+
+  .xxd-code-block {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+
+  .xxd-code-block > .xxd-code {
+    border-radius: 0;
+  }
+
+  .xxd-code__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 34px;
+    padding: 0 var(--space-1-5) 0 var(--space-3);
+    border-bottom: 1px solid var(--line);
+    background: var(--accent-bg);
+    color: var(--muted);
+    font: var(--text-2xs) / var(--leading-xs) var(--font-mono);
+  }
+
+  .xxd-code__head > .xxd-btn {
+    margin-left: auto;
+  }
+
+  .xxd-code[data-lines] {
+    counter-reset: line;
+  }
+
+  .xxd-code[data-lines] .line {
+    display: block;
+  }
+
+  .xxd-code[data-lines] .line::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 2.4em;
+    margin-right: var(--space-3);
+    color: var(--muted-2);
+    text-align: right;
+  }
+
+  /* ── 徽标：点 + 字（dot 外观）、新 ── */
+  .xxd-badge[data-appearance="dot"] {
+    background: transparent;
+    padding-left: 0;
+    color: var(--ink);
+  }
+
+  .xxd-badge[data-appearance="dot"]::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: var(--r-pill);
+    background: var(--muted-2);
+  }
+
+  .xxd-badge[data-appearance="dot"][data-tone="success"]::before { background: var(--success); }
+  .xxd-badge[data-appearance="dot"][data-tone="danger"]::before { background: var(--danger); }
+  .xxd-badge[data-appearance="dot"][data-tone="warning"]::before { background: var(--warning); }
+  .xxd-badge[data-appearance="dot"][data-tone="action"]::before { background: var(--action); }
+
+  /* 「新」：和其他徽标一样高、一样的字号，只靠实心底强调（一排徽标高低一致） */
+  .xxd-badge[data-variant="new"] {
+    background: var(--action-fill);
+    color: var(--on-action);
+  }
+
+  /* ── 横幅：动作区、关闭 ── */
+  /* 关闭按钮按图标对齐（D58）：右边让出（按钮 − 图标）/ 2，图标（xs 按钮里是 14px）的右边落在内容右边那条线上；
+     上下让到和第一行一样高，图标的中线就是第一行的中线（D59） */
+  .xxd-banner__close {
+    margin-block: calc((var(--leading-sm) - var(--btn-box)) / 2);
+    margin-inline: auto calc((var(--icon-md) - var(--btn-box)) / 2);
+  }
+
+  .xxd-banner[data-leaving] {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity var(--motion-sheet-out) ease, transform var(--motion-sheet-out) ease;
+  }
+
+  .xxd-banner[data-size="sm"] {
+    padding: var(--inset-sm-y) var(--inset-sm);
+    font-size: var(--text-xs);
+  }
+
+  /* ── 空状态：尺寸、带命令 ── */
+  .xxd-empty[data-size="sm"] {
+    padding: var(--space-5) var(--space-3);
+  }
+
+  .xxd-empty[data-size="sm"] .xxd-empty__title {
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-empty[data-size="lg"] {
+    padding: calc(var(--space-8) * 2) var(--space-4);
+  }
+
+  .xxd-empty[data-size="lg"] > .ui-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .xxd-empty[data-size="lg"] .xxd-empty__title {
+    font-size: var(--text-xl);
+    line-height: var(--leading-lg);
+  }
+
+  .xxd-empty .xxd-clipboard {
+    margin-top: var(--space-1-5);
+  }
+
+  /* ── tab 溢出：两端渐隐（JS 写 data-overflow-start / -end），选中项自动滚进视野 ── */
+  .xxd-tabs[data-overflow-end] {
+    -webkit-mask-image: linear-gradient(to right, #000000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, #000000 calc(100% - 32px), transparent);
+  }
+
+  .xxd-tabs[data-overflow-start] {
+    -webkit-mask-image: linear-gradient(to left, #000000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to left, #000000 calc(100% - 32px), transparent);
+  }
+
+  .xxd-tabs[data-overflow-start][data-overflow-end] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000000 32px, #000000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000000 32px, #000000 calc(100% - 32px), transparent);
+  }
+
+  /* ── 面包屑：太长时中间折叠成「…」（JS） ── */
+  .xxd-breadcrumbs__more {
+    padding: 0 var(--space-1);
+    border: 0;
+    border-radius: var(--r-xs);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .xxd-breadcrumbs__more:hover {
+    background: var(--wash);
+    color: var(--ink);
+  }
+
+  .xxd-breadcrumbs[data-size="sm"] {
+    font-size: var(--text-xs);
+  }
+
+  /* ── 开关尺寸、复选 / 单选出错 ── */
+  .xxd-switch[data-size="sm"] {
+    width: 28px;
+    height: 16px;
+  }
+
+  .xxd-switch[data-size="sm"]::before {
+    width: 10px;
+    height: 10px;
+  }
+
+  .xxd-switch[data-size="sm"]:checked::before {
+    transform: translateX(12px);
+  }
+
+  .xxd-switch[data-size="lg"] {
+    width: 42px;
+    height: 24px;
+  }
+
+  .xxd-switch[data-size="lg"]::before {
+    width: 18px;
+    height: 18px;
+  }
+
+  .xxd-switch[data-size="lg"]:checked::before {
+    transform: translateX(18px);
+  }
+
+  .xxd-check[aria-invalid="true"],
+  .xxd-radio[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+}

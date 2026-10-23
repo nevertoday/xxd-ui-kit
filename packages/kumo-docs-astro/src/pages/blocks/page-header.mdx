@@ -1,0 +1,189 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Page Header"
+description: "A composite component that combines breadcrumbs and tabs for page navigation."
+sourceFile: "blocks/page-header"
+---
+
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  PageHeaderHeroDemo,
+  PageHeaderBasicDemo,
+  PageHeaderWithIconsDemo,
+  PageHeaderWithTabsDemo,
+  PageHeaderWithActionsDemo,
+  PageHeaderWithTitleDemo,
+  PageHeaderWithTitleDescriptionDemo,
+  PageHeaderCompleteDemo,
+} from "~/components/demos/PageHeaderDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="PageHeaderHeroDemo">
+    <PageHeaderHeroDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+  <p>
+    PageHeader is a <strong>block</strong> - a CLI-installed component that you
+    own and can customize. Unlike regular components, blocks are copied into
+    your project so you have full control over the code.
+  </p>
+  <div class="space-y-4">
+    <div>
+      <p>**1. Initialize Kumo config (first time only)**</p>
+
+```bash
+npx @cloudflare/kumo init
+```
+
+</div>
+<div>
+<p>**2. Install the block**</p>
+
+```bash
+npx @cloudflare/kumo add PageHeader
+```
+
+</div>
+<div>
+<p>**3. Import from your local path**</p>
+
+```tsx
+// The path depends on your kumo.json blocksDir setting
+// Default: src/components/kumo/
+import { PageHeader } from "./components/kumo/page-header/page-header";
+```
+
+    </div>
+
+  </div>
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { PageHeader } from "./components/kumo/page-header/page-header";
+import { Breadcrumbs } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <PageHeader
+      breadcrumbs={
+        <Breadcrumbs>
+          <Breadcrumbs.Link href="#">Home</Breadcrumbs.Link>
+          <Breadcrumbs.Separator />
+          <Breadcrumbs.Link href="#">Projects</Breadcrumbs.Link>
+          <Breadcrumbs.Separator />
+          <Breadcrumbs.Current>My Project</Breadcrumbs.Current>
+        </Breadcrumbs>
+      }
+      tabs={[
+        { label: "Overview", value: "overview" },
+        { label: "Settings", value: "settings" },
+      ]}
+      defaultTab="overview"
+      onValueChange={(value) => {
+        console.log(value);
+      }}
+    />
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Basic
+
+<ComponentExample demo="PageHeaderBasicDemo">
+  <PageHeaderBasicDemo client:visible />
+</ComponentExample>
+
+### With Icons
+
+<ComponentExample demo="PageHeaderWithIconsDemo">
+  <PageHeaderWithIconsDemo client:visible />
+</ComponentExample>
+
+### With Tabs
+
+<ComponentExample demo="PageHeaderWithTabsDemo">
+  <PageHeaderWithTabsDemo client:visible />
+</ComponentExample>
+
+### With Actions
+
+<ComponentExample demo="PageHeaderWithActionsDemo">
+  <PageHeaderWithActionsDemo client:visible />
+</ComponentExample>
+
+### With Title
+
+<ComponentExample demo="PageHeaderWithTitleDemo">
+  <PageHeaderWithTitleDemo client:visible />
+</ComponentExample>
+
+### With Title and Description
+
+<ComponentExample demo="PageHeaderWithTitleDescriptionDemo">
+  <PageHeaderWithTitleDescriptionDemo client:visible />
+</ComponentExample>
+
+### Complete Example
+
+  <p>Combining breadcrumbs, title, description, tabs, and actions.</p>
+  <ComponentExample demo="PageHeaderCompleteDemo">
+    <PageHeaderCompleteDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+  <PropsTable component="PageHeader" />
+
+### TabsItem
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-kumo-hairline">
+          <th class="px-4 py-3 text-left font-semibold">Property</th>
+          <th class="px-4 py-3 text-left font-semibold">Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">label</td>
+          <td class="px-4 py-3 font-mono text-xs">string</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="px-4 py-3 font-mono text-xs">value</td>
+          <td class="px-4 py-3 font-mono text-xs">string</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ComponentSection>

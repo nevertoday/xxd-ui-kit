@@ -1,0 +1,53 @@
+{
+  "name": "__SLUG__",
+  "version": "0.1.0",
+  "private": true,
+  "description": "__APP_NAME__（小小东 UI 小程序版 @xxd/mini）",
+  "scripts": {
+    "dev:weapp": "taro build --type weapp --watch",
+    "build:weapp": "taro build --type weapp",
+    "dev:h5": "taro build --type h5 --watch",
+    "build:h5": "taro build --type h5"
+  },
+  "browserslist": [
+    "defaults and fully supports es6-module",
+    "maintained node versions"
+  ],
+  "dependencies": {
+    "@babel/runtime": "^7.24.4",
+    "@tarojs/components": "4.2.1",
+    "@tarojs/helper": "4.2.1",
+    "@tarojs/plugin-framework-react": "4.2.1",
+    "@tarojs/plugin-platform-h5": "4.2.1",
+    "@tarojs/plugin-platform-weapp": "4.2.1",
+    "@tarojs/react": "4.2.1",
+    "@tarojs/runtime": "4.2.1",
+    "@tarojs/shared": "4.2.1",
+    "@tarojs/taro": "4.2.1",
+    "@xxd/icons": "__DEP_ICONS__",
+    "@xxd/mini": "__DEP_MINI__",
+    "@xxd/tokens": "__DEP_TOKENS__",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/plugin-transform-class-properties": "7.25.9",
+    "@babel/preset-react": "^7.24.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.5",
+    "@tarojs/cli": "4.2.1",
+    "@tarojs/taro-loader": "4.2.1",
+    "@tarojs/webpack5-runner": "4.2.1",
+    "@types/react": "^18.0.0",
+    "@types/webpack-env": "^1.13.6",
+    "babel-preset-taro": "4.2.1",
+    "postcss": "^8.5.6",
+    "react-refresh": "^0.14.0",
+    "typescript": "^5.4.5",
+    "webpack": "5.91.0"
+  },
+  "overrides": {
+    "@xxd/icons": "__DEP_ICONS__",
+    "@xxd/tokens": "__DEP_TOKENS__"
+  }
+}

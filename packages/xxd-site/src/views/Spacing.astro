@@ -1,0 +1,96 @@
+---
+import Site from "../layouts/Site.astro";
+import { tokens } from "../lib/data.js";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const space = Object.entries(tokens.base).filter(([k]) => k.startsWith("--space-"));
+// 用途（SPACING-REVIEW-PLAN D54–D56）：标准和紧凑两档的值都从令牌表里读
+const ROLES = ["--inset-sm", "--inset-md", "--inset-lg", "--gap-tight", "--gap-items", "--gap-block", "--gap-group"];
+const roleVal = (k, mode) => (mode === "compact" ? tokens.compact[k] ?? tokens.base[k] : tokens.base[k]);
+const bps = Object.entries(tokens.base).filter(([k]) => k.startsWith("--bp-"));
+const controls = [["--control-h-xs", "xs"], ["--control-h-sm", "sm"], ["--control-h", "md"]];
+const T = en
+  ? {
+      title: "Spacing and sizing", caption: "Foundations", space: "Spacing", controls: "Control height and density",
+      controlsLong: "Control height and density (switch density under Appearance in the top right)",
+      lead: "A 4px base. Components use only these steps for padding, gaps and margins; two half steps are for optical gaps only: 2px (tray insets, labels next to badges) and 6px (between an icon and its text). Indents that line up with an icon are written as icon size + gap, not as a computed number. Controls come in two densities: the member site uses standard (40px), side panels and popups use compact (32px); hit areas are always ≥ 40px (44px for coarse pointers).",
+      bp: "Breakpoints", bpLead: "Only three. Design at these widths (plus 1280 for roomy desktop). CSS media queries can't read variables, so components write the numbers and a test only allows these three.",
+      bpUse: { "--bp-phone": "Phone: compact pagination, one column", "--bp-narrow": "Narrow: dialogs and the side panel become bottom drawers, settings in one column", "--bp-desktop": "Desktop: sidebar and table of contents both visible" },
+      input: "Input",
+      roles: "Which step to use", rolesLead: "The scale is the ruler; these names say what each step is for. Components write the role, not the step. Pick a container's padding by what the container is, not by how wide it is. Compact density takes containers and block gaps down one step; gaps between parts and between siblings stay.",
+      rolesHead: ["Role", "Token", "Standard", "Compact", "Used for"],
+      roleUse: { "--inset-sm": "Small containers: cards, table cells", "--inset-md": "A block of content: banner, chart card, settings row, popover, sheet", "--inset-lg": "A whole task surface: dialog, side panel", "--gap-tight": "Parts of one thing: title and description, number and unit", "--gap-items": "Siblings of the same kind: buttons, chips, legend keys", "--gap-block": "Blocks inside one group: card head and chart, field and field", "--gap-group": "Between groups: settings groups, page sections" },
+      roleName: { "--inset-sm": "Container padding · small", "--inset-md": "Container padding · medium", "--inset-lg": "Container padding · large", "--gap-tight": "Parts", "--gap-items": "Siblings", "--gap-block": "Blocks", "--gap-group": "Groups" },
+      vertical: "When a container starts with text, its top and bottom padding are one step smaller than left and right (the -y tokens: 12 / 16, 16 / 20). The extra half-leading of the line (3–4px) makes up the difference, so all four sides look the same. Only when an image or a button touches the edge (no half-leading) are all four written the same. A test screenshots the containers and measures the ink to check this.",
+      lines: "Alignment: two lines", linesLead: "A block has only two vertical lines. The outer line is the edge of the box, a divider or a full-width control; text outside a box (group titles, section headings, notes) sits on it. The inner line is the outer line plus the container padding; text inside the box sits on it. Nothing goes 1–3px off either line (a test catches it). Second-level indents (lists, quotes) are one size: --space-5. Ghost icon buttons in a corner (close, more) line up by their icon, not their box: they give back (button − icon) / 2.",
+      outer: "Outer line", inner: "Inner line", groupTitle: "Writing", rowTitle: "Use the first line as the title", rowDesc: "A line starting with # becomes the article title",
+    }
+  : {
+      title: "间距与尺寸", caption: "基础", space: "间距", controls: "控件高度与密度",
+      controlsLong: "控件高度与密度（右上角「外观」里切换密度）",
+      lead: "4px 基准。组件的内边距、间隔、外边距只用这些档；两个半档只给光学上的小间隔：2px（托盘内缩、标签和角标）、6px（图标和字之间）。和图标对齐的缩进写成「图标尺寸 + 间距」，不写算好的数字。控件有标准和紧凑两档密度：会员站用标准（40px），侧边栏和 popup 用紧凑（32px）；点击区永远 ≥ 40px（粗指针 44px）。",
+      bp: "断点", bpLead: "只有三个。出稿按这三个宽度出（另加 1280 看桌面的宽松版）。CSS 的 @media 里不能用变量，组件写字面值，测试只放行这三个。",
+      bpUse: { "--bp-phone": "手机：分页收紧、一列", "--bp-narrow": "窄屏：对话框和右侧面板变成底部抽屉、设置一列", "--bp-desktop": "桌面：侧栏和目录同时出现" },
+      input: "输入框",
+      roles: "用哪一档", rolesLead: "刻度是尺子，下面这些名字说的是每一档用来干什么。组件写用途名，不直接写刻度。容器的内边距只看「这是什么容器」，不看它多宽。紧凑密度下，容器和块之间收一档；部件之间、同类之间不变。",
+      rolesHead: ["用途", "令牌", "标准", "紧凑", "用在哪"],
+      roleUse: { "--inset-sm": "小容器：卡片、表格的格子", "--inset-md": "一块内容：横幅、图表卡、设置行、popover、底部面板", "--inset-lg": "一整个任务面：对话框、右侧面板", "--gap-tight": "同一件东西的部件：标题和说明、数字和单位", "--gap-items": "并列的同类：按钮之间、chip 之间、图例", "--gap-block": "一组里的块：卡片头和图、字段和字段", "--gap-group": "组和组之间：设置组、页面的节" },
+      roleName: { "--inset-sm": "容器内边距·小", "--inset-md": "容器内边距·中", "--inset-lg": "容器内边距·大", "--gap-tight": "部件", "--gap-items": "同类", "--gap-block": "块", "--gap-group": "组" },
+      vertical: "容器以文字开头时，上下内边距比左右小一档（-y 那几个：12 / 16、16 / 20）。行高多出来的半行距（3–4px）正好补上，看起来四边一样。只有图片、按钮这种没有半行距的东西贴边时，才四边写一样。有一项检查给容器截图量墨迹，守着这一条。",
+      lines: "对齐：两条线", linesLead: "一块东西只有两条竖线。外线：框、分隔线、整行宽的控件的边；框外面的字（分组小标题、节标题、说明）贴外线。内线：外线 + 容器内边距；框里面的字贴内线。两条线之间不许出现「差 1–3px」的第三条（有检查拦着）。二级缩进（列表、引用）只有一种：--space-5。角上的幽灵图标按钮（关闭、更多）按图标对齐，不按按钮框：往外让出（按钮 − 图标）/ 2。",
+      outer: "外线", inner: "内线", groupTitle: "写入", rowTitle: "第一行作为标题", rowDesc: "以 # 开头的一行会成为文章标题",
+    };
+---
+
+<Site title={T.title} headings={[{ slug: "space", text: T.space }, { slug: "roles", text: T.roles }, { slug: "lines", text: T.lines }, { slug: "controls", text: T.controls }, { slug: "breakpoints", text: T.bp }]}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <h2 class="site-h2" id="space">{T.space}</h2>
+  <div class="xxd-group__body">
+    {space.map(([k, v]) => (<div class="xxd-row"><div class="xxd-row__text xxd-text" data-variant="mono">{k}</div><div class="xxd-row__control"><span style={`display:block;width:${v};height:12px;background:var(--action)`}></span><span class="xxd-text" data-variant="caption" style="width:40px">{v}</span></div></div>))}
+  </div>
+  <h2 class="site-h2" id="roles">{T.roles}</h2>
+  <p class="site-p">{T.rolesLead}</p>
+  <div class="xxd-table-wrap">
+    <table class="site-props">
+      <thead><tr>{T.rolesHead.map((h) => <th>{h}</th>)}</tr></thead>
+      <tbody>
+        {ROLES.map((k) => (
+          <tr>
+            <td>{T.roleName[k]}</td>
+            <td><code class="xxd-code-inline site-token">{k}</code>{k.startsWith("--inset") && <> · <code class="xxd-code-inline site-token">{k}-y</code></>}</td>
+            <td>{roleVal(k, "base")}{k.startsWith("--inset") && ` · ${roleVal(k + "-y", "base")}`}</td>
+            <td>{roleVal(k, "compact")}{k.startsWith("--inset") && ` · ${roleVal(k + "-y", "compact")}`}</td>
+            <td>{T.roleUse[k]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="site-p">{T.vertical}</p>
+  <h2 class="site-h2" id="lines">{T.lines}</h2>
+  <p class="site-p">{T.linesLead}</p>
+  <div class="site-demo"><div class="site-demo__stage" data-block>
+    <div class="site-guides">
+      <section class="xxd-group">
+        <h3 class="xxd-group__title">{T.groupTitle}</h3>
+        <div class="xxd-group__body"><div class="xxd-row"><div class="xxd-row__text"><div class="xxd-row__title">{T.rowTitle}</div><div class="xxd-row__desc">{T.rowDesc}</div></div><div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" aria-label={T.rowTitle} checked /></div></div></div>
+      </section>
+      <span class="site-guides__line" data-line="outer" aria-hidden="true"><span>{T.outer}</span></span>
+      <span class="site-guides__line" data-line="inner" aria-hidden="true"><span>{T.inner}</span></span>
+    </div>
+  </div></div>
+  <h2 class="site-h2" id="controls">{T.controlsLong}</h2>
+  <div class="site-demo"><div class="site-demo__stage">
+    {controls.map(([k, size]) => (<button class="xxd-btn" data-size={size === "md" ? undefined : size}>{size} · var({k})</button>))}
+    <input class="xxd-input" style="width:160px" placeholder={T.input} aria-label={T.input} />
+  </div></div>
+  <h2 class="site-h2" id="breakpoints">{T.bp}</h2>
+  <p class="site-lead">{T.bpLead}</p>
+  <div class="xxd-group__body">
+    {bps.map(([k, v]) => (<div class="xxd-row"><div class="xxd-row__text"><span class="xxd-text" data-variant="mono">{k}</span><span class="xxd-row__desc">{T.bpUse[k]}</span></div><div class="xxd-row__control xxd-text" data-variant="caption">{v}</div></div>))}
+  </div>
+</Site>

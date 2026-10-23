@@ -1,0 +1,71 @@
+/* 行之间一条细线（原则第 4 条）。网页版的 a.xxd-row / button.xxd-row 清掉浏览器默认边框的那条规则，
+   改写成小程序的 .is-link.xxd-row 以后优先级变高、排在后面，会把 .xxd-row + .xxd-row 的线也清掉（设计师评审 D7）：这里写得更具体一层 */
+.xxd-group__body > .xxd-row + .xxd-row {
+  border-top: 1px solid var(--line);
+}
+
+/* 手机上的行：一行字 52px（--hit-min + 8，D32），带开关、带值、带复选框都一样高；两行字按内容长高。
+   没有箭头的可点行不画箭头（网页版的 a.xxd-row 都带箭头） */
+.xxd-row {
+  min-height: calc(var(--hit-min) + var(--space-2));
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+/* 行里的开关、复选框：不再自带 44px 的最小高度（行已经够高，整行都能点），撑满行高，点哪里都算 */
+.xxd-row > .xxd-choice,
+.xxd-row__control > .xxd-choice {
+  align-self: stretch;
+  min-height: 0;
+}
+
+.is-link.xxd-row:not(.is-chevron):after {
+  display: none;
+}
+
+/* 有箭头但不能点（只是展示去向）的行也画箭头 */
+.xxd-row.is-chevron:after {
+  content: "";
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: var(--muted-2);
+  -webkit-mask: var(--xxd-chevron-right) center / contain no-repeat;
+  mask: var(--xxd-chevron-right) center / contain no-repeat;
+}
+
+.xxd-row.is-disabled {
+  color: var(--disabled-ink);
+}
+
+.xxd-cell__leading {
+  flex: none;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+}
+
+.xxd-cell__value {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* 手机上组标题离屏幕边有点距离 */
+.xxd-group__title,
+.xxd-group__note {
+  padding: 0 var(--space-4);
+}
+
+/* 手机上整组贴屏幕两边：不要左右边框和圆角 */
+.xxd-group__body {
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+.xxd-group.is-inset .xxd-group__body {
+  margin: 0 var(--space-4);
+  border-right: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  border-radius: var(--r-md);
+}

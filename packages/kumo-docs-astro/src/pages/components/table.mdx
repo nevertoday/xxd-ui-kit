@@ -1,0 +1,328 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Table"
+description: "A table component for displaying tabular data with support for selection, row variants, and column sizing."
+sourceFile: "components/table"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  TableBasicDemo,
+  TableWithCheckboxDemo,
+  TableWithCompactHeaderDemo,
+  TableSelectedRowDemo,
+  TableFixedLayoutDemo,
+  TableStickyColumnDemo,
+  TableCompactStickyDemo,
+  TableFullDemo,
+} from "~/components/demos/TableDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="TableBasicDemo">
+    <TableBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { Table } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { Table } from "@cloudflare/kumo/components/table";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { Table, LayerCard } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <LayerCard className="p-0">
+      <Table>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head>Name</Table.Head>
+            <Table.Head>Email</Table.Head>
+            <Table.Head>Role</Table.Head>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          <Table.Row>
+            <Table.Cell>John Doe</Table.Cell>
+            <Table.Cell>john@example.com</Table.Cell>
+            <Table.Cell>Admin</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table>
+    </LayerCard>
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### With Checkboxes
+
+<p>
+  Add row selection with `Table.CheckHead` and `Table.CheckCell`. Both accept
+  `onCheckedChange`, which matches the underlying `Checkbox` component's
+  signature and exposes optional event details as a second argument.
+</p>
+<p>
+  The older `onValueChange` prop still works but is deprecated — the lint
+  rule will flag it and it will be removed in a future major version. Migrate
+  by renaming the prop:
+</p>
+
+```tsx
+// Before (deprecated)
+<Table.CheckCell onValueChange={(checked) => toggleRow(id)} />
+
+// After
+<Table.CheckCell onCheckedChange={(checked) => toggleRow(id)} />
+
+// With event details
+<Table.CheckCell
+  onCheckedChange={(checked, eventDetails) => {
+    toggleRow(id);
+    eventDetails?.event.stopPropagation();
+  }}
+/>
+```
+
+<ComponentExample demo="TableWithCheckboxDemo">
+  <TableWithCheckboxDemo client:visible />
+</ComponentExample>
+
+### Compact Header
+
+<p>
+  Use `variant="compact"` on `Table.Header` for a more condensed header style.
+</p>
+<ComponentExample demo="TableWithCompactHeaderDemo">
+  <TableWithCompactHeaderDemo client:visible />
+</ComponentExample>
+
+### Selected Row
+
+<p>Use `variant="selected"` on `Table.Row` to highlight selected rows.</p>
+<ComponentExample demo="TableSelectedRowDemo">
+  <TableSelectedRowDemo client:visible />
+</ComponentExample>
+
+### Fixed Layout with Column Sizes
+
+<p>
+  For precise control over column widths, set `layout="fixed"` and use
+  `colgroup` with `col` elements.
+</p>
+<ComponentExample demo="TableFixedLayoutDemo">
+  <TableFixedLayoutDemo client:visible />
+</ComponentExample>
+
+### Sticky Column
+
+<p>
+  Pin a column to the left or right edge of the scroll container with
+  `sticky="left"` or `sticky="right"` on `Table.Head` and `Table.Cell`. The
+  component automatically adds an opaque background and gradient fade. Wrap the
+  table in an `overflow-x-auto` container.
+</p>
+<ComponentExample demo="TableStickyColumnDemo">
+  <TableStickyColumnDemo client:visible />
+</ComponentExample>
+
+### Compact Header with Sticky Column
+
+<p>Combining `variant="compact"` on `Table.Header` with `sticky` columns.</p>
+<ComponentExample demo="TableCompactStickyDemo">
+  <TableCompactStickyDemo client:visible />
+</ComponentExample>
+
+### Full Example
+
+<p>
+  Complete table with checkboxes, badges, action buttons, and fixed column
+  widths.
+</p>
+<ComponentExample demo="TableFullDemo">
+  <TableFullDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+### Table
+
+<p>Root table component. Renders a semantic `<table>` element.</p>
+<PropsTable component="Table" />
+
+### Table.Header
+
+<p>Table header section. Renders `<thead>`. Set `sticky` to pin the header row to the top of the scroll container.</p>
+
+### Table.Body
+
+<p>Table body section. Renders `<tbody>`.</p>
+
+### Table.Row
+
+<p>Table row. Supports `variant="selected"` for highlighting.</p>
+<PropsTable component="Table.Row" />
+
+### Table.Head
+
+<p>Header cell. Renders `<th>`. Accepts `sticky="left"` or `sticky="right"` to pin the column.</p>
+
+### Table.Cell
+
+<p>Body cell. Renders `<td>`. Accepts `sticky="left"` or `sticky="right"` to pin the column.</p>
+
+### Table.CheckHead
+
+<p>Header cell with checkbox for "select all" functionality.</p>
+<PropsTable component="Table.CheckHead" />
+
+### Table.CheckCell
+
+<p>Body cell with checkbox for row selection.</p>
+<PropsTable component="Table.CheckCell" />
+
+### Table.ResizeHandle
+
+<p>
+  Draggable handle for column resizing. Use with TanStack Table or custom resize
+  logic.
+</p>
+
+</ComponentSection>
+
+{/* TanStack Table Integration */}
+
+<ComponentSection>
+
+## TanStack Table Integration
+
+  <p>
+    For advanced features like sorting, filtering, and resizable columns, integrate with <a href="https://tanstack.com/table" class="text-kumo-link hover:underline" target="_blank" rel="noopener noreferrer">TanStack Table</a>. The Table component is designed to work seamlessly with TanStack's headless API.
+  </p>
+
+```tsx
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Table } from "@cloudflare/kumo";
+
+function DataTable({ data, columns }) {
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
+  });
+
+  return (
+    <Table layout="fixed">
+      <colgroup>
+        {table.getAllColumns().map((column) => (
+          <col key={column.id} style={{ width: column.getSize() }} />
+        ))}
+      </colgroup>
+      <Table.Header>
+        {table.getHeaderGroups().map((headerGroup) => (
+          <Table.Row key={headerGroup.id}>
+            {headerGroup.headers.map((header) => (
+              <Table.Head key={header.id}>
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext(),
+                )}
+                <Table.ResizeHandle
+                  onMouseDown={header.getResizeHandler()}
+                  onTouchStart={header.getResizeHandler()}
+                />
+              </Table.Head>
+            ))}
+          </Table.Row>
+        ))}
+      </Table.Header>
+      <Table.Body>
+        {table.getRowModel().rows.map((row) => (
+          <Table.Row key={row.id}>
+            {row.getVisibleCells().map((cell) => (
+              <Table.Cell key={cell.id}>
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </Table.Cell>
+            ))}
+          </Table.Row>
+        ))}
+      </Table.Body>
+    </Table>
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Accessibility */}
+
+<ComponentSection>
+
+## Accessibility
+
+### Semantic HTML
+
+<p>
+  Table uses semantic `<table>`, `<thead>`, `<tbody>`, `<th>`, and `<td>` elements for proper screen reader navigation.
+</p>
+
+### Checkbox Labels
+
+<p>
+  Always provide `aria-label` for `Table.CheckHead` and `Table.CheckCell` to
+  describe their purpose.
+</p>
+
+### Keyboard Navigation
+
+<p>
+  <kbd class="rounded bg-kumo-control px-1.5 py-0.5">Tab</kbd> moves focus
+  through interactive elements. Checkboxes respond to{" "}
+  <kbd class="rounded bg-kumo-control px-1.5 py-0.5">Space</kbd>.
+</p>
+
+</ComponentSection>

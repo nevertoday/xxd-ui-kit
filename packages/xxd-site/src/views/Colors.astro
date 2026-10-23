@@ -1,0 +1,238 @@
+---
+import Site from "../layouts/Site.astro";
+import { tokens, ACCENT_PRESETS, accentPalette, contrast, toRgb } from "../lib/data.js";
+import { langOf } from "../i18n/index.js";
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const surfaces = ["--bg", "--paper", "--wash", "--wash-strong", "--selected-bg", "--line", "--line-strong"];
+const inks = ["--ink", "--muted", "--muted-2", "--on-ink"];
+const meaning = ["--success", "--danger", "--warning", "--success-strong", "--danger-strong", "--warning-strong"];
+const raised = ["--paper-raised", "--wash-raised", "--wash-strong-raised", "--line-raised"];
+const disabled = ["--disabled-ink", "--disabled-bg", "--disabled-line"];
+const dark = { ...tokens.base, ...tokens.dark };
+// 色阶（COLOR-SCALE-PLAN）：五族 × 12 级，亮暗各一套
+const FAMS = ["gray", "accent", "success", "danger", "warning"];
+const scaleOf = (fam, vars) => Array.from({ length: 12 }, (_, i) => vars[`--${fam}-${i + 1}`]);
+const ROLES = ["", "bg", "tint", "tint-hover", "tint-active", "line", "border", "border-strong", "solid", "solid-hover", "text", "text-strong"];
+const GRAY_TOKEN = ["--bg", "", "--wash", "--wash-strong / --selected-bg", "", "--line", "--line-strong", "--muted-2", "--line-control", "--line-control-hover", "--muted", "--ink"];
+const ratio = (fg, bg) => contrast(toRgb(fg), toRgb(bg)).toFixed(2);
+const accents = ACCENT_PRESETS.slice(1).map((p) => {
+  const pal = accentPalette(p.id);
+  return { ...p, label: en ? p.name : p.zh, light: pal["--action-custom"], text: pal["--action-text-custom"], darkMark: pal["--action-custom-dark"], darkText: pal["--action-text-custom-dark"],
+    fill: pal["--action-fill-custom"], on: pal["--on-action-custom"], fillDark: pal["--action-fill-custom-dark"], onDark: pal["--on-action-custom-dark"],
+    lr: ratio(pal["--action-text-custom"], "#ffffff"), dr: ratio(pal["--action-text-custom-dark"], "#201f1a"),
+    fr: ratio(pal["--on-action-custom"], pal["--action-fill-custom"]), fdr: ratio(pal["--on-action-custom-dark"], pal["--action-fill-custom-dark"]) };
+});
+const T = en
+  ? {
+      title: "Color", caption: "Foundations",
+      lead: "Black, white and gray, with ink for emphasis; color is reserved for meaning and the optional accent. Swatches show the color in the current appearance; the light and dark values are written below.",
+      groups: ["Paper and lines", "Ink and text", "Meaning colors", "Raised layer (overlays)", "Disabled"], accent: "12 accents", light: "Light", dark: "Dark",
+      scales: "Scales", scalesLead: "Every color comes in the same 12 steps, and each step has one job (the logic of Radix Colors). Components never mix colors on the spot; they use a role name such as <code class=\"xxd-code-inline\">--danger-tint</code> or <code class=\"xxd-code-inline\">--accent-border</code>. Light and dark are generated separately, and the grays you already know sit on their steps unchanged.",
+      fams: { gray: "Warm gray", accent: "Accent (ink by default)", success: "Success", danger: "Danger", warning: "Warning" },
+      roleCols: ["Step", "Used for", "Role name (danger as the example)", "Gray token"],
+      roleUses: ["Page background", "One step up: cards, striped rows", "Tint: controls at rest, badges, callouts", "Tint on hover / selected", "Tint pressed", "Quiet line: dividers, container edges, callout edges", "Structural line: under table headers, above totals, kbd; the quote bar in prose", "Decoration: icons, separator dots (never text, never a border)", "Solid fill: buttons, solid badges; on the gray scale this step is the control border (≥ 3:1)", "Solid fill on hover / pressed; on the gray scale, the control border on hover", "Colored text, secondary text (≥ 4.5:1 on steps 1–4)", "Strong text (≥ 7:1)"],
+      scaleGate: "Contrast gates (tests, every family, light and dark, ink and every preset): step 11 on steps 1–4 ≥ 4.5; step 12 on 1–3 ≥ 7; steps 8 and 9 on 1–2 ≥ 3; text on steps 9 and 10 ≥ 4.5.",
+      groupNotes: { raised: "Dialogs, menus, popovers, panels, sheets and toasts sit one step up. In light mode it equals paper (the shadow lifts it); in dark mode it is one step lighter, because shadows don't show on a dark background. Hovers and dividers inside move up with it.", disabled: "Disabled controls use these instead of transparency (transparency over an accent, dark paper or an image is unpredictable and can't be specced). Disabled text doesn't need 4.5:1, but must be clearly different from enabled text." },
+      derive: "What one accent turns into", deriveLead: "Pick any color to see its 12 steps in light and dark. In Auto (the default) step 9 is lightened or darkened until it is readable; in Exact step 9 is your color as is, and the text on it switches to near-black if white isn't readable. Step 11 (links) is readable in both.",
+      pick: "Accent", mode: "Mode", auto: "Auto", exact: "Exact (brand color as is)", deriveCols: ["Variable", "Used for", "Light", "Dark"],
+      uses: { "--action-custom": "Marks: switches, tab underline, focus, selection", "--action-text-custom": "Text: links, small labels (≥ 4.5:1)", "--action-fill-custom": "Solid fills: primary button, solid badge, checked box", "--on-action-custom": "Text on the solid fill", "--action-fill-hover-custom": "Solid fill on hover" },
+      sample: "Post", link: "A link",
+      gate: "Contrast (enforced by tests): body and secondary text ≥ 4.5 on paper / bg / wash; meaning colors ≥ 4.5; white text on *-strong fills ≥ 4.5.",
+      accentNote: "Each accent is turned into a full 12-step scale. Solid fills and marks (primary buttons, switches, tab underlines, focus) use step 9, darkened until white text on it is ≥ 4.5:1 (on dark paper: lightened until it is ≥ 3:1); text uses step 11, ≥ 4.5:1 on steps 1–4. The grays pick up a hint of the accent. The first one is ink, the default.",
+      cols: ["Accent", "Light · mark", "Light · text (contrast)", "Dark · mark", "Dark · text (contrast)", "Solid button light / dark"],
+    }
+  : {
+      title: "颜色", caption: "基础",
+      lead: "黑 / 白 / 灰，强调靠墨色；颜色只留给意义和可选的主色。色块显示当前外观下的颜色，下面写着亮 / 暗两套值。",
+      groups: ["纸与线", "墨与文字", "语义色", "抬起来的一层（浮层）", "禁用"], accent: "12 个主色", light: "亮", dark: "暗",
+      scales: "色阶", scalesLead: "每种颜色都分成同样的 12 级，每一级用途固定（借鉴 Radix Colors 的逻辑）。组件里不现场混色，只用用途名，比如 <code class=\"xxd-code-inline\">--danger-tint</code>、<code class=\"xxd-code-inline\">--accent-border</code>。亮暗各生成一套；你熟悉的那些灰（<code class=\"xxd-code-inline\">--bg</code>、<code class=\"xxd-code-inline\">--wash</code>、<code class=\"xxd-code-inline\">--line</code>、<code class=\"xxd-code-inline\">--muted</code>……）就钉在对应的级上，值没变。",
+      fams: { gray: "暖灰", accent: "主色（缺省是墨色）", success: "成功", danger: "危险", warning: "警告" },
+      roleCols: ["级", "用途", "用途名（以危险色为例）", "对应的灰令牌"],
+      roleUses: ["页面底", "浅一层的底：卡片、条纹行", "淡底：控件平时、徽标、提示条", "淡底悬停 / 选中", "淡底按下", "安静的线：分隔线、容器的边、提示条的边", "结构线：表头下、合计上、键帽；正文引用的竖线", "装饰：图标、分隔点（不当文字、不当边）", "实心底：按钮、实心徽标；灰的这一级是控件的边（≥ 3:1）", "实心底悬停 / 按下；灰的这一级是控件的边悬停", "带颜色的字、次要文字（在 1–4 级上 ≥ 4.5）", "强调字（≥ 7）"],
+      scaleGate: "对比度门禁（测试，每族、亮暗、墨色和每个预设都测）：11 级在 1–4 级上 ≥ 4.5；12 级在 1–3 级上 ≥ 7；8、9 级在 1、2 级上 ≥ 3；9、10 级上的字 ≥ 4.5。",
+      groupNotes: { raised: "对话框、菜单、popover、面板、sheet、toast 抬起来一层。亮色时和纸一样（靠阴影托起）；暗色时亮一档，因为暗底上阴影看不出来。里面的悬停底、分隔线跟着一起抬。", disabled: "禁用的控件用这三个，不用半透明（半透明叠在主色、暗纸、图片上颜色没法预测，设计稿也没法标）。禁用的字不要求 4.5:1，但要和能用的一眼分开。" },
+      derive: "一个主色变出的颜色", deriveLead: "随便选一个颜色，看它亮暗两套 12 级。「自动」（缺省）会把 9 级提亮或加深到看得清；「原样」的 9 级就是你的颜色，白字看不清时底上的字换成近黑。11 级（链接）两种模式下都看得清。",
+      pick: "主色", mode: "模式", auto: "自动", exact: "原样（品牌色不变）", deriveCols: ["变量", "用在哪", "亮", "暗"],
+      uses: { "--action-custom": "标记：开关、tab 下划线、焦点、选中", "--action-text-custom": "文字：链接、小标签（≥ 4.5:1）", "--action-fill-custom": "实心底：主按钮、实心徽标、勾选框", "--on-action-custom": "实心底上的字", "--action-fill-hover-custom": "实心底悬停" },
+      sample: "写入", link: "一个链接",
+      gate: "对比度（测试门禁）：正文与次要文字在 paper / bg / wash 上 ≥ 4.5；语义色 ≥ 4.5；*-strong 做底时白字 ≥ 4.5。",
+      accentNote: "每个主色都生成整套 12 级。实心底和标记（主按钮、开关、tab 下划线、焦点）用 9 级，压暗到上面的白字 ≥ 4.5:1（暗纸上提亮到 ≥ 3:1）；文字用 11 级，在 1–4 级上 ≥ 4.5:1。灰也跟着带一点主色。第一个是墨色，也是默认。",
+      cols: ["主色", "亮 · 标记", "亮 · 文字（对比度）", "暗 · 标记", "暗 · 文字（对比度）", "实心按钮 亮 / 暗"],
+    };
+const sections = [["surfaces", T.groups[0], surfaces], ["ink", T.groups[1], inks], ["meaning", T.groups[2], meaning], ["raised", T.groups[3], raised], ["disabled", T.groups[4], disabled]];
+const headings = [{ slug: "scales", text: T.scales }, ...sections.map(([slug, text]) => ({ slug, text })), { slug: "lines", text: en ? "Lines" : "线" }, { slug: "accent", text: T.accent }, { slug: "derive", text: T.derive }];
+const swatch = (name) => ({ name, light: tokens.base[name], dark: dark[name] });
+// 线按用途（SHAPE-LINE-PLAN D62）：颜色只看用途
+const LINES = [
+  ["--line", { zh: "分隔、容器", en: "Dividers, containers" }, { zh: "列表行之间、tab 基线、卡片、分组、横幅、浮层的边（浮层里自动换成 --line-raised）", en: "Between list rows, tab baseline, cards, groups, banners, overlays (switches to --line-raised inside overlays)" }],
+  ["--line-strong", { zh: "结构线", en: "Structural line" }, { zh: "表头下面、合计上面、键帽、拖放区的虚线；可点的卡片悬停", en: "Under table headers, above totals, kbd, the dashed drop zone; a clickable card on hover" }],
+  ["--line-control", { zh: "控件的边（≥ 3:1）", en: "Control edge (≥ 3:1)" }, { zh: "能点、能输入、而且画了边的东西：输入框、下拉、选择器、复选、单选、开关、次要和描边按钮", en: "Anything you can click or type into that has an edge: inputs, selects, pickers, checkboxes, radios, switches, secondary and outline buttons" }],
+  ["--line-control-hover", { zh: "控件悬停", en: "Control on hover" }, { zh: "任何有边的控件悬停时深这一档", en: "Every edged control goes one step darker on hover" }],
+  ["--action", { zh: "当前", en: "Current" }, { zh: "选中、按下、聚焦、当前项；实心的东西边和底同色", en: "Selected, pressed, focused, current item; solid things use the same color for edge and fill" }],
+  ["--danger", { zh: "出错、危险", en: "Error, danger" }, { zh: "出错的输入框、危险描边按钮（提示条的边用 --danger-line）", en: "Invalid fields, danger outline buttons (a callout's edge uses --danger-line)" }],
+  ["--disabled-line", { zh: "禁用", en: "Disabled" }, { zh: "禁用的控件", en: "Disabled controls" }],
+];
+---
+
+<Site title={T.title} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  <h2 class="site-h2" id="scales">{T.scales}</h2>
+  <p class="site-p" set:html={T.scalesLead} />
+  <div class="site-scales">
+    {FAMS.map((fam) => (
+      <div class="site-scale">
+        <b class="site-scale__name">{T.fams[fam]}</b>
+        {[["light", tokens.base], ["dark", dark]].map(([mode, vars]) => (
+          <div class="site-scale__row" data-mode={mode}>
+            <span class="site-scale__mode">{mode === "light" ? T.light : T.dark}</span>
+            {scaleOf(fam, vars).map((hex, i) => <i style={`background:${hex}`} title={`--${fam}-${i + 1} ${hex}`}><span class="xxd-sr-only">{`${i + 1} ${hex}`}</span></i>)}
+          </div>
+        ))}
+      </div>
+    ))}
+    <div class="site-scale__steps" aria-hidden="true"><span></span>{Array.from({ length: 12 }, (_, i) => <span>{i + 1}</span>)}</div>
+  </div>
+  <div class="xxd-table-wrap"><table class="site-props">
+    <thead><tr>{T.roleCols.map((c) => <th>{c}</th>)}</tr></thead>
+    <tbody>
+      {ROLES.map((role, i) => (
+        <tr>
+          <td>{i + 1}</td>
+          <td data-wrap>{T.roleUses[i]}</td>
+          <td>{role ? <code class="xxd-code-inline">--danger-{role}</code> : <span class="xxd-text" data-variant="secondary">—</span>}</td>
+          <td>{GRAY_TOKEN[i] ? GRAY_TOKEN[i].split(" / ").map((t, j) => <>{j > 0 && " / "}<code class="xxd-code-inline site-token">{t}</code></>) : <span class="xxd-text" data-variant="secondary">—</span>}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table></div>
+  <p class="site-p">{T.scaleGate}</p>
+
+  {sections.map(([id, title, names]) => (
+    <section>
+      <h2 class="site-h2" id={id}>{title}</h2>
+      {T.groupNotes[id] && <p class="site-p">{T.groupNotes[id]}</p>}
+      <div class="site-swatches">
+        {names.map((n) => { const s = swatch(n); return (
+          <div class="site-swatch"><i style={`background:var(${n})`}></i><div><b class="xxd-text" data-variant="mono" style="font-size:11px">{n}</b><code>{T.light} {s.light}</code><code>{T.dark} {s.dark}</code></div></div>
+        ); })}
+      </div>
+    </section>
+  ))}
+  <p class="site-p" style="margin-top:var(--space-4)">{T.gate}</p>
+
+  <h2 class="site-h2" id="lines">{en ? "Lines" : "线"}</h2>
+  <p class="site-p">{en ? "A line's color depends only on what it is for, never on how dark it looks. Containers don't need 3:1 (you don't have to find their edge to use them); controls do, so a button and an input in one row have the same edge. Widths: 1px for every line; 1.5px for drawn marks (spinners, chart dots, the current heat cell, separating rings); 2px for the focus outline and the quote bar. Rings: a separating ring is 1.5px of paper; a selected ring is 2px of paper plus 1.5px of ink or the accent." : "线的颜色只看它是干什么的，不看「想深一点还是浅一点」。容器不需要 3:1（不用找到它的边才能用它）；控件需要，所以同一行的按钮和输入框边一样深。宽度：线都是 1px；画出来的记号（转圈、图上的点、热力格当前、隔开的环）1.5px；焦点轮廓和引用竖线 2px。环：隔开环是 1.5px 的纸色；选中环是隔 2px 纸色 + 1.5px 的墨色或主色。"}</p>
+  <div class="xxd-table-wrap"><table class="site-props">
+    <thead><tr><th>{en ? "Role" : "用途"}</th><th>{en ? "Token" : "令牌"}</th><th>{en ? "Looks" : "样子"}</th><th>{en ? "Used for" : "用在哪"}</th></tr></thead>
+    <tbody>
+      {LINES.map(([n, role, use]) => (
+        <tr><td>{en ? role.en : role.zh}</td><td><code class="xxd-code-inline site-token">{n}</code></td><td><span class="site-line-sample" style={`border-top-color:var(${n})`}></span></td><td data-wrap>{en ? use.en : use.zh}</td></tr>
+      ))}
+    </tbody>
+  </table></div>
+
+  <h2 class="site-h2" id="accent">{T.accent}</h2>
+  <p class="site-p">{T.accentNote}</p>
+  <div class="xxd-table-wrap"><table class="site-props" data-nowrap>
+    <thead><tr>{T.cols.map((c) => <th>{c}</th>)}</tr></thead>
+    <tbody>
+      {accents.map((a) => (
+        <tr>
+          <td><span class="xxd-dot" style={`background:${a.id};width:10px;height:10px`}></span> {a.label} <span class="xxd-text" data-variant="mono-secondary">{a.id}</span></td>
+          <td><span class="xxd-dot" style={`background:${a.light}`}></span> {a.light}</td>
+          <td><span style={`background:#ffffff;color:${a.text};padding:1px 6px`}>{a.text} · {a.lr}</span></td>
+          <td><span class="xxd-dot" style={`background:${a.darkMark}`}></span> {a.darkMark}</td>
+          <td><span style={`background:#201f1a;color:${a.darkText};padding:1px 6px`}>{a.darkText} · {a.dr}</span></td>
+          <td><span style={`background:${a.fill};color:${a.on};padding:1px 6px`}>{a.fr}</span> <span style={`background:${a.fillDark};color:${a.onDark};padding:1px 6px`}>{a.fdr}</span></td>
+        </tr>
+      ))}
+    </tbody>
+  </table></div>
+
+  <h2 class="site-h2" id="derive">{T.derive}</h2>
+  <p class="site-p">{T.deriveLead}</p>
+  <div class="site-derive" id="site-derive" data-uses={JSON.stringify(T.uses)} data-clash={JSON.stringify(en ? { danger: "Danger", success: "Success", warning: "Warning", text: "This color looks like “{tone}”: a primary button would be hard to tell from a {tone} button. Pick another hue, or keep this color off primary buttons." } : { danger: "危险", success: "成功", warning: "警告", text: "这个颜色和「{tone}」很像：主按钮会和{tone}按钮分不开。换一个色相，或者别把它用在主按钮上。" })}>
+    <div class="xxd-cluster">
+      <label class="xxd-choice"><input type="color" value="#4386ba" aria-label={T.pick} data-derive-color /> {T.pick} <code class="xxd-code-inline" data-derive-hex>#4386ba</code></label>
+      <div class="xxd-segmented" data-xxd-segmented aria-label={T.mode} data-derive-mode>
+        <button role="radio" data-value="auto" aria-checked="true">{T.auto}</button>
+        <button role="radio" data-value="exact" aria-checked="false">{T.exact}</button>
+      </div>
+    </div>
+    <p class="xxd-help" data-tone="warning" data-derive-clash hidden></p>
+    <div class="site-derive__preview">
+      {["light", "dark"].map((m) => (
+        <div class="site-derive__pane" data-theme={m} data-derive-pane={m}>
+          <button class="xxd-btn" data-variant="primary">{T.sample}</button>
+          <input type="checkbox" role="switch" class="xxd-switch" checked aria-label={T.sample} />
+          <a class="xxd-link" href="#derive">{T.link}</a>
+        </div>
+      ))}
+    </div>
+    <div class="site-scales" data-derive-scales>
+      {["light", "dark"].map((mode) => (
+        <div class="site-scale__row" data-mode={mode} data-derive-scale={mode}>
+          <span class="site-scale__mode">{mode === "light" ? T.light : T.dark}</span>
+          {Array.from({ length: 12 }, () => <i></i>)}
+        </div>
+      ))}
+    </div>
+    <div class="xxd-table-wrap"><table class="xxd-table">
+      <thead><tr>{T.deriveCols.map((c) => <th>{c}</th>)}</tr></thead>
+      <tbody data-derive-rows></tbody>
+    </table></div>
+  </div>
+  <script is:inline>
+    (() => {
+      const box = document.getElementById("site-derive");
+      const A = window.XxdTheme && window.XxdTheme.accent;
+      if (!box || !A) return;
+      const uses = JSON.parse(box.dataset.uses);
+      const color = box.querySelector("[data-derive-color]");
+      let mode = "auto";
+      const ratio = (a, b) => A.contrast(A.toRgb(a), A.toRgb(b)).toFixed(2);
+      const render = () => {
+        const hex = color.value;
+        box.querySelector("[data-derive-hex]").textContent = hex;
+        const p = A.accentPalette(hex, "", { exact: mode === "exact" });
+        // 和意义色撞色（COLOR-REVIEW-PLAN D78）：提示一句
+        const clashText = JSON.parse(box.dataset.clash);
+        const clash = A.accentClash ? A.accentClash(hex) : [];
+        const tip = box.querySelector("[data-derive-clash]");
+        tip.hidden = !clash.length;
+        tip.textContent = clash.length ? clashText.text.replaceAll("{tone}", clash.map((t) => clashText[t]).join(" / ")) : "";
+        // 主色只作用在这两块预览上：直接把派生值写成这一块的强调变量（亮 / 暗各用自己的那一套）
+        for (const pane of box.querySelectorAll("[data-derive-pane]")) {
+          const d = pane.dataset.derivePane === "dark" ? "-dark" : "";
+          const map = { "--action": "action-custom", "--action-text": "action-text-custom", "--action-fill": "action-fill-custom", "--action-fill-hover": "action-fill-hover-custom", "--on-action": "on-action-custom", "--on-mark": "on-mark-custom", "--switch-on": "action-custom" };
+          for (const [k, v] of Object.entries(map)) pane.style.setProperty(k, p[`--${v}${d}`]);
+        }
+        const rows = Object.keys(uses).map((k) => {
+          const l = p[k], d = p[k.replace("-custom", "-custom-dark")];
+          const note = (v, paper) => k === "--action-text-custom" ? ` · ${ratio(v, paper)}` : "";
+          const chip = (v, paper) => `<span class="xxd-dot" style="background:${v}"></span> <code class="xxd-code-inline">${v}</code>${note(v, paper)}`;
+          return `<tr><td><code class="xxd-code-inline">${k}</code></td><td data-wrap>${uses[k]}</td><td>${chip(l, "#ffffff")}</td><td>${chip(d, "#201f1a")}</td></tr>`;
+        });
+        box.querySelector("[data-derive-rows]").innerHTML = rows.join("");
+        // 整套 12 级
+        for (const row of box.querySelectorAll("[data-derive-scale]")) {
+          const d = row.dataset.deriveScale === "dark" ? "-dark" : "";
+          row.querySelectorAll("i").forEach((cell, i) => {
+            const v = p[`--accent-${i + 1}-custom${d}`];
+            cell.style.background = v;
+            cell.title = `${i + 1} ${v}`;
+          });
+        }
+      };
+      color.addEventListener("input", render);
+      box.querySelector("[data-derive-mode]").addEventListener("xxd:change", (e) => { mode = e.detail.value; render(); });
+      render();
+    })();
+  </script>
+</Site>

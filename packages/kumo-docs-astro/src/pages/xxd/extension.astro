@@ -1,0 +1,9 @@
+---
+import DocLayout from "~/layouts/DocLayout.astro";
+import { Content, getHeadings } from "../../../../../docs/EXTENSION-KIT.md";
+const headings = getHeadings().filter((h) => h.depth === 2);
+---
+
+<DocLayout title="Chrome 插件套件 @xxd/extension" description="新建、同步、外观设置、Shadow DOM 注入、三语。原文在仓库 docs/EXTENSION-KIT.md。" headings={headings}>
+  <Content />
+</DocLayout>

@@ -1,0 +1,79 @@
+{
+  "xxdLocale": {
+    "message": "en"
+  },
+  "appName": {
+    "message": "__APP_NAME_EN__"
+  },
+  "appDescription": {
+    "message": "__APP_DESC_EN__"
+  },
+  "actionTitle": {
+    "message": "Open __APP_NAME_EN__"
+  },
+  "tabMain": {
+    "message": "Home"
+  },
+  "tabHistory": {
+    "message": "History"
+  },
+  "tabSettings": {
+    "message": "Settings"
+  },
+  "historyEmpty": {
+    "message": "Nothing here yet"
+  },
+  "primaryAction": {
+    "message": "Start"
+  },
+  "doneToast": {
+    "message": "Done"
+  },
+  "searchPlaceholder": {
+    "message": "Search settings"
+  },
+  "dropTitle": {
+    "message": "Drop files here"
+  },
+  "dropOr": {
+    "message": "or"
+  },
+  "dropPick": {
+    "message": "choose files"
+  },
+  "dropVeil": {
+    "message": "Drop to add"
+  },
+  "groupAbout": {
+    "message": "About"
+  },
+  "version": {
+    "message": "Version"
+  },
+  "today": {
+    "message": "Today"
+  },
+  "yesterday": {
+    "message": "Yesterday"
+  },
+  "navMain": {
+    "message": "Main"
+  },
+  "clear": {
+    "message": "Clear"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "confirmDelete": {
+    "message": "Confirm delete"
+  },
+  "itemCount": {
+    "message": "$COUNT$ items",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  }
+}

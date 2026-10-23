@@ -1,0 +1,11 @@
+---
+// 正文在 src/views/MiniComponent.astro（中文 / 英文共用）。
+import MiniComponent from "../../views/MiniComponent.astro";
+import { miniFor } from "../../lib/mini.js";
+export function getStaticPaths() {
+  return miniFor("zh").map((c) => ({ params: { slug: c.slug }, props: { c } }));
+}
+const { c } = Astro.props;
+---
+
+<MiniComponent c={c} />

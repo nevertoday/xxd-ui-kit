@@ -1,0 +1,79 @@
+{
+  "xxdLocale": {
+    "message": "zh-Hant"
+  },
+  "appName": {
+    "message": "__APP_NAME_HANT__"
+  },
+  "appDescription": {
+    "message": "__APP_DESC__"
+  },
+  "actionTitle": {
+    "message": "打開 __APP_NAME_HANT__"
+  },
+  "tabMain": {
+    "message": "主頁"
+  },
+  "tabHistory": {
+    "message": "記錄"
+  },
+  "tabSettings": {
+    "message": "設定"
+  },
+  "historyEmpty": {
+    "message": "還沒有記錄"
+  },
+  "primaryAction": {
+    "message": "開始"
+  },
+  "doneToast": {
+    "message": "完成了"
+  },
+  "searchPlaceholder": {
+    "message": "搜尋設定"
+  },
+  "dropTitle": {
+    "message": "把檔案拖到這裡"
+  },
+  "dropOr": {
+    "message": "也可以"
+  },
+  "dropPick": {
+    "message": "選擇檔案"
+  },
+  "dropVeil": {
+    "message": "放開，放進來"
+  },
+  "groupAbout": {
+    "message": "關於"
+  },
+  "version": {
+    "message": "版本"
+  },
+  "today": {
+    "message": "今天"
+  },
+  "yesterday": {
+    "message": "昨天"
+  },
+  "navMain": {
+    "message": "主導覽"
+  },
+  "clear": {
+    "message": "清除"
+  },
+  "delete": {
+    "message": "刪除"
+  },
+  "confirmDelete": {
+    "message": "確認刪除"
+  },
+  "itemCount": {
+    "message": "$COUNT$ 項",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  }
+}

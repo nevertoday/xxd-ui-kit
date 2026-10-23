@@ -1,0 +1,45 @@
+{
+  "name": "@xxd/site",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "小小东 UI Kit 展示站：用和 Kumo 文档站同样的架构（Astro + 活演示 + 注册表生成），呈现小小东风格。",
+  "type": "module",
+  "scripts": {
+    "assets": "node scripts/assets.mjs",
+    "dev": "pnpm run assets && astro dev --port 4400",
+    "build": "pnpm run assets && astro build && node scripts/page-md.mjs",
+    "preview": "astro preview --port 4400",
+    "visual": "node scripts/visual.mjs",
+    "visual:update": "node scripts/visual.mjs --update",
+    "audit": "node scripts/audit.mjs",
+    "test": "node --test 'test/*.test.mjs'",
+    "release": "pnpm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.3",
+    "@astrojs/react": "^6.0.1",
+    "@cloudflare/kumo": "workspace:*",
+    "@xxd/css": "workspace:*",
+    "@xxd/extension": "workspace:*",
+    "@xxd/icons": "workspace:*",
+    "@xxd/mini": "workspace:*",
+    "@xxd/mini-demo": "workspace:*",
+    "@xxd/react": "workspace:*",
+    "@xxd/tokens": "workspace:*",
+    "astro": "7.2.8",
+    "echarts": "6.0.0",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "axe-core": "4.10.3",
+    "pixelmatch": "^7.1.0",
+    "playwright": "^1.57.0",
+    "pngjs": "^7.0.0",
+    "typescript": "catalog:",
+    "wrangler": "4.127.1"
+  }
+}

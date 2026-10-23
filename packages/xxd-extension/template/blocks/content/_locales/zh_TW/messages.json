@@ -1,0 +1,10 @@
+{
+  "contentButton": {
+    "message": "$NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  }
+}

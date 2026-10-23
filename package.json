@@ -1,0 +1,59 @@
+{
+  "name": "xxd-ui-kit",
+  "private": true,
+  "license": "MIT",
+  "description": "小小东 UI Kit：中文优先、不依赖框架的界面组件，专门照顾 Chrome 插件（MV3）；React 版基于 Cloudflare Kumo（MIT）",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @xxd/site dev",
+    "build": "pnpm --filter @cloudflare/kumo build && pnpm xxd:build && pnpm --filter @xxd/site build",
+    "preview": "pnpm --filter @xxd/site preview",
+    "test": "pnpm xxd:test && pnpm --filter @cloudflare/kumo test",
+    "lint": "pnpm --filter @cloudflare/kumo lint && vp lint packages/kumo-docs-astro/src packages/kumo-screenshot-worker/src packages/xxd-react/src packages/xxd-tokens packages/xxd-icons packages/xxd-css packages/xxd-extension packages/xxd-mini/src packages/xxd-mini/scripts packages/xxd-mini/taro-plugin packages/xxd-mini/test packages/xxd-mini-demo/src packages/xxd-mini-demo/scripts packages/xxd-site/src packages/xxd-site/scripts scripts",
+    "format": "vp fmt --write",
+    "format:check": "vp fmt --check",
+    "typecheck": "pnpm -r typecheck",
+    "codegen": "pnpm --filter @cloudflare/kumo-docs-astro codegen:demos && pnpm --filter @cloudflare/kumo codegen",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "lockfile-check": "pnpm install --no-frozen-lockfile && git diff --exit-code pnpm-lock.yaml",
+    "clean": "pnpm -r exec rm -rf dist build .astro .wrangler node_modules",
+    "xxd": "node packages/xxd-extension/scripts/cli.mjs",
+    "xxd:build": "node scripts/ensure-kumo.mjs && pnpm -r --filter \"./packages/xxd-*\" --filter \"!@xxd/site\" build",
+    "xxd:test": "pnpm --filter \"./packages/xxd-*\" -r test && pnpm --filter @cloudflare/kumo exec vitest run src/xxd-contract.test.ts",
+    "kumo:dev": "pnpm codegen && pnpm --filter @cloudflare/kumo-docs-astro dev",
+    "kumo:build": "pnpm --filter @cloudflare/kumo-docs-astro build",
+    "kumo:preview": "pnpm --filter @cloudflare/kumo-docs-astro preview",
+    "kumo:test": "pnpm --filter @cloudflare/kumo test",
+    "kumo:test:watch": "pnpm --filter @cloudflare/kumo test:watch",
+    "kumo": "node packages/kumo/dist/command-line/cli.js"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.29.7",
+    "@octokit/rest": "22.0.1",
+    "@oxlint/plugins": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pngjs": "^6.0.5",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.3.4",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": ">=24.12.0"
+    }
+  },
+  "engines": {
+    "node": ">=24.12.0",
+    "pnpm": ">=12.3.4"
+  }
+}

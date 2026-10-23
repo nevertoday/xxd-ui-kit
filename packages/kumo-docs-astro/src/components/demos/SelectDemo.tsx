@@ -1,0 +1,637 @@
+import { useState, useEffect } from "react";
+import { Select, Text, Badge } from "@cloudflare/kumo";
+
+/** Basic Select with visible label - the recommended pattern. */
+export function SelectBasicDemo() {
+  const [value, setValue] = useState("apple");
+
+  return (
+    <Select
+      label="Favorite Fruit"
+      className="w-[200px]"
+      value={value}
+      onValueChange={(v) => setValue(v ?? "apple")}
+      items={{ apple: "Apple", banana: "Banana", cherry: "Cherry" }}
+    />
+  );
+}
+
+/** Select trigger sizes (xs/sm/base/lg) matching Input and Combobox. */
+export function SelectSizesDemo() {
+  return (
+    <div className="grid gap-4">
+      <div className="flex items-center gap-3">
+        <span className="w-10 text-sm text-kumo-subtle">xs</span>
+        <Select
+          aria-label="Select size xs"
+          size="xs"
+          className="w-[200px]"
+          placeholder="Choose..."
+          items={{ a: "Option A", b: "Option B" }}
+        />
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-10 text-sm text-kumo-subtle">sm</span>
+        <Select
+          aria-label="Select size sm"
+          size="sm"
+          className="w-[200px]"
+          placeholder="Choose..."
+          items={{ a: "Option A", b: "Option B" }}
+        />
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-10 text-sm text-kumo-subtle">base</span>
+        <Select
+          aria-label="Select size base"
+          size="base"
+          className="w-[200px]"
+          placeholder="Choose..."
+          items={{ a: "Option A", b: "Option B" }}
+        />
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-10 text-sm text-kumo-subtle">lg</span>
+        <Select
+          aria-label="Select size lg"
+          size="lg"
+          className="w-[200px]"
+          placeholder="Choose..."
+          items={{ a: "Option A", b: "Option B" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Select without visible label - use aria-label for accessibility. */
+export function SelectWithoutLabelDemo() {
+  const [value, setValue] = useState("apple");
+
+  return (
+    <Select
+      aria-label="Select a fruit"
+      className="w-[200px]"
+      value={value}
+      onValueChange={(v) => setValue(v ?? "apple")}
+      items={{ apple: "Apple", banana: "Banana", cherry: "Cherry" }}
+    />
+  );
+}
+
+/** Select with label and description text. */
+export function SelectWithDescriptionDemo() {
+  const [value, setValue] = useState<string | null>(null);
+
+  return (
+    <Select
+      label="Issue Type"
+      description="Choose the category that best describes your issue"
+      className="w-[280px]"
+      value={value}
+      onValueChange={(v) => setValue(v as string | null)}
+      items={{
+        bug: "Bug",
+        documentation: "Documentation",
+        feature: "Feature",
+      }}
+    />
+  );
+}
+
+/** Select with label and validation error. */
+export function SelectWithErrorDemo() {
+  return (
+    <Select
+      label="Issue Type"
+      error="Please select an issue type"
+      className="w-[280px]"
+      value={null}
+      items={{
+        bug: "Bug",
+        documentation: "Documentation",
+        feature: "Feature",
+      }}
+    />
+  );
+}
+
+/** Select with placeholder text when no value is selected. */
+export function SelectPlaceholderDemo() {
+  const [value, setValue] = useState<string | null>(null);
+
+  return (
+    <Select
+      label="Category"
+      placeholder="Choose a category..."
+      className="w-[200px]"
+      value={value}
+      onValueChange={(v) => setValue(v as string | null)}
+      items={{
+        bug: "Bug",
+        documentation: "Documentation",
+        feature: "Feature",
+      }}
+    />
+  );
+}
+
+/** Select with label tooltip for additional context. */
+export function SelectWithTooltipDemo() {
+  const [value, setValue] = useState<string | null>(null);
+
+  return (
+    <Select
+      label="Priority"
+      labelTooltip="Higher priority issues are addressed first"
+      placeholder="Select priority"
+      className="w-[200px]"
+      value={value}
+      onValueChange={(v) => setValue(v as string | null)}
+      items={{
+        low: "Low",
+        medium: "Medium",
+        high: "High",
+        critical: "Critical",
+      }}
+    />
+  );
+}
+
+const languages = [
+  { value: "en", label: "English", emoji: "🇬🇧" },
+  { value: "fr", label: "French", emoji: "🇫🇷" },
+  { value: "de", label: "German", emoji: "🇩🇪" },
+  { value: "es", label: "Spanish", emoji: "🇪🇸" },
+  { value: "it", label: "Italian", emoji: "🇮🇹" },
+  { value: "pt", label: "Portuguese", emoji: "🇵🇹" },
+];
+
+/** Select with custom rendering for complex option display. */
+export function SelectCustomRenderingDemo() {
+  const [value, setValue] = useState(languages[0]);
+
+  return (
+    <Select
+      label="Language"
+      className="w-[200px]"
+      renderValue={(v) => (
+        <span>
+          {v.emoji} {v.label}
+        </span>
+      )}
+      value={value}
+      onValueChange={(v) => setValue(v as (typeof languages)[0])}
+    >
+      {languages.map((language) => (
+        <Select.Option key={language.value} value={language}>
+          {language.emoji} {language.label}
+        </Select.Option>
+      ))}
+    </Select>
+  );
+}
+
+/** Select in loading state. */
+export function SelectLoadingDemo() {
+  return <Select aria-label="Loading select" className="w-[200px]" loading />;
+}
+
+/** Select that loads data asynchronously. */
+export function SelectLoadingDataDemo() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<undefined | string[]>();
+  const [value, setValue] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setData(["Visal", "John", "Alice", "Michael", "Sok"]);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const items = data?.reduce(
+    (acc, item) => {
+      acc[item] = item;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
+  return (
+    <Select
+      label="Assignee"
+      className="w-[200px]"
+      loading={loading}
+      value={value}
+      onValueChange={(v) => setValue(v as string | null)}
+      placeholder="Select assignee"
+      items={items}
+    />
+  );
+}
+
+/** Multi-select for choosing multiple values. */
+export function SelectMultipleDemo() {
+  const [value, setValue] = useState<string[]>(["Name", "Location", "Size"]);
+
+  return (
+    <Select
+      label="Visible Columns"
+      className="w-[250px]"
+      multiple
+      renderValue={(value) => {
+        if (value.length > 3) {
+          return (
+            <span className="line-clamp-1">
+              {value.slice(0, 2).join(", ") + ` and ${value.length - 2} more`}
+            </span>
+          );
+        }
+        return <span>{value.join(", ")}</span>;
+      }}
+      value={value}
+      onValueChange={(v) => setValue(v as string[])}
+    >
+      <Select.Option value="Name">Name</Select.Option>
+      <Select.Option value="Location">Location</Select.Option>
+      <Select.Option value="Size">Size</Select.Option>
+      <Select.Option value="Read">Read</Select.Option>
+      <Select.Option value="Write">Write</Select.Option>
+      <Select.Option value="CreatedAt">Created At</Select.Option>
+    </Select>
+  );
+}
+
+/** Multi-select with long option names to test overflow handling. */
+export function SelectMultipleOverflowDemo() {
+  const [value, setValue] = useState<string[]>([
+    "European Union Privacy Regulation",
+    "California Consumer Protection Act",
+  ]);
+
+  return (
+    <Select
+      label="Compliance Frameworks"
+      className="w-[280px]"
+      multiple
+      value={value}
+      onValueChange={(v) => setValue(v as string[])}
+    >
+      <Select.Option value="European Union Privacy Regulation">
+        European Union Privacy Regulation
+      </Select.Option>
+      <Select.Option value="California Consumer Protection Act">
+        California Consumer Protection Act
+      </Select.Option>
+      <Select.Option value="Health Insurance Portability Act">
+        Health Insurance Portability Act
+      </Select.Option>
+      <Select.Option value="Payment Card Industry Standard">
+        Payment Card Industry Standard
+      </Select.Option>
+    </Select>
+  );
+}
+
+/** Multi-select with a custom indicator badge showing selection count. */
+export function SelectMultipleWithIndicatorDemo() {
+  const [value, setValue] = useState<string[]>(["bug", "feature"]);
+
+  const allOptions = [
+    { value: "bug", label: "Bug" },
+    { value: "feature", label: "Feature Request" },
+    { value: "docs", label: "Documentation" },
+    { value: "performance", label: "Performance Issue" },
+    { value: "security", label: "Security Vulnerability" },
+  ];
+
+  return (
+    <Select
+      label="Issue Types"
+      className="w-[220px]"
+      multiple
+      renderValue={(selected) => (
+        <span className="flex items-center gap-2">
+          <span>Issue Types</span>
+          {selected.length > 0 && (
+            <Badge variant="neutral">{selected.length}</Badge>
+          )}
+        </span>
+      )}
+      value={value}
+      onValueChange={(v) => setValue(v as string[])}
+    >
+      {allOptions.map((option) => (
+        <Select.Option key={option.value} value={option.value}>
+          {option.label}
+        </Select.Option>
+      ))}
+    </Select>
+  );
+}
+
+const authors = [
+  { id: 1, name: "John Doe", title: "Programmer" },
+  { id: 2, name: "Alice Smith", title: "Software Engineer" },
+  { id: 3, name: "Michael Chan", title: "UI/UX Designer" },
+  { id: 4, name: "Sok Dara", title: "DevOps Engineer" },
+  { id: 5, name: "Emily Johnson", title: "Product Manager" },
+  { id: 6, name: "Visal In", title: "System Engineer" },
+  { id: 7, name: "Laura Kim", title: "Technical Writer" },
+];
+
+/** Select with complex object values and custom option rendering. */
+export function SelectComplexDemo() {
+  const [value, setValue] = useState<(typeof authors)[0] | null>(null);
+
+  return (
+    <Select
+      label="Author"
+      description="Select the primary author for this document"
+      placeholder="Select an author"
+      className="w-[200px]"
+      onValueChange={(v) => setValue(v as (typeof authors)[0] | null)}
+      value={value}
+      isItemEqualToValue={(item, value) => item?.id === value?.id}
+      renderValue={(author) => author.name}
+    >
+      {authors.map((author) => (
+        <Select.Option key={author.id} value={author}>
+          <div className="flex w-[300px] items-center justify-between gap-2">
+            <Text>{author.name}</Text>
+            <Text variant="secondary">{author.title}</Text>
+          </div>
+        </Select.Option>
+      ))}
+    </Select>
+  );
+}
+
+interface Region {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+const regions: Region[] = [
+  { value: "us-east", label: "US East" },
+  { value: "us-west", label: "US West" },
+  { value: "eu-west", label: "EU West", disabled: true },
+  { value: "ap-south", label: "AP South", disabled: true },
+];
+
+/** Select with disabled options that cannot be selected. */
+export function SelectDisabledOptionsDemo() {
+  const [value, setValue] = useState<Region | null>(null);
+
+  return (
+    <Select
+      label="Deployment Region"
+      placeholder="Choose a region..."
+      className="w-[250px]"
+      value={value}
+      onValueChange={(v) => setValue(v as Region | null)}
+      isItemEqualToValue={(item, val) => item.value === val.value}
+    >
+      {regions.map((region) => (
+        <Select.Option
+          key={region.value}
+          value={region}
+          disabled={region.disabled}
+        >
+          {region.label}
+        </Select.Option>
+      ))}
+    </Select>
+  );
+}
+
+/** Select using the items prop with disabled descriptors. */
+export function SelectDisabledItemsDemo() {
+  const [value, setValue] = useState<string | null>("free");
+
+  return (
+    <Select
+      label="Plan"
+      className="w-[200px]"
+      value={value}
+      onValueChange={(v) => setValue(v as string | null)}
+      items={{
+        free: "Free",
+        pro: "Pro",
+        business: { label: "Business", disabled: true },
+        enterprise: { label: "Enterprise", disabled: true },
+      }}
+    />
+  );
+}
+
+/** Select with grouped options and separators. */
+const foods = {
+  fruits: [
+    { value: "apple", label: "Apple" },
+    { value: "banana", label: "Banana" },
+    { value: "cherry", label: "Cherry" },
+  ],
+  vegetables: [
+    { value: "carrot", label: "Carrot" },
+    { value: "broccoli", label: "Broccoli" },
+    { value: "spinach", label: "Spinach" },
+  ],
+};
+
+type Food = (typeof foods.fruits)[0];
+
+/** Select with grouped options organized under labeled headers. */
+export function SelectGroupedDemo() {
+  const [value, setValue] = useState<Food | null>(null);
+
+  return (
+    <Select
+      label="Food"
+      placeholder="Pick a food..."
+      className="w-[220px]"
+      value={value}
+      onValueChange={(v) => setValue(v as Food | null)}
+      isItemEqualToValue={(item, val) => item.value === val.value}
+    >
+      <Select.Group>
+        <Select.GroupLabel>Fruits</Select.GroupLabel>
+        {foods.fruits.map((food) => (
+          <Select.Option key={food.value} value={food}>
+            {food.label}
+          </Select.Option>
+        ))}
+      </Select.Group>
+      <Select.Separator />
+      <Select.Group>
+        <Select.GroupLabel>Vegetables</Select.GroupLabel>
+        {foods.vegetables.map((food) => (
+          <Select.Option key={food.value} value={food}>
+            {food.label}
+          </Select.Option>
+        ))}
+      </Select.Group>
+    </Select>
+  );
+}
+
+/** Select combining groups, separators, and disabled options. */
+const serverRegions = {
+  available: [
+    { value: "us-east-1", label: "US East (N. Virginia)" },
+    { value: "us-west-2", label: "US West (Oregon)" },
+    { value: "eu-west-1", label: "EU West (Ireland)" },
+  ],
+  unavailable: [
+    { value: "ap-south-1", label: "AP South (Mumbai)" },
+    { value: "sa-east-1", label: "SA East (São Paulo)" },
+  ],
+};
+
+type ServerRegion = (typeof serverRegions.available)[0];
+
+/** Grouped select with disabled options and info tooltips. */
+export function SelectGroupedWithDisabledDemo() {
+  const [value, setValue] = useState<ServerRegion | null>(null);
+
+  return (
+    <Select
+      label="Server Region"
+      placeholder="Select a region..."
+      className="w-[260px]"
+      value={value}
+      onValueChange={(v) => setValue(v as ServerRegion | null)}
+      isItemEqualToValue={(item, val) => item.value === val.value}
+    >
+      <Select.Group>
+        <Select.GroupLabel>Available</Select.GroupLabel>
+        {serverRegions.available.map((region) => (
+          <Select.Option key={region.value} value={region}>
+            {region.label}
+          </Select.Option>
+        ))}
+      </Select.Group>
+      <Select.Separator />
+      <Select.Group>
+        <Select.GroupLabel>Unavailable</Select.GroupLabel>
+        {serverRegions.unavailable.map((region) => (
+          <Select.Option key={region.value} value={region} disabled>
+            {region.label}
+          </Select.Option>
+        ))}
+      </Select.Group>
+    </Select>
+  );
+}
+
+// Generate 50 items for long list scrolling test
+const longListItems = Array.from({ length: 50 }, (_, i) => ({
+  value: `item-${i + 1}`,
+  label: `Option ${i + 1}`,
+}));
+
+type LongListItem = (typeof longListItems)[0];
+
+/** Select with a long list to test popup scrolling behavior. */
+export function SelectLongListDemo() {
+  const [value, setValue] = useState<LongListItem | null>(null);
+
+  return (
+    <Select
+      label="Long List Select"
+      description="Tests scrolling behavior with many options"
+      placeholder="Choose an option..."
+      className="w-[220px]"
+      value={value}
+      onValueChange={(v) => setValue(v as LongListItem | null)}
+      isItemEqualToValue={(item, val) => item.value === val.value}
+    >
+      {longListItems.map((item) => (
+        <Select.Option key={item.value} value={item}>
+          {item.label}
+        </Select.Option>
+      ))}
+    </Select>
+  );
+}
+
+const planets = {
+  mercury: "Mercury",
+  venus: "Venus",
+  earth: "Earth",
+  mars: "Mars",
+  jupiter: "Jupiter",
+  saturn: "Saturn",
+  uranus: "Uranus",
+};
+
+/**
+ * Use `side` and `align` to pin the popup. Placement still flips automatically
+ * when the chosen side runs out of room.
+ */
+export function SelectPlacementDemo() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <Select
+        label="side=bottom (default)"
+        className="w-[200px]"
+        defaultValue="earth"
+        items={planets}
+      />
+      <Select
+        label="side=top"
+        side="top"
+        className="w-[200px]"
+        defaultValue="earth"
+        items={planets}
+      />
+      <Select
+        label="align=end"
+        align="end"
+        className="w-[200px]"
+        defaultValue="earth"
+        items={planets}
+      />
+      <Select
+        label="sideOffset=12"
+        sideOffset={12}
+        className="w-[200px]"
+        defaultValue="earth"
+        items={planets}
+      />
+    </div>
+  );
+}
+
+/**
+ * `alignItemWithTrigger` overlays the popup on the trigger so the selected
+ * option sits directly on top of it, like a native `<select>`. Options before
+ * the selection render above the trigger and the rest below. Open the second
+ * select — "Mars" is selected mid-list, so the popup extends in both
+ * directions. Falls back to normal anchored placement when space runs out.
+ */
+export function SelectDynamicPlacementDemo() {
+  return (
+    <div className="flex flex-wrap items-start gap-8">
+      <Select
+        label="Anchored (default)"
+        description="Opens below the trigger"
+        className="w-[200px]"
+        defaultValue="mars"
+        items={planets}
+      />
+      <Select
+        label="Aligned to selection"
+        description="Selected option lands on the trigger"
+        alignItemWithTrigger
+        className="w-[200px]"
+        defaultValue="mars"
+        items={planets}
+      />
+    </div>
+  );
+}

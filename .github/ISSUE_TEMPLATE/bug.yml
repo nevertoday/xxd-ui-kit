@@ -1,0 +1,32 @@
+name: 问题 / Bug
+description: 组件、命令行或展示站哪里不对 · Something in a component, the CLI or the showcase is wrong
+labels: [bug]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: 哪个组件或页面 · Which component or page
+      placeholder: "Dialog / xxd-ui doctor / https://ui.xiaoxiaodong.ai/components/dialog"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 发生了什么，应该怎样 · What happened, and what should happen
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 怎么复现 · Steps to reproduce
+      description: 最小的 HTML / 代码 / 命令；插件里的问题请写清是侧边栏、popup、设置页还是注入网页 · Smallest HTML / code / command; for extensions say side panel, popup, options or content script
+  - type: dropdown
+    id: appearance
+    attributes:
+      label: 外观 · Appearance
+      multiple: true
+      options: [亮 Light, 暗 Dark, 直角 Square, 圆角 Rounded, 紧凑 Compact, 有主色 With accent]
+  - type: input
+    id: env
+    attributes:
+      label: 浏览器和版本、xxd-ui-kit 提交 · Browser and version, xxd-ui-kit commit

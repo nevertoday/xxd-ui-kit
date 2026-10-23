@@ -1,0 +1,11 @@
+---
+// 正文在 src/views/Template.astro（中文 / 英文共用）。
+import Template from "../../../views/Template.astro";
+import { templatesFor } from "../../../data/templates.js";
+export function getStaticPaths() {
+  return templatesFor("en").map((x) => ({ params: { slug: x.slug }, props: { x } }));
+}
+const { x } = Astro.props;
+---
+
+<Template x={x} />

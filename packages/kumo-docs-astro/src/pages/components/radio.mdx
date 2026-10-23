@@ -1,0 +1,388 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Radio"
+description: "A control that allows the user to select one option from a set. Always used within a Radio.Group."
+sourceFile: "components/radio"
+baseUIComponent: "radio-group"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  RadioBasicDemo,
+  RadioDefaultDemo,
+  RadioHorizontalDemo,
+  RadioSegmentedDemo,
+  RadioAppearanceComparisonDemo,
+  RadioSegmentedDisabledDemo,
+  RadioSegmentedLegendDemo,
+  RadioSegmentedLongLabelsDemo,
+  RadioDescriptionDemo,
+  RadioErrorDemo,
+  RadioDisabledDemo,
+  RadioControlPositionDemo,
+  RadioCardDemo,
+  RadioCardControlStartDemo,
+  RadioCardHorizontalDemo,
+  RadioRichLabelDemo,
+  RadioLegendSrOnlyDemo,
+  RadioLegendCustomDemo,
+  RadioTypedValueDemo,
+} from "~/components/demos/RadioDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="RadioBasicDemo">
+    <RadioBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { Radio } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { Radio } from "@cloudflare/kumo/components/radio";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { Radio } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <Radio.Group legend="Choose an option" defaultValue="a">
+      <Radio.Item label="Option A" value="a" />
+      <Radio.Item label="Option B" value="b" />
+    </Radio.Group>
+  );
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Default (Vertical)
+
+<p>
+  Radio groups display vertically by default. Each radio has a label displayed
+  to its right.
+</p>
+<ComponentExample demo="RadioDefaultDemo">
+  <RadioDefaultDemo client:visible />
+</ComponentExample>
+
+### Horizontal
+
+<p>
+  Use `orientation="horizontal"` for inline layouts. Items wrap when there isn't
+  enough space.
+</p>
+<ComponentExample demo="RadioHorizontalDemo">
+  <RadioHorizontalDemo client:visible />
+</ComponentExample>
+
+### Segmented
+
+<p>
+  Use `appearance="segmented"` for inline, compact options. Items do not wrap,
+  so architect accordingly.
+</p>
+<ComponentExample
+  demo="RadioSegmentedDemo"
+  vrSection="radio-segmented"
+  vrTitle="Radio segmented"
+>
+  <RadioSegmentedDemo client:visible />
+</ComponentExample>
+
+#### Should this be segmented?
+Use the segmented appearance only when the group is small, labels are short,
+and the control fits on one line. Use the default appearance for longer labels,
+descriptive choices, large option sets, or narrow layouts.
+
+Use the [Tabs](/components/tabs) component when selection changes which content
+panel is displayed.
+
+### Default and segmented
+
+<p>
+  The appearance changes presentation only. Both examples represent the same
+  mutually exclusive values.
+</p>
+<ComponentExample
+  demo="RadioAppearanceComparisonDemo"
+  vrSection="radio-appearance-comparison"
+  vrTitle="Radio default and segmented"
+>
+  <RadioAppearanceComparisonDemo client:visible />
+</ComponentExample>
+
+### Disabled segmented controls
+
+<p>
+  Segmented groups support disabling the whole group or an individual option.
+</p>
+<ComponentExample
+  demo="RadioSegmentedDisabledDemo"
+  vrSection="radio-segmented-disabled"
+  vrTitle="Radio segmented disabled"
+>
+  <RadioSegmentedDisabledDemo client:visible />
+</ComponentExample>
+
+### Segmented with a custom legend
+
+<p>
+  `Radio.Legend` remains outside the segmented surface and provides the group's
+  accessible name.
+</p>
+<ComponentExample
+  demo="RadioSegmentedLegendDemo"
+  vrSection="radio-segmented-legend"
+  vrTitle="Radio segmented custom legend"
+>
+  <RadioSegmentedLegendDemo client:visible />
+</ComponentExample>
+
+### Long labels and narrow layouts
+
+<p>
+  Segmented controls keep their intrinsic width and do not wrap, shrink, or
+  truncate their items. Choose the default appearance when translated labels or
+  a narrow container prevent the group from fitting on one line.
+</p>
+<ComponentExample
+  demo="RadioSegmentedLongLabelsDemo"
+  vrSection="radio-segmented-long-labels"
+  vrTitle="Radio segmented long labels"
+>
+  <RadioSegmentedLongLabelsDemo client:visible />
+</ComponentExample>
+
+### With Description
+
+<p>Add helper text below the radio items using the `description` prop.</p>
+<ComponentExample demo="RadioDescriptionDemo">
+  <RadioDescriptionDemo client:visible />
+</ComponentExample>
+
+### Control Position
+
+<p>Use `controlPosition="end"` to place labels before radio buttons.</p>
+<ComponentExample demo="RadioControlPositionDemo">
+  <RadioControlPositionDemo client:visible />
+</ComponentExample>
+
+### Radio Card
+
+<p>
+  Use `appearance="card"` on the group to display each option as a selectable
+  row of a single card, separated by dividers. Combine with the `description`
+  prop on each item for richer content.
+</p>
+<ComponentExample demo="RadioCardDemo">
+  <RadioCardDemo client:visible />
+</ComponentExample>
+
+### Radio Card (Control on the Left)
+
+<p>
+  Use `controlPosition="start"` on a card radio group to place the radio control
+  on the left of the label and description.
+</p>
+<ComponentExample demo="RadioCardControlStartDemo">
+  <RadioCardControlStartDemo client:visible />
+</ComponentExample>
+
+### Rich Label Content
+
+<p>
+  The `label` prop on `Radio.Item` accepts React nodes, so you can embed icons,
+  badges, or other markup alongside the text.
+</p>
+<ComponentExample demo="RadioRichLabelDemo">
+  <RadioRichLabelDemo client:visible />
+</ComponentExample>
+
+### Radio Card (Horizontal)
+
+<p>
+  Combine `appearance="card"` with `orientation="horizontal"` to lay the options
+  out in two columns within the same card.
+</p>
+<ComponentExample demo="RadioCardHorizontalDemo">
+  <RadioCardHorizontalDemo client:visible />
+</ComponentExample>
+
+### With Error
+
+<p>Show validation errors at the group level using the `error` prop.</p>
+<ComponentExample demo="RadioErrorDemo">
+  <RadioErrorDemo client:visible />
+</ComponentExample>
+
+### Disabled
+
+<p>Disable the entire group or individual items.</p>
+<ComponentExample demo="RadioDisabledDemo">
+  <RadioDisabledDemo client:visible />
+</ComponentExample>
+
+### Visually Hidden Legend
+
+<p>
+  Use `Radio.Legend` with `className="sr-only"` to keep the legend accessible to
+  screen readers while hiding it visually. This is useful when the radio group
+  is already labeled by a parent `Field` or heading, and showing the legend
+  would create a redundant label.
+</p>
+<ComponentExample demo="RadioLegendSrOnlyDemo">
+  <RadioLegendSrOnlyDemo client:visible />
+</ComponentExample>
+
+### Custom Legend Styling
+
+<p>
+  `Radio.Legend` accepts `className` for full control over legend presentation.
+  Use it instead of the `legend` string prop when you need custom typography,
+  colors, or layout.
+</p>
+<ComponentExample demo="RadioLegendCustomDemo">
+  <RadioLegendCustomDemo client:visible />
+</ComponentExample>
+
+### Typed Values
+
+<p>
+  `Radio.Group` and `Radio.Item` support generic types. Pass a type parameter
+  (e.g. `<number>` or an enum) to constrain the type of `value` on both sub-components, 
+  and `defaultValue` and `onValueChange` on `Radio.Group`. Defaults to `string` 
+  when omitted.
+</p>
+<ComponentExample
+  vrSection="radio-typed-value"
+  vrTitle="Radio Typed Value"
+  code={`enum ThemeType {
+    dark = "dark",
+    light = "light",
+    system = "system",
+}
+
+export function RadioTypedValueDemo() {
+    const [pageSize, setPageSize] = useState<number>(10);
+    const [theme, setTheme] = useState<ThemeType>(ThemeType.system);
+    return (
+      <div className="grid grid-cols-2 gap-6">
+        <Radio.Group<number>
+          legend="Items per page"
+          value={pageSize}
+          onValueChange={setPageSize}
+        >
+          <Radio.Item<number> label="10" value={10} />
+          <Radio.Item<number> label="25" value={25} />
+          <Radio.Item<number> label="50" value={50} />
+        </Radio.Group>
+        <Radio.Group<ThemeType>
+          legend="Theme"
+          value={theme}
+          onValueChange={setTheme}
+        >
+          <Radio.Item<ThemeType> label="Light" value={ThemeType.light} />
+          <Radio.Item<ThemeType> label="Dark" value={ThemeType.dark} />
+          <Radio.Item<ThemeType> label="System" value={ThemeType.system} />
+        </Radio.Group>
+      </div>
+    );
+}`}
+>
+  <RadioTypedValueDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+### Radio.Group
+
+<p>Container for radio buttons with legend, description, and error support.</p>
+<PropsTable component="Radio.Group" />
+
+### Radio.Legend
+
+<p>
+  Composable legend sub-component for Radio.Group. Accepts `className` for full
+  styling control (e.g. `className="sr-only"` to visually hide). Use instead of
+  the `legend` string prop when you need custom legend styling.
+</p>
+<PropsTable component="Radio.Legend" />
+
+### Radio.Item
+
+<p>Individual radio button within Radio.Group.</p>
+<PropsTable component="Radio.Item" />
+
+</ComponentSection>
+
+{/* Accessibility */}
+
+<ComponentSection>
+
+## Accessibility
+
+  <div class="space-y-4 text-sm">
+    <div>
+
+      ### Semantic HTML
+
+      <p>
+        Radio.Group uses semantic `<fieldset>` and `<legend>` elements for proper grouping and screen reader announcement.
+      </p>
+    </div>
+    <div>
+
+      ### Keyboard Navigation
+
+      <p>
+        <kbd class="rounded bg-kumo-control px-1.5 py-0.5">Arrow Up/Down</kbd> or <kbd class="rounded bg-kumo-control px-1.5 py-0.5">Arrow Left/Right</kbd> moves between options. <kbd class="rounded bg-kumo-control px-1.5 py-0.5">Space</kbd> selects the focused option. <kbd class="rounded bg-kumo-control px-1.5 py-0.5">Tab</kbd> moves focus to and from the radio group.
+      </p>
+    </div>
+    <div>
+
+      ### Screen Readers
+
+      <p>
+        Each radio is announced with its label and selection state. The group legend provides context for all options.
+      </p>
+    </div>
+
+  </div>
+</ComponentSection>

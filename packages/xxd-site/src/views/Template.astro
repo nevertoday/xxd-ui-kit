@@ -1,0 +1,25 @@
+---
+import Site from "../layouts/Site.astro";
+import { icon } from "../lib/data.js";
+import { embed } from "../lib/markup.js";
+import { langOf, t } from "../i18n/index.js";
+// 模板页：x 由页面的 getStaticPaths 传进来（中文 / 英文各自的数据）。
+const { x } = Astro.props;
+const L = t(langOf(Astro.url.pathname));
+---
+
+<Site title={x.label} description={x.summary} wide>
+  <header class="site-head" style="max-width:760px">
+    <p class="xxd-text" data-variant="caption">{L.templateCaption}</p>
+    <h1 class="xxd-text" data-variant="display">{x.label}</h1>
+    <p class="site-lead">{x.summary}</p>
+    <div class="xxd-cluster" style="margin-top:var(--space-4)">
+      <button class="xxd-btn" data-copy-target="#tpl-src" data-copy-done={L.copiedPage}><Fragment set:html={icon("Copy", 14)} />{L.copyPage}</button>
+      {x.width && <span class="xxd-text" data-variant="caption">{L.designedFor(x.width, x.where)}</span>}
+    </div>
+  </header>
+  <div class="site-template" style={`border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--bg);${x.width ? `max-width:${x.width}px;` : ""}${x.height ? (x.flow ? `min-height:${x.height}px;` : `height:${x.height}px;`) : ""}`}>
+    <div class="xxd-page" style="height:100%;position:relative" set:html={embed(x.markup)} />
+  </div>
+  <pre id="tpl-src" hidden><code>{x.markup.trim()}</code></pre>
+</Site>

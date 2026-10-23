@@ -1,0 +1,148 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Tooltip"
+description: "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it."
+sourceFile: "components/tooltip"
+baseUIComponent: "tooltip"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  TooltipHeroDemo,
+  TooltipBasicDemo,
+  TooltipMultipleDemo,
+  TooltipDelayDemo,
+  TooltipOverflowDemo,
+} from "~/components/demos/TooltipDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="TooltipHeroDemo">
+    <TooltipHeroDemo client:load />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { Tooltip, Button } from "@cloudflare/kumo";
+
+export default function Example() {
+  return (
+    <Tooltip content="Tooltip text" render={<Button />}>
+      Hover me
+    </Tooltip>
+  );
+}
+```
+
+For delay grouping across multiple tooltips, see [TooltipProvider](#tooltipprovider).
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Basic Tooltip
+
+<ComponentExample demo="TooltipBasicDemo">
+  <TooltipBasicDemo client:load />
+</ComponentExample>
+
+### Multiple Tooltips
+
+<ComponentExample demo="TooltipMultipleDemo">
+  <TooltipMultipleDemo client:load />
+</ComponentExample>
+
+### Long Content / Overflow
+
+<p>
+  Tooltips with long content automatically constrain their width to the available
+  viewport space using `--available-width` from Base UI's Positioner. Hover over
+  the edge buttons to see the tooltip wrap instead of overflowing the viewport.
+</p>
+<ComponentExample demo="TooltipOverflowDemo">
+  <TooltipOverflowDemo client:load />
+</ComponentExample>
+
+### Delay Control
+
+<p>
+  Use `delay` to control how long to wait before opening (default: 600ms) and
+  `closeDelay` to control how long to wait before closing (default: 0ms).
+</p>
+<ComponentExample demo="TooltipDelayDemo">
+  <TooltipDelayDemo client:load />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* TooltipProvider */}
+
+<ComponentSection>
+## TooltipProvider
+
+<p>
+  `TooltipProvider` groups multiple tooltips so that after the first tooltip has
+  been shown, switching to another skips the open delay. Place it once at your
+  app root or layout — not around each individual `Tooltip`.
+</p>
+
+```tsx
+// Wrap your app or layout once
+<TooltipProvider>
+  <App />
+</TooltipProvider>
+
+// Then use Tooltip anywhere inside
+<Tooltip content="Add" render={<Button shape="square" icon={PlusIcon} />} />
+```
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+### Tooltip
+
+<PropsTable component="Tooltip" />
+
+### TooltipProvider
+
+<PropsTable component="Tooltip.Provider" />
+
+</ComponentSection>

@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kumo-docs",
+  "compatibility_date": "2025-04-04",
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "routes": [{ "pattern": "kumo-ui.com/*", "zone_name": "kumo-ui.com" }],
+  "env": {
+    "staging": {
+      "name": "kumo-docs-staging",
+      "routes": [
+        { "pattern": "staging.kumo-ui.com/*", "zone_name": "kumo-ui.com" },
+      ],
+    },
+  },
+}

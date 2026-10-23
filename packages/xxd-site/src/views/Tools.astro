@@ -1,0 +1,137 @@
+---
+// 命令行与工具。命令清单来自 packages/xxd-extension/scripts/commands.mjs（和 pnpm xxd help 同一份）。
+import Site from "../layouts/Site.astro";
+import Code from "../components/Code.astro";
+import { Content as Kit } from "../../../../docs/EXTENSION-KIT.md";
+import { Content as KitEn } from "../../../../docs/en/EXTENSION-KIT.md";
+import { COMMANDS, DOCTOR_CHECKS, GROUPS } from "../../../xxd-extension/scripts/commands.mjs";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const ext = en ? "./today" : "./today";
+const T = en
+  ? {
+      title: "CLI and tools", caption: "Tools",
+      lead: "One command for every XXD project: create an extension, bring an old one in, keep them all current, look up icons and components, and check a project against the design rules before you commit.",
+      h: { install: "Set up", flows: "What do you want to do?", commands: "All commands", doctor: "What doctor checks", kit: "Extension kit", visual: "Visual regression", ai: "For AI" },
+      install: [
+        "Inside xxd-ui-kit every command is <code class=\"xxd-code-inline\">pnpm xxd …</code>. Run <code class=\"xxd-code-inline\">link</code> once and it becomes <code class=\"xxd-code-inline\">xxd-ui …</code> in any directory; paths are relative to where you are.",
+        "It isn't called <code class=\"xxd-code-inline\">xxd</code> globally because macOS already ships a hex tool with that name.",
+      ],
+      flows: [
+        { t: "Start a new extension", d: "Load it in Chrome right away; check it once you've changed things.", code: `xxd-ui new ${ext} --name "Today"\n# chrome://extensions → Load unpacked → pick the folder\nxxd-ui doctor ${ext}` },
+        { t: "Bring an existing extension or site in", d: "Writes xxd.config.json when needed, copies the components and prints the lines for <head>.", code: `cd ./my-extension\nxxd-ui init\nxxd-ui doctor` },
+        { t: "Keep every project current", d: "Projects you've created, initialised or synced are remembered.", code: `xxd-ui status        # who is behind\nxxd-ui sync --all    # update all of them` },
+        { t: "See component changes live in an extension", d: "Edit xxd-ui-kit; every save rebuilds and syncs. Reload the extension in Chrome.", code: `xxd-ui watch ${ext}` },
+        { t: "Check before every commit", d: "doctor exits with 1 when it finds errors. A line that's an intended exception gets xxd-ignore.", code: `# .git/hooks/pre-commit (chmod +x)\n#!/bin/sh\nxxd-ui doctor || exit 1` },
+        { t: "Find an icon, a component, a token", d: "Names, other libraries' names and Chinese keywords all work; with one icon left it prints the code, --copy puts it on the clipboard.", code: `xxd-ui icon trash\nxxd-ui icon cart --svg --copy\nxxd-ui doc Dialog\nxxd-ui doc Banner --markup --copy\nxxd-ui tokens line\nxxd-ui open icons --en` },
+      ],
+      rule: "Check", ignore: "A line that's meant to be different: put <code class=\"xxd-code-inline\">xxd-ignore</code> on it (a CSS or HTML comment). A whole check: <code class=\"xxd-code-inline\">{ \"doctor\": { \"ignore\": [\"color\"] } }</code> in xxd.config.json.",
+    }
+  : {
+      title: "命令行与工具", caption: "工具",
+      lead: "一个命令管所有小小东项目：新建插件、让老项目接入、全部保持最新、查图标和组件，提交前按设计规则体检一遍。",
+      h: { install: "装好", flows: "我要做什么", commands: "全部命令", doctor: "doctor 查什么", kit: "插件套件", visual: "截图回归", ai: "给 AI 看" },
+      install: [
+        "在 xxd-ui-kit 里，每个命令都是 <code class=\"xxd-code-inline\">pnpm xxd …</code>。运行一次 <code class=\"xxd-code-inline\">link</code>，之后在任何目录都能用 <code class=\"xxd-code-inline\">xxd-ui …</code>，路径按你所在的目录算。",
+        "全局不叫 <code class=\"xxd-code-inline\">xxd</code>：macOS 自带一个同名的十六进制工具。",
+      ],
+      flows: [
+        { t: "新做一个插件", d: "建好就能在 Chrome 里加载；改完体检一下。", code: `xxd-ui new ${ext} --name 今日待办\n# chrome://extensions →「加载已解压的扩展程序」→ 选这个目录\nxxd-ui doctor ${ext}` },
+        { t: "老插件或网站接入", d: "需要时写 xxd.config.json、拷组件，打印要放进 <head> 的几行。", code: `cd ./my-extension\nxxd-ui init\nxxd-ui doctor` },
+        { t: "所有项目保持最新", d: "new / init / sync 过的项目都会记住。", code: `xxd-ui status        # 谁落后了\nxxd-ui sync --all    # 全部更新` },
+        { t: "改组件时在插件里实时看", d: "改 xxd-ui-kit 的源码，每次保存自动构建并同步；在 Chrome 里刷新插件就行。", code: `xxd-ui watch ${ext}` },
+        { t: "每次提交前体检", d: "有错误时 doctor 的退出码是 1。某一行确实要例外，就在那一行写 xxd-ignore。", code: `# .git/hooks/pre-commit（记得 chmod +x）\n#!/bin/sh\nxxd-ui doctor || exit 1` },
+        { t: "找图标、组件、令牌", d: "到处都能用中文；图标只剩一个时直接打印代码，加 --copy 复制到剪贴板。", code: `xxd-ui icon 删除\nxxd-ui icon 购物车 --svg --copy\nxxd-ui doc 对话框\nxxd-ui doc Banner --markup --copy\nxxd-ui tokens line\nxxd-ui open icons` },
+      ],
+      rule: "检查", ignore: "某一行是有意的例外：在那一行写 <code class=\"xxd-code-inline\">xxd-ignore</code>（CSS 或 HTML 注释）。整条规则不查：xxd.config.json 写 <code class=\"xxd-code-inline\">{ \"doctor\": { \"ignore\": [\"color\"] } }</code>。",
+    };
+const headings = [
+  { slug: "install", text: T.h.install },
+  { slug: "flows", text: T.h.flows },
+  { slug: "commands", text: T.h.commands },
+  { slug: "doctor", text: T.h.doctor },
+  { slug: "kit", text: T.h.kit },
+  { slug: "visual", text: T.h.visual },
+  { slug: "ai", text: T.h.ai },
+];
+const md = en ? "/en/md/components/button.md" : "/md/components/button.md";
+---
+
+<Site title={T.title} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  <h2 class="site-h2" id="install">{T.h.install}</h2>
+  <Code code={`cd xxd-ui-kit\npnpm xxd link      # ${en ? "once" : "一次就好"}\nxxd-ui help`} />
+  <ul class="site-rules" style="margin-top:var(--space-3)">{T.install.map((x) => <li set:html={x} />)}</ul>
+
+  <h2 class="site-h2" id="flows">{T.h.flows}</h2>
+  <div class="site-flows">
+    {
+      T.flows.map((f) => (
+        <section class="site-flow">
+          <h3 class="site-flow__title">{f.t}</h3>
+          <p class="site-flow__desc">{f.d}</p>
+          <Code code={f.code} />
+        </section>
+      ))
+    }
+  </div>
+
+  <h2 class="site-h2" id="commands">{T.h.commands}</h2>
+  {
+    GROUPS.map((g) => (
+      <>
+        <h3 class="site-h3">{en ? g.en : g.zh}</h3>
+        <dl class="site-cmds">
+          {COMMANDS.filter((x) => x.group === g.id).map((x) => (
+            <div class="site-cmds__row">
+              <dt class="site-cmds__name">{x.name}</dt>
+              <dd class="site-cmds__body">
+                <code class="site-cmds__usage">xxd-ui {en ? x.usageEn : x.usage}</code>
+                <p class="site-cmds__desc">{en ? x.en : x.zh}</p>
+                <div class="site-cmds__eg">{(en ? x.examplesEn || x.examples : x.examples).map((e) => <code class="xxd-code-inline site-token">xxd-ui {e}</code>)}</div>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </>
+    ))
+  }
+
+  <h2 class="site-h2" id="doctor">{T.h.doctor}</h2>
+  <ul class="site-rules">{DOCTOR_CHECKS.map((x) => <li>{en ? x.en : x.zh}</li>)}</ul>
+  <p class="site-p" set:html={T.ignore} />
+
+  <h2 class="site-h2" id="kit">{T.h.kit}</h2>
+  <div class="xxd-prose" style="max-width:none">{en ? <KitEn /> : <Kit />}</div>
+  <h2 class="site-h2" id="visual">{T.h.visual}</h2>
+  {
+    en ? (
+      <p class="site-p">Every component, pattern and template page is captured in four appearances (light / dark × square / rounded) and stored in <code class="xxd-code-inline">packages/xxd-site/visual/baseline/</code>. After changing a component, run <code class="xxd-code-inline">pnpm --filter @xxd/site visual</code>; diff images go to <code class="xxd-code-inline">visual/diff/</code>. Once you've confirmed a change is intended, run <code class="xxd-code-inline">visual:update</code>.</p>
+    ) : (
+      <p class="site-p">每个组件页、模式页、模板页在亮 / 暗 × 直角 / 圆角四种外观下截图，存在 <code class="xxd-code-inline">packages/xxd-site/visual/baseline/</code>；改了组件后运行 <code class="xxd-code-inline">pnpm --filter @xxd/site visual</code>，差异图写到 <code class="xxd-code-inline">visual/diff/</code>。确认是有意的改动再 <code class="xxd-code-inline">visual:update</code>。</p>
+    )
+  }
+  <h2 class="site-h2" id="ai">{T.h.ai}</h2>
+  {
+    en ? (
+      <ul class="site-rules">
+        <li><a class="xxd-link" href="/en/llms.txt">/en/llms.txt</a>: the whole site's index, one line per page.</li>
+        <li>“This page as Markdown” on the right of every page: the same page as .md (<code class="xxd-code-inline">{md}</code>).</li>
+        <li><a class="xxd-link" href="/en/api/registry.json">/en/api/registry.json</a>: the native component registry (classes, attributes, examples, rules), in English.</li>
+        <li>CLI: <code class="xxd-code-inline">xxd-ui doc Dialog</code>, <code class="xxd-code-inline">xxd-ui icon trash</code>, <code class="xxd-code-inline">xxd-ui doctor --json</code>; Skill: <code class="xxd-code-inline">xxd-ui</code>.</li>
+      </ul>
+    ) : (
+      <ul class="site-rules">
+        <li><a class="xxd-link" href="/llms.txt">/llms.txt</a>：全站目录，每页一行。</li>
+        <li>每页右侧「本页的 Markdown」：同一页的 .md 版本（<code class="xxd-code-inline">{md}</code>）。</li>
+        <li><a class="xxd-link" href="/api/registry.json">/api/registry.json</a>：原生组件注册表（类名、属性、示例、规则）。</li>
+        <li>命令行：<code class="xxd-code-inline">xxd-ui doc 对话框</code>、<code class="xxd-code-inline">xxd-ui icon 删除</code>、<code class="xxd-code-inline">xxd-ui doctor --json</code>；Skill：<code class="xxd-code-inline">xxd-ui</code>。</li>
+      </ul>
+    )
+  }
+</Site>

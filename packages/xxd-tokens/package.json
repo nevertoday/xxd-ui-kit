@@ -1,0 +1,76 @@
+{
+  "name": "@xxd/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "小小东 UI 的设计令牌：颜色、字号、间距、圆角的唯一来源，加首帧主题脚本 / XXD UI design tokens",
+  "license": "MIT",
+  "author": "小小东 (nevertoday)",
+  "homepage": "https://ui.xiaoxiaodong.ai",
+  "bugs": {
+    "url": "https://github.com/nevertoday/xxd-ui-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nevertoday/xxd-ui-kit.git",
+    "directory": "packages/xxd-tokens"
+  },
+  "keywords": [
+    "design-tokens",
+    "css-variables",
+    "dark-mode",
+    "chrome-extension",
+    "xxd-ui"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css",
+    "./src/boot.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./tokens.css": "./tokens.css",
+    "./base.css": "./base.css",
+    "./accent": {
+      "types": "./src/accent.d.ts",
+      "import": "./src/accent.js"
+    },
+    "./theme": {
+      "types": "./src/theme.d.ts",
+      "import": "./src/theme.js"
+    },
+    "./resolve": {
+      "types": "./src/resolve.d.ts",
+      "import": "./src/resolve.js"
+    },
+    "./dist/boot.js": "./dist/boot.js",
+    "./dist/theme.js": "./dist/theme.js",
+    "./dist/tokens.css": "./dist/tokens.css",
+    "./dist/tokens.d.ts": "./dist/tokens.d.ts",
+    "./dist/tokens.json": "./dist/tokens.json",
+    "./dist/tokens.resolved.json": "./dist/tokens.resolved.json",
+    "./dist/tokens.layered.css": "./dist/tokens.layered.css",
+    "./dist/tokens.shadow.css": "./dist/tokens.shadow.css",
+    "./package.json": "./package.json",
+    "./dist/base.css": "./dist/base.css"
+  },
+  "files": [
+    "tokens.css",
+    "base.css",
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test 'test/*.test.mjs'",
+    "prepack": "node scripts/build.mjs",
+    "fixture:color-mix": "node scripts/color-mix-fixture.mjs",
+    "scales": "node scripts/scales.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1",
+    "lightningcss": "1.33.0"
+  }
+}

@@ -1,0 +1,59 @@
+---
+import Site from "../layouts/Site.astro";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const speeds = en
+  ? [["--motion-quick", "140ms", "State changes: leaving hover, color, fades, the completion check"], ["--motion-panel", "180ms", "The right-hand panel slides in"], ["--motion-sheet", "200ms", "A sheet rises from the dock (ease-out-expo)"], ["--motion-medium", "220ms", "Small entrances: rows, filters, progress, switch thumbs"], ["--motion-sheet-out", "120ms", "A sheet retracts"]]
+  : [["--motion-quick", "140ms", "状态变化：离开 hover、颜色、淡入淡出、完成的勾"], ["--motion-panel", "180ms", "右侧面板滑入"], ["--motion-sheet", "200ms", "sheet 从 dock 升起（ease-out-expo）"], ["--motion-medium", "220ms", "小型进入：行、筛选、进度、开关滑块"], ["--motion-sheet-out", "120ms", "sheet 收回"]];
+const T = en
+  ? {
+      title: "Motion", caption: "Foundations", speeds: "Speeds", rules: "Rules", play: "Play",
+      lead: "Motion is for revealing hierarchy and giving feedback, not decoration. Only opacity and transform move; nothing bounces; with reduced motion everything stops at once. Press Play to see each speed.",
+      list: [
+        "Hover: changes instantly on enter, fades back over 140ms on leave.",
+        "Menus, popovers and tooltips grow from their anchor, 0.96 → 1; dialogs and sheets rise.",
+        "Within 300ms of a tooltip closing, moving to the next button shows its tooltip instantly and swaps the text in place.",
+        "Collapsing only fades with a small shift — no height animation.",
+        "A busy button keeps its width; when done its icon turns into a check for one second.",
+      ],
+    }
+  : {
+      title: "动效", caption: "基础", speeds: "速度", rules: "规则", play: "播放",
+      lead: "动效用来揭示层级和给反馈，不是装饰。只动 opacity 和 transform；不弹跳；减少动效时一次性全部静止。点「播放」看每一档。",
+      list: [
+        "hover：进入立即变，离开 140ms 淡回。",
+        "菜单、popover、tooltip 从锚点方向 0.96 → 1 长出来；对话框和 sheet 升起。",
+        "tooltip 关掉后 300ms 内移到下一个按钮，立即出现、原地换字。",
+        "折叠只淡入 + 小位移，不做高度动画。",
+        "进行中的按钮宽度不跳；完成后图标变勾 1 秒。",
+      ],
+    };
+---
+
+<Site title={T.title} headings={[{ slug: "speeds", text: T.speeds }, { slug: "rules", text: T.rules }]}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <h2 class="site-h2" id="speeds">{T.speeds}</h2>
+  <div class="xxd-group__body">
+    {speeds.map(([k, v, use]) => (
+      <div class="xxd-row">
+        <div class="xxd-row__text"><div class="xxd-row__title xxd-text" data-variant="mono">{k} · {v}</div><div class="xxd-row__desc">{use}</div></div>
+        <div class="xxd-row__control" style="width:220px"><span class="site-motion-dot" data-motion={k} style={`display:block;width:16px;height:16px;background:var(--action);transition:transform var(${k}) var(--ease-out-expo)`}></span></div>
+        <div class="xxd-row__control"><button class="xxd-btn" data-size="sm" data-play={k}>{T.play}</button></div>
+      </div>
+    ))}
+  </div>
+  <h2 class="site-h2" id="rules">{T.rules}</h2>
+  <ul class="site-rules">{T.list.map((x) => <li>{x}</li>)}</ul>
+  <script is:inline>
+    for (const b of document.querySelectorAll("[data-play]")) {
+      b.addEventListener("click", () => {
+        const dot = document.querySelector(`[data-motion="${b.dataset.play}"]`);
+        dot.style.transform = dot.style.transform ? "" : "translateX(200px)";
+      });
+    }
+  </script>
+</Site>

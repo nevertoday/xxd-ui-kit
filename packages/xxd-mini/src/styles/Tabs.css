@@ -1,0 +1,30 @@
+/* 标签放在横向滚动区里：标签多了左右滑 */
+.xxd-tabs-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.xxd-tabs {
+  display: inline-flex;
+  min-width: 100%;
+  padding: 0 var(--space-4);
+  overflow: visible;
+}
+
+.xxd-tabs > .is-role-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1-5);
+  min-width: var(--hit-min);
+  height: max(var(--hit-min), var(--tab-h, var(--control-h)));
+}
+
+.xxd-tabs.is-block > .is-role-tab {
+  flex: 1;
+  justify-content: center;
+}
+
+.xxd-tabs > .is-role-tab.is-disabled {
+  color: var(--disabled-ink);
+}

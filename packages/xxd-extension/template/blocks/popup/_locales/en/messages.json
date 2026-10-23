@@ -1,0 +1,8 @@
+{
+  "popupOpenPanel": {
+    "message": "Open in side panel"
+  },
+  "popupHint": {
+    "message": "Quick actions live here; the full app is in the side panel."
+  }
+}

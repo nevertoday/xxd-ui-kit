@@ -1,0 +1,23 @@
+---
+import Site from "../layouts/Site.astro";
+import Demo from "../components/Demo.astro";
+import { langOf, t } from "../i18n/index.js";
+import { richText } from "../lib/markup.js";
+// 模式页：p 由页面的 getStaticPaths 传进来（中文 / 英文各自的数据）。
+const { p } = Astro.props;
+const L = t(langOf(Astro.url.pathname));
+const headings = [{ slug: "demo", text: L.demo }, ...(p.anatomy ? [{ slug: "anatomy", text: L.anatomy }] : []), ...(p.rules?.length ? [{ slug: "rules", text: L.rules }] : []), ...(p.js ? [{ slug: "js", text: "JS" }] : [])];
+---
+
+<Site title={p.label} description={p.summary} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{L.patternCaption} {p.from}</p>
+    <h1 class="xxd-text" data-variant="display">{p.label}</h1>
+    <p class="site-lead" set:html={richText(p.summary)} />
+  </header>
+  <h2 class="site-h2" id="demo">{L.demo}</h2>
+  <Demo markup={p.markup} block={p.block ?? true} align="start" />
+  {p.anatomy && (<><h2 class="site-h2" id="anatomy">{L.anatomy}</h2><ul class="site-rules">{p.anatomy.map((a) => <li set:html={richText(a)} />)}</ul></>)}
+  {p.rules?.length > 0 && (<><h2 class="site-h2" id="rules">{L.rules}</h2><ul class="site-rules">{p.rules.map((r) => <li set:html={richText(r)} />)}</ul></>)}
+  {p.js && (<><h2 class="site-h2" id="js">JS</h2><pre class="site-code" tabindex="0" style="border:1px solid var(--line);border-radius:var(--r-md)"><code>{p.js}</code></pre></>)}
+</Site>

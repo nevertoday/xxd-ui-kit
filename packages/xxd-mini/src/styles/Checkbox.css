@@ -1,0 +1,20 @@
+/* 手机上整块（控件 + 文字）都能点，至少 --hit-min 高 */
+.xxd-choice {
+  align-items: center;
+  min-height: var(--hit-min);
+}
+
+/* 禁用：文字用禁用色（和网页版一样不用半透明） */
+.xxd-choice.is-disabled .xxd-choice__text {
+  color: var(--disabled-ink);
+}
+
+.xxd-choice > .xxd-check,
+.xxd-choice > .xxd-radio {
+  margin-top: 0;
+}
+
+.xxd-choice__text {
+  flex: 1;
+  min-width: 0;
+}

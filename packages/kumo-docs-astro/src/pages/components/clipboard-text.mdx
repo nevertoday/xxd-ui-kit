@@ -1,0 +1,110 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Clipboard Text"
+description: "A text component with a copy-to-clipboard button."
+sourceFile: "components/clipboard-text"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  ClipboardTextBasicDemo,
+  ClipboardTextShortDemo,
+  ClipboardTextApiKeyDemo,
+  ClipboardTextAlternateTextToCopyDemo,
+  ClipboardTextLongDemo,
+  ClipboardTextWithTooltipDemo,
+} from "~/components/demos/ClipboardTextDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="ClipboardTextBasicDemo">
+    <ClipboardTextBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { ClipboardText } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { ClipboardText } from "@cloudflare/kumo/components/clipboard-text";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { ClipboardText } from "@cloudflare/kumo";
+
+export default function Example() {
+  return <ClipboardText text="Copy this text" />;
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Short Text
+
+<ComponentExample demo="ClipboardTextShortDemo">
+  <ClipboardTextShortDemo client:visible />
+</ComponentExample>
+
+### API Key
+
+<ComponentExample demo="ClipboardTextApiKeyDemo">
+  <ClipboardTextApiKeyDemo client:visible />
+</ComponentExample>
+
+### Copy Alternate Text
+
+<ComponentExample demo="ClipboardTextAlternateTextToCopyDemo">
+  <ClipboardTextAlternateTextToCopyDemo client:visible />
+</ComponentExample>
+
+### Long Text
+
+<ComponentExample demo="ClipboardTextLongDemo">
+  <ClipboardTextLongDemo client:visible />
+</ComponentExample>
+
+### With Tooltip
+
+<p>Shows "Copy" tooltip on hover, "Copied!" toast on click.</p>
+<ComponentExample demo="ClipboardTextWithTooltipDemo">
+  <ClipboardTextWithTooltipDemo client:visible />
+</ComponentExample>
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+  <PropsTable component="ClipboardText" />
+</ComponentSection>

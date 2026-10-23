@@ -1,0 +1,4 @@
+.xxd-meter__value {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

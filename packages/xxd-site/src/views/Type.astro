@@ -1,0 +1,60 @@
+---
+import Site from "../layouts/Site.astro";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const scale = en
+  ? [["display", "28 / 36 · 600", "Page titles"], ["heading1", "24 / 32 · 600", "First-level headings"], ["heading2", "20 / 28 · 600", "Section headings"], ["heading3", "16 / 24 · 500", "Small headings, settings row titles"], ["body", "13 / 20 · 400", "Body text, controls (most common in extensions)"], ["secondary", "13 / 20 · 400 · muted", "Secondary descriptions"], ["caption", "12 / 16 · 400 · muted", "Notes, metadata (one line)"], ["mono", "monospace, one size smaller", "Code, variable names (13 → 12)"]]
+  : [["display", "28 / 36 · 600", "页面大标题"], ["heading1", "24 / 32 · 600", "一级标题"], ["heading2", "20 / 28 · 600", "区块标题"], ["heading3", "16 / 24 · 500", "小标题、设置行标题"], ["body", "13 / 20 · 400", "正文、控件（插件里最常用）"], ["secondary", "13 / 20 · 400 · muted", "次要说明"], ["caption", "12 / 16 · 400 · muted", "注释、元数据（一行）"], ["mono", "等宽，小一号", "代码、变量名（13 → 12）"]];
+// 字号和行高成对（设计师评审 D20）：行高都在 4px 网格上
+const pairs = en
+  ? [["11 / 16", "--text-2xs / --leading-xs", "Never for Chinese: kbd and shortcuts, monospace names, chart tick numbers"], ["12 / 16", "--text-xs / --leading-xs", "One-line labels, menus, table headers, badges, tooltips (the smallest size for Chinese)"], ["12 / 20", "--text-xs / --leading-sm", "Descriptions that can wrap: field help, settings row notes, empty states"], ["13 / 20", "--text-sm / --leading-sm", "Body text, controls"], ["14 / 20", "--text-base / --leading-sm", "Large controls, logo"], ["14 / 24", "--text-base / --leading-md", "Paragraphs on documentation pages"], ["16 / 24", "--text-lg / --leading-md", "heading3: subsection headings, titles inside a block (500)"], ["16 / 28", "--text-lg / --leading-lg", "Reading text (.xxd-prose)"], ["20 / 28", "--text-xl / --leading-lg", "heading2: section headings (600)"], ["24 / 32", "--text-xxl / --leading-xl", "First-level headings"], ["28 / 36", "--text-display / --leading-display", "Page titles"]]
+  : [["11 / 16", "--text-2xs / --leading-xs", "不给中文：键帽和快捷键、等宽的名字、图上的刻度数字"], ["12 / 16", "--text-xs / --leading-xs", "一行的标签、菜单、表头、徽标、tooltip（中文最小就是 12）"], ["12 / 20", "--text-xs / --leading-sm", "会折行的说明：字段提示、设置行说明、空状态"], ["13 / 20", "--text-sm / --leading-sm", "正文、控件"], ["14 / 20", "--text-base / --leading-sm", "大号控件、标志"], ["14 / 24", "--text-base / --leading-md", "说明页的段落（文档）"], ["16 / 24", "--text-lg / --leading-md", "heading3：小节标题、块里的标题（500）"], ["16 / 28", "--text-lg / --leading-lg", "阅读正文（.xxd-prose）"], ["20 / 28", "--text-xl / --leading-lg", "heading2：节标题（600）"], ["24 / 32", "--text-xxl / --leading-xl", "一级标题"], ["28 / 36", "--text-display / --leading-display", "页面大标题"]];
+const T = en
+  ? {
+      title: "Typography", caption: "Foundations", scale: "Scale", pairs: "Size and line height in pairs", pairsLead: "Eight sizes (11 · 12 · 13 · 14 · 16 · 20 · 24 · 28 — no 15), each with a line height on the 4px grid. Fixed-height one-line controls (buttons, tabs, badges) use line-height 1 and are centred by their height. The audit checks rendered pages against this table.", prose: "Reading typography (.xxd-prose)",
+      lead: "System sans-serif fonts only: Avenir Next / Segoe UI for Latin text, PingFang / Microsoft YaHei / Source Han Sans for Chinese. Titles and body share one family; no web fonts; weights 400 / 500 / 600 only; selection changes color, never weight; letter spacing is never changed. Below: size / line height in px · weight; line heights sit on a 4px grid.",
+      sample: "XXD UI makes every extension look like family",
+      h2: "Editorial poster", p: "Restrained editorial brutalism: a paper background, crisp black lines, clean sans-serif type, dense but readable text.", link: "A link", code: "inline code",
+      li: ["List markers use the accent", "Quote lines at 40%"], quote: "Motion is for revealing hierarchy and giving feedback, not decoration.", toast: 'toast("Saved", { tone: "success" })',
+    }
+  : {
+      title: "字体与层级", caption: "基础", scale: "层级", pairs: "字号和行高成对", pairsLead: "八档字号（11 · 12 · 13 · 14 · 16 · 20 · 24 · 28，没有 15），每档配一个落在 4px 网格上的行高。固定高度的单行控件（按钮、标签页、徽标）行高写 1，由控件高度居中。audit 会按这张表检查渲染出来的页面。", prose: "阅读排版（.xxd-prose）",
+      lead: "只用系统无衬线字体：英文 Avenir Next / Segoe UI，中文苹方 / 微软雅黑 / 思源黑体；标题和正文同一家族；不加载网络字体；字重只有 400 / 500 / 600；选中改颜色，不加粗；不改字距。下表写的是字号 / 行高（px）· 字重，行高都落在 4px 网格上。",
+      sample: "小小东 UI 让每个插件看起来是一家人",
+      h2: "编辑式海报", p: "克制的编辑式粗野主义：纸色背景、清晰的黑线、干净的无衬线字、密但好读的中文。", link: "一个链接", code: "行内代码",
+      li: ["列表的点用主色", "引用的线 40%"], quote: "动效用来揭示层级和给反馈，不是装饰。", toast: 'toast("已保存", { tone: "success" })',
+    };
+---
+
+<Site title={T.title} headings={[{ slug: "scale", text: T.scale }, { slug: "pairs", text: T.pairs }, { slug: "prose", text: T.prose.replace(/（.*）| \(.*\)/, "") }]}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <h2 class="site-h2" id="scale">{T.scale}</h2>
+  <div class="xxd-group__body">
+    {scale.map(([v, spec, use]) => (
+      <div class="xxd-row"><div class="xxd-row__text"><p class="xxd-text" data-variant={v}>{T.sample}</p></div><div class="xxd-row__control xxd-text" data-variant="caption" style="width:220px">{v} · {spec}<br />{use}</div></div>
+    ))}
+  </div>
+  <h2 class="site-h2" id="pairs">{T.pairs}</h2>
+  <p class="site-lead">{T.pairsLead}</p>
+  <div class="xxd-table-wrap">
+    <table class="xxd-table">
+      <tbody>
+        {pairs.map(([px, tok, use]) => (
+          <tr><td><b>{px}</b></td><td><code class="xxd-code-inline">{tok}</code></td><td data-wrap>{use}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <h2 class="site-h2" id="prose">{T.prose}</h2>
+  <article class="xxd-prose" style="border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--space-6);background:var(--paper)">
+    <h2>{T.h2}</h2>
+    <p>{T.p}<a href="#">{T.link}</a>{en ? ", " : "，"}{T.code} <code>--r-sm</code>{en ? "." : "。"}</p>
+    <ul>{T.li.map((x) => <li>{x}</li>)}</ul>
+    <blockquote>{T.quote}</blockquote>
+    <pre><code>{T.toast}</code></pre>
+  </article>
+</Site>

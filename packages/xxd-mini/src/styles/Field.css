@@ -1,0 +1,56 @@
+/* 小程序的 input / textarea 是原生组件：宽度要写明白，字号至少 16px 才不会在 iOS 上放大页面（H5） */
+.xxd-input,
+.xxd-textarea {
+  width: 100%;
+  font-size: var(--text-lg);
+}
+
+.xxd-input {
+  height: max(var(--hit-min), var(--control-h));
+}
+
+.xxd-textarea {
+  min-height: 72px;
+  line-height: var(--leading-md);
+}
+
+/* placeholder-class 加的类名：网页版 ::placeholder 的颜色 */
+.is-placeholder {
+  /* 占位字和网页一样用 --muted（5.3:1）；--muted-2 只做装饰（COLOR-REVIEW-PLAN D80） */
+  color: var(--muted);
+}
+
+.xxd-label__optional {
+  margin-left: var(--space-1-5);
+  color: var(--muted);
+  font-weight: var(--weight-regular);
+}
+
+/* 说明（或出错）在左、字数在右，放一行 */
+.xxd-field__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.xxd-field__meta > .xxd-help,
+.xxd-field__meta > .xxd-error {
+  flex: 1;
+  min-width: 0;
+}
+
+.xxd-help.is-counter {
+  flex: none;
+  justify-self: end;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.xxd-help.is-counter.is-over {
+  color: var(--danger);
+}
+
+/* 多行输入框按行数定高：行高 × 行数 + 上下内边距 + 边框（不在组件里写死数字） */
+.xxd-textarea:not(.is-autosize) {
+  height: calc(var(--rows, 3) * var(--leading-md) + var(--space-2) * 2 + 2px);
+}

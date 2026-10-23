@@ -1,0 +1,122 @@
+---
+import Site from "../layouts/Site.astro";
+import { ICON_NAMES, ICON_ALIASES, ICON_GROUPS, ICON_KEYWORDS, icon } from "../lib/data.js";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const n = ICON_NAMES.length;
+// 别名按目标归到图标上：搜 AlertTriangle 也能找到 TriangleAlert
+const aliasesOf = {};
+for (const [alias, target] of Object.entries(ICON_ALIASES)) (aliasesOf[target] ||= []).push(alias);
+// 分类名也算关键词：「日历 添加」能找到 CalendarPlus
+const groupOf = Object.fromEntries(ICON_GROUPS.flatMap((g) => Object.keys(g.icons).map((k) => [k, `${g.zh} ${g.en}`])));
+const keysOf = (name) => [name, ...(aliasesOf[name] || []), ICON_KEYWORDS[name] || "", groupOf[name]].join(" ").toLowerCase();
+const T = en
+  ? {
+      title: "Icons", caption: "Foundations",
+      lead: `${n} icons, one drawing style: 24 grid, 1.5 stroke, round caps, miter joins, square corners; only things that are round get drawn round. Search by name, by another library's name (AlertTriangle, CheckCircle…) or in Chinese. Click one to copy it.`,
+      search: `Search ${n} icons`, searchLabel: "Search icons", format: "Copy as", copied: (x) => `Copied ${x}`,
+      count: (k) => (k === 1 ? "1 icon" : `${k} icons`), empty: "No icon matches. Try another word, or ask for one to be drawn.",
+      cli: "From the CLI:", size: "Size", download: "Download all SVGs (.zip)",
+      downloadNote: "Every icon as a 24 × 24 SVG, plus Chinese / English keywords. Keep the stroke at 1.5px when resizing (turn off “scale strokes”); on the web the stroke stays 1.5px at every size.",
+    }
+  : {
+      title: "图标", caption: "基础",
+      lead: `${n} 个，同一种画法：24 网格、1.5 线宽、圆头、斜接角、方角；只有本身是圆的才画圆。中文、英文名、别的图标库里的叫法（AlertTriangle、CheckCircle…）都能搜。点一个就复制。`,
+      search: `搜索 ${n} 个图标，比如「删除」「购物车」`, searchLabel: "搜索图标", format: "复制成", copied: (x) => `已复制 ${x}`,
+      count: (k) => `${k} 个`, empty: "没有找到。换个词试试；常用的还缺，就告诉小小东补画一个。",
+      cli: "命令行里找：", size: "尺寸", download: "下载全部 SVG（.zip）",
+      downloadNote: "每个图标一个 24 × 24 的 SVG，附中英关键词表。在设计工具里放大缩小时保持 1.5px 线宽（关掉「缩放描边」）；网页上任何尺寸线宽都是 1.5px。",
+    };
+// 尺寸：12（小字旁的 chevron）、14（和文字同行）、16（按钮、控件里）、18（工具栏）、20（侧栏）、24（原始网格）
+const sizes = [12, 14, 16, 18, 20, 24];
+const formats = en
+  ? [["html", "HTML"], ["svg", "SVG"], ["react", "React"], ["name", "Name"]]
+  : [["html", "HTML"], ["svg", "SVG"], ["react", "React"], ["name", "名字"]];
+const strings = JSON.stringify({ count: T.count("{n}"), one: T.count(1) });
+---
+
+<Site title={T.title} wide>
+  <header class="site-head" style="max-width:760px">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <div class="site-icons-bar">
+    <div class="xxd-input-wrap site-icons-bar__search">
+      <Fragment set:html={icon("Search", 16)} />
+      <input class="xxd-input" type="search" id="icon-search" placeholder={T.search} aria-label={T.searchLabel} autocomplete="off" />
+    </div>
+    <div class="site-icons-bar__format">
+      <span class="xxd-text" data-variant="caption" id="icon-format-label">{T.format}</span>
+      <div class="xxd-segmented" data-xxd-segmented data-name="icon-format" aria-labelledby="icon-format-label" id="icon-format">
+        {formats.map(([v, label], i) => <button role="radio" data-value={v} aria-checked={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>{label}</button>)}
+      </div>
+    </div>
+    <div class="site-icons-bar__format">
+      <span class="xxd-text" data-variant="caption" id="icon-size-label">{T.size}</span>
+      <div class="xxd-segmented" data-xxd-segmented data-name="icon-size" aria-labelledby="icon-size-label" id="icon-size">
+        {sizes.map((v) => <button role="radio" data-value={String(v)} aria-checked={v === 16 ? "true" : "false"} tabindex={v === 16 ? 0 : -1}>{v}</button>)}
+      </div>
+    </div>
+    <p class="xxd-text site-icons-bar__count" data-variant="caption" id="icon-count" aria-live="polite">{T.count(n)}</p>
+  </div>
+  <p class="xxd-text site-icons-bar__cli" data-variant="caption"><a class="xxd-btn" data-size="sm" href="/xxd/xxd-icons-svg.zip" download="xxd-icons-svg.zip"><Fragment set:html={icon("Download", 14)} />{T.download}</a> {T.downloadNote}</p>
+  <p class="xxd-text site-icons-bar__cli" data-variant="caption">{T.cli} <code class="xxd-code-inline site-token">pnpm xxd icon {en ? "trash" : "删除"}</code></p>
+  <div id="icon-grid">
+    {
+      ICON_GROUPS.map((g) => (
+        <section class="site-icons-group" data-group={g.id}>
+          <h2 class="site-icons-group__title">{en ? g.en : g.zh}<span>{Object.keys(g.icons).length}</span></h2>
+          <div class="site-icons">
+            {Object.keys(g.icons).map((name) => (
+              <button type="button" data-name={name} data-keys={keysOf(name)} title={en ? name : `${name} · ${ICON_KEYWORDS[name]}`} data-copy={`<i data-xxd-icon="${name}"></i>`} data-copy-done={T.copied(name)}>
+                <Fragment set:html={icon(name, 24)} />
+                <span class="site-icons__name">{name}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+  <p class="site-icons-empty" id="icon-empty" hidden>{T.empty}</p>
+  <script is:inline define:vars={{ strings }}>
+    (() => {
+      const S = JSON.parse(strings);
+      const input = document.getElementById("icon-search");
+      const buttons = [...document.querySelectorAll("#icon-grid button")];
+      const groups = [...document.querySelectorAll(".site-icons-group")];
+      const count = document.getElementById("icon-count");
+      const empty = document.getElementById("icon-empty");
+      // 搜索：空格分开的每个词都要命中（名字、别名、中文关键词）
+      const filter = () => {
+        const words = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        let shown = 0;
+        for (const b of buttons) {
+          const hit = words.every((w) => b.dataset.keys.includes(w));
+          b.hidden = !hit;
+          if (hit) shown += 1;
+        }
+        for (const g of groups) g.hidden = !g.querySelector("button:not([hidden])");
+        count.textContent = shown === 1 ? S.one : S.count.replace("{n}", shown);
+        empty.hidden = shown > 0;
+      };
+      input.addEventListener("input", filter);
+      // 复制格式
+      const formats = {
+        html: (name, b, size) => `<i data-xxd-icon="${name}"${size === 16 ? "" : ` data-size="${size}"`}></i>`,
+        svg: (name, b, size) => b.querySelector("svg").outerHTML.replace(/ width="\d+" height="\d+"/, ` width="${size}" height="${size}"`).replace(/ class="[^"]*"/, ' xmlns="http://www.w3.org/2000/svg"'),
+        react: (name, b, size) => `<Icon name="${name}"${size === 16 ? "" : ` size={${size}}`} />`,
+        name: (name) => name,
+      };
+      let fmt = "html";
+      let size = 16;
+      const apply = () => { for (const b of buttons) b.setAttribute("data-copy", (formats[fmt] || formats.html)(b.dataset.name, b, size)); };
+      document.getElementById("icon-format").addEventListener("xxd:change", (e) => { fmt = e.detail.value; apply(); });
+      document.getElementById("icon-size").addEventListener("xxd:change", (e) => { size = Number(e.detail.value) || 16; apply(); });
+      // 地址里带 ?q= 时直接搜（命令行和别的页可以链过来）
+      const q = new URLSearchParams(location.search).get("q");
+      if (q) { input.value = q; filter(); }
+    })();
+  </script>
+</Site>

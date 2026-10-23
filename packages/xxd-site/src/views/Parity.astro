@@ -1,0 +1,68 @@
+---
+// 两种实现对照（设计师评审 V1）：同一个组件，左边原生 HTML（@xxd/css），右边 React（@xxd/react）。
+// 以 HTML 为准（D19）。audit 的「对照」一项读这一页，两边不一样就失败；设计师在这里一眼看出两套是不是一个样子。
+import Site from "../layouts/Site.astro";
+import Parity from "../react/Parity.tsx";
+import { langOf } from "../i18n/index.js";
+const en = langOf(Astro.url.pathname) === "en";
+const lang = en ? "en" : "zh";
+const tr = (zh: string, en2: string) => (en ? en2 : zh);
+const T = en
+  ? {
+      caption: "Tools", title: "HTML and React side by side", impl: ["Native HTML", "React"], component: "Component",
+      lead: "The same component in both implementations. HTML (@xxd/css) is the reference; React (@xxd/react, Kumo reskinned) follows it. The audit compares each pair's size, type, colour, edge, corners and background, and fails on any difference — so a design spec fits both.",
+    }
+  : {
+      caption: "工具", title: "两种实现对照", impl: ["原生 HTML", "React"], component: "组件",
+      lead: "同一个组件的两种实现并排。以原生 HTML（@xxd/css）为准，React（@xxd/react，Kumo 换皮）向它看齐。audit 会逐对比较尺寸、字号、字重、颜色、边、圆角和底色，有一项不一样就失败 —— 所以一份设计稿对两种实现都成立。",
+    };
+const PAIRS: [string, string, string][] = [
+  ["button-primary", tr("主按钮", "Primary button"), `<button class="xxd-btn" data-variant="primary">${tr("写入", "Post")}</button>`],
+  ["button-secondary", tr("次按钮", "Secondary button"), `<button class="xxd-btn">${tr("保存草稿", "Save draft")}</button>`],
+  ["button-ghost", tr("幽灵按钮", "Ghost button"), `<button class="xxd-btn" data-variant="ghost">${tr("稍后", "Later")}</button>`],
+  ["button-outline", tr("描边按钮", "Outline button"), `<button class="xxd-btn" data-variant="outline">${tr("导出", "Export")}</button>`],
+  ["button-danger", tr("危险按钮", "Danger button"), `<button class="xxd-btn" data-variant="danger">${tr("删除", "Delete")}</button>`],
+  ["button-sm", tr("小按钮", "Small button"), `<button class="xxd-btn" data-size="sm">${tr("复制", "Copy")}</button>`],
+  ["button-primary-disabled", tr("主按钮（禁用）", "Primary button (disabled)"), `<button class="xxd-btn" data-variant="primary" disabled>${tr("写入", "Post")}</button>`],
+  ["button-secondary-disabled", tr("次按钮（禁用）", "Secondary button (disabled)"), `<button class="xxd-btn" disabled>${tr("保存草稿", "Save draft")}</button>`],
+  ["input", tr("输入框", "Input"), `<input class="xxd-input" style="width:240px" aria-label="${tr("标题", "Title")}" placeholder="${tr("给这篇文章起个名字", "Name this post")}">`],
+  ["input-disabled", tr("输入框（禁用）", "Input (disabled)"), `<input class="xxd-input" style="width:240px" aria-label="${tr("标题", "Title")}" value="${tr("已发布", "Published")}" disabled>`],
+  ["select", tr("选择", "Select"), `<label class="xxd-select" style="width:160px"><select aria-label="${tr("图片质量", "Image quality")}"><option>${tr("高", "High")}</option><option>${tr("标准", "Standard")}</option></select></label>`],
+  ["checkbox", tr("复选（选中）", "Checkbox (on)"), `<label class="xxd-choice"><input type="checkbox" class="xxd-check" checked>${tr("智能标点", "Smart punctuation")}</label>`],
+  ["checkbox-off", tr("复选（未选）", "Checkbox (off)"), `<label class="xxd-choice"><input type="checkbox" class="xxd-check">${tr("写入标题", "Write title")}</label>`],
+  ["checkbox-disabled", tr("复选（禁用）", "Checkbox (disabled)"), `<label class="xxd-choice"><input type="checkbox" class="xxd-check" checked disabled>${tr("智能标点", "Smart punctuation")}</label>`],
+  ["switch", tr("开关（开）", "Switch (on)"), `<label class="xxd-choice"><input type="checkbox" role="switch" class="xxd-switch" checked>${tr("完成音效", "Done sound")}</label>`],
+  ["switch-off", tr("开关（关）", "Switch (off)"), `<label class="xxd-choice"><input type="checkbox" role="switch" class="xxd-switch">${tr("自动保存", "Autosave")}</label>`],
+  ["switch-disabled", tr("开关（禁用）", "Switch (disabled)"), `<label class="xxd-choice"><input type="checkbox" role="switch" class="xxd-switch" checked disabled>${tr("完成音效", "Done sound")}</label>`],
+  ["radio", tr("单选", "Radio"), `<fieldset class="xxd-choices"><legend>${tr("写入方式", "Write mode")}</legend><label class="xxd-choice"><input type="radio" class="xxd-radio" name="pr" checked>${tr("只写这一篇", "Only this post")}</label><label class="xxd-choice"><input type="radio" class="xxd-radio" name="pr">${tr("全部写入", "Write all")}</label></fieldset>`],
+  ["tabs", tr("标签页", "Tabs"), `<div class="xxd-tabs" data-xxd-tabs role="tablist"><button role="tab" aria-selected="true">${tr("写作", "Write")}</button><button role="tab">${tr("记录", "History")}</button></div>`],
+  ["badge", tr("徽标", "Badge"), `<span class="xxd-badge">${tr("草稿", "Draft")}</span>`],
+  ["gauge", tr("量表（区段、目标）", "Gauge (zones, target)"), `<div class="xxd-gauge" data-gauge data-value="94" data-unit="%" data-label="${tr("本月额度", "Monthly quota")}" data-target="80" data-zones="80-90:warning,90:danger"></div>`],
+  ["gauge-parts", tr("量表（分段）", "Gauge (parts)"), `<div class="xxd-gauge" data-gauge data-shape="ring" data-unit="GB" data-label="${tr("已用空间", "Storage used")}" data-parts="${tr("图片", "Images")}:38;${tr("视频", "Video")}:22"></div>`],
+  ["bars", tr("条形榜（重点）", "Bar list (highlight)"), `<ol class="xxd-bars" data-viz="bars" data-unit="${tr("人", "users")}" data-highlight="${tr("批量存图", "Image saver")}" data-items="${tr("长文发布", "Publisher")}:2410;${tr("批量存图", "Image saver")}:5102;${tr("今日待办", "Today")}:312"></ol>`],
+  ["proportion", tr("构成条", "Proportion bar"), `<div class="xxd-proportion" data-viz="proportion" data-label="${tr("已用空间", "Storage used")}" data-unit="GB" data-parts="${tr("图片", "Images")}:38;${tr("视频", "Video")}:22;${tr("文档", "Documents")}:9"></div>`],
+  ["table", tr("表格", "Table"), `<div class="xxd-table-wrap"><table class="xxd-table"><thead><tr><th>${tr("插件", "Extension")}</th><th data-align="end">${tr("用户", "Users")}</th></tr></thead><tbody><tr><td>${tr("长文发布", "Long post")}</td><td data-align="end">2,410</td></tr></tbody></table></div>`],
+];
+---
+
+<Site title={T.title}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+  <div class="site-parity" role="table" aria-label={T.title}>
+    <div class="site-parity__row site-parity__head" role="row">
+      <span role="columnheader"><span class="xxd-sr-only">{T.component}</span></span>
+      <span role="columnheader">{T.impl[0]}</span>
+      <span role="columnheader">{T.impl[1]}</span>
+    </div>
+    {PAIRS.map(([id, label, html]) => (
+      <div class="site-parity__row" role="row">
+        <span class="site-parity__name" role="rowheader">{label}</span>
+        <div class="site-parity__cell" role="cell" data-pair={id} data-impl="html" set:html={html} />
+        <div class="site-parity__cell" role="cell" data-pair={id} data-impl="react"><Parity client:load id={id} lang={lang} /></div>
+      </div>
+    ))}
+  </div>
+</Site>

@@ -1,0 +1,4 @@
+/* 开关在行里靠右时不需要文字 */
+.xxd-choice > .xxd-switch:only-child {
+  margin: 0;
+}

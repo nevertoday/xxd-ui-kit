@@ -1,0 +1,71 @@
+.xxd-tabbar {
+  display: flex;
+  align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.xxd-tabbar.is-fixed {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-dock);
+}
+
+.xxd-tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-0-5);
+  min-height: var(--tabbar-h);
+  color: var(--muted);
+  transition: color var(--motion-quick) ease;
+}
+
+.xxd-tabbar__item.is-selected {
+  color: var(--ink);
+}
+
+.xxd-tabbar__item.is-hover {
+  opacity: 0.7;
+}
+
+.xxd-tabbar__icon {
+  position: relative;
+  display: flex;
+}
+
+.xxd-tabbar__label {
+  font: var(--weight-medium) var(--text-tab) / var(--leading-xs) var(--font-body);
+}
+
+.xxd-tabbar__badge {
+  position: absolute;
+  top: -4px;
+  left: 14px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 var(--space-1);
+  font-size: var(--text-tab);
+  line-height: var(--leading-xs);
+}
+
+.xxd-tabbar__badge.is-dot {
+  min-width: 8px;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  top: -2px;
+  left: 18px;
+}
+
+/* 页面底部的留白在 BottomBar.css（.xxd-page.is-has-bottom，按 --bottom-inset） */
+
+/* 自带的自定义标签栏（custom-tab-bar 里的 TabBarHost）：不固定，占满那一条 */
+.xxd-tabbar-host {
+  color: var(--ink);
+}

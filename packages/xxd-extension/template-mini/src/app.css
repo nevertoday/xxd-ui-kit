@@ -1,0 +1,9 @@
+/*postcss-pxtransform disable*/
+/* 自己的样式只用令牌：var(--ink)、var(--line)、var(--space-4)…… */
+.page-head {
+  padding: var(--space-6) var(--space-4) var(--space-2);
+}
+
+.page-block {
+  padding: var(--space-3) var(--space-4);
+}

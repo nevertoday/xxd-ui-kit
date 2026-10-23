@@ -1,0 +1,61 @@
+---
+// React 版的属性表：Kumo 来的组件读 Kumo 的组件清单（packages/kumo/ai/component-registry.json，说明是英文原文，中文页上标 lang="en"）；
+// 小小东自己写的（Rail、Card、Sheet…）读 @xxd/react 构建时从源码生成的 dist/props.json。
+import registry from "@cloudflare/kumo/ai/component-registry.json";
+import xxdProps from "@xxd/react/props.json";
+import { REACT_PROPS_EN } from "../data/react-props.en.js";
+import { langOf, t } from "../i18n/index.js";
+import ReactPropsTable from "./ReactPropsTable.astro";
+interface Props {
+  name: string;
+}
+const { name } = Astro.props;
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+const own = xxdProps[name];
+// 自己写的组件：说明是中文注释；英文页换成 data/react-props.en.js 里的英文（没有就不显示）
+const ownProps = own && lang === "en" ? Object.fromEntries(Object.entries(own.props).map(([k, p]) => [k, { ...p, description: REACT_PROPS_EN[name]?.[k] ?? "" }])) : own?.props;
+const entry = registry.components[name] ?? (own && { props: ownProps, subComponents: {}, rest: own.rest });
+// 只列组件自己的属性：有说明、有可选值或有缺省值的（id、title、name 这些 HTML 通用属性不列）
+const KEEP = new Set(["disabled", "open", "defaultOpen", "onOpenChange", "value", "defaultValue", "onValueChange", "checked", "onCheckedChange"]);
+const props = entry
+  ? Object.entries(entry.props ?? {}).filter(([k, p]) => k !== "children" && k !== "className" && (own || p.description || p.values || p.default !== undefined || KEEP.has(k)))
+  : [];
+// 浮层定位参数（Base UI 透传的）：很少要改，单独收起来，免得把常用属性埋在后面
+const POSITIONING = new Set(["align", "alignOffset", "side", "sideOffset", "arrowPadding", "anchor", "collisionAvoidance", "collisionBoundary", "collisionPadding", "sticky", "positionMethod", "disableAnchorTracking", "alignItemWithTrigger", "trackAnchor"]);
+const main = props.filter(([k]) => !POSITIONING.has(k));
+const positioning = props.filter(([k]) => POSITIONING.has(k));
+const FIRST = 12;
+const shown = main.slice(0, FIRST);
+const more = main.slice(FIRST);
+const subs = entry ? Object.keys(entry.subComponents ?? {}) : [];
+---
+
+{
+  entry && (
+    <>
+      <p class="site-p">
+        <code class="xxd-code-inline">{`import { ${name} } from "@xxd/react";`}</code>
+        {subs.length > 0 && <> · {L.reactSubs} {subs.map((s) => <code class="xxd-code-inline site-token">{`${name}.${s}`}</code>)}</>}
+      </p>
+      {shown.length > 0 && <ReactPropsTable rows={shown} />}
+      {entry.rest && (
+        <p class="site-p xxd-text" data-variant="secondary">
+          {lang === "en" ? "Other props are passed to the root element " : "其余属性原样传给根元素 "}<code class="xxd-code-inline">{entry.rest}</code>
+        </p>
+      )}
+      {more.length > 0 && (
+        <details class="site-props-more">
+          <summary>{lang === "en" ? `${more.length} more props` : `其余 ${more.length} 个属性`}</summary>
+          <ReactPropsTable rows={more} />
+        </details>
+      )}
+      {positioning.length > 0 && (
+        <details class="site-props-more">
+          <summary>{lang === "en" ? `Popup positioning (${positioning.length}, passed to Base UI)` : `浮层定位（${positioning.length} 个，透传给 Base UI）`}</summary>
+          <ReactPropsTable rows={positioning} />
+        </details>
+      )}
+    </>
+  )
+}

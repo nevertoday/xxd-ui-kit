@@ -1,0 +1,11 @@
+/* 小程序里轻提示在底部安全区上面，盖在底部按钮条和标签栏之上 */
+.xxd-toast-region {
+  /* 浮在标签栏、底部按钮条上面（XxdPage 算好的 --bottom-inset，浮层根上也写了一份） */
+  bottom: calc(var(--bottom-inset, env(safe-area-inset-bottom)) + var(--space-4));
+  z-index: var(--z-toast);
+}
+
+.xxd-toast__text {
+  flex: 1;
+  min-width: 0;
+}

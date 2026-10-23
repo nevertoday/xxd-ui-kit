@@ -1,0 +1,168 @@
+---
+// 活演示：上面是真的组件，下面是代码（默认展开，限高；太长时底部有「展开全部」）。有 React 版时多一个「React」标签页，两种实现并排；
+// 有小程序版（@xxd/mini）时再多一个「小程序」标签页：手机框里是演示小程序的 H5。
+import { icon } from "../lib/data.js";
+import { embed, extractFunction, formatMarkup, nextId, withImports } from "../lib/markup.js";
+import ReactDemo from "../react/ReactDemo.tsx";
+import demoSource from "../react/demos.tsx?raw";
+import demoSourceEn from "../react/demos.en.tsx?raw";
+import MiniFrame from "./MiniFrame.astro";
+import { miniCode } from "../lib/mini.js";
+import { langOf, t } from "../i18n/index.js";
+
+interface Props {
+  markup: string;
+  react?: string;
+  align?: "center" | "start";
+  block?: boolean;
+  title?: string;
+  /** 浮层这类不点开就看不出样子的：静态展开的样子，放在真的触发按钮旁边（不能操作，只给看） */
+  preview?: string;
+  /** 小程序版的组件（mini.json 的名字和这种语言的叫法） */
+  mini?: { name: string; label: string };
+}
+const { markup, react, align = "center", block = false, title, preview, mini } = Astro.props;
+const lang = langOf(Astro.url.pathname);
+const L = t(lang);
+const id = nextId("demo");
+const reactSource = lang === "en" ? demoSourceEn : demoSource;
+const reactCode = react ? withImports(extractFunction(reactSource, `${react}Demo`), reactSource) : "";
+const hasReact = Boolean(reactCode);
+const miniSource = mini ? miniCode(mini.name, lang) : "";
+---
+
+<div class="site-demo" data-demo={title}>
+  <div id={`${id}-native`}>
+    {
+      preview ? (
+        <div class="site-demo__stage" data-align={align} data-preview>
+          <figure class="site-demo__preview" inert>
+            <div class="site-demo__preview-body" set:html={embed(preview)} />
+            <figcaption>{L.previewCaption}</figcaption>
+          </figure>
+          <div class="site-demo__live" set:html={embed(markup)} />
+        </div>
+      ) : (
+        <div class="site-demo__stage" data-align={align} data-block={block ? "" : undefined} set:html={embed(markup)} />
+      )
+    }
+  </div>
+  {
+    hasReact && (
+      <div id={`${id}-react`} hidden>
+        <div class="site-demo__stage" data-align={align} data-block={block ? "" : undefined}>
+          <ReactDemo client:visible name={react} lang={lang} />
+        </div>
+      </div>
+    )
+  }
+  {
+    mini && (
+      <div id={`${id}-mini`} hidden>
+        <div class="site-demo__stage" data-align="center">
+          <MiniFrame name={mini.name} label={mini.label} height={560} />
+        </div>
+      </div>
+    )
+  }
+  <div class="site-demo__bar">
+    <div class="xxd-tabs" data-xxd-tabs data-size="sm" aria-label={L.impl}>
+      <button role="tab" id={`${id}-t1`} aria-controls={`${id}-native ${id}-code1`} aria-selected="true">{L.native}</button>
+      {hasReact && <button role="tab" id={`${id}-t2`} aria-controls={`${id}-react ${id}-code2`}>React</button>}
+      {mini && <button role="tab" id={`${id}-t3`} aria-controls={`${id}-mini ${id}-code3`}>{L.miniTab}</button>}
+    </div>
+    <button class="xxd-btn" data-variant="ghost" data-size="sm" data-site-code-wrap aria-pressed="false">{L.codeWrap}</button>
+    <button class="xxd-btn" data-variant="ghost" data-size="sm" data-site-code-toggle aria-expanded="true">
+      <Fragment set:html={icon("Code", 14)} />{L.code}
+    </button>
+  </div>
+  <div class="site-demo__code" id={`${id}-code1`}>
+    <pre class="site-code" tabindex="0"><code>{formatMarkup(markup)}</code></pre>
+    <button class="xxd-btn site-code__copy" data-variant="ghost" data-icon-only data-size="sm" aria-label={L.copy} data-copy-target={`#${id}-code1 code`} set:html={icon("Copy", 14)} />
+    <button class="xxd-btn site-code__more" data-variant="ghost" data-size="sm" aria-expanded="false" data-all={L.codeAll} data-less={L.codeLess} hidden>{L.codeAll}</button>
+  </div>
+  {
+    hasReact && (
+      <div class="site-demo__code" id={`${id}-code2`} hidden>
+        <pre class="site-code" tabindex="0"><code>{reactCode}</code></pre>
+        <button class="xxd-btn site-code__copy" data-variant="ghost" data-icon-only data-size="sm" aria-label={L.copy} data-copy-target={`#${id}-code2 code`} set:html={icon("Copy", 14)} />
+        <button class="xxd-btn site-code__more" data-variant="ghost" data-size="sm" aria-expanded="false" data-all={L.codeAll} data-less={L.codeLess} hidden>{L.codeAll}</button>
+      </div>
+    )
+  }
+  {
+    mini && (
+      <div class="site-demo__code" id={`${id}-code3`} hidden>
+        <pre class="site-code" tabindex="0"><code>{miniSource}</code></pre>
+        <button class="xxd-btn site-code__copy" data-variant="ghost" data-icon-only data-size="sm" aria-label={L.copy} data-copy-target={`#${id}-code3 code`} set:html={icon("Copy", 14)} />
+        <button class="xxd-btn site-code__more" data-variant="ghost" data-size="sm" aria-expanded="false" data-all={L.codeAll} data-less={L.codeLess} hidden>{L.codeAll}</button>
+      </div>
+    )
+  }
+</div>
+
+<script is:inline>
+  // 「代码」按钮：收起 / 展开当前标签页对应的代码（默认展开）；切换标签页时代码跟着换。
+  // 代码超过限高时露出「展开全部」，点了去掉限高
+  (() => {
+    for (const demo of document.querySelectorAll(".site-demo:not([data-ready])")) {
+      demo.setAttribute("data-ready", "");
+      const toggle = demo.querySelector("[data-site-code-toggle]");
+      const codes = [...demo.querySelectorAll(".site-demo__code")];
+      const tabs = [...demo.querySelectorAll('.site-demo__bar > .xxd-tabs > [role="tab"]')];
+      const show = () => {
+        const open = toggle.getAttribute("aria-expanded") === "true";
+        const i = Math.max(0, tabs.findIndex((t) => t.getAttribute("aria-selected") === "true"));
+        codes.forEach((c, n) => (c.hidden = !(open && n === i)));
+        for (const c of codes) {
+          if (c.hidden) continue;
+          const pre = c.querySelector(".site-code");
+          const more = c.querySelector(".site-code__more");
+          more.hidden = !c.hasAttribute("data-full") && pre.scrollHeight <= pre.clientHeight + 1;
+        }
+        // 标签页的 aria-controls 写了两个 id：舞台交给 tabs 脚本，代码由这里管
+        tabs.forEach((t, n) => {
+          const stage = document.getElementById(t.getAttribute("aria-controls").split(" ")[0]);
+          if (stage) stage.hidden = n !== i;
+        });
+      };
+      toggle.addEventListener("click", () => {
+        toggle.setAttribute("aria-expanded", String(toggle.getAttribute("aria-expanded") !== "true"));
+        show();
+      });
+      for (const more of demo.querySelectorAll(".site-code__more")) {
+        more.addEventListener("click", () => {
+          const box = more.closest(".site-demo__code");
+          const full = box.toggleAttribute("data-full");
+          more.setAttribute("aria-expanded", String(full));
+          more.textContent = full ? more.dataset.less : more.dataset.all;
+          if (!full) box.scrollIntoView({ block: "nearest" });
+        });
+      }
+      demo.addEventListener("xxd:change", show);
+      show();
+    }
+    // 「折行」：缺省长行横向滚动；打开后所有代码块都折行（记在这台浏览器里）
+    const KEY = "xxd-site-code-wrap";
+    const setWrap = (on) => {
+      document.documentElement.toggleAttribute("data-code-wrap", on);
+      for (const b of document.querySelectorAll("[data-site-code-wrap]")) b.setAttribute("aria-pressed", String(on));
+    };
+    let saved = false;
+    try {
+      saved = localStorage.getItem(KEY) === "1";
+    } catch {}
+    setWrap(saved);
+    for (const b of document.querySelectorAll("[data-site-code-wrap]:not([data-ready])")) {
+      b.setAttribute("data-ready", "");
+      b.addEventListener("click", () => {
+        const on = b.getAttribute("aria-pressed") !== "true";
+        setWrap(on);
+        try {
+          localStorage.setItem(KEY, on ? "1" : "0");
+        } catch {}
+        for (const demo of document.querySelectorAll(".site-demo")) demo.dispatchEvent(new CustomEvent("xxd:change"));
+      });
+    }
+  })();
+</script>

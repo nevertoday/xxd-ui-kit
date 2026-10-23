@@ -1,0 +1,14 @@
+/* 网页版的文字是 <p> / <h2>，自成一段；小程序的 text 是行内的。缺省按一段排，inline 时才和别的字排一行 */
+.xxd-text {
+  display: block;
+}
+
+.xxd-text.is-inline {
+  display: inline;
+}
+
+.xxd-text.is-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

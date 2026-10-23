@@ -1,0 +1,21 @@
+/* 手机上分段选择：每一段 40px 高，加上外框上下各 2px，整条正好 --hit-min（44px），点得到 */
+.xxd-segmented > .is-role-radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--hit-min) - 4px);
+}
+
+.xxd-segmented.is-size-sm > .is-role-radio {
+  height: calc(var(--control-h-sm) - 4px);
+}
+
+.xxd-segmented > .is-role-radio.is-disabled {
+  color: var(--disabled-ink);
+}
+
+/* 不占满一行的：在竖排里也按内容宽，不被拉伸 */
+.xxd-segmented:not(.is-block) {
+  justify-self: start;
+  align-self: flex-start;
+}

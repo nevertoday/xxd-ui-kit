@@ -1,0 +1,47 @@
+/* 只写这个插件自己的布局；颜色、圆角、字号一律用 @xxd/tokens 的变量。 */
+html,
+body {
+  height: 100%;
+}
+
+/* xxd:account */
+/* 没登录只显示登录页；登录后只显示应用 */
+:root[data-account="signed-out"] .app,
+:root[data-account="signed-in"] .view-signin {
+  display: none;
+}
+
+.view-signin {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+}
+/* /xxd:account */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-tabs {
+  flex: none;
+  padding: 0 14px;
+}
+
+.app-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.app-panel[hidden] {
+  display: none;
+}
+
+.app-panel {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 14px;
+}

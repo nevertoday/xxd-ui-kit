@@ -1,0 +1,40 @@
+.xxd-searchbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.xxd-searchbar > .xxd-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.xxd-input-wrap > .xxd-input {
+  /* 左边让出放大镜（边距 + 图标 + 间隔），右边让出清除按钮（一个点击区） */
+  padding-left: calc(var(--field-pad-x) + var(--icon-lg) + var(--space-2));
+  padding-right: var(--hit-min);
+  background: var(--wash);
+  border-color: transparent;
+}
+
+.xxd-input-wrap > .xxd-input-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hit-min);
+  height: var(--hit-min);
+  color: var(--muted);
+}
+
+.xxd-searchbar__cancel {
+  display: flex;
+  align-items: center;
+  min-height: var(--hit-min);
+  padding: 0 var(--space-1);
+  color: var(--action-text);
+  font-size: var(--text-lg);
+}
+
+.xxd-searchbar__cancel.is-hover {
+  opacity: 0.7;
+}

@@ -1,0 +1,13 @@
+# pnpm 的设置（不是多包仓库）：Taro 依赖里这几个包的安装脚本不需要跑（它们的二进制是按平台装的可选依赖）
+allowBuilds:
+  "@parcel/watcher": false
+  "@swc/core": false
+  "@tarojs/binding": false
+  "@tarojs/cli": false
+  core-js: false
+  core-js-pure: false
+  esbuild: false
+# @xxd/mini 依赖的 @xxd/tokens、@xxd/icons 也用 vendor/ 里的包（还没发到 npm）
+overrides:
+  "@xxd/icons": "__DEP_ICONS__"
+  "@xxd/tokens": "__DEP_TOKENS__"

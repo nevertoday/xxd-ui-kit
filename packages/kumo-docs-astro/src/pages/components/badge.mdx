@@ -1,0 +1,96 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "Badge"
+description: "Displays a small label for status, categorization, or metadata."
+sourceFile: "components/badge"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import PropsTable from "~/components/docs/PropsTable.astro";
+import {
+  BadgeSemanticVariantsDemo,
+  BadgeColorVariantsDemo,
+  BadgeInSentenceDemo,
+  BadgeIconDemo,
+  BadgeLinkDemo,
+  BadgeDotDemo,
+} from "~/components/demos/BadgeDemo";
+
+
+<ComponentExample demo="BadgeSemanticVariantsDemo">
+  <BadgeSemanticVariantsDemo client:visible />
+</ComponentExample>
+
+## Installation
+
+### Barrel
+
+```tsx
+import { Badge } from "@cloudflare/kumo";
+```
+
+### Granular
+
+```tsx
+import { Badge } from "@cloudflare/kumo/components/badge";
+```
+
+## Usage
+
+```tsx
+import { Badge } from "@cloudflare/kumo";
+
+export default function Example() {
+  return <Badge variant="secondary">New</Badge>;
+}
+```
+
+## Examples
+
+### Primary Badges
+
+<ComponentExample demo="BadgeSemanticVariantsDemo">
+  <BadgeSemanticVariantsDemo client:visible />
+</ComponentExample>
+
+### Other color variants
+
+Other color variants for specific products/use cases where the semantic badges aren't enough to convey intended meaning or status.
+
+<ComponentExample demo="BadgeColorVariantsDemo">
+  <BadgeColorVariantsDemo client:visible />
+</ComponentExample>
+
+### Dot badges
+
+Use `appearance="dot"` for a subtle status indicator with a colored dot. Supported with `success`, `warning`, `error`, and `neutral` variants.
+
+<ComponentExample demo="BadgeDotDemo">
+  <BadgeDotDemo client:visible />
+</ComponentExample>
+
+### In a sentence
+
+<ComponentExample demo="BadgeInSentenceDemo">
+  <BadgeInSentenceDemo client:visible />
+</ComponentExample>
+
+### With an icon
+
+Filled badges accept a Phosphor icon component or React element through `icon`. Dot badges use their status dot and do not accept icons.
+
+<ComponentExample demo="BadgeIconDemo">
+  <BadgeIconDemo client:visible />
+</ComponentExample>
+
+### Linked badge
+
+Wrap a badge in [`Link`](/components/link) to make it navigable. The badge adds a ring when its ancestor link is hovered.
+
+<ComponentExample demo="BadgeLinkDemo">
+  <BadgeLinkDemo client:visible />
+</ComponentExample>
+
+## API Reference
+
+<PropsTable component="Badge" />

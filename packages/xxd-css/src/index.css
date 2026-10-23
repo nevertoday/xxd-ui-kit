@@ -1,0 +1,27 @@
+/* @xxd/css —— 小小东原生组件（无框架）。需要先引入 @xxd/tokens 的 tokens.css。
+ * dist/xxd.css 已经把令牌一起打包进来了；只想要组件时用 dist/components.css。 */
+/* 层顺序：xxd 在 Tailwind 的 base（preflight）之上、components / utilities 之下——
+ * 这样 reset 盖不掉组件，而工具类（className="mt-4"）和 Kumo 组件的样式能盖住 xxd。
+ * 先加载 Tailwind / Kumo 时，在你自己的 CSS 最前面写同一行（@xxd/react 的 styles.css 已经写了）。 */
+@layer theme, base, xxd, components, utilities;
+@layer xxd.base, xxd.components;
+/* 减少动效、主色的选中色和输入光标（@xxd/tokens 里不是变量的那几条） */
+@import "@xxd/tokens/base.css";
+@import "./css/base.css";
+@import "./css/text.css";
+@import "./css/button.css";
+@import "./css/form.css";
+@import "./css/form-plus.css";
+@import "./css/navigation.css";
+@import "./css/settings.css";
+@import "./css/overlay.css";
+@import "./css/feedback.css";
+@import "./css/content.css";
+@import "./css/palette.css";
+@import "./css/structure.css";
+@import "./css/data.css";
+@import "./css/patterns.css";
+@import "./css/chart.css";
+@import "./css/robust.css";
+@import "./css/interaction.css";
+@import "./css/forced-colors.css";
