@@ -54,7 +54,9 @@ try {
 }
 
 const kumoCss = join(pkgs, "kumo/dist/styles/kumo-standalone.css");
-if (existsSync(kumoCss)) copyFileSync(kumoCss, join(out, "kumo.css"));
+// 绑定层自己写的 :hover 只给能悬停的指针（和 @xxd/css、@xxd/react 同一个转换，TOUCH-REVIEW-PLAN D121）
+const { hoverOnly } = await import("../../xxd-css/scripts/hover-only.mjs");
+if (existsSync(kumoCss)) writeFileSync(join(out, "kumo.css"), hoverOnly(readFileSync(kumoCss, "utf8"))[0]);
 else console.warn("！没有 kumo-standalone.css：先运行 pnpm --filter @cloudflare/kumo build（React 演示会没有样式）");
 
 /**

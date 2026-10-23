@@ -59,7 +59,8 @@
     height: 100dvh;
     max-height: 100dvh;
     margin: 0;
-    padding: 0;
+    /* 整屏：刘海、底部横条那几块让出来（页面写了 viewport-fit=cover 才有值，TOUCH-REVIEW-PLAN D118） */
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     border: 0;
     background: rgba(12, 11, 9, 0.92);
     color: #ffffff;

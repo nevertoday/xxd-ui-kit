@@ -23,6 +23,8 @@
    三语默认句子、焦点到第一个错；字数会动；输入法拼字时的回车不算；React 出错写 `aria-invalid`、和 HTML 一样；D97–D106，audit 加 `--only=form`）。
    2026-10-23：`DARK-REVIEW-PLAN.md`（暗黑模式：局部 `data-theme` 是一张完整的面、弹出的浮层跟着它；切主题不过渡；打印是亮色；
    图表看局部主题；Kumo 的暗色规则也认 `data-theme="dark"`；D107–D114，audit 加 `--only=dark`）。
+   2026-10-23：`TOUCH-REVIEW-PLAN.md`（手机和触屏：粗指针上控件 44 高、点按区 44 / 文字 24、输入框 16px；悬停在构建时包进
+   `@media (hover: hover)`（`xxd-css/scripts/hover-only.mjs`，源码照旧写 `:hover`）；安全区、滚动不传出去、手指不弹提示；D115–D122，audit 加 `--only=touch`）。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
@@ -37,4 +39,4 @@
 - 不手改生成文件（`theme-kumo.css`、`ai/*`、`src/primitives/*`、`xxd-react/src/kumo-exports.ts`、`xxd-icons/src/{names.d.ts,each.js,each.d.ts}`），改源配置再 codegen / 构建。
 - 展示站有中英两版：改 `packages/xxd-css/registry.json` / `patterns.json` 时同步改旁边的 `registry.en.js` / `patterns.en.js`；加展示站页面时 `src/pages/en/` 也加一个（正文写在 `src/views/`）。测试会检查。
 - 字体只用系统无衬线（不用宋体 / 衬线），不加载网络字体。
-- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1456 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式）。
+- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1456 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏）。

@@ -133,7 +133,8 @@ export function spyToc(toc) {
       }
       const current = targets.find((t) => visible.has(t)) || null;
       if (!current) return;
-      for (const a of links) a.setAttribute("aria-current", String(a.hash.slice(1) === current.id));
+      // a.hash 是百分号编码的（中文标题 #选哪个 → #%E9%80%89…），和 id 比之前先解码
+      for (const a of links) a.setAttribute("aria-current", String(decodeURIComponent(a.hash.slice(1)) === current.id));
     },
     { rootMargin: "-56px 0px -60% 0px" },
   );

@@ -524,6 +524,13 @@
     --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color), inset 0 0 0 1px var(--tw-ring-color);
     --tw-ring-color: var(--action, #111111);
   }
+  /* 粗指针：能打字的框字号至少 16px（iOS 聚焦时不放大页面，TOUCH-REVIEW-PLAN D116） */
+  @media (pointer: coarse) {
+    :is(input, textarea)[class*="ring-kumo-line"][class*="bg-kumo-control"],
+    [data-kumo-component="SensitiveInput"][data-kumo-component] input {
+      font-size: var(--text-lg, 16px);
+    }
+  }
   /* 原生的下拉没有单独的底色（透明，落在纸上）；React 的触发按钮用纸色，看起来一样，这里对齐成同一个值 */
   [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component] {
     background-color: var(--paper, #ffffff);

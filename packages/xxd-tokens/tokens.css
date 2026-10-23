@@ -348,9 +348,12 @@
   --z-toast: 70;
 }
 
+/* 粗指针（手机、平板）：控件 44 高（TOUCH-REVIEW-PLAN D115）——手指点得准，同一行的输入框、按钮还是一样高；
+   紧凑密度写在元素上时以它为准（插件的侧边栏、弹窗不在触屏上用） */
 @media (pointer: coarse) {
   :root {
     --hit-min: 44px;
+    --control-h: 44px;
   }
 }
 

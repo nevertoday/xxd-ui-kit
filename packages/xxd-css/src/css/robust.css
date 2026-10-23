@@ -38,6 +38,11 @@
     overflow-x: clip;
   }
 
+  /* 纯图标按钮没有字可裁：不裁，点击区（::after）才能往左右补到 --hit-min（TOUCH-REVIEW-PLAN） */
+  .xxd-btn[data-icon-only] {
+    overflow-x: visible;
+  }
+
   .xxd-picker__trigger {
     width: 100%;
   }

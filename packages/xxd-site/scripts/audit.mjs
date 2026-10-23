@@ -24,14 +24,14 @@
 //   15. 动效（MOTION-REVIEW-PLAN D90）：按下的同一刻就有看得见的变化；减少动效下只剩慢淡入淡出，进行中的按钮不定住。
 //   16. 状态（ACCEPTANCE-REVIEW）：选中 / 禁用 / 出错叠上悬停、聚焦后按优先级不变。
 //   17. 截断（TRUNCATION-REVIEW-PLAN D96）：长文字不硬裁、内容和数字不省略、省略的悬停能看到全文、字不互相压；React 不伸出格子。
-// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark]
+// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch]
 // 需要 Chromium：CHROME_EXE=<chrome-headless-shell 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
 import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
-import { chromium } from "playwright";
+import { chromium, devices } from "playwright";
 import { srAudit } from "./sr.mjs";
 import { compareOverlays, compareParity, OVERLAYS, PARITY_LOOKS } from "./parity.mjs";
 
@@ -1386,7 +1386,76 @@ async function darkAudit() {
   console.log(`暗色：${scripted.length} 页切换 ↔ 直接打开，${comps.length} 个组件页局部暗色 ↔ 整页暗色；局部暗色里的浮层、打印、切换不过渡`);
 }
 
-const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit };
+/* ── 20. 手机和触屏（TOUCH-REVIEW-PLAN D122）──
+ * iPhone 13 的视口（触屏、粗指针、不能悬停），组件、模式、模板页的演示里每个能点的东西：
+ *   · 从中心往四边逐点问「点到的是谁」，量出真正能点的宽高（伪元素补出来的也算）：任何东西不小于 24（WCAG 2.5.8），
+ *     按钮、输入框、下拉高不小于 40（粗指针上是 44，被外面的容器裁掉一点的也算过）；
+ *   · 能打字的框字号 ≥ 16px（iOS 聚焦时不放大页面）；
+ *   · 强制 :hover 样子不变（触屏上悬停会粘住）。 */
+async function touchAudit() {
+  let n = 0;
+  for (const page of pages.filter((p) => /^\/(components|patterns|templates)\//.test(p))) {
+    const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+    const tab = await ctx.newPage();
+    await tab.goto(origin + page, { waitUntil: "networkidle" });
+    await tab.waitForTimeout(120);
+    const found = await tab.evaluate(() => {
+      const out = [];
+      const key = (e) => `${e.tagName.toLowerCase()}${e.classList.length ? "." + [...e.classList].slice(0, 2).join(".") : ""}「${(e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 8)}」`;
+      const SEL = "main .site-demo__stage :is(a[href], button, input:not([type=hidden]), select, textarea, summary, [role=button], [role=tab], [role=option], [role=switch], [role=checkbox], [role=radio], [role=menuitem])";
+      for (const el of document.querySelectorAll(SEL)) {
+        if (el.closest("[inert], [data-kind=dont], .site-demo__preview, .xxd-sr-only, [hidden], astro-island") || el.disabled || !el.getClientRects().length) continue;
+        if (el.matches("a") && getComputedStyle(el).display === "inline" && el.closest("p, li, .xxd-prose, .xxd-text")) continue;
+        if (el.matches("input[type=checkbox], input[type=radio]") && el.closest("label")?.textContent.trim()) continue;
+        if (el.closest(".xxd-input-group, .xxd-taginput") && el.matches("input")) continue;
+        if (el.matches("[role=separator], [role=tabpanel]")) continue;
+        el.scrollIntoView({ block: "center", inline: "center" });
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const mine = (x, y) => { const h = document.elementFromPoint(x, y); return h && (h === el || el.contains(h)); };
+        if (!mine(cx, cy)) continue;
+        let a = 0, b = 0;
+        while (a < 30 && mine(cx - a - 1, cy)) a++;
+        while (b < 30 && mine(cx + b + 1, cy)) b++;
+        const w = a + b + 1;
+        a = 0; b = 0;
+        while (a < 30 && mine(cx, cy - a - 1)) a++;
+        while (b < 30 && mine(cx, cy + b + 1)) b++;
+        const h = a + b + 1;
+        if (Math.min(w, h) < 24) out.push(`${key(el)} 点按区 ${w}×${h}，小于 24`);
+        else if (el.matches(".xxd-btn, .xxd-input, .xxd-textarea, select, .xxd-picker__trigger") && h < 40) out.push(`${key(el)} 点按区只有 ${h} 高`);
+        if (el.matches("input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file], [type=button], [type=submit]), textarea, select") && parseFloat(getComputedStyle(el).fontSize) < 16) out.push(`${key(el)} 字号 ${getComputedStyle(el).fontSize}，iOS 聚焦时会放大页面`);
+      }
+      return [...new Set(out)];
+    });
+    for (const x of found) fail("触屏", `${page} ${x}`);
+    // 触屏下强制 :hover：样子不该变
+    const cdp = await ctx.newCDPSession(tab);
+    await cdp.send("DOM.enable");
+    await cdp.send("CSS.enable");
+    const { root } = await cdp.send("DOM.getDocument", { depth: -1 });
+    const { nodeIds } = await cdp.send("DOM.querySelectorAll", { nodeId: root.nodeId, selector: "main .site-demo__stage :is(a[href], button, [role=button], [role=tab], [role=option], [role=menuitem], .xxd-chip, .xxd-list__item, label, summary, input, select, textarea)" });
+    const seen = new Set();
+    for (const nodeId of nodeIds.slice(0, 60)) {
+      await cdp.send("DOM.setAttributeValue", { nodeId, name: "data-audit-touch", value: "" }).catch(() => {});
+      const read = () => tab.evaluate(() => { const e = document.querySelector("[data-audit-touch]"); if (!e) return null; const s = getComputedStyle(e); return { k: `${e.tagName.toLowerCase()}${e.classList.length ? "." + [...e.classList].slice(0, 2).join(".") : ""}`, v: [s.backgroundColor, s.color, s.borderTopColor, s.textDecorationLine, s.boxShadow].join("|") }; });
+      const a = await read();
+      if (a && !seen.has(a.k)) {
+        seen.add(a.k);
+        await cdp.send("CSS.forcePseudoState", { nodeId, forcedPseudoClasses: ["hover"] });
+        const b = await read();
+        if (b && b.v !== a.v) fail("触屏", `${page} ${a.k} 触屏上悬停的样子会粘住`);
+        await cdp.send("CSS.forcePseudoState", { nodeId, forcedPseudoClasses: [] });
+      }
+      await cdp.send("DOM.removeAttribute", { nodeId, name: "data-audit-touch" }).catch(() => {});
+    }
+    n += 1;
+    await ctx.close();
+  }
+  console.log(`触屏：${n} 页（iPhone 13 视口）点按区、输入框字号、悬停不粘住`);
+}
+
+const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit };
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

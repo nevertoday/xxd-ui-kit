@@ -81,7 +81,11 @@ function toTop(el) {
 }
 
 export function installTooltips(root, closestFrom) {
+  // 手指点按不弹提示（TOUCH-REVIEW-PLAN D120）：点完提示留在那儿盖住内容，直到下一次点别处；提示给鼠标悬停和键盘聚焦
+  let touchedAt = 0;
+  root.addEventListener("pointerdown", (event) => event.pointerType === "touch" && (touchedAt = Date.now()), true);
   root.addEventListener("pointerover", (event) => {
+    if (event.pointerType === "touch") return;
     const anchor = closestFrom(event, "[data-tooltip]");
     if (!anchor || anchor === tipAnchor) return;
     clearTimeout(tipTimer);
@@ -106,7 +110,7 @@ export function installTooltips(root, closestFrom) {
   });
   root.addEventListener("focusin", (event) => {
     const anchor = closestFrom(event, "[data-tooltip]");
-    if (anchor) showTooltip(anchor);
+    if (anchor && Date.now() - touchedAt > 800) showTooltip(anchor);
   });
   root.addEventListener("focusout", hideTooltip);
   root.addEventListener("pointerdown", hideTooltip);

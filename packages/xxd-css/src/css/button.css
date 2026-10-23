@@ -39,11 +39,20 @@
       opacity var(--motion-quick) ease;
   }
 
-  /* 点击区至少 --hit-min（紧凑模式下控件变矮，点击区不变）。 */
+  /* 点击区至少 --hit-min 高（粗指针 44）：按按钮自己的高往上下补，小按钮也够得着（以前按 --control-h 算：小按钮 34px、超小 26px，TOUCH-REVIEW-PLAN）。
+   * 左右只给纯图标按钮补：带字的按钮横向会裁字（robust.css），补出去的那块反正被裁掉，还让内容宽看起来比框宽。 */
   .xxd-btn::after {
     content: "";
     position: absolute;
-    inset: min(0px, calc((var(--control-h) - var(--hit-min)) / 2)) 0;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: max(100%, var(--hit-min));
+    translate: -50% -50%;
+  }
+
+  .xxd-btn[data-icon-only]::after {
+    width: max(100%, var(--hit-min));
   }
 
   /* 状态优先级（ACCEPTANCE-REVIEW）：禁用 > 进行中 > 按下 > 悬停 —— 禁用和进行中的按钮悬停、按下都不变 */

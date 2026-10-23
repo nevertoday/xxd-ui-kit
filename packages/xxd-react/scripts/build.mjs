@@ -128,6 +128,11 @@ if (typeMissing.length) {
 writeFileSync(join(dist, "props.json"), JSON.stringify(xxdReactProps(), null, 2) + "\n");
 
 // 4. 样式：Kumo 的 CSS 拷过来（styles.css / standalone.css 用 ./dist/… 引用）
-for (const css of ["kumo.css", "kumo-binding.css", "kumo-standalone.css"]) copyFileSync(join(kumoDist, "styles", css), join(dist, css));
+//    绑定层自己写的 :hover 也只给能悬停的指针（和 @xxd/css 同一个转换；Tailwind 的 hover: 本来就是这样，TOUCH-REVIEW-PLAN）
+const { hoverOnly } = await import("../../xxd-css/scripts/hover-only.mjs");
+for (const css of ["kumo.css", "kumo-binding.css", "kumo-standalone.css"]) {
+  const src = readFileSync(join(kumoDist, "styles", css), "utf8");
+  writeFileSync(join(dist, css), css === "kumo.css" ? src : hoverOnly(src)[0]);
+}
 
 console.log(`@xxd/react → dist/（Kumo ${kumoFiles.length} 个模块和 ${seen.size} 个类型文件拷进 dist/kumo；外部依赖 ${used.size} 个）`);

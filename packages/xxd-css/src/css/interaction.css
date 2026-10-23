@@ -148,3 +148,70 @@
     transform: none;
   }
 }
+
+/* 触屏的点按区（TOUCH-REVIEW-PLAN D117）：粗指针上，小东西四周补一块看不见的点按区，至少 --hit-min（44）；
+ * 文字链接、文字按钮至少 24（WCAG 2.5.8，再大会盖到上下两行字）。用的是这些元素空着的那个伪元素
+ * （侧栏项的 ::after 是展开箭头、表头排序的 ::after 是箭头、复选的 ::after 是勾、开关的 ::before 是滑块）。
+ * 按钮自己的点按区在 button.css（任何指针都有）。 */
+@layer xxd.components {
+  @media (pointer: coarse) {
+    :is(.xxd-segmented > *, .xxd-chip, .xxd-toolbar__item, .xxd-tabs > [role="tab"], .xxd-toc a, .xxd-pagination > *, .xxd-swatch, .xxd-breadcrumbs__more, .xxd-sort-handle, .xxd-glyphs > button, .xxd-rail > *, .xxd-sidebar__item, .xxd-check, .xxd-radio, .xxd-switch) {
+      position: relative;
+    }
+
+    :is(.xxd-segmented > *, .xxd-chip, .xxd-toolbar__item, .xxd-tabs > [role="tab"], .xxd-toc a, .xxd-pagination > *, .xxd-swatch, .xxd-breadcrumbs__more, .xxd-sort-handle, .xxd-glyphs > button, .xxd-input-clear, .xxd-rail > *, .xxd-sidebar__item, .xxd-check, .xxd-radio)::before,
+    .xxd-switch::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, var(--hit-min));
+      height: max(100%, var(--hit-min));
+      translate: -50% -50%;
+    }
+
+    /* 文字链接、文字按钮：上下各补 --space-1 的内边距、再用负外边距收回（排版不动；链接自己会裁字，伪元素补不出去） */
+    :is(.xxd-link, .xxd-inline-copy, .xxd-th-sort) {
+      padding-block: var(--space-1);
+      margin-block: calc(-1 * var(--space-1));
+    }
+
+    /* 一行行挨着的侧栏项：行本身 44 高（补出来的点按区会和上下两行叠在一起） */
+    .xxd-sidebar__item {
+      min-height: var(--hit-min);
+    }
+
+    /* 分页一行：页码和「每页」都 44 高（原生下拉补不了点按区，只能自己高；页码跟着它，一行还是一样高） */
+    .xxd-pagination > button {
+      min-width: var(--hit-min);
+      height: var(--hit-min);
+    }
+
+    /* 小号的输入框、下拉：原生控件没有伪元素补点按区，框自己 44 高 */
+    :is(.xxd-input, .xxd-select > select)[data-size],
+    .xxd-select[data-size] > select,
+    .xxd-pagination select {
+      height: var(--hit-min);
+    }
+
+    /* 代码块头上的复制按钮：代码块的圆角裁掉了溢出，头那一行自己 44 高 */
+    .xxd-code__head {
+      min-height: var(--hit-min);
+    }
+
+    /* 面包屑折起来的那一格裁掉了溢出：触屏上「…」的点按区要露出来 */
+    .xxd-breadcrumbs > li.xxd-breadcrumbs__gap {
+      overflow: visible;
+    }
+
+    /* 里面还有能点的东西（chip 的 ×）：排在补出来的那块上面，点得到自己 */
+    .xxd-chip > button {
+      position: relative;
+    }
+
+    /* 滑块：轨道还是 2px，整条 44 高都能按住拖 */
+    .xxd-range {
+      height: var(--hit-min);
+    }
+  }
+}

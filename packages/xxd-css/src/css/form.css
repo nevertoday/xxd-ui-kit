@@ -568,6 +568,18 @@
   }
 }
 
+/* 粗指针（手机、平板）：能打字的框字号至少 16px（TOUCH-REVIEW-PLAN D116）——iOS 上小于 16px 的输入框一聚焦，整页放大，
+   打完字还得自己缩回去。小号的框也一样（字大一点，框不变）。 */
+@layer xxd.components {
+  @media (pointer: coarse) {
+    :is(.xxd-input, .xxd-textarea, .xxd-select > select, .xxd-input-group > input, .xxd-taginput > input, .xxd-palette__search > input),
+    :is(.xxd-input, .xxd-select > select, .xxd-input-group > input)[data-size],
+    :is(.xxd-select, .xxd-input-group)[data-size] > :is(select, input) {
+      font-size: var(--text-lg);
+    }
+  }
+}
+
 /* 控件里用到的小图标（mask），24 网格、斜接角。勾在 16px 里要 1.5px，所以 viewBox 里写 2.25。 */
 :root,
 :host {

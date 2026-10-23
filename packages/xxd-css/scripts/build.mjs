@@ -43,6 +43,7 @@ function isStale(dir, out) {
 
 // 和 @xxd/tokens 用同一个转换（:root → :host、令牌在 Shadow 内部再声明、继承属性重置）
 const { toShadow } = await import("../../xxd-tokens/scripts/build.mjs");
+const { hoverOnly } = await import("./hover-only.mjs");
 const banner = "/* @xxd/css — 小小东原生组件。Copyright (c) 2026 小小东 (xiaoxiaodong.ai). MIT License. */";
 
 rmSync(dist, { recursive: true, force: true });
@@ -56,7 +57,9 @@ const cssResult = await build({
   target: ["chrome114", "safari17", "firefox125"],
   legalComments: "none",
 });
-const components = cssResult.outputFiles[0].text;
+// 触屏上悬停不粘住：「正在悬停」的规则只给能悬停的指针（scripts/hover-only.mjs，TOUCH-REVIEW-PLAN）
+const [components, hoverRules] = hoverOnly(cssResult.outputFiles[0].text);
+console.log(`悬停：${hoverRules} 条规则只在能悬停的指针上生效`);
 // 用构建好的 tokens.css（多一段「没有 JS 时跟随系统暗色」的兜底）
 const tokens = readFileSync(join(tokensDir, "dist/tokens.css"), "utf8");
 writeFileSync(join(dist, "components.css"), `${banner}\n${components}`);
