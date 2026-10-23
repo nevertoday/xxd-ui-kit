@@ -233,6 +233,8 @@ describe("圆和线（SHAPE-LINE-PLAN）", () => {
     for (const [f, sel, prop, value] of decls()) {
       if (!/^(border(-color)?|outline)$/.test(prop) || /sr-only/.test(sel)) continue;
       // 出错又聚焦：边还是出错色（状态优先级：出错 > 聚焦）
+      // 高对比度里只能用系统色（Highlight / CanvasText）
+      if (f === "forced-colors.css" && /^(Highlight|CanvasText)$|solid (Highlight|CanvasText)$/.test(value)) continue;
       if (/:focus|focus-within|aria-expanded="true"/.test(sel) && /border|outline/.test(prop) && !/--action\b|none|-1px|currentColor|--focus-color/.test(value) && !(/aria-invalid="true"/.test(sel) && /--danger\)/.test(value))) bad.push(`${f} ${sel} ${prop}: ${value}`);
       if (/aria-invalid="true"/.test(sel) && !/--danger\)/.test(value)) bad.push(`${f} ${sel} ${prop}: ${value}`);
     }

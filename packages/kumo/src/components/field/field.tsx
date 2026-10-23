@@ -145,7 +145,11 @@ export function Field({
   const showOptional = required === false;
 
   return (
-    <FieldBase.Root className={fieldVariants({ controlFirst })}>
+    // 小小东：错误一直显示（match: true）时控件写 aria-invalid（FORM-REVIEW-PLAN D105）；按 ValidityState 显示的交给 Base UI 自己判断
+    <FieldBase.Root
+      className={fieldVariants({ controlFirst })}
+      invalid={error?.match === true || undefined}
+    >
       {!hideLabel && (
         <FieldBase.Label className="m-0 text-base font-medium text-kumo-default select-none">
           <Label showOptional={showOptional} tooltip={labelTooltip} asContent>

@@ -1,5 +1,5 @@
 // 对话框：原生 <dialog>。按钮层级见 DESIGN-PRINCIPLES §10：取消在前（辅助、内容宽度），主操作最后。
-import { afterTransition, defaultLayerRoot, emit, nextId } from "./dom.js";
+import { afterTransition, composing, defaultLayerRoot, emit, nextId } from "./dom.js";
 import { ICON } from "./icons-min.js";
 import { fill$1, t } from "./i18n.js";
 
@@ -155,7 +155,7 @@ export function confirmDelete({ name, what = "", title, confirmLabel = t("delete
   ok.disabled = true;
   input.addEventListener("input", () => (ok.disabled = input.value.trim() !== name));
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && input.value.trim() !== name) e.preventDefault();
+    if (e.key === "Enter" && !composing(e) && input.value.trim() !== name) e.preventDefault();
   });
   input.focus();
   return promise;

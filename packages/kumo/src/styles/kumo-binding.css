@@ -520,7 +520,8 @@
   }
   :is(input, textarea)[class*="ring-kumo-line"][class*="bg-kumo-control"]:focus,
   [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component]:focus {
-    --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color);
+    /* 边 + 里面 1px，一共 2px（和原生一样，§9）；出错时是红的（下面的 aria-invalid） */
+    --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color), inset 0 0 0 1px var(--tw-ring-color);
     --tw-ring-color: var(--action, #111111);
   }
   /* 原生的下拉没有单独的底色（透明，落在纸上）；React 的触发按钮用纸色，看起来一样，这里对齐成同一个值 */
@@ -559,6 +560,50 @@
   }
   [data-kumo-component="Checkbox"][data-kumo-component] {
     border-radius: var(--r-xs, 0px);
+  }
+
+  /* ── 字段和出错（FORM-REVIEW-PLAN D105，对着 .xxd-field / .xxd-label / .xxd-help / .xxd-error）──
+   * 标签 12px / 500，说明 12px 灰；出错：边 --danger（盖过 Kumo 的 !ring-kumo-danger），出错又聚焦 2px；
+   * 错误文字 12px、前面一个危险图标（不只靠颜色）。复选出错时悬停、选中都不改红边（出错 > 选中 > 悬停，§9） */
+  label.m-0.text-base.font-medium.select-none:not(:has(+ [data-kumo-component="Switch"])) {
+    font-size: var(--text-xs, 12px);
+    line-height: var(--leading-xs, 16px);
+    font-weight: var(--weight-medium, 500);
+  }
+  .col-span-full:is(.text-kumo-subtle, .text-kumo-danger).text-sm,
+  p.text-sm.text-kumo-danger {
+    font-size: var(--text-xs, 12px);
+    line-height: var(--leading-sm, 20px);
+  }
+  .col-span-full.text-kumo-danger.text-sm,
+  p.text-sm.text-kumo-danger {
+    position: relative;
+    padding-inline-start: calc(var(--icon-md, 14px) + var(--space-1, 4px));
+    color: var(--danger, #b42318);
+  }
+  .col-span-full.text-kumo-danger.text-sm::before,
+  p.text-sm.text-kumo-danger::before {
+    content: "";
+    position: absolute;
+    top: calc((var(--leading-sm, 20px) - var(--icon-md, 14px)) / 2);
+    left: 0;
+    width: var(--icon-md, 14px);
+    height: var(--icon-md, 14px);
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='8.5' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M12 7v6m0 4h.01' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='8.5' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M12 7v6m0 4h.01' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  :is(input, textarea)[class*="bg-kumo-control"]:is([aria-invalid="true"], [class*="ring-kumo-danger"]),
+  [data-kumo-component="Select"][data-kumo-part="trigger"][data-kumo-component][aria-invalid="true"],
+  [data-kumo-component="Checkbox"][data-kumo-component][aria-invalid="true"] {
+    --tw-ring-color: var(--danger, #b42318) !important;
+  }
+  @media (forced-colors: active) {
+    .col-span-full.text-kumo-danger.text-sm::before,
+    p.text-sm.text-kumo-danger::before {
+      forced-color-adjust: none;
+      background: CanvasText;
+    }
   }
   /* 选项旁边的字：13px / 400（原生 .xxd-choice），一组的标题 12px / 500（原生 legend） */
   label:has(> [data-kumo-component="Checkbox"]),

@@ -146,5 +146,12 @@ export declare function defaultLayerRoot(): HTMLElement | ShadowRoot;
 
 /** 读屏播报：常驻的 live region（install 时建好），只换文字。assertive 打断当前朗读（错误用）。 */
 export declare function announce(message: string, options?: { assertive?: boolean; within?: Node }): void;
-/** 表单错误：写 aria-invalid、在输入框后面放一行 .xxd-error 并连上 aria-describedby；message 为空就清掉。 */
-export declare function setFieldError(input: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, message: string, options?: { focus?: boolean }): HTMLElement | null;
+/**
+ * 表单错误：写 aria-invalid、在整个控件下面放一行 .xxd-error 并连上 aria-describedby（出错时说明让位）；message 为空就清掉。
+ * 可以传输入组、标签输入、自定义下拉外面的框；单选传组里任意一个，整组一起标；设置行里的控件，错误写在左边那一栏。
+ */
+export declare function setFieldError(control: Element, message: string, options?: { focus?: boolean }): HTMLElement | null;
+/** 校验整张表单（原生约束 + data-max）：错误标在字段下面，焦点到第一个错。返回出错的控件。<form data-xxd-validate> 提交时自动调。 */
+export declare function validateForm(form: HTMLFormElement, options?: { focus?: boolean }): Array<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+/** 这个控件现在哪里不对：返回要显示的话（data-error-* 优先，否则三语默认句子），没问题返回 ""。邮箱、网址、电话里的全角字符先换成半角。 */
+export declare function fieldProblem(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, options?: { normalize?: boolean }): string;

@@ -24,6 +24,9 @@ export function emit(el, name, detail) {
   el.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
 }
 
+/** 输入法正在组合（拼音还没上屏）：这时的回车、Esc、方向键是给输入法的，不算数（FORM-REVIEW-PLAN D103） */
+export const composing = (event) => event.isComposing || event.keyCode === 229;
+
 let uid = 0;
 export const nextId = (prefix = "xxd") => `${prefix}-${++uid}`;
 

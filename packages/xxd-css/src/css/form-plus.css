@@ -28,11 +28,12 @@
     box-shadow: inset 0 0 0 1px var(--action); /* 和输入框一样 2px */
   }
 
-  .xxd-input-group[aria-invalid="true"] {
+  /* 出错：标在整组上或里面的输入框上都算（setFieldError 标在输入框上） */
+  .xxd-input-group:is([aria-invalid="true"], :has(> input[aria-invalid="true"])) {
     border-color: var(--danger);
   }
 
-  .xxd-input-group[aria-invalid="true"]:focus-within {
+  .xxd-input-group:is([aria-invalid="true"], :has(> input[aria-invalid="true"])):focus-within {
     box-shadow: inset 0 0 0 1px var(--danger);
   }
 
@@ -250,8 +251,15 @@
     font-size: var(--text-xs);
   }
 
-  .xxd-picker[aria-invalid="true"] .xxd-picker__trigger {
+  /* 出错：标在 .xxd-picker 上或按钮上都算；出错又聚焦 / 打开时里面那 1px 也是红的 */
+  .xxd-picker[aria-invalid="true"] .xxd-picker__trigger,
+  .xxd-picker__trigger[aria-invalid="true"] {
     border-color: var(--danger);
+  }
+
+  .xxd-picker[aria-invalid="true"] .xxd-picker__trigger:is([aria-expanded="true"], :focus-visible),
+  .xxd-picker__trigger[aria-invalid="true"]:is([aria-expanded="true"], :focus-visible) {
+    box-shadow: inset 0 0 0 1px var(--danger);
   }
 
   /* 禁用用禁用令牌（和输入框一样），悬停不变深 */

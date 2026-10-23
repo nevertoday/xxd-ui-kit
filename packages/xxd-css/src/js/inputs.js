@@ -1,6 +1,6 @@
 // 搜索（⌘F / Esc + 匹配高亮）、标签输入、下拉选择（combobox）、命令面板。
 import { place } from "./floating.js";
-import { defaultLayerRoot, emit, nextId } from "./dom.js";
+import { composing, defaultLayerRoot, emit, nextId } from "./dom.js";
 import { openDialog, closeDialog } from "./dialog.js";
 import { ICON } from "./icons-min.js";
 import { fill$1, t } from "./i18n.js";
@@ -11,7 +11,7 @@ import { announce } from "./announce.js";
 export function bindSearch(input, { onQuery, hotkey = true, scope = globalThis } = {}) {
   const onInput = () => onQuery?.(input.value.trim());
   const onKey = (event) => {
-    if (event.key === "Escape" && input.value) {
+    if (event.key === "Escape" && input.value && !composing(event)) {
       event.preventDefault();
       input.value = "";
       input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -115,7 +115,8 @@ export function installTagInputs(root, closestFrom) {
     const input = closestFrom(event, ".xxd-taginput[data-xxd-taginput] > input");
     if (!input) return;
     const box = input.parentElement;
-    if ((event.key === "Enter" || event.key === "," || event.key === "，") && !event.isComposing) {
+    if (composing(event)) return;
+    if (event.key === "Enter" || event.key === "," || event.key === "，") {
       event.preventDefault();
       if (addTag(box, input.value)) input.value = "";
     } else if (event.key === "Backspace" && !input.value) {
@@ -273,7 +274,7 @@ export function installComboboxes(root, closestFrom) {
     cbParts(wrap).input.focus();
   });
   root.addEventListener("keydown", (event) => {
-    if (event.key !== "Backspace") return;
+    if (event.key !== "Backspace" || composing(event)) return;
     const wrap = closestFrom(event, "[data-xxd-combobox][data-multiple]");
     if (!wrap || cbParts(wrap).input.value) return;
     const last = wrap.querySelector(".xxd-taginput > .xxd-chip:last-of-type");
@@ -300,7 +301,7 @@ export function installComboboxes(root, closestFrom) {
   });
   root.addEventListener("keydown", (event) => {
     const wrap = closestFrom(event, "[data-xxd-combobox]");
-    if (!wrap) return;
+    if (!wrap || composing(event)) return;
     const { input, list } = cbParts(wrap);
     const options = cbVisible(list);
     const active = list.querySelector(".xxd-option[data-active]");
@@ -445,6 +446,7 @@ export function openCommandPalette({ items = [], placeholder = t("commandPlaceho
     render();
   });
   input.addEventListener("keydown", (event) => {
+    if (composing(event)) return;
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       if (!shown.length) return;
@@ -481,35 +483,3 @@ export function bindCommandPalette(getItems, { key = "k", ...options } = {}) {
   return () => globalThis.removeEventListener("keydown", handler);
 }
 
-
-/**
- * 表单错误：Xxd.setFieldError(input, "请输入有效的邮箱")；传空字符串清掉。
- * 写 aria-invalid、在字段下面放一行 .xxd-error（有 id），并把它加进 aria-describedby（原来的说明保留）。
- */
-export function setFieldError(input, message, { focus = false } = {}) {
-  const doc = input.ownerDocument;
-  const field = input.closest(".xxd-field") ?? input.parentElement;
-  let error = input.id ? field.querySelector(`.xxd-error[data-for="${input.id}"]`) : field.querySelector(".xxd-error[data-for]");
-  const ids = (input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
-  if (!message) {
-    input.removeAttribute("aria-invalid");
-    if (error) {
-      input.setAttribute("aria-describedby", ids.filter((id) => id !== error.id).join(" "));
-      if (!input.getAttribute("aria-describedby")) input.removeAttribute("aria-describedby");
-      error.remove();
-    }
-    return null;
-  }
-  if (!error) {
-    error = doc.createElement("p");
-    error.className = "xxd-error";
-    error.id = nextId("xxd-error");
-    error.dataset.for = input.id || "";
-    input.after(error);
-  }
-  error.textContent = message;
-  input.setAttribute("aria-invalid", "true");
-  if (!ids.includes(error.id)) input.setAttribute("aria-describedby", [...ids, error.id].join(" "));
-  if (focus) input.focus();
-  return error;
-}

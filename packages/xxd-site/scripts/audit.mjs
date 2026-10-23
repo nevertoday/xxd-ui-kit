@@ -24,7 +24,7 @@
 //   15. 动效（MOTION-REVIEW-PLAN D90）：按下的同一刻就有看得见的变化；减少动效下只剩慢淡入淡出，进行中的按钮不定住。
 //   16. 状态（ACCEPTANCE-REVIEW）：选中 / 禁用 / 出错叠上悬停、聚焦后按优先级不变。
 //   17. 截断（TRUNCATION-REVIEW-PLAN D96）：长文字不硬裁、内容和数字不省略、省略的悬停能看到全文、字不互相压；React 不伸出格子。
-// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc]
+// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form]
 // 需要 Chromium：CHROME_EXE=<chrome-headless-shell 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
 import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -1089,7 +1089,139 @@ async function truncAudit() {
   console.log(`截断：${n} 个示例（中英 × 6 种文字 × 2 种宽）+ 对照页 React：不硬裁、内容和数字不省略、省略的都能看到全文、字不互相压`);
 }
 
-const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit };
+/* ── 18. 表单和出错（FORM-REVIEW-PLAN D106）──
+ * 组件、模式、模板页演示里的每个表单控件用 Xxd.setFieldError 标错：
+ *   · 错误在整个控件下面，不在 label、输入组、标签输入、自定义下拉、选择外面那层里；
+ *   · 看得见的那个框变成出错色；出错又聚焦还是出错色，能打字的框加粗成 2px；清掉以后都回去。
+ * 高对比度下出错的框比普通的粗；演示表单空着提交：焦点到第一个错、每个错都在、说明让位，改对了马上消失、作者的提交没跑；
+ * 输入法组合中按回车不选中 combobox 的项。 */
+const FORM_CONTROLS = ':is(input:not([type=hidden], [type=range], [type=submit], [type=button], [type=reset], [type=file], [type=color], [type=image]), textarea, select, .xxd-picker__trigger)';
+function formProbe(sel) {
+  const danger = (() => { const d = document.createElement("i"); d.style.color = getComputedStyle(document.documentElement).getPropertyValue("--danger"); document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; })();
+  const out = [];
+  const name = (el) => `${el.tagName.toLowerCase()}${el.type && el.tagName === "INPUT" ? `[${el.type}]` : ""}.${[...el.classList][0] || ""}「${(el.getAttribute("aria-label") || el.labels?.[0]?.textContent || el.closest(".xxd-field")?.querySelector(".xxd-label")?.textContent || "").trim().slice(0, 10)}」`;
+  const seen = new Set();
+  for (const ctl of document.querySelectorAll(sel)) {
+    if (ctl.closest("[inert], [data-kind=dont], astro-island, .site-matrix, dialog:not([open]), [hidden]") || ctl.disabled || ctl.readOnly || !ctl.getClientRects().length) continue;
+    if (ctl.getAttribute("aria-invalid") === "true" || ctl.closest("[aria-invalid=true]")) continue;
+    const group = ctl.type === "radio" ? ctl.closest("fieldset, [role=radiogroup]") : null;
+    if (group && seen.has(group)) continue;
+    if (group) seen.add(group);
+    const vis = ctl.closest(".xxd-input-group, .xxd-taginput") ?? ctl;
+    const err = Xxd.setFieldError(ctl, "这里有一个比较长的错误说明，看它折行以后是不是还在整个控件下面");
+    const er = err.getBoundingClientRect();
+    const anchors = group ? [...group.querySelectorAll(".xxd-choice, input[type=radio]")] : [ctl.closest(".xxd-input-group, .xxd-taginput, .xxd-picker, .xxd-select, [data-xxd-combobox], .xxd-choice, .xxd-input-wrap") ?? ctl];
+    const bottom = Math.max(...anchors.map((a) => a.getBoundingClientRect().bottom));
+    const inside = err.closest("label, .xxd-input-group, .xxd-taginput, .xxd-picker, .xxd-select, .xxd-choice");
+    // 字段、组里：错误在控件下面；设置行里：在左边那一栏；没放进字段的控件（演示里单放的）只要求不进框、不进 label
+    const row = !ctl.closest(".xxd-field") && ctl.closest(".xxd-row");
+    if (inside) out.push(`${name(ctl)} 的错误在 ${inside.tagName.toLowerCase()}.${[...inside.classList][0] || ""} 里面`);
+    else if (!er.height) out.push(`${name(ctl)} 的错误看不见`);
+    else if (row) { if (!err.parentElement.matches(".xxd-row__text")) out.push(`${name(ctl)} 在设置行里，错误不在左边那一栏`); }
+    else if (ctl.closest(".xxd-field, fieldset, [role=radiogroup]") && er.top < bottom - 1) out.push(`${name(ctl)} 的错误不在控件下面（错误顶 ${Math.round(er.top)}，控件底 ${Math.round(bottom)}）`);
+    const bd = getComputedStyle(vis).borderTopColor;
+    if (bd !== danger) out.push(`${name(ctl)} 出错了框不是出错色（${bd}）`);
+    ctl.focus({ preventScroll: true });
+    const f = getComputedStyle(vis);
+    const typing = !/^(checkbox|radio)$/.test(ctl.type);
+    if (document.activeElement === ctl) {
+      if (f.borderTopColor !== danger) out.push(`${name(ctl)} 出错又聚焦时边不是出错色（${f.borderTopColor}）`);
+      else if (typing && !f.boxShadow.includes(danger) && parseFloat(f.borderTopWidth) < 2) out.push(`${name(ctl)} 出错又聚焦时没有加粗成 2px 的出错色（${f.boxShadow}）`);
+    }
+    ctl.blur();
+    Xxd.setFieldError(ctl, "");
+    if (err.isConnected && !err.hidden) out.push(`${name(ctl)} 清掉以后错误还在`);
+    if (ctl.hasAttribute("aria-invalid") || getComputedStyle(vis).borderTopColor === danger) out.push(`${name(ctl)} 清掉以后还是出错的样子`);
+  }
+  return out;
+}
+
+async function formAudit() {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
+  await ctx.addInitScript(() => addEventListener("DOMContentLoaded", () => document.head.insertAdjacentHTML("beforeend", "<style>*,*::before,*::after{transition:none!important}</style>")));
+  let n = 0;
+  for (const page of pages.filter((p) => /^\/(en\/)?(components|patterns|templates)\//.test(p))) {
+    const tab = await ctx.newPage();
+    await tab.goto(origin + page, { waitUntil: "load" });
+    await tab.waitForTimeout(60);
+    const found = await tab.evaluate(formProbe, `main .site-demo__stage ${FORM_CONTROLS}`);
+    for (const x of [...new Set(found)]) fail("表单", `${page} ${x}`);
+    n += 1;
+    await tab.close();
+  }
+  // 高对比度：出错的框比普通的粗，错误前面的图标看得见
+  {
+    const fc = await browser.newContext({ viewport: { width: 900, height: 900 }, forcedColors: "active" });
+    const tab = await fc.newPage();
+    await tab.goto(origin + "/__audit/long", { waitUntil: "load" });
+    const r = await tab.evaluate(() => {
+      document.querySelector("#app").innerHTML = `<div class="xxd-field"><label class="xxd-label" for="a">A</label><input class="xxd-input" id="a"></div><div class="xxd-field"><label class="xxd-label" for="b">B</label><input class="xxd-input" id="b"></div>
+        <div class="xxd-field"><label class="xxd-label" for="c">C</label><div class="xxd-input-group"><input id="c"></div></div><div class="xxd-field"><label class="xxd-choice"><input type="checkbox" class="xxd-check" id="d">D</label></div>`;
+      const bad = [];
+      for (const id of ["a", "c", "d"]) {
+        const el = document.getElementById(id);
+        const err = Xxd.setFieldError(el, "错了");
+        const vis = el.closest(".xxd-input-group") ?? el;
+        if (parseFloat(getComputedStyle(vis).borderTopWidth) < 2) bad.push(`#${id} 出错的框和普通的一样粗`);
+        const b = getComputedStyle(err, "::before");
+        if (b.content === "none" || b.backgroundColor === getComputedStyle(document.body).backgroundColor) bad.push(`#${id} 错误前面的图标看不见`);
+      }
+      return bad;
+    });
+    for (const x of r) fail("表单", `高对比度 ${x}`);
+    await fc.close();
+  }
+  // 演示表单：空着提交
+  for (const page of ["/components/field/", "/en/components/field/"]) {
+    const tab = await ctx.newPage();
+    await tab.goto(origin + page, { waitUntil: "load" });
+    const form = tab.locator("main form[data-xxd-validate]").first();
+    if (!(await form.count())) { fail("表单", `${page} 没有整张表单的演示`); await tab.close(); continue; }
+    await form.locator("button").first().click();
+    await tab.waitForTimeout(80);
+    const r = await tab.evaluate(() => {
+      const form = document.querySelector("main form[data-xxd-validate]");
+      const bad = [];
+      if (!form.noValidate) bad.push("没写 novalidate（会冒浏览器的气泡）");
+      const required = [...form.querySelectorAll("[required]")];
+      if (document.activeElement !== required[0]) bad.push(`焦点不在第一个错上（在 ${document.activeElement?.id || document.activeElement?.tagName}）`);
+      for (const el of required) {
+        const err = document.getElementById((el.getAttribute("aria-describedby") || "").split(" ").pop());
+        if (el.getAttribute("aria-invalid") !== "true" || !err?.classList.contains("xxd-error") || !err.getClientRects().length) bad.push(`${el.id || el.type} 空着提交没有看得见的错误`);
+      }
+      for (const help of form.querySelectorAll(".xxd-field:has(> .xxd-error:not([hidden])) > .xxd-help:not([data-counter])")) if (help.getClientRects().length) bad.push(`${help.id} 出错时说明没有让位`);
+      if (document.querySelector(".xxd-toast")) bad.push("有错还跑了作者的提交处理");
+      const first = required[0];
+      first.value = "x";
+      first.dispatchEvent(new Event("input", { bubbles: true }));
+      if (first.hasAttribute("aria-invalid") || form.querySelector(`#${first.id} ~ .xxd-error:not([hidden])`)) bad.push("改对了错误没消失");
+      return bad;
+    });
+    for (const x of r) fail("表单", `${page} 整张表单：${x}`);
+    await tab.close();
+  }
+  // 输入法：组合中按回车不选中
+  {
+    const tab = await ctx.newPage();
+    await tab.goto(origin + "/components/combobox/", { waitUntil: "load" });
+    const r = await tab.evaluate(() => {
+      const input = document.querySelector("main .site-demo__stage [data-xxd-combobox] input");
+      input.focus();
+      input.value = input.closest("[data-xxd-combobox]").querySelector(".xxd-option").textContent.trim().slice(0, 1);
+      const typed = input.value;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, isComposing: true }));
+      return input.value === typed ? null : `输入法组合中按回车选中了「${input.value}」`;
+    });
+    if (r) fail("表单", `/components/combobox/ ${r}`);
+    await tab.close();
+  }
+  await ctx.close();
+  console.log(`表单：${n} 页的每个表单控件标错、聚焦、清掉；高对比度；整张表单空着提交（中英）；输入法组合中的回车`);
+}
+
+const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit };
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

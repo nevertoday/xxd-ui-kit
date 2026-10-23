@@ -824,16 +824,109 @@ describe("R4 无障碍", () => {
     expect(names).toEqual(["画质", "高"]);
   });
 
-  it("setFieldError：写 aria-invalid、错误行连进 aria-describedby（说明保留），传空清掉", () => {
+  it("setFieldError：写 aria-invalid、错误行连进 aria-describedby（出错时说明让位），传空清掉、说明放回", () => {
     html(`<div class="xxd-field"><input id="em" aria-describedby="em-help"><p class="xxd-help" id="em-help">说明</p></div>`);
     const input = document.getElementById("em");
     const err = Xxd.setFieldError(input, "请输入有效的邮箱");
     expect(input.getAttribute("aria-invalid")).toBe("true");
-    expect(input.getAttribute("aria-describedby").split(" ")).toEqual(["em-help", err.id]);
+    expect(input.getAttribute("aria-describedby").split(" ")).toEqual([err.id]);
     Xxd.setFieldError(input, "");
     expect(input.hasAttribute("aria-invalid")).toBe(false);
     expect(input.getAttribute("aria-describedby")).toBe("em-help");
     expect(document.querySelector(".xxd-error")).toBeNull();
+  });
+
+  it("setFieldError：错误放在整个控件下面，不进框、不进 label（FORM-REVIEW-PLAN D97）", () => {
+    html(`<div class="xxd-field" id="f1"><label class="xxd-label" for="sd">子域名</label><div class="xxd-input-group"><input id="sd"><span class="xxd-input-group__suffix">.ai</span></div></div>
+      <div class="xxd-field" id="f2"><label class="xxd-label" for="q">质量</label><label class="xxd-select"><select id="q"><option>高</option></select></label></div>
+      <div class="xxd-field" id="f3"><label class="xxd-choice"><input type="checkbox" class="xxd-check" id="ok">我同意条款</label></div>
+      <fieldset class="xxd-choices" id="f4"><legend>方式</legend><label class="xxd-choice"><input type="radio" class="xxd-radio" name="w" id="w1">一篇</label><label class="xxd-choice"><input type="radio" class="xxd-radio" name="w" id="w2">全部</label></fieldset>
+      <div class="xxd-field" id="f5"><span class="xxd-label">画质</span><div class="xxd-picker" data-xxd-picker><button class="xxd-picker__trigger"><span class="xxd-picker__value"></span></button><div class="xxd-listbox"><div class="xxd-option" data-value="h">高</div></div></div></div>`);
+    for (const [id, target] of [["f1", "#sd"], ["f2", "#q"], ["f3", "#ok"], ["f5", ".xxd-picker"]]) {
+      const err = Xxd.setFieldError(document.querySelector(target), "错了");
+      expect(err.parentElement.id).toBe(id);
+      expect(err.closest("label, .xxd-input-group, .xxd-picker")).toBeNull();
+    }
+    expect(document.querySelector(".xxd-picker__trigger").getAttribute("aria-invalid")).toBe("true");
+    // 单选：整组一起标，错误在组的最后
+    const err = Xxd.setFieldError(document.getElementById("w1"), "请选一项");
+    expect(err.parentElement.id).toBe("f4");
+    expect(document.querySelector("#f4").lastElementChild).toBe(err);
+    for (const r of document.querySelectorAll("#f4 input")) {
+      expect(r.getAttribute("aria-invalid")).toBe("true");
+      expect(r.getAttribute("aria-describedby")).toBe(err.id);
+    }
+    Xxd.setFieldError(document.getElementById("w2"), "");
+    expect(document.querySelector("#f4 .xxd-error")).toBeNull();
+    expect(document.getElementById("w1").hasAttribute("aria-invalid")).toBe(false);
+  });
+
+  it("setFieldError：设置行里的控件，错误写在左边那一栏；包着控件的别的 label 外面", () => {
+    html(`<div class="xxd-row"><div class="xxd-row__text"><div class="xxd-row__title">写入标题</div></div><div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" id="sw" aria-label="写入标题"></div></div>
+      <div id="pg"><label class="xxd-pagination__size">每页 <select id="per"><option>20</option></select></label></div>`);
+    expect(Xxd.setFieldError(document.getElementById("sw"), "没保存上").parentElement.className).toBe("xxd-row__text");
+    expect(Xxd.setFieldError(document.getElementById("per"), "错了").parentElement.id).toBe("pg");
+  });
+
+  it("setFieldError：作者写好的错误就用它，不加第二行；清掉时藏起来、describedby 拿掉", () => {
+    html(`<div class="xxd-field"><input id="ea" aria-invalid="true" aria-describedby="ea-err"><p class="xxd-error" id="ea-err">服务器说不行</p></div>`);
+    const input = document.getElementById("ea");
+    const err = Xxd.setFieldError(input, "新的错");
+    expect(err.id).toBe("ea-err");
+    expect(document.querySelectorAll(".xxd-error").length).toBe(1);
+    Xxd.setFieldError(input, "");
+    expect(err.hidden).toBe(true);
+    expect(input.hasAttribute("aria-describedby")).toBe(false);
+    expect(input.hasAttribute("aria-invalid")).toBe(false);
+  });
+
+  it("data-xxd-validate：提交时标错、焦点到第一个、作者的提交处理不跑；改对了马上清掉（D101）", () => {
+    html(`<form data-xxd-validate id="fm"><div class="xxd-field"><label class="xxd-label" for="nm">名字</label><input id="nm" required></div>
+      <div class="xxd-field"><label class="xxd-label" for="ml">邮箱</label><input id="ml" type="email" value="you@example"></div>
+      <div class="xxd-field"><label class="xxd-label" for="pw">密码</label><input id="pw" minlength="8" value="abc" data-error-short="密码至少 8 位"></div>
+      <button>提交</button></form>`);
+    const form = document.getElementById("fm");
+    expect(form.noValidate).toBe(true);
+    const onSubmit = vi.fn((e) => e.preventDefault());
+    form.addEventListener("submit", onSubmit);
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    const nm = document.getElementById("nm");
+    const msg = (el) => document.getElementById(el.getAttribute("aria-describedby")).textContent;
+    expect(msg(nm)).toBe("请填写名字");
+    expect(document.activeElement).toBe(nm);
+    expect(msg(document.getElementById("pw"))).toBe("密码至少 8 位");
+    nm.value = "小东";
+    nm.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(nm.hasAttribute("aria-invalid")).toBe(false);
+    document.getElementById("ml").value = "you@example.com";
+    document.getElementById("pw").value = "abcdefgh";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(form.querySelector(".xxd-error")).toBeNull();
+  });
+
+  it("fieldProblem：全角「＠」「。」换成半角再校验；字数按字算（emoji 算一个）", () => {
+    html(`<div class="xxd-field"><label class="xxd-label" for="m2">邮箱</label><input id="m2" type="email" value="ｙｏｕ＠example。com"></div>
+      <div class="xxd-field"><label class="xxd-label" for="t2">简介</label><textarea id="t2" data-max="3">😀😀😀😀</textarea><p class="xxd-help" data-counter></p></div>`);
+    const m2 = document.getElementById("m2");
+    expect(Xxd.fieldProblem(m2)).toBe("");
+    expect(m2.value).toBe("you@example.com");
+    expect(Xxd.fieldProblem(document.getElementById("t2"))).toBe("最多 3 个字，多了 1 个");
+    expect(document.querySelector("[data-counter]").textContent).toBe("4 / 3");
+    expect(document.querySelector("[data-counter]").hasAttribute("data-over")).toBe(true);
+  });
+
+  it("输入法组合中按回车不选中 combobox 的项（D103）", () => {
+    html(`<div data-xxd-combobox><input class="xxd-input" aria-label="主色"><ul class="xxd-listbox"><li class="xxd-option" data-value="ink">墨色</li></ul></div>`);
+    const input = document.querySelector("[data-xxd-combobox] input");
+    input.value = "墨";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    key(input, "ArrowDown");
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, isComposing: true }));
+    expect(input.value).toBe("墨");
+    key(input, "Enter");
+    expect(input.value).toBe("墨色");
   });
 
   it("登录：邮箱格式不对时有看得见的错误、连上 describedby、焦点回到输入框", () => {

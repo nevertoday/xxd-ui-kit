@@ -11,7 +11,9 @@ import { describe, expect, it } from "vitest";
 // xxd.min.css 2026-10-22 从 24 调到 25：动效和验收（MOTION-REVIEW-PLAN、ACCEPTANCE-REVIEW）加了按下立即反馈、状态优先级、禁用 / 出错 / 焦点的补全、
 //   整行可点的列表行、拖动排序的「上移 / 下移」，约 0.7 KB；xxd.shadow.css.js 同样多了这些，26
 // xxd.js 2026-10-22 从 32 调到 33：截断（TRUNCATION-REVIEW-PLAN D92、D93）——放不下的标签换排法、被省略的字提示全文，约 0.6 KB
-const BUDGET_KB = { "xxd.min.css": 25, "xxd.js": 33, "boot.js": 5, "viz.js": 10, "icons.js": 16, "xxd.shadow.css.js": 26 };
+// xxd.min.css 2026-10-23 从 25 调到 26、xxd.js 从 33 调到 35：表单和出错（FORM-REVIEW-PLAN）——每种控件的出错样子、错误图标、
+//   整张表单的校验（data-xxd-validate）、三语的默认错误句子、字数，约 0.3 KB / 1.8 KB
+const BUDGET_KB = { "xxd.min.css": 26, "xxd.js": 35, "boot.js": 5, "viz.js": 10, "icons.js": 16, "xxd.shadow.css.js": 26 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

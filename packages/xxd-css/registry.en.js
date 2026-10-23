@@ -152,6 +152,10 @@ export const components = {
       "aria-invalid": "Border turns danger color on error",
       "data-optional": "On the label: appends “Optional”",
       "data-autosize": "Textarea grows with its content",
+      "data-xxd-validate": "On <form>: checks the native constraints on submit and writes errors under the fields (no browser bubbles)",
+      "data-error / data-error-<kind>": "On a control: your own error text (kinds: required, type, short, long, min, max, step, pattern)",
+      "data-max": "Soft limit: the count turns red when over and submitting fails (maxlength is the browser's hard limit)",
+      "data-counter": "On .xxd-help: counts the input in the same field (an emoji is one character)",
     },
     markup: `<div class="xxd-field">
   <label class="xxd-label" for="title">Title</label>
@@ -161,23 +165,58 @@ export const components = {
     examples: [
       {
         title: "With an error",
-        text: "The input gets aria-invalid; the error text has an id and is added to aria-describedby (the help stays); it says how to fix it. In JS, Xxd.setFieldError(input, \"…\") does all of this, and an empty string clears it.",
+        text: "The input gets aria-invalid; the error text has an id and is added to aria-describedby. A danger icon leads the text (not color alone), and the error takes the help's place (the counter stays). It says how to fix it. In JS, Xxd.setFieldError(input, \"…\") does all of this, and an empty string clears it; input groups, tag inputs, selects, checkboxes and radios work the same, with the error under the whole control.",
         markup: `<div class="xxd-field" style="width:100%;max-width:320px">
   <label class="xxd-label" for="email-x">Email</label>
-  <input class="xxd-input" id="email-x" type="email" value="not-an-email" aria-invalid="true" aria-describedby="email-x-help email-x-err">
+  <input class="xxd-input" id="email-x" type="email" value="not-an-email" aria-invalid="true" aria-describedby="email-x-err">
   <p class="xxd-help" id="email-x-help">Used to sign in and reset your password</p>
   <p class="xxd-error" id="email-x-err">Enter a valid email, like you@example.com</p>
 </div>`,
       },
+      {
+        title: "A whole form",
+        text: "<form data-xxd-validate>: press “Create account” with everything empty. Each error is written under its field, focus moves to the first one, and the count is announced; a fixed field clears at once, an unfixed one isn't nagged while typing. Full-width “＠” and “。” in emails become half-width first. Your own submit handler runs only when everything is right.",
+        markup: `<form class="xxd-stack" data-xxd-validate style="width:100%;max-width:360px" onsubmit="event.preventDefault(); Xxd.toast('Account created', { tone: 'success' })">
+  <div class="xxd-field">
+    <label class="xxd-label" for="fv-name">Name</label>
+    <input class="xxd-input" id="fv-name" required autocomplete="name">
+  </div>
+  <div class="xxd-field">
+    <label class="xxd-label" for="fv-email">Email</label>
+    <input class="xxd-input" id="fv-email" type="email" required autocomplete="email" aria-describedby="fv-email-help">
+    <p class="xxd-help" id="fv-email-help">Used to sign in and reset your password</p>
+  </div>
+  <div class="xxd-field">
+    <label class="xxd-label" for="fv-pw">Password</label>
+    <input class="xxd-input" id="fv-pw" type="password" required minlength="8" autocomplete="new-password" aria-describedby="fv-pw-help">
+    <p class="xxd-help" id="fv-pw-help">At least 8 characters</p>
+  </div>
+  <div class="xxd-field">
+    <label class="xxd-label" for="fv-bio" data-optional>Bio</label>
+    <textarea class="xxd-textarea" id="fv-bio" data-max="60"></textarea>
+    <p class="xxd-help" data-counter>0 / 60</p>
+  </div>
+  <div class="xxd-field"><label class="xxd-choice"><input type="checkbox" class="xxd-check" required>I've read and agree to the terms</label></div>
+  <div><button class="xxd-btn" data-variant="primary">Create account</button></div>
+</form>`,
+      },
     ],
-    js: `Xxd.setFieldError(input, "Enter a valid email, like you@example.com")  // "" clears it`,
+    js: `Xxd.setFieldError(input, "Enter a valid email, like you@example.com")  // "" clears it; use it for server errors too
+Xxd.validateForm(form)  // works without data-xxd-validate too; returns the controls with errors`,
     sample: `<input class="xxd-input" style="width:100%;max-width:120px" placeholder="Title">`,
-    rules: ["One box is one box: on focus the border darkens once — no outer ring, no inner frame", "§4"],
+    rules: [
+      "One box is one box: on focus the border darkens once — no outer ring, no inner frame",
+      "§4",
+      "The error goes under the whole control — not inside the box, not inside the label — and takes the help's place",
+      "Error plus focus: the red border thickens to 2px (error beats focus, §9)",
+    ],
     a11y: [
-      "The label's for points at the input; help and error text are linked with aria-describedby",
-      "On error set aria-invalid=\"true\" and say how to fix it — don't just turn it red",
+      "The label's for points at the input; help and error text are linked with aria-describedby (on error the help steps aside, so only the error is read)",
+      "On error set aria-invalid=\"true\" and say how to fix it — don't just turn it red; the icon keeps it visible for color-blind users and in high contrast",
+      "When submitting fails, focus moves to the first error; Enter pressed while an IME is composing never triggers anything but the IME",
     ],
   },
+
   Select: {
     title: "Select",
     use: ["Picking one of a list of plain-text options: the native select, best for keyboards and screen readers"],

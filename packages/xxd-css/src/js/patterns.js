@@ -1,7 +1,7 @@
 // 小小东模式的行为（优化计划 O4）。
 import { defaultLayerRoot, emit, layerRoot, reducedMotion } from "./dom.js";
 import { announce } from "./announce.js";
-import { setFieldError } from "./inputs.js";
+import { setFieldError } from "./form.js";
 import { openDialog } from "./dialog.js";
 import { bindSearch, markMatches, clearMarks } from "./inputs.js";
 import { t } from "./i18n.js";

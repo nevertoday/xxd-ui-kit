@@ -236,5 +236,34 @@
       border-color: GrayText;
       color: GrayText;
     }
+
+    /* 表单（FORM-REVIEW-PLAN D99）：box-shadow 会被抹掉，聚焦改成框里面一圈 Highlight；出错的框边加粗成 2px（和普通的分开，聚焦时两样都在） */
+    .xxd-input:focus,
+    .xxd-textarea:focus,
+    .xxd-select > select:focus,
+    .xxd-input-group:focus-within,
+    .xxd-taginput:focus-within,
+    .xxd-picker__trigger:is(:focus-visible, [aria-expanded="true"]) {
+      outline: 2px solid Highlight;
+      outline-offset: -3px;
+    }
+
+    .xxd-input[aria-invalid="true"],
+    .xxd-textarea[aria-invalid="true"],
+    .xxd-select > select[aria-invalid="true"],
+    .xxd-input-group:is([aria-invalid="true"], :has(> input[aria-invalid="true"])),
+    .xxd-taginput:is([aria-invalid="true"], :has(> input[aria-invalid="true"])),
+    .xxd-picker[aria-invalid="true"] .xxd-picker__trigger,
+    .xxd-picker__trigger[aria-invalid="true"],
+    .xxd-check[aria-invalid="true"],
+    .xxd-radio[aria-invalid="true"],
+    .xxd-switch[aria-invalid="true"] {
+      border-width: 2px;
+    }
+
+    .xxd-error::before {
+      forced-color-adjust: none;
+      background: CanvasText;
+    }
   }
 }

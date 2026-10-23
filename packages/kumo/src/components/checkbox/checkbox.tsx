@@ -326,6 +326,8 @@ const CheckboxBase = forwardRef<HTMLButtonElement, CheckboxProps>(
         indeterminate={indeterminate}
         disabled={disabled}
         onCheckedChange={onCheckedChange}
+        // 小小东：出错要让读屏知道（FORM-REVIEW-PLAN D105），不只是一圈红
+        aria-invalid={variant === "error" || undefined}
         className={cn(
           "relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-kumo-base ring after:absolute after:-inset-x-3 after:-inset-y-2 focus:outline-none",
           label && "mt-0.5",
@@ -490,6 +492,7 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
             indeterminate={indeterminate}
             disabled={disabled}
             onCheckedChange={onCheckedChange}
+            aria-invalid={variant === "error" || undefined}
             className={cn(
               "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-kumo-base ring focus:ring-kumo-focus focus:outline-none focus-visible:ring-2 focus-visible:ring-kumo-brand",
               variant === "error" ? "ring-kumo-danger" : "ring-kumo-line",

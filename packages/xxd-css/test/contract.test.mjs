@@ -291,7 +291,8 @@ describe("能打字的框一个框只有一个框（§4）", () => {
       if (!/:focus/.test(r.selector)) continue;
       if (!subjects(r.selector).some((s) => /:focus/.test(s) && field.test(` ${s}`))) continue;
       const decl = Object.fromEntries(r.decls);
-      const ring = decl.outline && !/^(none|0)$/.test(decl.outline) && decl["outline-offset"] !== "-1px";
+      // 画在框里面的（负的 outline-offset）不算外扩：高对比度里 box-shadow 会被抹掉，聚焦只能用 outline
+      const ring = decl.outline && !/^(none|0)$/.test(decl.outline) && !/^-\d/.test(decl["outline-offset"] ?? "");
       const halo = decl["box-shadow"] && !/^(none|inset\b)/.test(decl["box-shadow"]);
       if (ring || halo) bad.push(`${r.file} ${r.selector}`);
     }

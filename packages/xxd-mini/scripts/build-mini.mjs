@@ -617,7 +617,7 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 `;
 }
 
-/** 组件样式加起来的上限（§11）：压缩后 88 KB。这是 44 个组件全用上的总量；按需引入，没用到的组件样式不进包 */
+/** 组件样式加起来的上限（§11）：压缩后 89 KB。这是 44 个组件全用上的总量；按需引入，没用到的组件样式不进包 */
 // 2026-10-15 从 60 KB 调到 64 KB：设计师评审加了禁用、浮层抬起一层、半档间距这些令牌（亮暗各一份）和浮层规则，约 2 KB。
 // 2026-10-18 从 64 KB 调到 68 KB：小程序对抗测试（MINI-REVIEW-PLAN D31）加了底部按钮条、数量加减、日期滚轮、结果页四个组件，
 // 还有点按区、面板拖动和键盘的规则，约 3.5 KB。色阶计划（COLOR-SCALE-PLAN S3）去掉预先算的混色以后再看能不能收回。
@@ -631,7 +631,9 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 // 角上的关闭按钮按图标对齐（小程序的底部面板也用），约 0.9 KB。
 // 2026-10-22 从 86 KB 调到 88 KB：动效和验收（MOTION-REVIEW-PLAN、ACCEPTANCE-REVIEW）给按钮加了按下 / 进行中 / 完成的状态和状态优先级，
 // 分段加了尺寸和禁用，令牌多了 --motion-out、热力的字色，约 2 KB；整行可点的列表行小程序用不上，已经 skip 掉。
-export const SIZE_BUDGET = 88 * 1024;
+// 2026-10-23 从 88 KB 调到 89 KB：表单和出错（FORM-REVIEW-PLAN D98、D99）给错误文字加了危险图标（不只靠颜色），
+// 开关、标签输入有了出错的样子，约 0.7 KB。
+export const SIZE_BUDGET = 89 * 1024;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tokensJson = join(tokensDir, "dist/tokens.json");

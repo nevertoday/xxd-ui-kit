@@ -6,6 +6,12 @@
 export const PARTS = {
   button: [["按钮", "button", "button", ["height", "paddingLeft", "fontSize", "fontWeight", "color", "background", "edge", "radius", "highlight", "opacity"]]],
   input: [["输入框", "input", "input", ["height", "paddingLeft", "fontSize", "fontWeight", "color", "background", "edge", "radius", "opacity"]]],
+  // 字段出错（FORM-REVIEW-PLAN D105）：框的红边、错误文字的字号颜色和前面的图标
+  field: [
+    ["标签", ".xxd-label", "label", ["fontSize", "fontWeight", "color"]],
+    ["输入框", "input", "input", ["height", "edge", "radius"]],
+    ["错误", ".xxd-error", "[data-kumo-part=error], [class*=text-kumo-danger]", ["fontSize", "color", "icon"]],
+  ],
   select: [["选择框", ".xxd-select select", "[data-kumo-component=Select], button", ["height", "fontSize", "fontWeight", "color", "background", "edge", "radius"]]],
   checkbox: [
     ["方框", "input", "[role=checkbox]", ["width", "height", "background", "edge", "radius", "opacity"]],
@@ -125,6 +131,7 @@ function measure([cellSel, sel, props]) {
     else if (p === "radius") out.radius = s.borderTopLeftRadius;
     else if (p === "opacity") { let o = 1; for (let e = el; e && e !== cell; e = e.parentElement) o *= parseFloat(getComputedStyle(e).opacity); out.opacity = o.toFixed(2); }
     else if (p === "textAlign") { const range = document.createRange(); range.selectNodeContents(el); const tr = range.getBoundingClientRect(); out.textAlign = Math.abs(tr.right - (r.right - parseFloat(s.paddingRight))) < 2 ? "右" : "左"; }
+    else if (p === "icon") { const b = getComputedStyle(el, "::before"); out.icon = (b.content !== "none" && b.maskImage && b.maskImage !== "none") || el.querySelector("svg") ? "有" : "无"; }
     else if (p === "numeric") out.numeric = s.fontVariantNumeric.includes("tabular") ? "等宽" : "比例";
     else if (p === "rowLine") { const cells = [...el.children]; const c = getComputedStyle(cells[0] ?? el); const w = Math.max(parseFloat(s.borderBottomWidth) || 0, parseFloat(c.borderBottomWidth) || 0, parseFloat(s.borderTopWidth) || 0, parseFloat(c.borderTopWidth) || 0); out.rowLine = w > 0 ? "有" : "无"; }
     else if (p === "edge") {

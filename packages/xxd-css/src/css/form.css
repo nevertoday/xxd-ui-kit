@@ -41,11 +41,31 @@
     line-height: var(--leading-sm);
   }
 
+  /* 出错不只靠颜色（FORM-REVIEW-PLAN D99）：前面一个危险图标（和 toast 的同一个），对齐第一行 */
   .xxd-error {
+    position: relative;
     margin: 0;
+    padding-inline-start: calc(var(--icon-md) + var(--space-1));
     color: var(--danger);
     font-size: var(--text-xs);
     line-height: var(--leading-sm);
+  }
+
+  .xxd-error::before {
+    content: "";
+    position: absolute;
+    top: calc((var(--leading-sm) - var(--icon-md)) / 2);
+    left: 0;
+    width: var(--icon-md);
+    height: var(--icon-md);
+    background: currentColor;
+    -webkit-mask: var(--xxd-alert) center / contain no-repeat;
+    mask: var(--xxd-alert) center / contain no-repeat;
+  }
+
+  /* 出错时错误顶替说明，字数留着（D100）：错误自己写清楚怎么改；页面不多跳一行 */
+  :is(.xxd-field, .xxd-choices):has(> .xxd-error:not([hidden])) > .xxd-help:not([data-counter]) {
+    display: none;
   }
 
   .xxd-input,
@@ -222,6 +242,10 @@
     border-color: var(--danger);
   }
 
+  .xxd-select[data-variant="bare"] > select[aria-invalid="true"]:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--danger);
+  }
+
   .xxd-select[data-variant="bare"]::after {
     right: 4px;
     width: 12px;
@@ -311,6 +335,10 @@
 
   .xxd-switch:checked::before {
     transform: translateX(calc(var(--switch-w) - var(--switch-h)));
+  }
+
+  .xxd-switch[aria-invalid="true"] {
+    border-color: var(--danger);
   }
 
   .xxd-switch:disabled {
@@ -497,9 +525,7 @@
     cursor: pointer;
   }
 
-  :root[data-theme="dark"] .xxd-input::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-  }
+  /* 暗色下不用 invert：color-scheme: dark 已经把它画成浅色了（再反一次就看不见，FORM-REVIEW-PLAN F10） */
 
   /* 标签输入：<div class="xxd-taginput"><span class="xxd-chip">…</span><input></div>（行为见 js/taginput.js） */
   .xxd-taginput {
@@ -518,6 +544,15 @@
   .xxd-taginput:focus-within {
     border-color: var(--action);
     box-shadow: inset 0 0 0 1px var(--action);
+  }
+
+  /* 出错：标在框上或里面的输入框上都算（setFieldError 标在输入框上） */
+  .xxd-taginput:is([aria-invalid="true"], :has(> input[aria-invalid="true"])) {
+    border-color: var(--danger);
+  }
+
+  .xxd-taginput:is([aria-invalid="true"], :has(> input[aria-invalid="true"])):focus-within {
+    box-shadow: inset 0 0 0 1px var(--danger);
   }
 
   .xxd-taginput > input {
@@ -541,5 +576,6 @@
   --xxd-chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m9 6 6 6-6 6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
   --xxd-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='m6 12 4 4 8-8' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
   --xxd-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='miter'%3E%3Cpath d='M11 4H4v16h16v-7M14 4h6v6m-10 4L20 4' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --xxd-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='8.5' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M12 7v6m0 4h.01' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
   --xxd-minus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round'%3E%3Cpath d='M6 12h12' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
 }

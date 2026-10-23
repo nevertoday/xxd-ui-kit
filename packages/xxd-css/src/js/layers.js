@@ -1,5 +1,5 @@
 // Sheet（从 dock 升起）与右侧详情面板。都支持 Esc 关闭、点遮罩关闭、关闭后焦点回到打开它的按钮。
-import { emit, focusables } from "./dom.js";
+import { composing, emit, focusables } from "./dom.js";
 
 const returnTo = new WeakMap();
 const stack = [];
@@ -142,7 +142,7 @@ export function installLayers(root, byId, closestFrom) {
     }
   });
   root.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !stack.length) return;
+    if (event.key !== "Escape" || !stack.length || composing(event)) return;
     if (event.defaultPrevented || modalOnTop(event.target)) return;
     const top = stack[stack.length - 1];
     if (top.contains(event.target) || top.getRootNode().activeElement === event.target || event.target === document.body) {

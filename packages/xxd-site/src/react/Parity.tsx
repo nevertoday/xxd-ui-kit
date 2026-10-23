@@ -31,6 +31,8 @@ export const REACT_PAIRS: Record<string, (tr: Tr) => JSX.Element> = {
   select: (tr) => <Select aria-label={tr("图片质量", "Image quality")} className="w-40" defaultValue="high" items={{ high: tr("高", "High"), standard: tr("标准", "Standard") }} />,
   checkbox: (tr) => <CheckOn label={tr("智能标点", "Smart punctuation")} />,
   "checkbox-off": (tr) => <Checkbox label={tr("写入标题", "Write title")} />,
+  "checkbox-error": (tr) => <Checkbox label={tr("我同意条款", "I agree to the terms")} variant="error" />,
+  "field-error": (tr) => <div style={{ width: "100%", maxWidth: 240 }}><Input label={tr("邮箱", "Email")} description={tr("用来登录", "Used to sign in")} error={tr("请输入有效的邮箱", "Enter a valid email")} type="email" defaultValue="not-an-email" /></div>,
   "checkbox-disabled": (tr) => <CheckOn label={tr("智能标点", "Smart punctuation")} disabled />,
   "switch-disabled": (tr) => <SwitchOn label={tr("完成音效", "Done sound")} disabled />,
   switch: (tr) => <SwitchOn label={tr("完成音效", "Done sound")} />,

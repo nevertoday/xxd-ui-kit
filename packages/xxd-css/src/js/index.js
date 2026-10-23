@@ -18,6 +18,7 @@ import { initSortable, installAuth, installConfirmTwice, installSortable } from 
 import { initGauges, initSparklines } from "./chart.js";
 import { initViz } from "./viz-dom.js";
 import { installAnnouncer } from "./announce.js";
+import { initForms, installForms } from "./form.js";
 import { collect } from "./lifecycle.js";
 
 export { openDialog, closeDialog, confirmDialog, confirmDelete } from "./dialog.js";
@@ -30,7 +31,8 @@ export { selectTab, selectRadio, moveInk } from "./choice.js";
 export { toast, copyText, showTooltip, hideTooltip, showBubble, runBusy } from "./feedback.js";
 export { fitText } from "./truncate.js";
 export { openSheet, closeSheet, openPanel, closePanel, openLayer, closeLayer } from "./layers.js";
-export { bindSearch, markMatches, clearMarks, addTag, tagValues, openCommandPalette, bindCommandPalette, setFieldError } from "./inputs.js";
+export { bindSearch, markMatches, clearMarks, addTag, tagValues, openCommandPalette, bindCommandPalette } from "./inputs.js";
+export { setFieldError, validateForm, fieldProblem } from "./form.js";
 export { mountAppearance, APPEARANCE_LABELS } from "./appearance.js";
 export { chartTokens, chartPalette, chartOptions, watchChartTheme, sparkline, initSparklines, gauge, initGauges, gaugeOptionsFrom } from "./chart.js";
 export { viz, initViz, vizFrom, useViz } from "./viz-dom.js";
@@ -105,6 +107,7 @@ function installAll(root) {
   installSortable(root, closestFrom);
   installConfirmTwice(root, closestFrom);
   installAuth(root, closestFrom);
+  installForms(root);
   // 放在最后：面板 / sheet 的 Esc 要等里面的下拉、组合框、拖动排序先处理（它们 preventDefault 了就不关整层）
   installLayers(root, byId, closestFrom);
 }
@@ -121,6 +124,7 @@ export function init(root = document) {
   initViz(root);
   initMenus(root);
   initSortable(root);
+  initForms(root);
   initTruncation(root, installed.get(root)?.signal);
   const lib = iconLib();
   if (lib?.hydrateIcons) lib.hydrateIcons(root);
