@@ -149,8 +149,11 @@ const wall = componentsFor(lang).filter((c) => c.wall !== false && !WALL_HIDE.ha
           return blockers;
         };
         const free = (y, x0, x1) => { for (let x = x0; x < x1; x += 1) if (!grid[y] || grid[y][x]) return false; return true; };
+        // 有上限：「上面那格往下伸」和「下面那格往上伸」两种让行会来回倒（某些窗口宽度下永远停不下来，页面卡死，2026-10-23）。
+        // 最多排 total × cols 遍、最多 50ms；到了就停，剩下的洞照常交给下面「挨个高一行」再试
         let changed = true;
-        while (changed) {
+        const deadline = performance.now() + 50;
+        for (let pass = 0; changed && pass < total * cols && performance.now() < deadline; pass += 1) {
           changed = false;
           for (let y = 0; y < total; y += 1) {
             for (let x = 0; x < cols; x += 1) {
