@@ -114,7 +114,8 @@ export default defineConfig({
   },
   lint: {
     // ci/ and tools/ were never linted; figma scripts import kumo's non-exported files.
-    ignorePatterns: ["ci/**", "tools/**", "packages/kumo-figma/scripts/**"],
+    // template-mini 是 `xxd-ui new-mini` 拷给用户的小程序项目模板：它要的 Taro 类型在用户项目里装，这个仓库里没有
+    ignorePatterns: ["ci/**", "tools/**", "packages/kumo-figma/scripts/**", "packages/xxd-extension/template-mini/**"],
     jsPlugins: [
       "./packages/kumo/lint/kumo-plugin.js",
       {
