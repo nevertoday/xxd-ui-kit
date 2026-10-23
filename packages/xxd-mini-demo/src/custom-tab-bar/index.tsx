@@ -11,7 +11,9 @@ export default function CustomTabBar() {
   const [lang, setLang] = useState(readLang);
   useEffect(() => {
     Taro.eventCenter.on(LANG_EVENT, setLang);
-    return () => Taro.eventCenter.off(LANG_EVENT, setLang);
+    return () => {
+      Taro.eventCenter.off(LANG_EVENT, setLang);
+    };
   }, []);
   return <TabBarHost items={MAIN_TABS((zh, en) => (lang === "en" ? en : zh))} />;
 }

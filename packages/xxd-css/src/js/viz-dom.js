@@ -73,8 +73,10 @@ export function viz(el, kind, data, options = {}) {
   if (kind === "bars") for (const li of el.querySelectorAll(".xxd-bars__item")) before.set(li.firstChild?.textContent, li.style.getPropertyValue("--value"));
   for (const [k, v] of Object.entries(attrs)) {
     // 自定义属性写在 style 上（不动作者自己写的 style）
-    if (k.startsWith("--")) v == null ? el.style.removeProperty(k) : el.style.setProperty(k, String(v));
-    else if (v == null) el.removeAttribute(k);
+    if (k.startsWith("--")) {
+      if (v == null) el.style.removeProperty(k);
+      else el.style.setProperty(k, String(v));
+    } else if (v == null) el.removeAttribute(k);
     else el.setAttribute(k, v);
   }
   el.innerHTML = html;

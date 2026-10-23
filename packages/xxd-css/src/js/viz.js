@@ -244,7 +244,7 @@ export function matrixModel({ rows = [], cols = [], values = [] } = {}, o = {}) 
     const ok = finite(v);
     return { value: ok ? Number(v) : null, level: ok ? heatLevel(v, max) : -1, text: ok ? cellFmt(Number(v)) : "—", title: `${r} × ${c}${L.sep}${ok ? withUnit(fmt(Number(v)), o.unit) : "—"}` };
   }));
-  const summary = maxAt ? `${maxAt} ${withUnit(fmt(max), o.unit)}` : L.none;
+  const summary = maxAt ? `${String(maxAt)} ${withUnit(fmt(max), o.unit)}` : L.none;
   return { empty: rows.length && cols.length ? "" : L.empty, rows: rows.map(String), cols: cols.map(String), cells, max, label: o.label ? `${o.label}${L.sep}${summary}` : summary, title: o.label || L.heat, less: L.less, more: L.more };
 }
 

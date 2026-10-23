@@ -239,7 +239,7 @@ test("导航栏：胶囊读到全 0 时按状态栏估一个，高度不会是�
 });
 
 test("图标：同一个图标的数据在页面根上只写一次，每个图标只引用变量；后来打开的面板里的新图标也补上", async () => {
-  const { Icon, Button } = mini;
+  const { Icon } = mini;
   const { Trash, Plus, X } = await import("@xxd/icons/each");
   let setOpen;
   function Page() {

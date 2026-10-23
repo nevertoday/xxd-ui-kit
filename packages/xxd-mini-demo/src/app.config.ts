@@ -16,7 +16,8 @@ export default defineAppConfig({
     color: "@tabColor",
     selectedColor: "@tabSelected",
     backgroundColor: "@tabBg",
-    borderStyle: "@tabBorder",
+    // 「@」开头是 theme.json 里的变量（亮 / 暗各一份），运行时由微信换成 black / white；类型只认这两个字面值
+    borderStyle: "@tabBorder" as "black",
     list: [
       { pagePath: "pages/index/index", text: "组件" },
       { pagePath: "pages/todo/index", text: "待办" },

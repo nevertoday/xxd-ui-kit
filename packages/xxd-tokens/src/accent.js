@@ -49,7 +49,6 @@ export function toRgb(hex) {
 }
 
 const clampRgb = (rgb) => rgb.map((v) => Math.round(Math.max(0, Math.min(255, v))));
-const toHex = (rgb) => `#${clampRgb(rgb).map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 
 export function luminance(rgb) {
   const [r, g, b] = rgb.map((v) => {

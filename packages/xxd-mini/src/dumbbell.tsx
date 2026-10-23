@@ -2,7 +2,7 @@
 import { Text, View } from "@tarojs/components";
 import "../styles/dumbbell.mini.css";
 import { a11y } from "./aria";
-import { cx, mods } from "./util";
+import { cx } from "./util";
 import { dumbbellModel } from "./viz-core";
 import { useVizLocale } from "./provider";
 

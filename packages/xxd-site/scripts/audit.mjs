@@ -730,15 +730,15 @@ async function insetAudit() {
 const CONTRAST = readFileSync(join(root, "scripts/contrast.js"), "utf8");
 async function contrastAudit() {
   const looks = [
-    ["墨色·亮", { theme: "light", accent: "" }],
-    ["墨色·暗", { theme: "dark", accent: "" }],
-    ["芥黄·亮", { theme: "light", accent: "#8f812d" }],
-    ["纯蓝·暗", { theme: "dark", accent: "#0000ff" }],
+    { id: "墨色·亮", s: { theme: "light", accent: "" } },
+    { id: "墨色·暗", s: { theme: "dark", accent: "" } },
+    { id: "芥黄·亮", s: { theme: "light", accent: "#8f812d" } },
+    { id: "纯蓝·暗", s: { theme: "dark", accent: "#0000ff" } },
   ];
   const list = pages.filter((p) => /^\/(components|patterns|templates)\/|^\/$/.test(p));
   let n = 0;
   const seen = new Set();
-  for (const [id, s] of looks) {
+  for (const { id, s } of looks) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
     await ctx.addInitScript((s) => localStorage.setItem("xxd-site", JSON.stringify({ corners: "square", density: "comfortable", finish: "flat", ...s })), s);
     for (const page of list) {
@@ -820,7 +820,7 @@ async function motionAudit() {
       const el = document.querySelector("[data-audit-press]");
       // 选中 / 当前的按下时选中说了算（状态优先级），点了状态会变，不在这里查；不能点的 div 也不查
       if (!el || !el.getClientRects().length || el.matches(":disabled, [aria-disabled=true], [aria-busy=true], [aria-pressed=true], [aria-current]:not([aria-current=false]), [aria-selected=true], [data-selected], :not(a, button, [role=button], [role=menuitem], [role=option], [tabindex])") || el.closest("[aria-selected=true], [aria-current]:not([aria-current=false]), [data-selected]")) return null;
-      const cs = getComputedStyle(el), b = getComputedStyle(el, "::before"), a = getComputedStyle(el.closest(".xxd-list__item") || el, "::after");
+      const cs = getComputedStyle(el), b = getComputedStyle(el, "::before");
       return { k: `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 2).join(".")}${el.dataset.variant ? `[${el.dataset.variant}]` : ""}`, s: [cs.backgroundColor, cs.color, cs.borderTopColor, cs.boxShadow, cs.transform, cs.textDecorationColor, b.backgroundColor, (el.closest(".xxd-list__item") ? getComputedStyle(el.closest(".xxd-list__item")).backgroundColor : "")].join("|") };
     });
     const seen = new Set();
@@ -1028,7 +1028,7 @@ async function truncAudit() {
     seen.add(key);
     fail("截断", `${label} · ${x.name}: ${x.kind === "省略号" ? (x.content ? "内容被省略" : x.digits ? "数字被省略" : "省略了看不到全文") : x.kind} ${x.el}${x.by ? ` ← ${x.by}` : ""}「${x.word}」`);
   };
-  for (const [lang, registry] of [["中", zh], ["英", en]]) for (const [label, text] of Object.entries(TRUNC_TEXTS)) for (const w of [320, 260]) {
+  for (const { lang, registry } of [{ lang: "中", registry: zh }, { lang: "英", registry: en }]) for (const [label, text] of Object.entries(TRUNC_TEXTS)) for (const w of [320, 260]) {
     const ctx = await browser.newContext({ viewport: { width: w + 40, height: 900 }, reducedMotion: "reduce" });
     const tab = await ctx.newPage();
     await tab.goto(`${origin}/__audit/long`);
