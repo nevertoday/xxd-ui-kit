@@ -8,22 +8,39 @@
 //   chart.setOption(Xxd.chartOptions({ xAxis: {…}, series: [{ type: "line", data }] }));
 //   Xxd.watchChartTheme(chart, () => Xxd.chartOptions(myOption))   // 切主题 / 主色时自动重画
 
-import { getLocale } from "./i18n.js";
+import { tightFormat, gaugeFormat } from "./gauge.js";
+import { getLocale, t as say } from "./i18n.js";
+import { largestRemainder } from "./viz.js";
 import { missingViz, vizLib } from "./viz-dom.js";
 
 const read = (el, name, fallback) => {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
   return v || fallback;
 };
+const media = (q) => typeof matchMedia === "function" && matchMedia(q).matches;
+const FORCED = "(forced-colors: active)";
+const STILL = "(prefers-reduced-motion: reduce)";
 
-/** 当前外观下的图表颜色（从令牌读）。 */
+// 高对比模式（ECHARTS-REVIEW-PLAN D124）：canvas 不会被系统换色，自己换成系统色
+function systemColor(name) {
+  const probe = document.createElement("span");
+  probe.style.cssText = `color:${name};forced-color-adjust:none;display:none`;
+  document.body.append(probe);
+  const out = getComputedStyle(probe).color;
+  probe.remove();
+  return out;
+}
+
+/** 当前外观下的图表颜色（从令牌读；高对比模式下是系统色）。 */
 export function chartTokens(el = document.documentElement) {
   const dark = el.closest?.("[data-theme]")?.getAttribute("data-theme") === "dark" || el.getAttribute?.("data-theme") === "dark";
   const ink = read(el, "--ink", dark ? "#f2f0ea" : "#111111");
-  return {
+  const t = {
     dark,
+    forced: false,
     ink,
     muted: read(el, "--muted", dark ? "#a29d92" : "#6b675f"),
+    muted2: read(el, "--muted-2", dark ? "#837d72" : "#9a968d"),
     line: read(el, "--line", dark ? "#34312c" : "#e6e3dc"),
     paper: read(el, "--paper", dark ? "#1c1b19" : "#ffffff"),
     accent: read(el, "--action", ink),
@@ -38,6 +55,12 @@ export function chartTokens(el = document.documentElement) {
     font: read(el, "--font-body", "system-ui, sans-serif"),
     mono: read(el, "--font-mono", "ui-monospace, monospace"),
   };
+  if (typeof document !== "undefined" && document.body && media(FORCED)) {
+    const text = systemColor("CanvasText");
+    const gray = systemColor("GrayText");
+    Object.assign(t, { forced: true, ink: text, muted: text, muted2: gray, line: gray, paper: systemColor("Canvas"), accent: text, gray9: text, gray10: text, gray11: text, accent8: text, success: text, danger: text, warning: text });
+  }
+  return t;
 }
 
 /**
@@ -49,6 +72,10 @@ export function chartPalette(tokens = chartTokens()) {
 }
 
 const LINE_TYPES = ["solid", "dashed", "dotted", [6, 3, 1, 3], "dashed"];
+// 一个系列一个颜色、画在直角坐标系里的图；别的（饼、漏斗、旭日、矩形树图、桑基……）按数据上色（D123）
+const BY_SERIES = new Set(["line", "bar", "scatter", "effectScatter", "pictorialBar"]);
+const CARTESIAN = new Set([...BY_SERIES, "candlestick", "boxplot", "heatmap"]);
+const onGrid = (s) => CARTESIAN.has(s.type) && (!s.coordinateSystem || s.coordinateSystem === "cartesian2d");
 
 // ECharts 的 canvas 不认 color-mix()：在浏览器里把它算成 rgb()
 function resolveColor(value) {
@@ -69,49 +96,111 @@ function merge(base, extra) {
   for (const [k, v] of Object.entries(extra)) out[k] = isObj(v) && isObj(base?.[k]) ? merge(base[k], v) : v;
   return out;
 }
+const list = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+const finite = (v) => v !== null && v !== "" && v !== undefined && Number.isFinite(Number(v));
+// 一个数据点的数：42、"42"、{ value: 42 }、[x, 42]
+const valueOf = (d) => {
+  const v = isObj(d) ? d.value : d;
+  return Array.isArray(v) ? v.at(-1) : v;
+};
+const labelOf = (d) => String(isObj(d) ? d.value ?? "" : d ?? "");
 
-function axis(t, extra) {
-  const style = {
-    axisLine: { lineStyle: { color: t.line } },
-    axisTick: { show: false },
-    axisLabel: { color: t.muted, fontFamily: t.font, fontSize: 11 },
-    splitLine: { lineStyle: { color: t.line, width: 1 } },
-    nameTextStyle: { color: t.muted },
-  };
-  if (Array.isArray(extra)) return extra.map((a) => merge(style, a));
-  return merge(style, extra ?? {});
+// 量文字宽（图例让行、类目折行用）；没有 canvas 时按每个字 12px 算
+let pen;
+function textWidth(s, font) {
+  pen ??= typeof document !== "undefined" ? document.createElement("canvas").getContext?.("2d") : null;
+  if (!pen) return String(s).length * 12;
+  pen.font = `12px ${font}`;
+  return pen.measureText(String(s)).width;
 }
+
+// 图例有几行（D127）：按图的宽度一行一行排，和 ECharts 的排法一样（图标 + 5px + 字，项和项隔 10px）
+function legendRows(names, iconW, width, font) {
+  let rows = 1;
+  let x = 0;
+  for (const n of names) {
+    const w = iconW + 5 + textWidth(n, font);
+    if (x && x + w > width) {
+      rows += 1;
+      x = 0;
+    }
+    x += w + 10;
+  }
+  return rows;
+}
+
+let warnedMany = false;
+// watchChartTheme 重画时把图的 DOM 交给 chartOptions（作者不传 el 也能读局部主题、量宽度）
+let building = null;
 
 /** 给一个 ECharts option 套上小小东主题（不改你写的值）。 */
 export function chartOptions(option = {}, { el, tokens } = {}) {
-  const t = tokens ?? chartTokens(el ?? document.documentElement);
+  const host = el ?? building ?? (typeof document !== "undefined" ? document.documentElement : null);
+  const t = tokens ?? chartTokens(host);
+  const locale = getLocale(host);
+  const width = el || building ? host.clientWidth || 360 : 360;
   const color = chartPalette(t).map(resolveColor);
-  const series = (Array.isArray(option.series) ? option.series : option.series ? [option.series] : []).map((s, i) => {
+  const raw = list(option.series);
+  const grid = Boolean(option.xAxis || option.yAxis) || raw.some(onGrid);
+  const horizontal = list(option.yAxis)[0]?.type === "category";
+  const full = gaugeFormat({ locale });
+  const label = { color: t.muted, fontFamily: t.font, fontSize: 12 };
+  const series = raw.map((s, i) => {
     const c = color[i % color.length];
-    // 参考线（平均、目标；CHART-TYPES-PLAN 8.1）：墨色实线 1px，字是次要色；不用虚线、不画两头的箭头
-    const markLine = s.markLine ? { markLine: merge({ symbol: "none", silent: true, lineStyle: { color: t.ink, width: 1, type: "solid" }, label: { color: t.muted, fontFamily: t.font, fontSize: 11 } }, s.markLine) } : {};
-    let base = { color: c };
+    // 参考线（平均、目标；CHART-TYPES-PLAN 8.1）：墨色实线 1px；字在线的上方、图区里面的右端，不会被裁（D129）
+    const markLine = s.markLine
+      ? { markLine: merge({ symbol: "none", silent: true, lineStyle: { color: t.ink, width: 1, type: "solid" }, label: { ...label, position: "insideEndTop", formatter: (p) => [p.name, finite(p.value) ? full(Number(p.value)) : ""].filter(Boolean).join(" ") } }, s.markLine) }
+      : {};
+    // 第 6 条起是背景线（D131）
+    if (i >= 5 && BY_SERIES.has(s.type)) {
+      if (!warnedMany) console.warn("[xxd] 图表超过 5 条：第 6 条起画成背景线。拆成几张图，或者只高亮一条");
+      warnedMany = true;
+      return merge({ color: t.muted2, z: 1, emphasis: { disabled: true }, ...(s.type === "line" ? { symbol: "none", lineStyle: { width: 1, type: "solid" } } : {}), ...markLine }, s);
+    }
+    let base = {};
     // 面积：实色 8% 不透明，不用渐变
     if (s.type === "line") base = { symbol: "none", lineStyle: { width: i === 0 ? 2 : 1.5, type: LINE_TYPES[i % LINE_TYPES.length] }, emphasis: { focus: "series" }, color: c, ...(s.areaStyle ? { areaStyle: { color: c, opacity: 0.08 } } : {}) };
     else if (s.type === "bar") base = { barMaxWidth: 28, itemStyle: { borderRadius: 0 }, emphasis: { focus: "series" }, color: c };
     // 散点：6px 实心点
     else if (s.type === "scatter") base = { symbolSize: 6, itemStyle: { color: c, opacity: 1 }, emphasis: { focus: "series" } };
+    else if (BY_SERIES.has(s.type)) base = { color: c };
+    // 饼：每块之间 1px 纸色的缝；字是墨色
+    else if (s.type === "pie") base = { itemStyle: { borderColor: t.paper, borderWidth: 1 }, label: { color: t.ink, fontFamily: t.font, fontSize: 12, overflow: "break" } };
     return merge({ ...base, ...markLine }, s);
   });
+  const lines = series.some((s) => s.type === "line");
+  const iconW = lines ? 24 : 10;
+  const legendNames = raw.flatMap((s) => (BY_SERIES.has(s.type) ? [s.name ?? ""] : list(s.data).map((d) => d?.name ?? "")));
+  const rows = option.legend === undefined ? 0 : legendRows(legendNames, iconW, width - 8, t.font);
   return {
     ...option,
     color,
-    // 读屏：ECharts 按数据自动生成一段描述，写到图表容器的 aria-label 上（canvas 本身读屏什么都读不到）
-    aria: merge({ enabled: true, label: { enabled: true } }, option.aria),
+    // 不放进场动画（设计原则 §14，D130）：作者要动画可以写 animation: true；减少动效时一律不放
+    animation: media(STILL) ? false : (option.animation ?? false),
+    // 读屏：一句话描述（D126）写到图表容器的 aria-label 上；高对比时柱子和饼加花纹（D124）
+    aria: merge({ enabled: true, label: { enabled: true, description: describe(option, raw, horizontal, locale, host) }, decal: { show: t.forced } }, option.aria),
     backgroundColor: "transparent",
     textStyle: merge({ color: t.ink, fontFamily: t.font }, option.textStyle),
-    grid: merge({ left: 8, right: 16, top: option.legend === undefined ? 16 : 40, bottom: 8, containLabel: true }, option.grid),
-    xAxis: axis(t, option.xAxis),
-    yAxis: axis(t, option.yAxis),
-    legend: option.legend === undefined ? undefined : merge({ top: 0, left: 0, icon: "rect", itemWidth: 10, itemHeight: 2, textStyle: { color: t.muted, fontFamily: t.font } }, option.legend),
+    ...(grid
+      ? {
+          // 图例换行时图区往下让（D127）
+          grid: merge({ left: 8, right: 16, top: rows ? rows * 14 + (rows - 1) * 10 + 16 : 16, bottom: 8, containLabel: true }, option.grid),
+          xAxis: axis(t, option.xAxis, { raw, which: "xAxis", width, locale }),
+          yAxis: axis(t, option.yAxis, { raw, which: "yAxis", width, locale }),
+        }
+      : {}),
+    legend:
+      option.legend === undefined
+        ? undefined
+        : merge(
+            // 折线的图例画出线型（24px 长、不画点），柱子和饼是方块
+            { top: 0, left: 0, itemWidth: iconW, itemHeight: 10, itemGap: 10, ...(option.legend?.data ? {} : { data: legendData(raw) }), textStyle: { color: t.muted, fontFamily: t.font, fontSize: 12 } },
+            option.legend,
+          ),
     tooltip: merge(
       {
-        trigger: "axis",
+        // 有折线、柱子时按坐标轴，否则按一个数据（饼、散点）
+        trigger: series.some((s) => s.type === "line" || s.type === "bar") ? "axis" : "item",
         backgroundColor: t.paper,
         borderColor: t.line,
         borderWidth: 1,
@@ -126,18 +215,184 @@ export function chartOptions(option = {}, { el, tokens } = {}) {
   };
 }
 
-/** 主题 / 主色 / 圆角变化时重新 setOption。返回解绑函数。 */
+// 图例的每一项（D127）：折线只画线（看得出实线、虚线），不画点；别的是方块
+function legendData(raw) {
+  return raw.flatMap((s) => {
+    if (!BY_SERIES.has(s.type)) return list(s.data).filter((d) => d?.name != null).map((d) => ({ name: d.name, icon: "rect" }));
+    if (s.name == null) return [];
+    return [s.type === "line" ? { name: s.name, itemStyle: { opacity: 0 } } : { name: s.name, icon: "rect" }];
+  });
+}
+
+function axis(t, extra, ctx) {
+  const style = (a = {}, index = 0) => {
+    const type = a.type ?? (ctx.which === "xAxis" ? "category" : "value");
+    const own = a.axisLabel ?? {};
+    const out = {
+      axisLine: { lineStyle: { color: t.line } },
+      axisTick: { show: false },
+      axisLabel: { color: t.muted, fontFamily: t.font, fontSize: 12 },
+      splitLine: { lineStyle: { color: t.line, width: 1 } },
+      nameTextStyle: { color: t.muted, fontFamily: t.font, fontSize: 12 },
+    };
+    const mine = ctx.raw.filter((s) => onGrid(s) && (s[`${ctx.which}Index`] ?? 0) === index);
+    if (type === "value" && !own.formatter) {
+      // 刻度数写全了超过 5 个字符就缩写（D128，和 D52 一样）；整根轴用同一种写法
+      let top = 0;
+      const stacks = {};
+      for (const s of mine)
+        list(s.data).forEach((d, i) => {
+          const v = Math.abs(Number(valueOf(d)));
+          if (!Number.isFinite(v)) return;
+          if (s.stack != null) top = Math.max(top, (stacks[`${s.stack}:${i}`] = (stacks[`${s.stack}:${i}`] ?? 0) + v));
+          else top = Math.max(top, v);
+        });
+      const long = gaugeFormat({ locale: ctx.locale })(top).length > 5;
+      if (long) out.axisLabel.formatter = tightFormat({ locale: ctx.locale, compact: true }, 5);
+    }
+    if (type === "category" && mine.some((s) => s.type === "bar")) {
+      const n = (a.data ?? list(mine[0]?.data)).length || 1;
+      if (ctx.which === "yAxis") {
+        // 横向条形图：从上往下是作者给的顺序（D125）；名字最宽占四成，再长就折行
+        Object.assign(out, { inverse: true });
+        out.axisLabel = { ...out.axisLabel, width: Math.round(ctx.width * 0.4), overflow: "break" };
+      } else {
+        // 柱子的名字一个不藏，放不下在自己那一格里折行（D125）；一格窄到放不下两个字时照 ECharts 的
+        const band = (ctx.width - 64) / n - 4;
+        if (band >= 24) out.axisLabel = { ...out.axisLabel, interval: 0, width: Math.floor(band), overflow: "break" };
+      }
+    }
+    return merge(out, a);
+  };
+  if (Array.isArray(extra)) return extra.map((a, i) => style(a, i));
+  return style(extra ?? {}, 0);
+}
+
+const end = (parts, host) => parts.map((p) => p.trim()).filter(Boolean).join(say("chartStop", null, host)).trim() + say("chartEnd", null, host);
+
+/* ── 读屏的一句话（D126）：什么图、几条、叫什么、横轴从哪到哪、每条从多少到多少、最高最低；饼写每块的数和占比 ── */
+function describe(option, raw, horizontal, locale, host) {
+  if (!raw.length) return say("chartEmpty", null, host);
+  const num = gaugeFormat({ locale });
+  const types = new Set(raw.map((s) => s.type));
+  const kind = types.size > 1 ? "chartAny" : { line: "chartLine", bar: horizontal ? "chartHBar" : "chartBar", pie: "chartPie", scatter: "chartScatter" }[raw[0].type] ?? "chartAny";
+  const catAxis = list(horizontal ? option.yAxis : option.xAxis)[0] ?? {};
+  const time = catAxis.type === "time";
+  const day = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
+  const cats = (catAxis.data ?? []).map(labelOf);
+  const xOf = (d, i) => {
+    const v = isObj(d) ? d.value : d;
+    const x = Array.isArray(v) ? v[0] : cats[i];
+    // 「2026-10-08」按本地时间算（和 ECharts 一样），不按 UTC
+    const when = typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x) ? new Date(`${x}T00:00`) : new Date(x);
+    return time && x != null && !Number.isNaN(when.getTime()) ? day.format(when) : x == null ? "" : String(x);
+  };
+  const parts = [say(kind, null, host)];
+  const named = raw.filter((s) => s.name);
+  if (named.length) parts.push(say("chartSeries", { n: raw.length, names: named.slice(0, 5).map((s) => s.name).join(say("chartSep", null, host)) }, host));
+  else if (raw.length > 1) parts.push(say("chartCount", { n: raw.length }, host));
+  if (raw[0].type === "pie" || !BY_SERIES.has(raw[0].type)) {
+    const data = list(raw[0].data).filter((d) => finite(valueOf(d)));
+    const pct = largestRemainder(data.map((d) => Number(valueOf(d))));
+    parts.push(data.map((d, i) => say("chartShare", { name: d.name ?? "", value: num(Number(valueOf(d))), pct: `${pct[i]}%` }, host)).join(say("chartSep", null, host)));
+    return end(parts, host);
+  }
+  if (cats.length) parts.push(say(horizontal ? "chartAxisY" : "chartAxis", { from: cats[0], to: cats.at(-1) }, host));
+  let any = false;
+  for (const s of raw.slice(0, 5)) {
+    const pts = list(s.data)
+      .map((d, i) => [valueOf(d), xOf(d, i)])
+      .filter(([v]) => finite(v))
+      .map(([v, x]) => [Number(v), x]);
+    if (!pts.length) continue;
+    any = true;
+    if (s.type === "scatter") {
+      parts.push(say("chartPoints", { name: s.name ?? "", n: pts.length }, host));
+      continue;
+    }
+    const hi = pts.reduce((a, b) => (b[0] > a[0] ? b : a));
+    const lo = pts.reduce((a, b) => (b[0] < a[0] ? b : a));
+    const at = (p) => (p[1] ? say("chartAt", { x: p[1] }, host) : "");
+    // 折线说从多少到多少；柱子只说最高最低
+    parts.push(say(s.type === "line" ? "chartTrend" : "chartRange", { name: s.name ?? "", first: num(pts[0][0]), last: num(pts.at(-1)[0]), max: num(hi[0]) + at(hi), min: num(lo[0]) + at(lo) }, host));
+  }
+  if (!any) return say("chartEmpty", null, host);
+  if (raw.length > 5) parts.push(say("chartMore", { n: raw.length - 5 }, host));
+  return end(parts, host);
+}
+
+/**
+ * 看着一张图（D132）：主题、主色、圆角、局部主题、高对比、减少动效变了就重画（令牌真的变了才画）；
+ * 图的大小变了就 resize，和宽度有关的选项（图例让行、类目折行）重算；触屏上点图外面、滚动时收起提示；图销毁后自己解绑。返回解绑函数。
+ */
 export function watchChartTheme(chart, build, { el = document.documentElement } = {}) {
-  const apply = () => chart.setOption(build(), { notMerge: true });
+  const dom = chart.getDom?.() ?? null;
+  const make = () => {
+    building = dom;
+    try {
+      return build();
+    } finally {
+      building = null;
+    }
+  };
+  const key = () => JSON.stringify(chartTokens(dom ?? el)) + media(STILL);
+  let last = key();
+  let width = dom?.clientWidth ?? 0;
+  const off = [];
+  const stop = () => off.splice(0).forEach((f) => f());
+  const alive = () => (chart.isDisposed?.() ? (stop(), false) : true);
+  const apply = () => {
+    if (!alive()) return;
+    const k = key();
+    if (k === last) return;
+    last = k;
+    chart.setOption(make(), { notMerge: true });
+  };
+  // 第一次也经过这里：作者没传 el 时，宽度和局部主题从图的 DOM 来
+  if (dom) chart.setOption(make(), { notMerge: true });
   const mo = new MutationObserver(apply);
   mo.observe(el, { attributes: true, attributeFilter: ["data-theme", "data-accent", "style", "data-corners"] });
   // 页面里某一块换了主题也重画（D112）：只看 data-theme，不看 style
   const local = new MutationObserver((records) => records.some((r) => r.target !== el) && apply());
   local.observe(el.ownerDocument?.documentElement ?? el, { attributes: true, subtree: true, attributeFilter: ["data-theme"] });
-  return () => {
-    mo.disconnect();
-    local.disconnect();
-  };
+  off.push(() => mo.disconnect(), () => local.disconnect());
+  for (const q of [FORCED, STILL]) {
+    const m = typeof matchMedia === "function" ? matchMedia(q) : null;
+    m?.addEventListener?.("change", apply);
+    off.push(() => m?.removeEventListener?.("change", apply));
+  }
+  if (dom && typeof ResizeObserver === "function") {
+    let frame = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (!alive() || !dom.isConnected) return;
+        chart.resize();
+        if (Math.abs(dom.clientWidth - width) < 1) return;
+        width = dom.clientWidth;
+        chart.setOption(make());
+      });
+    });
+    ro.observe(dom);
+    off.push(() => ro.disconnect());
+  }
+  if (dom) {
+    // 触屏上提示不走（D132）：点图外面、滚动页面时收起
+    let touch = false;
+    const down = (e) => {
+      touch = e.pointerType !== "mouse";
+      if (touch && !dom.contains(e.target) && alive()) chart.dispatchAction({ type: "hideTip" });
+    };
+    const scroll = () => touch && alive() && chart.dispatchAction({ type: "hideTip" });
+    document.addEventListener("pointerdown", down, true);
+    // 手指划的时候提示跟着手指出来，划完（scrollend）再收一次
+    for (const type of ["scroll", "scrollend"]) {
+      document.addEventListener(type, scroll, { capture: true, passive: true });
+      off.push(() => document.removeEventListener(type, scroll, true));
+    }
+    off.push(() => document.removeEventListener("pointerdown", down, true));
+  }
+  return stop;
 }
 
 /**

@@ -1099,5 +1099,16 @@
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
+
+    /* ECharts 的画布是按屏幕宽度画的，打印时不会重排：最宽是纸宽，等比缩小（ECHARTS-REVIEW-PLAN D133）；提示不印 */
+    .xxd-chart > div,
+    .xxd-chart canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    .xxd-chart > div:not(:first-child) {
+      display: none !important;
+    }
   }
 }

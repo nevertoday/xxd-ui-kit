@@ -98,6 +98,54 @@ const mapScaleByMode = {
 } as const;
 
 /**
+ * xxd-ui-kit (ECHARTS-REVIEW-PLAN D135): when the page carries the xxd design
+ * tokens (`--action` is defined on the root element), chart colors come from
+ * the tokens so Kumo charts match `Xxd.chartOptions()`: accent, gray 9,
+ * accent 8, gray 10, gray 11 for series; muted ink for text; hairline grid.
+ * Returns `null` when Kumo is used on its own, so the Kumo palette applies.
+ */
+export interface XxdChartTokens {
+  categorical: string[];
+  text: { primary: string; secondary: string };
+  grid: string;
+  semantic: Record<ChartSemanticColorName, string>;
+  area: string;
+  scale: string[];
+}
+
+export function xxdChartTokens(): XxdChartTokens | null {
+  if (typeof document === "undefined" || typeof getComputedStyle !== "function")
+    return null;
+  const root = getComputedStyle(document.documentElement);
+  const v = (name: string) => root.getPropertyValue(name).trim();
+  const action = v("--action");
+  if (!action) return null;
+  return {
+    categorical: [action, v("--gray-9"), v("--accent-8"), v("--gray-10"), v("--gray-11")],
+    text: { primary: v("--muted"), secondary: v("--muted-2") },
+    grid: v("--line"),
+    semantic: {
+      Attention: v("--danger"),
+      Warning: v("--warning"),
+      Success: v("--success"),
+      Neutral: v("--gray-7"),
+      Disabled: v("--gray-7"),
+      Skeleton: v("--wash-strong"),
+    },
+    area: v("--wash-strong"),
+    scale: [v("--heat-1"), v("--heat-2"), v("--heat-3"), v("--heat-4")],
+  };
+}
+
+/** Default series colors for `<Chart>`: the xxd tokens when present, else the Kumo palette. */
+export function defaultChartColors(isDarkMode = false): string[] {
+  return (
+    xxdChartTokens()?.categorical ??
+    (isDarkMode ? CHART_DARK_COLORS : CHART_LIGHT_COLORS)
+  );
+}
+
+/**
  * Ordered list of categorical colors for light mode, indexed by series position.
  * Used as the default ECharts color palette when `isDarkMode` is `false`.
  */
@@ -141,6 +189,8 @@ export namespace ChartPalette {
     name: ChartSemanticColorName,
     isDarkMode = false,
   ): string {
+    const xxd = xxdChartTokens();
+    if (xxd) return xxd.semantic[name];
     return isDarkMode
       ? ChartSemanticDarkColors[name]
       : ChartSemanticLightColors[name];
@@ -158,6 +208,8 @@ export namespace ChartPalette {
    * ```
    */
   export function categorical(index: number, isDarkMode = false): string {
+    const xxd = xxdChartTokens();
+    if (xxd) return xxd.categorical[index % xxd.categorical.length];
     return isDarkMode
       ? CHART_DARK_COLORS[index % CHART_DARK_COLORS.length]
       : CHART_LIGHT_COLORS[index % CHART_LIGHT_COLORS.length];
@@ -176,6 +228,8 @@ export namespace ChartPalette {
     palette: keyof typeof sequentialLight,
     isDarkMode = false,
   ): string[] {
+    const xxd = xxdChartTokens();
+    if (xxd) return [...xxd.scale];
     return isDarkMode
       ? [...sequentialDark[palette]]
       : [...sequentialLight[palette]];
@@ -192,6 +246,8 @@ export namespace ChartPalette {
    * ```
    */
   export function text(variant: "primary" | "secondary", isDarkMode = false) {
+    const xxd = xxdChartTokens();
+    if (xxd) return xxd.text[variant];
     const colors = {
       light: { primary: "#6B7280", secondary: "#9CA3AF" },
       dark: { primary: "#9CA3AF", secondary: "#6B7280" },
@@ -201,6 +257,9 @@ export namespace ChartPalette {
 
   /** Returns colors for GeoJSON-based map charts. */
   export function mapColors(isDarkMode = false): MapColors {
+    const xxd = xxdChartTokens();
+    if (xxd)
+      return { area: xxd.area, bubble: xxd.categorical[0], scale: [...xxd.scale] };
     const mode = isDarkMode ? "dark" : "light";
 
     return {

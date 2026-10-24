@@ -12,7 +12,7 @@ import {
 } from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { Chart, ChartEvents, KumoChartOption } from "./EChart";
-import { ChartPalette } from "./Color";
+import { ChartPalette, xxdChartTokens } from "./Color";
 import { useKumoLocale } from "../../utils/locale-provider";
 import {
   buildTimeseriesMarkerAnnotations,
@@ -372,7 +372,9 @@ export const TimeseriesChart = forwardRef<
 
   const markerColor = ChartPalette.text("primary", isDarkMode);
   const axisTextColor = ChartPalette.text("primary", isDarkMode);
-  const gridLineColor = colorWithOpacity(axisTextColor, 0.2);
+  // xxd tokens present: hairline solid grid in --line (ECHARTS-REVIEW-PLAN D135)
+  const xxdGrid = xxdChartTokens()?.grid;
+  const gridLineColor = xxdGrid || colorWithOpacity(axisTextColor, 0.2);
   const markerLabelBackgroundColor = isDarkMode
     ? "rgba(0, 0, 0, 0.5)"
     : "rgba(255, 255, 255, 0.5)";
@@ -546,7 +548,7 @@ export const TimeseriesChart = forwardRef<
         splitLine: {
           show: true,
           lineStyle: {
-            type: "dashed" as const,
+            type: xxdGrid ? ("solid" as const) : ("dashed" as const),
             width: 1,
             color: gridLineColor,
           },
@@ -592,6 +594,7 @@ export const TimeseriesChart = forwardRef<
     markerLabelBackgroundColor,
     axisTextColor,
     gridLineColor,
+    xxdGrid,
   ]);
 
   const events = useMemo<Partial<ChartEvents>>(() => {

@@ -6,7 +6,7 @@ import type {
 } from "echarts";
 import { forwardRef, useEffect, useRef } from "react";
 import { cn } from "../../utils";
-import { CHART_DARK_COLORS, CHART_LIGHT_COLORS } from "./Color";
+import { defaultChartColors } from "./Color";
 
 /** Parameters passed to mouse event handlers on chart elements */
 type EChartsMouseEventParams = {
@@ -182,7 +182,7 @@ const prepareChartOptions = ({
 }): EChartsOption => {
   const withDefaults: EChartsOption = {
     backgroundColor: "transparent",
-    color: isDarkMode ? CHART_DARK_COLORS : CHART_LIGHT_COLORS,
+    color: defaultChartColors(isDarkMode),
     ...options,
   };
 

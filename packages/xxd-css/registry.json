@@ -1661,16 +1661,19 @@
         "xxd-legend__share",
         "xxd-viz-empty"
       ],
-      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--gap-block);width:100%;max-width:720px\">\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">每天写入篇数</h3><span class=\"xxd-chart-card__meta\">最近 14 天</span></div>\n  <div class=\"xxd-chart\" id=\"chart-line\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">长文发布 14 天里一直在涨，从 42 篇到 96 篇；图片排序从 20 到 40。</p>\n</div>\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">各插件用户</h3></div>\n  <div class=\"xxd-chart\" id=\"chart-bar\" style=\"--chart-h:220px\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">批量存图用户最多（5,102），其次长文发布（2,410）。</p>\n</div>\n</div>\n<script>\n  if (window.echarts) {\n    const days = Array.from({ length: 14 }, (_, i) => `${i + 1}日`);\n    const line = echarts.init(document.getElementById(\"chart-line\"));\n    const lineOpt = () => Xxd.chartOptions({ legend: {}, xAxis: { type: \"category\", data: days, boundaryGap: false }, yAxis: { type: \"value\" }, series: [{ name: \"长文发布\", type: \"line\", data: [42, 48, 45, 60, 58, 66, 71, 69, 80, 78, 85, 90, 88, 96] }, { name: \"图片排序\", type: \"line\", data: [20, 22, 25, 24, 28, 27, 30, 33, 31, 35, 34, 36, 38, 40] }] }, { el: line.getDom() });\n    line.setOption(lineOpt());\n    Xxd.watchChartTheme(line, lineOpt);\n    const bar = echarts.init(document.getElementById(\"chart-bar\"));\n    const barOpt = () => Xxd.chartOptions({ xAxis: { type: \"category\", data: [\"长文发布\", \"排序链接\", \"批量存图\", \"今日待办\"] }, yAxis: { type: \"value\" }, series: [{ type: \"bar\", data: [2410, 830, 5102, 312] }] }, { el: bar.getDom() });\n    bar.setOption(barOpt());\n    Xxd.watchChartTheme(bar, barOpt);\n    new ResizeObserver(() => { line.resize(); bar.resize(); }).observe(document.getElementById(\"chart-line\").parentElement.parentElement);\n  }\n</script>",
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--gap-block);width:100%;max-width:720px\">\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">每天写入篇数</h3><span class=\"xxd-chart-card__meta\">最近 14 天</span></div>\n  <div class=\"xxd-chart\" id=\"chart-line\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">长文发布 14 天里一直在涨，从 42 篇到 96 篇；图片排序从 20 到 40。</p>\n</div>\n<div class=\"xxd-chart-card\">\n  <div class=\"xxd-chart-card__head\"><h3 class=\"xxd-chart-card__title\">各插件用户</h3></div>\n  <div class=\"xxd-chart\" id=\"chart-bar\" style=\"--chart-h:220px\"></div>\n  <p class=\"xxd-text\" data-variant=\"secondary\">批量存图用户最多（5,102），其次长文发布（2,410）。</p>\n</div>\n</div>\n<script>\n  if (window.echarts) {\n    const days = Array.from({ length: 14 }, (_, i) => `${i + 1}日`);\n    const line = echarts.init(document.getElementById(\"chart-line\"));\n    const lineOpt = () => Xxd.chartOptions({ legend: {}, xAxis: { type: \"category\", data: days, boundaryGap: false }, yAxis: { type: \"value\" }, series: [{ name: \"长文发布\", type: \"line\", data: [42, 48, 45, 60, 58, 66, 71, 69, 80, 78, 85, 90, 88, 96] }, { name: \"图片排序\", type: \"line\", data: [20, 22, 25, 24, 28, 27, 30, 33, 31, 35, 34, 36, 38, 40] }] }, { el: line.getDom() });\n    line.setOption(lineOpt());\n    Xxd.watchChartTheme(line, lineOpt);\n    const bar = echarts.init(document.getElementById(\"chart-bar\"));\n    const barOpt = () => Xxd.chartOptions({ xAxis: { type: \"category\", data: [\"长文发布\", \"排序链接\", \"批量存图\", \"今日待办\"] }, yAxis: { type: \"value\" }, series: [{ type: \"bar\", data: [2410, 830, 5102, 312] }] }, { el: bar.getDom() });\n    bar.setOption(barOpt());\n    Xxd.watchChartTheme(bar, barOpt);\n  }\n</script>",
       "a11y": [
-        "图表旁边要有一句话结论或一张表；颜色之外，线宽也区分重点线。"
+        "图表旁边要有一句话结论或一张表；颜色之外，线宽、线型也区分（图例里画出线型）。",
+        "图表容器的 aria-label 自动写一句话（什么图、几条、从多少到多少、最高最低；简体 / 繁体 / 英文）；要写得更准就传 aria.label.description。"
       ],
-      "js": "chart.setOption(Xxd.chartOptions(option))\nXxd.watchChartTheme(chart, () => Xxd.chartOptions(option))\n// React：<Chart echarts={echarts} options={Xxd.chartOptions(option)} />",
+      "js": "chart.setOption(Xxd.chartOptions(option))\nXxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // 主题、局部主题、高对比、减少动效、尺寸变了都重画，不用自己写 ResizeObserver\n// React：<Chart echarts={echarts} options={Xxd.chartOptions(option)} />",
       "react": "Chart",
       "rules": [
-        "系列配色固定：第 1 条是主色，第 2–5 条是墨色按 78% / 64% / 54% / 46% 往纸色混（最浅的一档对纸也有 3:1）",
-        "颜色只差深浅，所以折线从第 3 条起换线型：实线、实线、虚线、点线、点划线（WCAG 1.4.1：不只靠颜色区分）；第 1 条线宽 2px，其余 1.5px",
-        "超过 5 条就该拆图或只高亮一条，其余画成 --muted-2 的背景线",
+        "系列配色固定：主色、灰 9、主色 8、灰 10、灰 11（从色阶取，每一种对纸都 ≥ 3:1，深浅交替，相邻两类分得开）；饼、漏斗这类按数据上色的图每一块按这个顺序取",
+        "折线从第 2 条起换线型：实线、虚线、点线、点划线、虚线（WCAG 1.4.1：不只靠颜色区分），图例里画出线型；第 1 条线宽 2px，其余 1.5px",
+        "超过 5 条就该拆图或只高亮一条：第 6 条起自动画成 --muted-2 的背景线",
+        "柱状图的类目一个不藏，放不下在自己那一格里折行；横向条形从上往下是给的顺序；刻度数写全了超过 5 个字符就缩写（60亿），提示和读屏里是全数",
+        "高对比模式下换成系统色，柱子和饼加花纹；没有进场动画（要动画写 animation: true，减少动效时仍然不放）",
         "图表旁边写一句结论或附数据表，读屏和不看图的人也拿得到信息"
       ]
     },

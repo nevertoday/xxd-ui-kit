@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { ChartPalette } from "./Color";
 import { TimeseriesChart } from "./TimeseriesChart";
 import { TooltipContent } from "./timeseries-tooltip";
 
@@ -385,5 +386,27 @@ describe("TimeseriesChart", () => {
         },
       }),
     );
+  });
+});
+
+// xxd-ui-kit (ECHARTS-REVIEW-PLAN D135): with the xxd tokens on the page, chart colors come from them
+describe("ChartPalette with xxd tokens", () => {
+  it("uses the Kumo palette when the page has no xxd tokens", () => {
+    expect(ChartPalette.categorical(0)).toBe("#4290F0");
+    expect(ChartPalette.text("primary")).toBe("#6B7280");
+  });
+
+  it("reads series, text, grid and map colors from the tokens when present", () => {
+    const root = document.documentElement.style;
+    const tokens = { "--action": "#111111", "--gray-9": "#898681", "--accent-8": "#353433", "--muted": "#6b675f", "--heat-1": "#ccc9c5", "--wash-strong": "#eeece9" };
+    for (const [k, v] of Object.entries(tokens)) root.setProperty(k, v);
+    try {
+      expect([0, 1, 2, 5].map((i) => ChartPalette.categorical(i))).toEqual(["#111111", "#898681", "#353433", "#111111"]);
+      expect(ChartPalette.text("primary", true)).toBe("#6b675f");
+      expect(ChartPalette.mapColors().area).toBe("#eeece9");
+      expect(ChartPalette.sequential("blues")[0]).toBe("#ccc9c5");
+    } finally {
+      for (const k of Object.keys(tokens)) root.removeProperty(k);
+    }
   });
 });

@@ -16,7 +16,9 @@ import { describe, expect, it } from "vitest";
 // boot.js 2026-10-23 从 5 调到 5.5、xxd.js 从 35 调到 36：暗黑模式（DARK-REVIEW-PLAN D108–D110）——打印前换成亮色、切主题那一帧不过渡
 //   （要在首帧的脚本里，拆不出去），放到最外层的浮层跟着局部主题，约 0.2 KB / 0.1 KB
 // xxd.shadow.css.js 2026-10-23 从 26 调到 27：触屏（TOUCH-REVIEW-PLAN D117、D121）——悬停规则包进 @media (hover: hover)、粗指针的点按区和字号，约 0.4 KB
-const BUDGET_KB = { "xxd.min.css": 26, "xxd.js": 36, "boot.js": 5.5, "viz.js": 10, "icons.js": 16, "xxd.shadow.css.js": 27 };
+// xxd.js 2026-10-23 从 36 调到 39：图表（ECHARTS-REVIEW-PLAN D123–D132）——按图种套主题、高对比的系统色、读屏的一句话（三语）、图例让行、类目折行、
+//   刻度缩写、watchChartTheme 管尺寸和触屏提示，约 2.6 KB。想过拆进 viz.js：Xxd.chartOptions 是 xxd.js 的公开接口，只加载 xxd.js + ECharts 的页面会丢掉这些修正，所以没拆
+const BUDGET_KB = { "xxd.min.css": 26, "xxd.js": 39, "boot.js": 5.5, "viz.js": 10, "icons.js": 16, "xxd.shadow.css.js": 27 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

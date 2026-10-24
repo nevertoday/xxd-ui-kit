@@ -1107,9 +1107,11 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
   Chart: {
     title: "Chart",
     rules: [
-      "Series colors are fixed: series 1 is the accent, series 2–5 are ink mixed toward paper at 78% / 64% / 54% / 46% (the lightest still has 3:1 on paper)",
-      "Colors differ only in lightness, so lines change style from series 3 on: solid, solid, dashed, dotted, dash-dot (WCAG 1.4.1: never color alone); series 1 is 2px wide, the rest 1.5px",
-      "More than 5 series: split the chart, or highlight one and draw the rest as --muted-2 background lines",
+      "Series colors are fixed: accent, gray 9, accent 8, gray 10, gray 11 (from the scales, each at least 3:1 on paper, alternating dark and light so neighbors stay apart); pies, funnels and other charts colored by data take the same order slice by slice",
+      "Lines change style from series 2 on: solid, dashed, dotted, dash-dot, dashed (WCAG 1.4.1: never color alone), and the legend shows the line style; series 1 is 2px wide, the rest 1.5px",
+      "More than 5 series: split the chart or highlight one; series 6 and up are drawn as --muted-2 background lines automatically",
+      "Bar categories are never hidden: a name that doesn't fit wraps inside its own slot; horizontal bars run top to bottom in the order given; axis numbers longer than 5 characters are shortened (6B), tooltips and screen readers get the full number",
+      "In high-contrast mode the chart uses system colors and bars and pies get patterns; no grow-in animation (set animation: true to opt in; still off with reduced motion)",
       "Put a one-line conclusion or a data table next to the chart so screen readers and people who skip the chart get it too",
     ],
     summary: "ECharts + Xxd.chartOptions(): one highlighted line in the accent, the rest in shades of ink; hairline grid; redraws automatically when the theme or accent changes. Also works straight in Kumo's <Chart options>.",
@@ -1136,13 +1138,15 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     const barOpt = () => Xxd.chartOptions({ xAxis: { type: "category", data: ["Long-form publisher", "Link sorter", "Bulk image saver", "Today"] }, yAxis: { type: "value" }, series: [{ type: "bar", data: [2410, 830, 5102, 312] }] }, { el: bar.getDom() });
     bar.setOption(barOpt());
     Xxd.watchChartTheme(bar, barOpt);
-    new ResizeObserver(() => { line.resize(); bar.resize(); }).observe(document.getElementById("chart-line").parentElement.parentElement);
   }
 </script>`,
     js: `chart.setOption(Xxd.chartOptions(option))
-Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))
+Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // redraws on theme, local theme, high contrast, reduced motion and size changes; no ResizeObserver needed
 // React: <Chart echarts={echarts} options={Xxd.chartOptions(option)} />`,
-    a11y: ["Put a one-sentence conclusion or a table next to the chart; besides color, line width also marks the highlighted line."],
+    a11y: [
+      "Put a one-sentence conclusion or a table next to the chart; besides color, line width and line style tell series apart (the legend shows the style).",
+      "The chart container gets an aria-label sentence automatically (chart type, series, from–to, highest and lowest; Simplified / Traditional Chinese / English); pass aria.label.description for something more precise.",
+    ],
   },
   Gauge: {
     title: "Gauge",

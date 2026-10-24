@@ -24,7 +24,7 @@
 //   15. 动效（MOTION-REVIEW-PLAN D90）：按下的同一刻就有看得见的变化；减少动效下只剩慢淡入淡出，进行中的按钮不定住。
 //   16. 状态（ACCEPTANCE-REVIEW）：选中 / 禁用 / 出错叠上悬停、聚焦后按优先级不变。
 //   17. 截断（TRUNCATION-REVIEW-PLAN D96）：长文字不硬裁、内容和数字不省略、省略的悬停能看到全文、字不互相压；React 不伸出格子。
-// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch]
+// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch|chart]
 // 需要 Chromium：CHROME_EXE=<chrome-headless-shell 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
 import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -1455,7 +1455,112 @@ async function touchAudit() {
   console.log(`触屏：${n} 页（iPhone 13 视口）点按区、输入框字号、悬停不粘住`);
 }
 
-const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit };
+/* ── 图表（ECharts）：ECHARTS-REVIEW-PLAN D136 ── */
+async function chartAudit() {
+  // 在组件页里另画一组极端图：饼、7 条线、十亿级柱、横向条形、参考线、坏值、时间轴
+  const extreme = () => {
+    const days = Array.from({ length: 14 }, (_, i) => `${i + 1}日`);
+    const S = {
+      pie: { series: [{ type: "pie", data: [{ name: "图片", value: 30 }, { name: "视频", value: 20 }, { name: "文字", value: 12 }, { name: "音频", value: 8 }] }] },
+      many: { legend: {}, xAxis: { type: "category", data: days }, yAxis: { type: "value" }, series: Array.from({ length: 7 }, (_, k) => ({ name: `系列名字很长的第${k + 1}条`, type: "line", data: days.map((_, i) => 10 * k + i) })) },
+      big: { xAxis: { type: "category", data: ["长文发布", "排序链接", "批量存图", "今日待办", "一个更长的插件名字"] }, yAxis: { type: "value" }, series: [{ type: "bar", data: [2410000000, 830000000, 5102000000, 312000000, 90000000] }] },
+      hbar: { xAxis: { type: "value" }, yAxis: { type: "category", data: ["一个特别特别长的分类名字", "短", "中等长度"] }, series: [{ type: "bar", data: [3, 5, 2] }] },
+      mark: { xAxis: { type: "category", data: days }, yAxis: { type: "value" }, series: [{ type: "line", data: days.map((_, i) => i * 3), markLine: { data: [{ type: "average", name: "平均" }] } }] },
+      bad: { xAxis: { type: "category", data: days }, yAxis: { type: "value" }, series: [{ name: "坏值", type: "line", data: [1, 2, null, "-", NaN, 6, Infinity, 8, "9", 10, undefined, 12, 13, 14] }] },
+      time: { xAxis: { type: "time" }, yAxis: { type: "value" }, series: [{ type: "line", data: [["2026-10-01", 3], ["2026-10-08", 5], ["2026-10-20", 4]] }] },
+    };
+    const box = document.createElement("div");
+    box.id = "audit-charts";
+    document.querySelector("main").append(box);
+    for (const [k, o] of Object.entries(S)) {
+      const d = document.createElement("div");
+      d.className = "xxd-chart";
+      d.dataset.audit = k;
+      box.append(d);
+      const ch = echarts.init(d);
+      const build = () => Xxd.chartOptions(structuredClone(o));
+      ch.setOption(build());
+      Xxd.watchChartTheme(ch, build);
+    }
+  };
+  const inspect = () => {
+    const out = [];
+    const Canvas = (() => { const p = document.createElement("span"); p.style.cssText = "color:Canvas;forced-color-adjust:none"; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; })();
+    const rgb = (c) => { const p = document.createElement("span"); p.style.cssText = `color:${c};forced-color-adjust:none`; document.body.append(p); const m = getComputedStyle(p).color.match(/[\d.]+/g).map(Number); p.remove(); return m; };
+    const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const ratio = (a, b) => { const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+    const forced = matchMedia("(forced-colors: active)").matches;
+    for (const el of document.querySelectorAll("main .xxd-chart")) {
+      const ch = echarts.getInstanceByDom(el);
+      if (!ch) continue;
+      const k = el.dataset.audit ?? el.id;
+      const o = ch.getOption();
+      const m = ch.getModel();
+      const label = el.getAttribute("aria-label") ?? "";
+      if (!label) out.push(`${k} 没有读屏描述`);
+      if (/NaN|Infinity|undefined|第0个|\d{12}/.test(label)) out.push(`${k} 读屏描述里有乱的：「${label.slice(0, 60)}」`);
+      if (o.animation !== false) out.push(`${k} 有进场动画（设计原则 §14 不做）`);
+      const series = m.getSeries();
+      for (const s of series) {
+        if (s.subType === "pie") {
+          const data = s.getData();
+          const fills = new Set(data.mapArray((i) => data.getItemVisual(i, "style").fill));
+          // 高对比模式下每块都是系统色，靠花纹分
+          if (forced ? !data.getItemVisual(0, "style").decal : fills.size < data.count()) out.push(forced ? `${k} 高对比模式下饼图没有花纹，分不出块` : `${k} 饼图有 ${data.count() - fills.size} 块和别的块同色`);
+          if ((o.xAxis ?? []).length) out.push(`${k} 饼图后面多了坐标轴`);
+        }
+        if (forced && s.subType !== "pie") {
+          const c = s.getData().getVisual("style")?.stroke ?? s.getData().getVisual("style")?.fill;
+          if (c && ratio(c, Canvas) < 3) out.push(`${k} 高对比模式下「${s.name}」和底色只有 ${ratio(c, Canvas).toFixed(2)}:1`);
+        }
+      }
+      // 柱状图的类目一个不少
+      for (const which of ["xAxis", "yAxis"]) {
+        const ax = m.getComponent(which)?.axis;
+        if (!ax || ax.type !== "category" || !series.some((s) => s.subType === "bar")) continue;
+        const shown = ax.getViewLabels().length;
+        const all = ax.scale.getOrdinalMeta().categories.length;
+        if (shown < all) out.push(`${k} 柱状图的类目只写出 ${shown} / ${all} 个`);
+      }
+      // 图例不压住图区（刻度数在图区上边往上伸半行字）
+      const legend = m.getComponent("legend");
+      const grid = m.getComponent("grid");
+      if (legend && grid && legend.get("show") !== false) {
+        const view = ch.getViewOfComponentModel(legend);
+        const r = view.group.getBoundingRect();
+        const bottom = view.group.y + r.y + r.height;
+        const top = grid.coordinateSystem.getRect().y;
+        if (bottom > top - 6) out.push(`${k} 图例（到 ${Math.round(bottom)}px）压住图区（从 ${Math.round(top)}px）`);
+      }
+      // 参考线的字在图里
+      for (const s of o.series ?? []) if (s.markLine && s.markLine.label?.position !== "insideEndTop") out.push(`${k} 参考线的字在图区外面，会被裁`);
+    }
+    return out;
+  };
+  const runs = [
+    { id: "桌面", ctx: { viewport: { width: 1280, height: 900 } } },
+    { id: "手机", ctx: { ...devices["iPhone 13"] } },
+    { id: "减少动效", ctx: { viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" } },
+    { id: "高对比·暗", ctx: { viewport: { width: 1280, height: 900 }, forcedColors: "active", colorScheme: "dark" } },
+  ];
+  for (const run of runs) {
+    for (const page of ["/components/chart/", "/en/components/chart/"]) {
+      const ctx = await browser.newContext(run.ctx);
+      const tab = await ctx.newPage();
+      const errors = [];
+      tab.on("pageerror", (e) => errors.push(e.message));
+      await tab.goto(origin + page, { waitUntil: "networkidle" });
+      await tab.evaluate(extreme);
+      await tab.waitForTimeout(600);
+      for (const x of await tab.evaluate(inspect)) fail("图表", `${run.id} ${page} ${x}`);
+      for (const e of errors) fail("图表", `${run.id} ${page} 脚本出错：${e}`);
+      await ctx.close();
+    }
+  }
+  console.log(`图表：${runs.length} 种环境 × 中英，组件页的图 + 7 张极端图（饼、7 条线、十亿级柱、横向条形、参考线、坏值、时间轴）`);
+}
+
+const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit };
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

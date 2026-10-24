@@ -269,6 +269,9 @@
 - **字是 HTML 字**：数字、单位、刻度数、图例用系统字体和等宽数字（tabular-nums），不画进图里；刻度数少而准（量表只标两端）。
 - **动效还是只动 opacity / transform**：不做进场动画；值变了指针转过去（`--motion-medium`），填充直接到位。
 - **读屏读得到结论**：一个数用 `role=meter` 加整句的 `aria-valuetext`；图表旁边有一句话结论或一张表；图本身 `aria-hidden`。
+- **画在 canvas 上的图（ECharts）也守这几条**（`docs/maintainers/ECHARTS-REVIEW-PLAN.md`）：`Xxd.chartOptions` 按图种套色（饼、漏斗每一块也按分类色），
+  柱状图的类目一个不藏、放不下就折行，刻度数缩写，参考线的字在图里；canvas 不会被系统换色，所以高对比模式下自己换成系统色、柱子和饼加花纹；
+  没有进场动画；读屏的一句话（什么图、几条、从多少到多少、最高最低）自动写在容器上。
 
 ---
 
