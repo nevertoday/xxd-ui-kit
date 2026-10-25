@@ -243,6 +243,11 @@
     background: linear-gradient(to right, var(--action) calc(var(--fill, 0) * 1%), var(--line-strong) 0);
   }
 
+  /* 从右往左的页面，滑块的最小值在右边，已填的部分也从右边长 */
+  .xxd-range[data-fill]:dir(rtl)::-webkit-slider-runnable-track {
+    background: linear-gradient(to left, var(--action) calc(var(--fill, 0) * 1%), var(--line-strong) 0);
+  }
+
   .xxd-range[data-ticks] {
     background:
       repeating-linear-gradient(to right, var(--line-strong) 0 1px, transparent 1px calc(100% / var(--ticks, 4))) 7px 15px / calc(100% - 14px) 4px no-repeat;

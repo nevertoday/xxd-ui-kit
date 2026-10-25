@@ -55,7 +55,7 @@
     content: "";
     position: absolute;
     top: calc((var(--leading-sm) - var(--icon-md)) / 2);
-    left: 0;
+    inset-inline-start: 0;
     width: var(--icon-md);
     height: var(--icon-md);
     background: currentColor;

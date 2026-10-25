@@ -206,14 +206,23 @@
   }
 
   /* 主色色块（跟圆角开关走，D61）：<div class="xxd-swatches" role="radiogroup"><button class="xxd-swatch" role="radio" aria-checked="true" style="--swatch:#3b74b8">… */
+  /* 放不下一行时各行一样多（12 个是 6 + 6，不是 11 + 1）：色块是行内块，交给 text-wrap: balance。
+   * 间距用外边距，容器收回最后一列和最后一行的那一份。 */
   .xxd-swatches {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
+    display: block;
+    margin-block-end: calc(-1 * var(--space-2));
+    margin-inline-end: calc(-1 * var(--space-2));
+    line-height: 1;
+    text-wrap: balance;
   }
 
   .xxd-swatch {
     position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0;
+    margin-inline-end: var(--space-2);
+    margin-block-end: var(--space-2);
     width: 22px;
     height: 22px;
     padding: 0;

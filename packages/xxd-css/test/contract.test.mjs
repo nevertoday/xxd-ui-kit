@@ -303,3 +303,21 @@ describe("能打字的框一个框只有一个框（§4）", () => {
     expect(Object.fromEntries(base?.decls ?? [])).toMatchObject({ outline: "1px solid var(--action)", "outline-offset": "-1px" });
   });
 });
+
+// 用 Kit 的插件里看出来的（docs/maintainers/FIELD-FIXES.md D137–D139）
+describe("窄面板和从右往左", () => {
+  // 同一个选择器可能出现在几处（高对比里也有一条），合在一起看
+  const decl = (selector) => Object.fromEntries(all.filter((r) => r.selector === selector).flatMap((r) => r.decls));
+  it("色块放不下一行时各行一样多（D137）", () => {
+    expect(decl(".xxd-swatches")).toMatchObject({ "text-wrap": "balance" });
+    expect(decl(".xxd-swatch")).toMatchObject({ display: "inline-block" });
+  });
+  it("错误的图标在开头那一边，不写死左边（D138）", () => {
+    const d = decl(".xxd-error::before");
+    expect(d["inset-inline-start"]).toBe("0");
+    expect(d.left).toBeUndefined();
+  });
+  it("从右往左时滑块从右边填（D139）", () => {
+    expect(decl(".xxd-range[data-fill]:dir(rtl)::-webkit-slider-runnable-track").background).toMatch(/^linear-gradient\(to left,/);
+  });
+});
