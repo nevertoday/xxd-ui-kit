@@ -615,6 +615,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     rules: [
       "Theme · corners · accent · (density) · (language) — the group every extension needs",
       "The member site uses lockCorners: true",
+      "The accent group has data-balance: when it wraps, every row holds the same number (12 is 6 + 6); add it to a swatch group of your own for the same",
     ],
     a11y: [
       "Every option is a segmented control or a switch with an aria-label; swatches are radios with readable names",

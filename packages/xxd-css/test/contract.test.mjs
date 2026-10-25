@@ -308,9 +308,12 @@ describe("能打字的框一个框只有一个框（§4）", () => {
 describe("窄面板和从右往左", () => {
   // 同一个选择器可能出现在几处（高对比里也有一条），合在一起看
   const decl = (selector) => Object.fromEntries(all.filter((r) => r.selector === selector).flatMap((r) => r.decls));
-  it("色块放不下一行时各行一样多（D137）", () => {
-    expect(decl(".xxd-swatches")).toMatchObject({ "text-wrap": "balance" });
-    expect(decl(".xxd-swatch")).toMatchObject({ display: "inline-block" });
+  it("色块组带 data-balance 时放不下一行各行一样多，不带的照旧（D137）", () => {
+    expect(decl(".xxd-swatches[data-balance]")).toMatchObject({ "text-wrap": "balance" });
+    expect(decl(".xxd-swatches[data-balance] > .xxd-swatch")).toMatchObject({ display: "inline-block" });
+    // 不带的组和单独用的色块不变：项目自己排的 grid / flex 不会多出外边距
+    expect(decl(".xxd-swatches")).toMatchObject({ display: "flex", gap: "var(--space-2)" });
+    expect(Object.keys(decl(".xxd-swatch")).filter((p) => p.startsWith("margin"))).toEqual([]);
   });
   it("错误的图标在开头那一边，不写死左边（D138）", () => {
     const d = decl(".xxd-error::before");

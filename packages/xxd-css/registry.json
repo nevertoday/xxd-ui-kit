@@ -842,7 +842,8 @@
       "js": "Xxd.mountAppearance(el, { locale: \"zh-CN\", showDensity: false, lockCorners: false, languages, onLanguage })\n// 插件里：get/set 接 XxdExtension.createAppearanceStore({ key })",
       "rules": [
         "主题 · 圆角 · 主色 ·（密度）·（语言）—— 每个插件都要的那一组",
-        "会员站 lockCorners: true"
+        "会员站 lockCorners: true",
+        "主色那一组带 data-balance：放不下一行时各行一样多（12 个是 6 + 6）；自己写的色块组要这样也加上"
       ],
       "summary": "主题、圆角、主色、密度、质感的现成设置组：Xxd.mountAppearance(container)。",
       "a11y": [

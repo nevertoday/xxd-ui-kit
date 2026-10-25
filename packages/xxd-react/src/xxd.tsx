@@ -270,7 +270,7 @@ export function Swatches({ value, onValueChange, presets = ACCENT_PRESETS, label
     requestAnimationFrame(() => ref.current?.querySelectorAll<HTMLButtonElement>("[role=radio]")[n]?.focus());
   };
   return (
-    <div ref={ref} className="xxd-swatches" role="radiogroup" aria-label={label ?? t.accent} onKeyDown={onKeyDown}>
+    <div ref={ref} className="xxd-swatches" data-balance="" role="radiogroup" aria-label={label ?? t.accent} onKeyDown={onKeyDown}>
       {presets.map((p, i) => {
         const name = locale === "en" ? p.name : p.zh || p.name;
         return (

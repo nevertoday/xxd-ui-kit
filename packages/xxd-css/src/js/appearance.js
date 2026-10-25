@@ -101,6 +101,8 @@ export function mountAppearance(container, options = {}) {
 
   const swatches = doc.createElement("div");
   swatches.className = "xxd-swatches";
+  // 放不下一行时各行一样多（FIELD-FIXES D137）
+  swatches.setAttribute("data-balance", "");
   swatches.setAttribute("role", "radiogroup");
   swatches.setAttribute("aria-label", L.accent);
   // 和分段控件同一套键盘：← → ↑ ↓ Home End 选择，Tab 只停在选中的那一个

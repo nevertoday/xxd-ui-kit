@@ -206,9 +206,16 @@
   }
 
   /* 主色色块（跟圆角开关走，D61）：<div class="xxd-swatches" role="radiogroup"><button class="xxd-swatch" role="radio" aria-checked="true" style="--swatch:#3b74b8">… */
-  /* 放不下一行时各行一样多（12 个是 6 + 6，不是 11 + 1）：色块是行内块，交给 text-wrap: balance。
-   * 间距用外边距，容器收回最后一列和最后一行的那一份。 */
   .xxd-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* data-balance：放不下一行时各行一样多（12 个是 6 + 6，不是 11 + 1）。外观设置组里的主色用它。
+   * 色块改成行内块，交给 text-wrap: balance；间距用外边距，容器收回最后一列和最后一行那一份。
+   * 只在带这个属性的组上：自己把组排成 grid / flex 的项目不受影响。 */
+  .xxd-swatches[data-balance] {
     display: block;
     margin-block-end: calc(-1 * var(--space-2));
     margin-inline-end: calc(-1 * var(--space-2));
@@ -216,13 +223,16 @@
     text-wrap: balance;
   }
 
-  .xxd-swatch {
-    position: relative;
+  .xxd-swatches[data-balance] > .xxd-swatch {
     display: inline-block;
     vertical-align: top;
     margin: 0;
     margin-inline-end: var(--space-2);
     margin-block-end: var(--space-2);
+  }
+
+  .xxd-swatch {
+    position: relative;
     width: 22px;
     height: 22px;
     padding: 0;
