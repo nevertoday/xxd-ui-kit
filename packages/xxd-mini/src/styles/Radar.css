@@ -1,0 +1,15 @@
+/* 小程序就是手机：两边留给名字的地方收窄，名字折成两行（网页版按容器宽度换的那几条在小程序里没有） */
+.xxd-radar__plot {
+  padding-inline: calc(var(--text-sm) * 6);
+}
+
+.xxd-radar__axis {
+  max-width: calc(var(--text-sm) * 6);
+}
+
+/* 图例的一项（网页版是 .xxd-radar__key > span） */
+.xxd-radar__keyitem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+}

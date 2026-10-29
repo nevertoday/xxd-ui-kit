@@ -625,6 +625,40 @@
       "summaryEn": "Before and after per category: hollow before, solid after, with the change written out."
     },
     {
+      "name": "Radar",
+      "zh": "雷达图",
+      "en": "Radar",
+      "batch": 3,
+      "web": [
+        "Radar"
+      ],
+      "blocks": [
+        "xxd-radar"
+      ],
+      "summary": "轴的顺序有意义的一圈轮廓（霍兰德六边形）：网格和面积画成一张图片，名字和数字是文字；几个独立的维度用条形榜。",
+      "summaryEn": "A profile whose axis order means something (the Holland hexagon): rings and area drawn as one image, names and numbers as text; use bars for independent dimensions.",
+      "skip": [
+        "xxd-radar__ring",
+        "xxd-radar__spokes",
+        "xxd-radar__area",
+        "xxd-radar__compare"
+      ]
+    },
+    {
+      "name": "Quadrant",
+      "zh": "四象限",
+      "en": "Quadrant",
+      "batch": 3,
+      "web": [
+        "Quadrant"
+      ],
+      "blocks": [
+        "xxd-quadrant"
+      ],
+      "summary": "两个维度各切一刀分成四格：当前那一格是选中底色加主色线，重点的点实心。",
+      "summaryEn": "Two dimensions, each cut once, make four cells: the current cell has the selected background and an accent line, the highlighted point is solid."
+    },
+    {
       "name": "BottomBar",
       "zh": "底部按钮条",
       "en": "BottomBar",

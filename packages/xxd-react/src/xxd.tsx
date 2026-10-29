@@ -1007,7 +1007,7 @@ export function Radar({
       </div>
     );
   return (
-    <div className={cx("xxd-radar", className)} data-emphasis={flag(m.emphasis)}>
+    <div className={cx("xxd-radar", className)} data-emphasis={flag(m.emphasis)} data-compare={flag(Boolean(m.key))}>
       {m.key && (
         <p className="xxd-radar__key" aria-hidden="true">
           {m.key.value && (

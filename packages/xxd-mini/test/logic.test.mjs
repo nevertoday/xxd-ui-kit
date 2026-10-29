@@ -369,6 +369,34 @@ test("图型：和网页版同一份换算；条形榜每行的字就是数据�
   v.unmount();
 });
 
+test("雷达图、四象限：换算和网页版同一份；雷达的网格画成图片（颜色是算好的值），名字和数字是文字；读屏念一句话", async () => {
+  const { Radar, Quadrant, radarModel, quadrantModel } = mini;
+  const axes = [{ label: "现实型", value: 18, compare: 22 }, { label: "研究型", value: 34, compare: 24, highlight: true }, { label: "艺术型", value: 28, compare: 23 }];
+  const q = { x: { label: "焦虑", min: 1, max: 7, cut: 4, low: "低", high: "高" }, y: { label: "回避", min: 1, max: 7, cut: 4 }, names: { "low-low": "安全型", "high-low": "焦虑型" } };
+  const v = render(app(h(Radar, { axes, max: 40, valueLabel: "你", compareLabel: "平均" }), h(Quadrant, { points: [{ label: "你", x: 4.6, y: 2.4, highlight: true }], ...q })));
+  await tick(10);
+  const img = v.all((n) => n.type === "image")[0];
+  const svg = Buffer.from(img.props.src.replace("data:image/svg+xml;base64,", ""), "base64").toString();
+  assert.match(svg, /^<svg [^>]*viewBox="-1 -1 2 2"/);
+  assert.equal((svg.match(/<polygon/g) ?? []).length, 4 + 2, "四圈网格 + 对照 + 自己");
+  assert.match(svg, /stroke-dasharray/, "对照是虚线");
+  assert.doesNotMatch(svg, /var\(|class=/, "图片里没有 CSS 变量和类名");
+  assert.equal(v.byClass("xxd-radar__plot")[0].props.ariaLabel, "现实型 18，研究型 34，艺术型 28");
+  assert.equal(v.byClass("xxd-radar__axis").length, 3);
+  assert.ok(cls(v.byClass("xxd-radar__axis")[1]).includes("is-highlight"));
+  assert.ok(cls(v.byClass("xxd-radar__axis")[0]).includes("is-side-middle") && cls(v.byClass("xxd-radar__axis")[0]).includes("is-edge-top"));
+  assert.equal(v.byClass("xxd-radar__dot").length, 6);
+  const current = v.byClass("xxd-quadrant__cell").filter((n) => cls(n).includes("is-current"));
+  assert.equal(current.length, 1);
+  assert.ok(cls(current[0]).includes("is-cell-high-low"));
+  assert.equal(v.byClass("xxd-quadrant__plot")[0].props.ariaLabel, "你：焦虑 4.6，回避 2.4，在「焦虑型」");
+  assert.equal(v.byClass("xxd-quadrant__point")[0].props.style, "--x:0.6;--y:0.233");
+  const web = await import("@xxd/css/viz");
+  assert.deepEqual(radarModel(axes, { max: 40 }), web.radarModel(axes, { max: 40 }));
+  assert.deepEqual(quadrantModel([{ label: "a", x: 1, y: 2 }], q), web.quadrantModel([{ label: "a", x: 1, y: 2 }], q));
+  v.unmount();
+});
+
 test("图型对抗测试（CHART-REVIEW-PLAN）：热力格点一格写出这一格；条那一层单独一层；分类色顺序和网页版一样", async () => {
   const { Heatmap, Bars, chartPalette } = mini;
   const v = render(app(h(Heatmap, { values: { "2026-10-19": 5 }, end: "2026-10-19", weeks: 2 }), h(Bars, { items: [{ label: "a", value: 3, compare: 2 }], step: 1 })));

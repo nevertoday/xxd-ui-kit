@@ -86,7 +86,7 @@ export const VIZ_HTML = {
     return { attrs: {}, html: `${key}<ol class="xxd-dumbbell__list">${rows}</ol>` };
   },
   radar(m) {
-    const attrs = { "data-emphasis": m.emphasis ? "" : null };
+    const attrs = { "data-emphasis": m.emphasis ? "" : null, "data-compare": m.key ? "" : null };
     if (m.empty) return { attrs, html: emptyHtml(m.empty) };
     const sw = (kind, text) => (text ? `<span><span class="xxd-radar__swatch" data-kind="${kind}"></span>${esc(text)}</span>` : "");
     const key = m.key ? `<p class="xxd-radar__key" aria-hidden="true">${sw("value", m.key.value)}${sw("compare", m.key.compare)}</p>` : "";

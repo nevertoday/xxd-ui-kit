@@ -633,7 +633,9 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 // 分段加了尺寸和禁用，令牌多了 --motion-out、热力的字色，约 2 KB；整行可点的列表行小程序用不上，已经 skip 掉。
 // 2026-10-23 从 88 KB 调到 89 KB：表单和出错（FORM-REVIEW-PLAN D98、D99）给错误文字加了危险图标（不只靠颜色），
 // 开关、标签输入有了出错的样子，约 0.7 KB。
-export const SIZE_BUDGET = 89 * 1024;
+// 2026-10-29 从 89 KB 调到 93 KB：雷达图、四象限（CHART-TYPES-PLAN 第 9 节）两个组件约 3.9 KB。雷达图的网格和面积画成图片，
+// 给 SVG 上色的类已经 skip 掉；四格用绝对定位（不用 grid，Skyline 也排得对），四个端点名、翻到左边的点各一条规则，没有更少的写法。
+export const SIZE_BUDGET = 93 * 1024;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tokensJson = join(tokensDir, "dist/tokens.json");

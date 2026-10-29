@@ -173,5 +173,10 @@
 - **读屏**：两种图的图形都是 `role=img` 加一句话（雷达：每根轴的名字和数；四象限：每个点的两个数和它在哪一格）。
 - **换算**在 `@xxd/css/viz`（`radarModel`、`quadrantModel`），HTML 在 `VIZ_HTML.radar / quadrant`；React 的 `Radar`、`Quadrant` 渲染同一个结构（`xxd.test.tsx` 逐个元素对照）。
 - **体积**：`xxd.min.css` +0.9 KB、`viz.js` +1.7 KB（gzip），预算各调 1 KB（`size.test.mjs` 写了原因）。
-- **还没做**：小程序版（`@xxd/mini`）。小程序里不能直接写 SVG，雷达图要换成 canvas 或图片，等有小程序要用时再做。
+- **小程序版**（2026-10-29，`@xxd/mini` 的 `Radar`、`Quadrant`）：
+  - 雷达图照量表的做法：网格、辐条、面积拼成一张 SVG 图片（`radarSvg`，颜色按 `RADAR_PAINT` 从当前外观的令牌算，图片里用不了 CSS 变量；按 4 倍画），点、名字和数字是 View / Text，读屏念一句话。给 SVG 上色的类在 `mini.json` 里 skip 掉。
+  - 四象限全是 View。四格从 grid 改成按切分点绝对定位（网页版一起改）：Skyline 只认 flex / block，grid 的后备会把四格排成一列。
+  - 两种图里的 `translate:` 改成 `transform: translate()`，`em` 改成 `--text-sm` 的倍数（Skyline 没有 em）。
+  - 名字只在一个词本身放不下时才断开（英文长词「Investigative」不从中间断）；有对照时每根轴下面多一行，上下多留一行。
+  - 小程序样式预算 89 → 93 KB（两个组件约 3.9 KB，原因写在 `build-mini.mjs`）。演示在 `xxd-mini-demo` 第三批；H5 检查（axe、点按区、直角）和微信版 WXSS 门禁（WebView、Skyline）都过了。真机还没看。
 

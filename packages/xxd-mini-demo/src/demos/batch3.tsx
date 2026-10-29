@@ -1,6 +1,6 @@
 // 第三批组件的演示：手机上常用的（底部按钮条、数量加减、日期滚轮、结果页）
 import { View } from "@tarojs/components";
-import { Bars, BottomBar, Button, Cell, CellGroup, DatePicker, Dumbbell, Gauge, Gauges, Heatmap, Proportion, Result, Sparkline, Stack, Stepper, Text, useToast, Waffle } from "@xxd/mini";
+import { Bars, BottomBar, Button, Cell, CellGroup, DatePicker, Dumbbell, Gauge, Gauges, Heatmap, Proportion, Quadrant, Radar, Result, Sparkline, Stack, Stepper, Text, useToast, Waffle } from "@xxd/mini";
 import { useState } from "react";
 import type { Demo } from "./types";
 
@@ -127,6 +127,35 @@ export const BATCH3: Demo[] = [
   {
     name: "Dumbbell",
     render: (tr) => <Dumbbell unit={tr("分钟", "min")} fromLabel={tr("改版前", "Before")} toLabel={tr("改版后", "After")} rows={[{ label: tr("写第一篇", "First post"), from: 14, to: 6 }, { label: tr("配好图片", "Images ready"), from: 9, to: 4 }, { label: tr("排好版", "Layout"), from: 21, to: 12 }]} />,
+  },
+  {
+    name: "Radar",
+    render: (tr) => (
+      <Radar
+        max={40}
+        valueLabel={tr("你", "You")}
+        compareLabel={tr("平均", "Average")}
+        axes={[
+          { label: tr("现实型", "Realistic"), value: 18, compare: 22 },
+          { label: tr("研究型", "Investigative"), value: 34, compare: 24, highlight: true },
+          { label: tr("艺术型", "Artistic"), value: 28, compare: 23 },
+          { label: tr("社会型", "Social"), value: 20, compare: 26 },
+          { label: tr("企业型", "Enterprising"), value: 12, compare: 21 },
+          { label: tr("常规型", "Conventional"), value: 9, compare: 20 },
+        ]}
+      />
+    ),
+  },
+  {
+    name: "Quadrant",
+    render: (tr) => (
+      <Quadrant
+        x={{ label: tr("依恋焦虑", "Attachment anxiety"), min: 1, max: 7, cut: 4, low: tr("不担心", "Unworried"), high: tr("担心", "Worried") }}
+        y={{ label: tr("依恋回避", "Attachment avoidance"), min: 1, max: 7, cut: 4, low: tr("亲近", "Close"), high: tr("疏远", "Distant") }}
+        names={{ "low-high": tr("回避型", "Avoidant"), "high-high": tr("混乱型", "Fearful"), "low-low": tr("安全型", "Secure"), "high-low": tr("焦虑型", "Anxious") }}
+        points={[{ label: tr("你", "You"), x: 4.6, y: 2.4, highlight: true }, { label: tr("平均", "Average"), x: 3.6, y: 3.1 }]}
+      />
+    ),
   },
   { name: "BottomBar", bleed: true, render: (tr) => <BottomBarDemo tr={tr} /> },
   { name: "Stepper", bleed: true, render: (tr) => <StepperDemo tr={tr} /> },
