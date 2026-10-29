@@ -115,12 +115,12 @@ export declare function initSparklines(root?: ParentNode): void;
 export type { XxdGaugeOptions, XxdGaugeModel, XxdGaugeShape, XxdGaugeTone, XxdGaugeZone } from "./gauge";
 /** 量表的几何和图的换算用哪份：ESM 项目 useViz(await import("@xxd/css/viz"))；经典脚本自动用 window.XxdViz（dist/viz.js）。 */
 export declare function useViz(lib: typeof import("./viz") | null): void;
-export type { XxdBarsItem, XxdBarsOptions, XxdVizItem, XxdVizCommon, XxdCalendarOptions, XxdMatrixData, XxdDumbbellRow, XxdDumbbellOptions } from "./viz";
+export type { XxdBarsItem, XxdBarsOptions, XxdVizItem, XxdVizCommon, XxdCalendarOptions, XxdMatrixData, XxdDumbbellRow, XxdDumbbellOptions, XxdRadarAxis, XxdRadarOptions, XxdQuadrantPoint, XxdQuadrantOptions } from "./viz";
 /**
  * 画一张图（或者数据变了重画）：Xxd.viz(el, "bars", [{ label, value }], { unit })。
- * kind：bars | proportion | waffle | calendar | matrix | dumbbell。
+ * kind：bars | proportion | waffle | calendar | matrix | dumbbell | radar | quadrant。
  */
-export declare function viz(el: Element, kind: "bars" | "proportion" | "waffle" | "calendar" | "matrix" | "dumbbell", data: unknown, options?: Record<string, unknown>): unknown;
+export declare function viz(el: Element, kind: "bars" | "proportion" | "waffle" | "calendar" | "matrix" | "dumbbell" | "radar" | "quadrant", data: unknown, options?: Record<string, unknown>): unknown;
 /** 元素上的 data-*（data-viz、data-items、data-parts、data-values…）→ [kind, data, options] */
 export declare function vizFrom(el: Element): [string | null, unknown?, Record<string, unknown>?];
 /** 声明式：[data-viz] 的元素都画出来（Xxd.init 会调用） */

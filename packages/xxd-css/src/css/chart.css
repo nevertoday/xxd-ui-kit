@@ -1087,6 +1087,278 @@
     }
   }
 
+  /* ── 雷达图：只给轴的顺序有意义的数据（霍兰德六边形）；网格是发丝线，面积是主色实色 8%，名字和数字是 HTML 字 ── */
+  .xxd-radar {
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 360px;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-radar__key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .xxd-radar__key > span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+  }
+
+  .xxd-radar__swatch {
+    width: 12px;
+    height: 0;
+    border-top: 1.5px solid var(--action);
+  }
+
+  .xxd-radar__swatch[data-kind="compare"] {
+    border-top-color: var(--line-control);
+    border-top-style: dashed;
+  }
+
+  /* 两边留给名字：名字最长 7 个字宽，放不下就折行 */
+  .xxd-radar__plot {
+    position: relative;
+    box-sizing: border-box;
+    width: min(100%, 420px);
+    margin-inline: auto;
+    padding: calc(var(--leading-sm) * 2 + var(--space-1)) 6.5em;
+  }
+
+  .xxd-radar__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    overflow: visible;
+  }
+
+  .xxd-radar__ring,
+  .xxd-radar__spokes {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .xxd-radar__ring:last-of-type {
+    stroke: var(--line-strong);
+  }
+
+  .xxd-radar__area {
+    fill: var(--action);
+    fill-opacity: 0.08;
+    stroke: var(--action);
+    stroke-width: 1.5px;
+    stroke-linejoin: miter;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .xxd-radar__compare {
+    fill: none;
+    stroke: var(--line-control);
+    stroke-width: 1.5px;
+    stroke-dasharray: 4 3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* 点、名字的位置是相对图本身（chart：去掉留白的那一块） */
+  .xxd-radar__chart {
+    position: relative;
+  }
+
+  .xxd-radar__dot,
+  .xxd-radar__axes {
+    position: absolute;
+  }
+
+  .xxd-radar__axes {
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .xxd-radar__dot {
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: var(--r-pill);
+    background: var(--action);
+  }
+
+  .xxd-radar__dot[data-kind="compare"] {
+    box-sizing: border-box;
+    border: 1.5px solid var(--line-control);
+    background: var(--paper);
+  }
+
+  .xxd-radar__axis {
+    position: absolute;
+    display: grid;
+    width: max-content;
+    max-width: 6.5em;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+    translate: -50% -50%;
+  }
+
+  .xxd-radar__axis[data-side="start"] { translate: 0 -50%; text-align: start; }
+  .xxd-radar__axis[data-side="end"] { translate: -100% -50%; text-align: end; }
+  .xxd-radar__axis[data-side="middle"] { text-align: center; }
+  .xxd-radar__axis[data-side="middle"][data-edge="top"] { translate: -50% -100%; }
+  .xxd-radar__axis[data-side="middle"][data-edge="bottom"] { translate: -50% 0; }
+
+  .xxd-radar__value {
+    color: var(--ink);
+  }
+
+  .xxd-radar__note {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .xxd-radar[data-emphasis] .xxd-radar__axis[data-highlight] .xxd-radar__label {
+    color: var(--ink);
+  }
+
+  /* 窄（< 360px）：两边的留白收一点，名字折成两行 */
+  @container (max-width: 359px) {
+    .xxd-radar__plot {
+      padding-inline: 4.5em;
+    }
+
+    .xxd-radar__axis {
+      max-width: 4.5em;
+    }
+  }
+
+  /* ── 四象限：两个维度各切一刀；点是 HTML，当前那一格是选中底色加一圈主色线 ── */
+  .xxd-quadrant {
+    display: grid;
+    gap: var(--space-2);
+    width: 100%;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-quadrant__plot {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--quadrant-ratio, 1);
+    border: 1px solid var(--line);
+  }
+
+  .xxd-quadrant__cells {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: calc(var(--cx) * 100%) 1fr;
+    grid-template-rows: calc((1 - var(--cy)) * 100%) 1fr;
+  }
+
+  .xxd-quadrant__cell {
+    display: flex;
+    min-width: 0;
+    padding: var(--inset-sm);
+    color: var(--muted);
+  }
+
+  /* 切分线：左上格的右边、下边（结构线） */
+  .xxd-quadrant__cell[data-cell="low-high"] { border-inline-end: 1px solid var(--line-strong); border-block-end: 1px solid var(--line-strong); }
+  .xxd-quadrant__cell[data-cell="high-high"] { justify-content: flex-end; text-align: end; border-block-end: 1px solid var(--line-strong); }
+  .xxd-quadrant__cell[data-cell="low-low"] { align-items: flex-end; border-inline-end: 1px solid var(--line-strong); }
+  .xxd-quadrant__cell[data-cell="high-low"] { justify-content: flex-end; align-items: flex-end; text-align: end; }
+
+  .xxd-quadrant__cell[data-current] {
+    background: var(--selected-bg);
+    color: var(--ink);
+    outline: 1.5px solid var(--action);
+    outline-offset: -1.5px;
+  }
+
+  .xxd-quadrant__name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* 两端的名字：在切分线和外框相交的地方 */
+  .xxd-quadrant__end {
+    position: absolute;
+    padding: 0 var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--muted);
+    background: var(--paper);
+    white-space: nowrap;
+  }
+
+  .xxd-quadrant__end[data-end="y-high"] { top: 0; left: calc(var(--cx) * 100%); translate: -50% -50%; }
+  .xxd-quadrant__end[data-end="y-low"] { bottom: 0; left: calc(var(--cx) * 100%); translate: -50% 50%; }
+  .xxd-quadrant__end[data-end="x-low"] { left: 0; top: calc((1 - var(--cy)) * 100%); translate: var(--space-1) -50%; }
+  .xxd-quadrant__end[data-end="x-high"] { right: 0; top: calc((1 - var(--cy)) * 100%); translate: calc(-1 * var(--space-1)) -50%; }
+
+  .xxd-quadrant__points {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .xxd-quadrant__point {
+    position: absolute;
+    left: calc(var(--x) * 100%);
+    top: calc((1 - var(--y)) * 100%);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    translate: -5px -50%;
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+
+  .xxd-quadrant__point[data-flip] {
+    flex-direction: row-reverse;
+    translate: calc(-100% + 5px) -50%;
+  }
+
+  .xxd-quadrant__dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    box-sizing: border-box;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--paper);
+  }
+
+  .xxd-quadrant__point[data-highlight] .xxd-quadrant__dot {
+    border-color: var(--action);
+    background: var(--action);
+  }
+
+  .xxd-quadrant__label {
+    color: var(--ink);
+  }
+
+  .xxd-quadrant__caption {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
   /* 打印：图是背景色画的，浏览器缺省不印背景（D3） */
   @media print {
     .xxd-gauge,
@@ -1095,7 +1367,9 @@
     .xxd-proportion,
     .xxd-waffle,
     .xxd-heatmap,
-    .xxd-dumbbell {
+    .xxd-dumbbell,
+    .xxd-radar,
+    .xxd-quadrant {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }

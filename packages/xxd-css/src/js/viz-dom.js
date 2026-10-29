@@ -26,9 +26,11 @@ function modelOf(lib, kind, data, o) {
   if (kind === "calendar") return lib.calendarModel(data, o);
   if (kind === "matrix") return lib.matrixModel(data, o);
   if (kind === "dumbbell") return lib.dumbbellModel(data, o);
+  if (kind === "radar") return lib.radarModel(data, o);
+  if (kind === "quadrant") return lib.quadrantModel(data, o);
   return null;
 }
-const ROOT = { bars: "xxd-bars", proportion: "xxd-proportion", waffle: "xxd-waffle", calendar: "xxd-heatmap", matrix: "xxd-heatmap", dumbbell: "xxd-dumbbell" };
+const ROOT = { bars: "xxd-bars", proportion: "xxd-proportion", waffle: "xxd-waffle", calendar: "xxd-heatmap", matrix: "xxd-heatmap", dumbbell: "xxd-dumbbell", radar: "xxd-radar", quadrant: "xxd-quadrant" };
 
 /** 热力格：指到 / 点到一格，色阶那一行写出这一格（D50）。整页一个监听 */
 let listening = false;
@@ -55,9 +57,9 @@ function listen() {
 }
 
 /**
- * 画一张图（或者数据变了重画）。kind：bars | proportion | waffle | calendar | matrix | dumbbell。
+ * 画一张图（或者数据变了重画）。kind：bars | proportion | waffle | calendar | matrix | dumbbell | radar | quadrant。
  *   Xxd.viz(el, "bars", [{ label: "长文发布", value: 2410 }], { unit: "篇" })
- * data 的样子见 viz.d.ts（条形榜、构成条、百格图是 [{ label, value }]；日历是 { "2026-03-02": 5 }；矩阵是 { rows, cols, values }；前后对比是 [{ label, from, to }]）。
+ * data 的样子见 viz.d.ts（条形榜、构成条、百格图是 [{ label, value }]；日历是 { "2026-03-02": 5 }；矩阵是 { rows, cols, values }；前后对比是 [{ label, from, to }]；雷达图是 [{ label, value, compare? }]；四象限是 [{ label, x, y }]）。
  */
 export function viz(el, kind, data, options = {}) {
   const lib = vizLib();
@@ -157,6 +159,28 @@ export function vizFrom(el) {
     });
     check(el, rows, ["from", "to"]);
     return [kind, rows, { ...o, min: d.min, max: d.max, fromLabel: d.fromLabel, toLabel: d.toLabel }];
+  }
+  if (kind === "radar") {
+    // 和条形榜一样：「名字:数」，对照值写成「名字:数/对照」
+    const hi = new Set(list(d.highlight));
+    const axes = pairs(d.items).map((p) => {
+      const [value, compare] = p.value.split("/").map(n);
+      return { label: p.label, value, compare, highlight: hi.has(p.label) };
+    });
+    check(el, axes, ["value", "compare"]);
+    return [kind, axes, { ...o, min: d.min, max: d.max, levels: d.levels, valueLabel: d.valueLabel, compareLabel: d.compareLabel }];
+  }
+  if (kind === "quadrant") {
+    // 「你:3.2,5.1;平均:4,4」；四格的名字按 左上,右上,左下,右下 写在 data-names
+    const hi = new Set(list(d.highlight));
+    const points = pairs(d.points).map((p) => {
+      const [x, y] = p.value.split(",").map(n);
+      return { label: p.label, x, y, highlight: hi.has(p.label) };
+    });
+    check(el, points, ["x", "y"]);
+    const axis = (k) => ({ label: d[k], min: d[`${k}Min`], max: d[`${k}Max`], cut: d[`${k}Cut`], low: d[`${k}Low`], high: d[`${k}High`] });
+    const [tl, tr, bl, br] = list(d.names);
+    return [kind, points, { ...o, x: axis("x"), y: axis("y"), names: { "low-high": tl, "high-high": tr, "low-low": bl, "high-low": br } }];
   }
   return [null];
 }

@@ -192,6 +192,60 @@
       background: Canvas;
     }
 
+    /* 雷达图：自己的面积和点是 Highlight，对照是 CanvasText 虚线、空心点；网格 GrayText */
+    .xxd-radar__svg,
+    .xxd-radar__dot,
+    .xxd-radar__swatch,
+    .xxd-quadrant__dot,
+    .xxd-quadrant__cell {
+      forced-color-adjust: none;
+    }
+
+    .xxd-radar__ring,
+    .xxd-radar__spokes {
+      stroke: GrayText;
+    }
+
+    .xxd-radar__area {
+      fill: Highlight;
+      stroke: Highlight;
+    }
+
+    .xxd-radar__compare,
+    .xxd-radar__swatch[data-kind="compare"] {
+      stroke: CanvasText;
+      border-top-color: CanvasText;
+    }
+
+    .xxd-radar__swatch,
+    .xxd-radar__dot {
+      border-top-color: Highlight;
+      background: Highlight;
+    }
+
+    .xxd-radar__dot[data-kind="compare"],
+    .xxd-quadrant__dot {
+      border-color: CanvasText;
+      background: Canvas;
+    }
+
+    /* 四象限：当前那一格是高亮框，重点的点是 Highlight */
+    .xxd-quadrant__cell {
+      border-color: CanvasText;
+      color: CanvasText;
+      background: Canvas;
+    }
+
+    .xxd-quadrant__cell[data-current] {
+      outline: 2px solid Highlight;
+      background: Canvas;
+    }
+
+    .xxd-quadrant__point[data-highlight] .xxd-quadrant__dot {
+      border-color: Highlight;
+      background: Highlight;
+    }
+
     /* tab：选中的那一个有 2px 下边框（伪元素的背景会被抹掉） */
     .xxd-tabs__ink {
       background: Highlight;

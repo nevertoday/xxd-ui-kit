@@ -2007,6 +2007,88 @@
         "之前 / 之后不只靠颜色：一个空心、一个实心，上面有图例"
       ],
       "js": "Xxd.viz(el, \"dumbbell\", [{ label: \"写第一篇\", from: 14, to: 6 }], { unit: \"分钟\", fromLabel: \"改版前\", toLabel: \"改版后\" })\n// React：<Dumbbell rows={[…]} unit=\"分钟\" fromLabel=\"改版前\" toLabel=\"改版后\" />"
+    },
+    {
+      "name": "Radar",
+      "zh": "雷达图",
+      "category": "展示",
+      "classes": [
+        "xxd-radar",
+        "xxd-radar__key",
+        "xxd-radar__swatch",
+        "xxd-radar__plot",
+        "xxd-radar__svg",
+        "xxd-radar__ring",
+        "xxd-radar__spokes",
+        "xxd-radar__area",
+        "xxd-radar__compare",
+        "xxd-radar__chart",
+        "xxd-radar__dot",
+        "xxd-radar__axes",
+        "xxd-radar__axis",
+        "xxd-radar__value",
+        "xxd-radar__note",
+        "xxd-radar__label"
+      ],
+      "attributes": {
+        "data-viz=\"radar\" + data-items": "声明式：「名字:数;…」，对照值写成「名字:数/对照」（要加载 viz.js）；轴按顺序从正上方顺时针排",
+        "data-min / data-max / data-levels": "范围（缺省 0 到取整的最大值）；几圈网格（缺省 4）",
+        "data-highlight": "重点的轴名（名字变成墨色）",
+        "data-value-label / data-compare-label": "有对照时图例的两个名字"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:520px\">\n  <div class=\"xxd-radar\" data-viz=\"radar\" data-max=\"40\" data-value-label=\"你\" data-compare-label=\"平均\" data-highlight=\"研究型\" data-items=\"现实型:18/22;研究型:34/24;艺术型:28/23;社会型:20/26;企业型:12/21;常规型:9/20\"></div>\n</div>",
+      "react": "Radar",
+      "rules": [
+        "只给轴的顺序本身有意义的数据：霍兰德六型（相邻的两型更像）、一圈的方向；几个独立的维度用条形榜——轴换个顺序面积就变，面积不是数据",
+        "3–8 根轴；最多两圈（自己 + 一个对照），不叠更多",
+        "面积是主色实色 8%，没有渐变；网格是发丝线，最外一圈是结构线",
+        "§14"
+      ],
+      "summary": "轴的顺序有意义的轮廓（3–12 根轴，常见是霍兰德六边形）：网格是几圈发丝线，自己的面积是主色描边加 8% 实色，对照是虚线空心；名字和数字是 HTML 字，写在每根轴的外端。",
+      "a11y": [
+        "图是 role=img，aria-label 是一句话：每根轴的名字和数",
+        "自己和对照不只靠颜色：一个实线实心、一个虚线空心，上面有图例"
+      ],
+      "js": "Xxd.viz(el, \"radar\", [{ label: \"现实型\", value: 18, compare: 22 }, …], { max: 40, valueLabel: \"你\", compareLabel: \"平均\" })\n// React：<Radar axes={[…]} max={40} valueLabel=\"你\" compareLabel=\"平均\" />"
+    },
+    {
+      "name": "Quadrant",
+      "zh": "四象限",
+      "category": "展示",
+      "classes": [
+        "xxd-quadrant",
+        "xxd-quadrant__plot",
+        "xxd-quadrant__cells",
+        "xxd-quadrant__cell",
+        "xxd-quadrant__name",
+        "xxd-quadrant__end",
+        "xxd-quadrant__points",
+        "xxd-quadrant__point",
+        "xxd-quadrant__dot",
+        "xxd-quadrant__label",
+        "xxd-quadrant__caption"
+      ],
+      "attributes": {
+        "data-viz=\"quadrant\" + data-points": "声明式：「名字:x,y;…」（要加载 viz.js）",
+        "data-x / data-y": "两个轴的名字（图下面写「横轴：…，竖轴：…」）",
+        "data-x-min / -max / -cut / -low / -high（y 同）": "范围、切分点（缺省在中间，等于切分点算高）、两端的名字",
+        "data-names": "四格的名字：左上,右上,左下,右下",
+        "data-highlight": "重点的点（主色实心）；它所在的格是当前格"
+      },
+      "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:420px\">\n  <div class=\"xxd-quadrant\" data-viz=\"quadrant\" data-x=\"依恋焦虑\" data-x-min=\"1\" data-x-max=\"7\" data-x-cut=\"4\" data-x-low=\"不担心\" data-x-high=\"担心\" data-y=\"依恋回避\" data-y-min=\"1\" data-y-max=\"7\" data-y-cut=\"4\" data-y-low=\"亲近\" data-y-high=\"疏远\" data-names=\"回避型,混乱型,安全型,焦虑型\" data-highlight=\"你\" data-points=\"你:4.6,2.4;平均:3.6,3.1\"></div>\n</div>",
+      "react": "Quadrant",
+      "rules": [
+        "两个连续的维度、各有一个有依据的切分点时用（依恋的焦虑 × 回避）；没有切分点就不要画格子，用散点",
+        "点 ≤ 8 个；名字写在点旁边，靠右时写在左边",
+        "当前那一格是选中底色加 1.5px 主色线（≥ 3:1 的记号），不加粗",
+        "§14"
+      ],
+      "summary": "两个维度各切一刀分成四格：外框一个、切分线是结构线，四格的名字在外角，两端的名字在切分线和外框相交处；点是 HTML，重点那个主色实心，其余空心。",
+      "a11y": [
+        "图是 role=img，aria-label 写出每个点的两个数和它在哪一格",
+        "当前格不只靠底色：还有一圈主色线；重点的点实心、其余空心"
+      ],
+      "js": "Xxd.viz(el, \"quadrant\", [{ label: \"你\", x: 4.6, y: 2.4, highlight: true }], { x: { label: \"依恋焦虑\", min: 1, max: 7, cut: 4 }, y: { label: \"依恋回避\", min: 1, max: 7, cut: 4 }, names: { \"low-low\": \"安全型\", … } })\n// React：<Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />"
     }
   ]
 }

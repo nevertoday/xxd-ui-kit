@@ -7,9 +7,9 @@ export * from "./gauge.js";
 export * from "./viz-html.js";
 
 const LABELS = {
-  "zh-CN": { keep: "留下 {p}", cell: "1 格 = {p}", less: "少", more: "多", before: "之前", after: "之后", sep: "，", months: "1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月", days: "一 二 三 四 五 六 日", calendar: "{days} 天里有 {active} 天有记录，合计 {total}，最多一天 {max}", none: "没有记录", day: "{date}：{v}", heat: "热力格", empty: "没有数据", other: "其他" },
-  "zh-TW": { keep: "留下 {p}", cell: "1 格 = {p}", less: "少", more: "多", before: "之前", after: "之後", sep: "，", months: "1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月", days: "一 二 三 四 五 六 日", calendar: "{days} 天裡有 {active} 天有記錄，合計 {total}，最多一天 {max}", none: "沒有記錄", day: "{date}：{v}", heat: "熱力格", empty: "沒有資料", other: "其他" },
-  en: { keep: "{p} kept", cell: "1 cell = {p}", less: "Less", more: "More", before: "Before", after: "After", sep: ", ", months: "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", days: "Mon Tue Wed Thu Fri Sat Sun", calendar: "{active} of {days} days with activity, {total} in total, at most {max} in a day", none: "No activity", day: "{date}: {v}", heat: "Heatmap", empty: "No data", other: "Other" },
+  "zh-CN": { keep: "留下 {p}", cell: "1 格 = {p}", less: "少", more: "多", before: "之前", after: "之后", sep: "，", months: "1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月", days: "一 二 三 四 五 六 日", calendar: "{days} 天里有 {active} 天有记录，合计 {total}，最多一天 {max}", none: "没有记录", day: "{date}：{v}", heat: "热力格", empty: "没有数据", other: "其他", semi: "；", point: "{label}：{x} {xv}，{y} {yv}", inCell: "在「{name}」", across: "横轴：{x}", up: "竖轴：{y}" },
+  "zh-TW": { keep: "留下 {p}", cell: "1 格 = {p}", less: "少", more: "多", before: "之前", after: "之後", sep: "，", months: "1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月", days: "一 二 三 四 五 六 日", calendar: "{days} 天裡有 {active} 天有記錄，合計 {total}，最多一天 {max}", none: "沒有記錄", day: "{date}：{v}", heat: "熱力格", empty: "沒有資料", other: "其他", semi: "；", point: "{label}：{x} {xv}，{y} {yv}", inCell: "在「{name}」", across: "橫軸：{x}", up: "豎軸：{y}" },
+  en: { keep: "{p} kept", cell: "1 cell = {p}", less: "Less", more: "More", before: "Before", after: "After", sep: ", ", months: "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", days: "Mon Tue Wed Thu Fri Sat Sun", calendar: "{active} of {days} days with activity, {total} in total, at most {max} in a day", none: "No activity", day: "{date}: {v}", heat: "Heatmap", empty: "No data", other: "Other", semi: "; ", point: "{label}: {x} {xv}, {y} {yv}", inCell: "in “{name}”", across: "Across: {x}", up: "Up: {y}" },
 };
 export const vizLabels = (locale = "zh-CN") => LABELS[locale] ?? (/^zh-(TW|HK|Hant)/i.test(locale) ? LABELS["zh-TW"] : /^zh/i.test(locale) ? LABELS["zh-CN"] : LABELS.en);
 const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
@@ -270,5 +270,114 @@ export function dumbbellModel(rows = [], o = {}) {
     fromLabel: o.fromLabel ?? L.before,
     toLabel: o.toLabel ?? L.after,
     empty: list.length ? "" : L.empty,
+  };
+}
+
+/* ── 雷达图（六边形）：只给轴的顺序本身有意义的数据（霍兰德六型：相邻的两型更像）；几个独立的维度用条形榜 ── */
+
+/** 图在 viewBox「-1 -1 2 2」里的半径；外面留给 HTML 的名字 */
+export const RADAR_R = 0.8;
+const pts = (list) => list.map(([x, y]) => `${r3(x)},${r3(y)}`).join(" ");
+
+/**
+ * axes：[{ label, value, compare? }]，按顺序从正上方顺时针排（3–12 根轴）。
+ * 选项：min（缺省 0）、max（缺省取整到 1 / 2 / 5 × 10ⁿ）、levels（几圈网格，缺省 4）、compareLabel / valueLabel（有对照时的图例）。
+ * 返回网格（rings）、辐条（spokes）、面积（area、compareArea）都是 SVG 的点；点和名字的位置是百分比，由 HTML 摆（字是 HTML 字）。
+ */
+export function radarModel(axes = [], o = {}) {
+  const fmt = formatter(o);
+  const L = vizLabels(o.locale);
+  const list = axes.filter((a) => a && finite(a.value)).slice(0, 12).map((a) => ({ label: String(a.label ?? ""), value: Number(a.value), compare: finite(a.compare) ? Number(a.compare) : null, highlight: Boolean(a.highlight) }));
+  const n = list.length;
+  if (n < 3) return { empty: L.empty, axes: [], rings: [], spokes: "", area: "", compareArea: "", key: null, label: L.empty };
+  const lo = finite(o.min) ? Number(o.min) : 0;
+  const values = list.flatMap((a) => [a.value, a.compare ?? lo]);
+  let hi = finite(o.max) ? Number(o.max) : Math.max(...values);
+  if (!finite(o.max) && hi > lo) {
+    const s = niceStep(hi - lo);
+    hi = lo + Math.ceil((hi - lo) / s) * s;
+  }
+  const frac = (v) => (hi > lo ? clamp((v - lo) / (hi - lo), 0, 1) : 0);
+  const unitAt = (i) => [Math.sin((2 * Math.PI * i) / n), -Math.cos((2 * Math.PI * i) / n)];
+  const at = (i, f) => unitAt(i).map((c) => c * f * RADAR_R);
+  const levels = Math.max(1, Math.min(10, Math.round(finite(o.levels) ? Number(o.levels) : 4)));
+  const rings = Array.from({ length: levels }, (_, k) => pts(list.map((_, i) => at(i, (k + 1) / levels))));
+  const spokes = list.map((_, i) => `M0 0L${at(i, 1).map(r3).join(" ")}`).join("");
+  const pct = (c) => r3(50 + 50 * c);
+  const out = list.map((a, i) => {
+    const [ux, uy] = unitAt(i);
+    const [x, y] = at(i, frac(a.value));
+    const row = { ...a, frac: r3(frac(a.value)), text: withUnit(fmt(a.value), o.unit), x: pct(x), y: pct(y), lx: pct(ux * (RADAR_R + 0.08)), ly: pct(uy * (RADAR_R + 0.08)), side: ux > 0.2 ? "start" : ux < -0.2 ? "end" : "middle", edge: uy < -0.5 ? "top" : uy > 0.5 ? "bottom" : "middle" };
+    if (a.compare != null) {
+      const [cx, cy] = at(i, frac(a.compare));
+      Object.assign(row, { cx: pct(cx), cy: pct(cy), compareText: `${o.compareLabel ? `${o.compareLabel} ` : ""}${withUnit(fmt(a.compare), o.unit)}` });
+    }
+    return row;
+  });
+  const hasCompare = out.some((a) => a.compare != null);
+  const said = out.map((a) => `${a.label} ${a.text}`).join(L.sep);
+  return {
+    empty: "",
+    axes: out,
+    rings,
+    spokes,
+    area: pts(list.map((a, i) => at(i, frac(a.value)))),
+    compareArea: hasCompare ? pts(list.map((a, i) => at(i, frac(a.compare ?? lo)))) : "",
+    key: hasCompare ? { value: o.valueLabel || "", compare: o.compareLabel || "" } : null,
+    emphasis: out.some((a) => a.highlight),
+    label: o.label ? `${o.label}${L.sep}${said}` : said,
+  };
+}
+
+/* ── 四象限：两个维度各切一刀，看点落在哪一格 ── */
+
+const axisOf = (a = {}, vs) => {
+  let lo = finite(a.min) ? Number(a.min) : Math.min(...vs, Infinity);
+  let hi = finite(a.max) ? Number(a.max) : Math.max(...vs, -Infinity);
+  if (!Number.isFinite(lo) || !Number.isFinite(hi)) [lo, hi] = [0, 1];
+  if (!finite(a.min) && !finite(a.max)) {
+    const pad = (hi - lo || Math.abs(hi) || 1) * 0.1;
+    lo -= pad;
+    hi += pad;
+  }
+  const cut = finite(a.cut) ? Number(a.cut) : (lo + hi) / 2;
+  const f = (v) => r3(hi > lo ? clamp((v - lo) / (hi - lo), 0, 1) : 0.5);
+  return { lo, hi, cut, f, label: String(a.label ?? ""), low: String(a.low ?? ""), high: String(a.high ?? "") };
+};
+
+/**
+ * points：[{ label, x, y, highlight? }]。
+ * 选项：x、y 各是 { label, min, max, cut, low, high }（cut 是切分点，缺省在中间；low / high 是两端的名字）；
+ * names 是四格的名字 { "low-high": …, "high-high": …, "low-low": …, "high-low": … }（先 x 后 y；等于切分点算 high）。
+ * 有重点的点所在的格是「当前」那一格；没有重点时是第一个点那一格。
+ */
+export function quadrantModel(points = [], o = {}) {
+  const fmt = formatter(o);
+  const L = vizLabels(o.locale);
+  const list = points.filter((p) => p && finite(p.x) && finite(p.y)).map((p) => ({ label: String(p.label ?? ""), x: Number(p.x), y: Number(p.y), highlight: Boolean(p.highlight) }));
+  const X = axisOf(o.x, list.map((p) => p.x));
+  const Y = axisOf(o.y, list.map((p) => p.y));
+  const names = o.names ?? {};
+  const where = (p) => `${p.x >= X.cut ? "high" : "low"}-${p.y >= Y.cut ? "high" : "low"}`;
+  const lead = list.find((p) => p.highlight) ?? list[0];
+  const current = lead ? where(lead) : "";
+  const cells = ["low-high", "high-high", "low-low", "high-low"].map((key) => ({ key, name: String(names[key] ?? ""), current: key === current }));
+  const nameOf = (k) => cells.find((c) => c.key === k)?.name;
+  const out = list.map((p) => {
+    const q = where(p);
+    const said = fill(L.point, { label: p.label, x: X.label, xv: withUnit(fmt(p.x), o.unit), y: Y.label, yv: withUnit(fmt(p.y), o.unit) });
+    return { ...p, fx: X.f(p.x), fy: Y.f(p.y), cell: q, text: nameOf(q) ? `${said}${L.sep}${fill(L.inCell, { name: nameOf(q) })}` : said };
+  });
+  const said = out.map((p) => p.text).join(L.semi);
+  return {
+    empty: list.length ? "" : L.empty,
+    points: out,
+    cells,
+    cut: { x: X.f(X.cut), y: Y.f(Y.cut) },
+    x: { label: X.label, low: X.low, high: X.high },
+    y: { label: Y.label, low: Y.low, high: Y.high },
+    caption: [X.label && fill(L.across, { x: X.label }), Y.label && fill(L.up, { y: Y.label })].filter(Boolean).join(L.sep),
+    emphasis: out.some((p) => p.highlight),
+    label: o.label ? `${o.label}${L.sep}${said}` : said,
   };
 }

@@ -3,6 +3,7 @@ import { render, screen, act, cleanup, fireEvent } from "@testing-library/react"
 import { useState, type ReactNode } from "react";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { radarModel } from "@xxd/css/viz";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AccountCard,
@@ -26,6 +27,8 @@ import {
   Waffle,
   Heatmap,
   Dumbbell,
+  Radar,
+  Quadrant,
   Pagination,
   Search,
   Segmented,
@@ -526,6 +529,18 @@ describe("图型（CHART-TYPES-PLAN H4）：和 Xxd.viz 画出来的结构一样
     const rows = [{ label: "写第一篇", from: 14, to: 6 }];
     const d = await same(<Dumbbell rows={rows} unit="分钟" />, "dumbbell", rows, { unit: "分钟" });
     expect(d.querySelector(".xxd-dumbbell__item")?.textContent).toBe("写第一篇14 分钟 → 6 分钟−8");
+  });
+
+  it("雷达图、四象限", async () => {
+    const axes = [{ label: "现实型", value: 18, compare: 22, highlight: true }, { label: "研究型", value: 34, compare: 24 }, { label: "艺术型", value: 28, compare: 23 }];
+    const opts = { max: 40, valueLabel: "你", compareLabel: "平均" };
+    const r = await same(<Radar axes={axes} {...opts} />, "radar", axes, opts);
+    expect(r.querySelector(".xxd-radar__plot")?.getAttribute("aria-label")).toBe("现实型 18，研究型 34，艺术型 28");
+    expect(r.querySelector(".xxd-radar__area")?.getAttribute("points")).toBe(radarModel(axes, opts).area);
+    const points = [{ label: "你", x: 4.6, y: 2.4, highlight: true }, { label: "TA", x: 6.5, y: 6.2 }];
+    const q = { x: { label: "焦虑", min: 1, max: 7, cut: 4, low: "不担心", high: "担心" }, y: { label: "回避", min: 1, max: 7, cut: 4 }, names: { "low-low": "安全型", "high-low": "焦虑型" } };
+    const el = await same(<Quadrant points={points} {...q} />, "quadrant", points, q);
+    expect(el.querySelector("[data-current]")?.textContent).toBe("焦虑型");
   });
 });
 

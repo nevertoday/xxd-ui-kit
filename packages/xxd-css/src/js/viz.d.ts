@@ -126,12 +126,73 @@ export interface XxdDumbbellModel {
   empty: string;
 }
 
+export interface XxdRadarAxis {
+  label: string;
+  value: number | string;
+  compare?: number | string | null;
+  highlight?: boolean;
+}
+export interface XxdRadarOptions extends XxdVizCommon {
+  min?: number | string;
+  max?: number | string;
+  /** 几圈网格（缺省 4） */
+  levels?: number | string;
+  valueLabel?: string;
+  compareLabel?: string;
+}
+export interface XxdRadarModel {
+  empty: string;
+  axes: { label: string; value: number; compare: number | null; highlight: boolean; frac: number; text: string; x: number; y: number; lx: number; ly: number; side: "start" | "middle" | "end"; edge: "top" | "middle" | "bottom"; cx?: number; cy?: number; compareText?: string }[];
+  rings: string[];
+  spokes: string;
+  area: string;
+  compareArea: string;
+  key: { value: string; compare: string } | null;
+  emphasis: boolean;
+  label: string;
+}
+export declare const RADAR_R: number;
+export interface XxdQuadrantPoint {
+  label: string;
+  x: number | string;
+  y: number | string;
+  highlight?: boolean;
+}
+export interface XxdQuadrantAxis {
+  label?: string;
+  min?: number | string;
+  max?: number | string;
+  /** 切分点（缺省在中间）；等于切分点算 high */
+  cut?: number | string;
+  /** 两端的名字 */
+  low?: string;
+  high?: string;
+}
+export type XxdQuadrantCell = "low-high" | "high-high" | "low-low" | "high-low";
+export interface XxdQuadrantOptions extends XxdVizCommon {
+  x?: XxdQuadrantAxis;
+  y?: XxdQuadrantAxis;
+  /** 四格的名字，键是「x 的高低-y 的高低」 */
+  names?: Partial<Record<XxdQuadrantCell, string>>;
+}
+export interface XxdQuadrantModel {
+  empty: string;
+  points: { label: string; x: number; y: number; highlight: boolean; fx: number; fy: number; cell: XxdQuadrantCell; text: string }[];
+  cells: { key: XxdQuadrantCell; name: string; current: boolean }[];
+  cut: { x: number; y: number };
+  x: { label: string; low: string; high: string };
+  y: { label: string; low: string; high: string };
+  caption: string;
+  emphasis: boolean;
+  label: string;
+}
+
 export declare function largestRemainder(values: (number | string)[], total?: number): number[];
 export declare function vizLabels(locale?: string): Record<string, string>;
 export declare function barsModel(items: readonly XxdBarsItem[], options?: XxdBarsOptions): XxdBarsModel;
 export declare function proportionModel(parts: readonly XxdVizItem[], options?: XxdVizCommon & { max?: number | string }): XxdProportionModel;
 export declare function niceStep(top: number, n?: number): number;
-export declare const VIZ_HTML: Record<"bars" | "proportion" | "waffle" | "calendar" | "matrix" | "dumbbell", (model: any, options?: any) => { attrs: Record<string, string | number | null>; html: string }>;
+export declare const VIZ_HTML: Record<"bars" | "proportion" | "waffle" | "calendar" | "matrix" | "dumbbell" | "radar" | "quadrant", (model: any, options?: any) => { attrs: Record<string, string | number | null>; html: string }>;
 export declare function gaugeInnerHtml(model: import("./gauge").XxdGaugeModel): string;
 export declare function legendHtml(items: { label: string; num: string; share?: string; part: number }[]): string;
 export declare function emptyHtml(text: string, tag?: string): string;
@@ -140,3 +201,7 @@ export declare function heatLevel(value: number | string | null | undefined, max
 export declare function calendarModel(values: Record<string, number> | readonly { date: string; value: number }[], options?: XxdCalendarOptions): XxdCalendarModel;
 export declare function matrixModel(data: XxdMatrixData, options?: XxdVizCommon): XxdMatrixModel;
 export declare function dumbbellModel(rows: readonly XxdDumbbellRow[], options?: XxdDumbbellOptions): XxdDumbbellModel;
+/** 雷达图：轴按顺序从正上方顺时针排（3–12 根）；只给轴的顺序有意义的数据 */
+export declare function radarModel(axes: readonly XxdRadarAxis[], options?: XxdRadarOptions): XxdRadarModel;
+/** 四象限：两个维度各切一刀，看点落在哪一格 */
+export declare function quadrantModel(points: readonly XxdQuadrantPoint[], options?: XxdQuadrantOptions): XxdQuadrantModel;

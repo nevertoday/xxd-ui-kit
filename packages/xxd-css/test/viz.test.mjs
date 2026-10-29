@@ -6,7 +6,7 @@ import * as lib from "../src/js/viz.js";
 import { initViz, useViz, viz, vizFrom } from "../src/js/viz-dom.js";
 import { sparkline } from "../src/js/chart.js";
 
-const { barsModel, calendarModel, dumbbellModel, heatLevel, largestRemainder, matrixModel, proportionModel, waffleModel } = lib;
+const { barsModel, calendarModel, dumbbellModel, heatLevel, largestRemainder, matrixModel, proportionModel, quadrantModel, radarModel, waffleModel } = lib;
 useViz(lib);
 const css = readFileSync(join(import.meta.dirname, "../src/css/chart.css"), "utf8");
 
@@ -74,6 +74,40 @@ describe("换算", () => {
     expect(m.rows).toHaveLength(1);
     expect(m.rows[0]).toMatchObject({ a: 0.7, b: 0.3, delta: "−8" });
   });
+
+  it("雷达图：从正上方顺时针，比例按 min…max；不到 3 根轴是没有数据；对照是另一圈", () => {
+    const axes = ["R", "I", "A", "S", "E", "C"].map((label, i) => ({ label, value: [40, 20, 0, 10, 30, 40][i], compare: 20 }));
+    const m = radarModel(axes, { max: 40, compareLabel: "平均", valueLabel: "你" });
+    expect(m.axes.map((a) => a.frac)).toEqual([1, 0.5, 0, 0.25, 0.75, 1]);
+    // 第一根轴朝上：x 在中间、y 在最上面一圈（半径 RADAR_R）
+    expect(m.axes[0]).toMatchObject({ x: 50, y: 50 - 50 * lib.RADAR_R, side: "middle", edge: "top" });
+    expect(m.axes[1].side).toBe("start");
+    expect(m.axes[4].side).toBe("end");
+    expect(m.rings).toHaveLength(4);
+    expect(m.area.split(" ")).toHaveLength(6);
+    expect(m.compareArea).not.toBe("");
+    expect(m.key).toEqual({ value: "你", compare: "平均" });
+    expect(m.axes[0].compareText).toBe("平均 20");
+    expect(m.label).toBe("R 40，I 20，A 0，S 10，E 30，C 40");
+    // 没写 max：取整到 1 / 2 / 5 × 10ⁿ
+    expect(radarModel([{ label: "a", value: 37 }, { label: "b", value: 12 }, { label: "c", value: "x" }, { label: "d", value: 5 }]).axes[0].frac).toBe(0.925);
+    expect(radarModel([{ label: "a", value: 1 }, { label: "b", value: 2 }]).empty).toBe("没有数据");
+  });
+
+  it("四象限：位置按 min…max，切分点上算 high；重点的点所在的格是当前格；读屏读得到每个点在哪一格", () => {
+    const names = { "low-low": "安全型", "high-low": "焦虑型", "low-high": "回避型", "high-high": "混乱型" };
+    const m = quadrantModel([{ label: "你", x: 4, y: 2.5, highlight: true }, { label: "平均", x: 3, y: 3 }], {
+      x: { label: "焦虑", min: 1, max: 7, cut: 4, low: "不担心", high: "担心" },
+      y: { label: "回避", min: 1, max: 7, cut: 4 },
+      names,
+    });
+    expect(m.points.map((p) => [p.fx, p.fy, p.cell])).toEqual([[0.5, 0.25, "high-low"], [0.333, 0.333, "low-low"]]);
+    expect(m.cut).toEqual({ x: 0.5, y: 0.5 });
+    expect(m.cells.map((c) => [c.key, c.name, c.current])).toEqual([["low-high", "回避型", false], ["high-high", "混乱型", false], ["low-low", "安全型", false], ["high-low", "焦虑型", true]]);
+    expect(m.points[0].text).toBe("你：焦虑 4，回避 2.5，在「焦虑型」");
+    expect(m.caption).toBe("横轴：焦虑，竖轴：回避");
+    expect(quadrantModel([{ label: "a", x: "x", y: 1 }]).empty).toBe("没有数据");
+  });
 });
 
 describe("颜色只走令牌", () => {
@@ -112,6 +146,21 @@ describe("页面里", () => {
     const d = document.createElement("div");
     Object.assign(d.dataset, { viz: "dumbbell", rows: "写第一篇:14>6" });
     expect(vizFrom(d)[1]).toEqual([{ label: "写第一篇", from: "14", to: "6" }]);
+  });
+
+  it("声明式雷达图、四象限：图是 role=img 加一句话，名字和数字是 HTML 字", () => {
+    document.body.innerHTML = '<div class="xxd-radar" data-viz="radar" data-max="10" data-highlight="现实型" data-compare-label="平均" data-items="现实型:8/5;研究型:6/5;艺术型:2/5"></div><div class="xxd-quadrant" data-viz="quadrant" data-x="焦虑" data-x-min="1" data-x-max="7" data-x-cut="4" data-y="回避" data-y-min="1" data-y-max="7" data-y-cut="4" data-names="回避型,混乱型,安全型,焦虑型" data-highlight="你" data-points="你:2,2"></div>';
+    initViz(document);
+    const r = document.querySelector(".xxd-radar");
+    expect(r.querySelector(".xxd-radar__plot").getAttribute("role")).toBe("img");
+    expect(r.querySelector(".xxd-radar__plot").getAttribute("aria-label")).toBe("现实型 8，研究型 6，艺术型 2");
+    expect([...r.querySelectorAll(".xxd-radar__axis")].map((li) => li.textContent)).toEqual(["现实型8平均 5", "研究型6平均 5", "艺术型2平均 5"]);
+    expect(r.querySelectorAll(".xxd-radar__dot")).toHaveLength(6);
+    expect(r.hasAttribute("data-emphasis")).toBe(true);
+    const q = document.querySelector(".xxd-quadrant");
+    expect(q.querySelector("[data-current]").textContent).toBe("安全型");
+    expect(q.querySelector(".xxd-quadrant__plot").getAttribute("aria-label")).toBe("你：焦虑 2，回避 2，在「安全型」");
+    expect(q.querySelector(".xxd-quadrant__point").style.getPropertyValue("--x")).toBe("0.167");
   });
 
   it("迷你柱：0 不画、柱从底边长", () => {

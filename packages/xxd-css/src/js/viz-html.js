@@ -85,6 +85,29 @@ export const VIZ_HTML = {
       .join("");
     return { attrs: {}, html: `${key}<ol class="xxd-dumbbell__list">${rows}</ol>` };
   },
+  radar(m) {
+    const attrs = { "data-emphasis": m.emphasis ? "" : null };
+    if (m.empty) return { attrs, html: emptyHtml(m.empty) };
+    const sw = (kind, text) => (text ? `<span><span class="xxd-radar__swatch" data-kind="${kind}"></span>${esc(text)}</span>` : "");
+    const key = m.key ? `<p class="xxd-radar__key" aria-hidden="true">${sw("value", m.key.value)}${sw("compare", m.key.compare)}</p>` : "";
+    const svg = `<svg class="xxd-radar__svg" viewBox="-1 -1 2 2" aria-hidden="true">${m.rings.map((p) => `<polygon class="xxd-radar__ring" points="${p}"></polygon>`).join("")}<path class="xxd-radar__spokes" d="${m.spokes}"></path>${m.compareArea ? `<polygon class="xxd-radar__compare" points="${m.compareArea}"></polygon>` : ""}<polygon class="xxd-radar__area" points="${m.area}"></polygon></svg>`;
+    const dots = m.axes.map((a) => `${a.cx != null ? `<span class="xxd-radar__dot" data-kind="compare" style="left:${a.cx}%;top:${a.cy}%"></span>` : ""}<span class="xxd-radar__dot" style="left:${a.x}%;top:${a.y}%"></span>`).join("");
+    const axes = m.axes
+      .map((a) => `<li class="xxd-radar__axis" data-side="${a.side}" data-edge="${a.edge}"${a.highlight ? " data-highlight" : ""} style="left:${a.lx}%;top:${a.ly}%"><span class="xxd-radar__label">${esc(a.label)}</span><span class="xxd-radar__value">${esc(a.text)}${a.compareText ? `<span class="xxd-radar__note">${esc(a.compareText)}</span>` : ""}</span></li>`)
+      .join("");
+    return { attrs, html: `${key}<div class="xxd-radar__plot" role="img" aria-label="${esc(m.label)}"><div class="xxd-radar__chart">${svg}${dots}<ul class="xxd-radar__axes">${axes}</ul></div></div>` };
+  },
+  quadrant(m) {
+    const attrs = { "data-emphasis": m.emphasis ? "" : null };
+    if (m.empty) return { attrs, html: emptyHtml(m.empty) };
+    const cells = m.cells.map((c) => `<span class="xxd-quadrant__cell" data-cell="${c.key}"${c.current ? " data-current" : ""}>${c.name ? `<span class="xxd-quadrant__name">${esc(c.name)}</span>` : ""}</span>`).join("");
+    const end = (k, text) => (text ? `<span class="xxd-quadrant__end" data-end="${k}">${esc(text)}</span>` : "");
+    const ends = end("x-low", m.x.low) + end("x-high", m.x.high) + end("y-high", m.y.high) + end("y-low", m.y.low);
+    // 点靠右时名字写在左边，不出框
+    const points = m.points.map((p) => `<li class="xxd-quadrant__point"${p.highlight ? " data-highlight" : ""}${p.fx > 0.7 ? " data-flip" : ""} style="--x:${p.fx};--y:${p.fy}"><span class="xxd-quadrant__dot"></span><span class="xxd-quadrant__label">${esc(p.label)}</span></li>`).join("");
+    const caption = m.caption ? `<p class="xxd-quadrant__caption">${esc(m.caption)}</p>` : "";
+    return { attrs, html: `<div class="xxd-quadrant__plot" role="img" aria-label="${esc(m.label)}" style="--cx:${m.cut.x};--cy:${m.cut.y}"><div class="xxd-quadrant__cells">${cells}</div>${ends}<ol class="xxd-quadrant__points">${points}</ol></div>${caption}` };
+  },
 };
 
 /** 量表的 HTML（除了根元素本身）：表盘（SVG + 指针 + 中间的字）、两端的刻度数、图例。React 版渲染同一个结构。 */

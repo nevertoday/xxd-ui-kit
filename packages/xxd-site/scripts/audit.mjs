@@ -924,7 +924,7 @@ async function statesAudit() {
  *   · 硬裁（被裁掉又没有省略号）、竖着裁、字压字（看得见的部分，被上面不透明的东西盖住的不算）、挤成一字一行；
  *   · 省略号只给标签：内容（标题、状态、数字、图表的类别名）被截就是错；原文里的数字被截也是错；
  *   · 省略号悬停后要能看到全文（xxd.js 自动加的提示，或者作者写的 title / data-tooltip）。 */
-const TRUNC_CONTENT = ".xxd-card__title, .xxd-list__title, .xxd-panel__title, .xxd-dialog__title, .xxd-sheet__title, .xxd-dock__status, .xxd-toast, .xxd-help, .xxd-error, .xxd-row__title, .xxd-row__desc, .xxd-stat__value, .xxd-gauge__value, .xxd-gauge__label, .xxd-gauge__state, .xxd-legend__name, .xxd-bars__label, .xxd-proportion__label, .xxd-dumbbell__label, .xxd-heatmap__readout, .xxd-plan__name, .xxd-plan__price";
+const TRUNC_CONTENT = ".xxd-card__title, .xxd-list__title, .xxd-panel__title, .xxd-dialog__title, .xxd-sheet__title, .xxd-dock__status, .xxd-toast, .xxd-help, .xxd-error, .xxd-row__title, .xxd-row__desc, .xxd-stat__value, .xxd-gauge__value, .xxd-gauge__label, .xxd-gauge__state, .xxd-legend__name, .xxd-bars__label, .xxd-proportion__label, .xxd-dumbbell__label, .xxd-radar__label, .xxd-quadrant__name, .xxd-quadrant__label, .xxd-heatmap__readout, .xxd-plan__name, .xxd-plan__price";
 // 头像只放一两个字，长字只显示开头是它的样子；符号格一格一个字形
 const TRUNC_EXEMPT = ".xxd-avatar, .xxd-glyphs";
 function truncProbe({ scope, content, exempt }) {
@@ -1299,7 +1299,7 @@ async function darkAudit() {
     return { ctx, tab };
   };
   // 1. 切换 ↔ 直接打开
-  const scripted = pages.filter((p) => /^\/(components\/(chart|gauge|bars|proportion|waffle|heatmap|dumbbell|stat|progress|appearance|code)|foundations\/colors)\/$/.test(p));
+  const scripted = pages.filter((p) => /^\/(components\/(chart|gauge|bars|proportion|waffle|heatmap|dumbbell|radar|quadrant|stat|progress|appearance|code)|foundations\/colors)\/$/.test(p));
   for (const page of scripted) {
     const a = await open("light", page, () => XxdTheme.set({ theme: "dark" }));
     const A = await a.tab.evaluate(darkPrint, "main");

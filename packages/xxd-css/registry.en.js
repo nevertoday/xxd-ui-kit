@@ -1357,4 +1357,39 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     js: `Xxd.viz(el, "dumbbell", [{ label: "First post", from: 14, to: 6 }], { unit: "min", fromLabel: "Before", toLabel: "After" })
 // React: <Dumbbell rows={[…]} unit="min" fromLabel="Before" toLabel="After" />`,
   },
+  Radar: {
+    title: "Radar",
+    summary: "A profile whose axis order means something (3–12 axes, typically the Holland hexagon): hairline rings, your area outlined in the accent with an 8% solid fill, the comparison dashed and hollow; names and numbers are HTML text at the end of each axis.",
+    attributes: {
+      "data-viz=\"radar\" + data-items": "Declarative: \"name:value;…\", a comparison as \"name:value/compare\" (needs viz.js); axes run clockwise from the top in order",
+      "data-min / data-max / data-levels": "Range (default 0 to the rounded maximum); number of rings (default 4)",
+      "data-highlight": "Axis names to emphasise (the name turns ink)",
+      "data-value-label / data-compare-label": "The two names in the key when there is a comparison",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:var(--space-6);width:100%;max-width:520px">
+  <div class="xxd-radar" data-viz="radar" data-max="40" data-value-label="You" data-compare-label="Average" data-highlight="Investigative" data-items="Realistic:18/22;Investigative:34/24;Artistic:28/23;Social:20/26;Enterprising:12/21;Conventional:9/20"></div>
+</div>`,
+    rules: ["Only for data whose axis order means something: the six Holland types (neighbours are more alike), compass directions; use bars for independent dimensions — reorder the axes and the area changes, so area is not data", "3–8 axes; at most two shapes (yours plus one comparison)", "The area is the accent at 8% solid, no gradient; rings are hairlines, the outer ring is a structure line", "§14"],
+    a11y: ["The chart is role=img with a one-sentence aria-label: each axis name and value", "Yours and the comparison are not color alone: solid line and dots versus dashed and hollow, with a key above"],
+    js: `Xxd.viz(el, "radar", [{ label: "Realistic", value: 18, compare: 22 }, …], { max: 40, valueLabel: "You", compareLabel: "Average" })
+// React: <Radar axes={[…]} max={40} valueLabel="You" compareLabel="Average" />`,
+  },
+  Quadrant: {
+    title: "Quadrant",
+    summary: "Two dimensions, each cut once, make four cells: one outer frame, structure lines for the cuts, cell names in the outer corners and the ends' names where the cuts meet the frame; points are HTML, the highlighted one solid accent, the rest hollow.",
+    attributes: {
+      "data-viz=\"quadrant\" + data-points": "Declarative: \"name:x,y;…\" (needs viz.js)",
+      "data-x / data-y": "Names of the two axes (written below as \"Across: …, Up: …\")",
+      "data-x-min / -max / -cut / -low / -high (same for y)": "Range, cut point (default the middle; a value on the cut counts as high) and the names of the two ends",
+      "data-names": "Names of the four cells: top left, top right, bottom left, bottom right",
+      "data-highlight": "The highlighted point (solid accent); its cell is the current cell",
+    },
+    markup: `<div class="xxd-stack" style="--stack-gap:var(--space-6);width:100%;max-width:420px">
+  <div class="xxd-quadrant" data-viz="quadrant" data-x="Attachment anxiety" data-x-min="1" data-x-max="7" data-x-cut="4" data-x-low="Unworried" data-x-high="Worried" data-y="Attachment avoidance" data-y-min="1" data-y-max="7" data-y-cut="4" data-y-low="Close" data-y-high="Distant" data-names="Avoidant,Fearful,Secure,Anxious" data-highlight="You" data-points="You:4.6,2.4;Average:3.6,3.1"></div>
+</div>`,
+    rules: ["Use it for two continuous dimensions that each have a justified cut point (attachment anxiety × avoidance); without cut points, don't draw cells", "≤ 8 points; names sit beside the dot, on the left when the dot is near the right edge", "The current cell gets the selected background plus a 1.5px accent line (a ≥ 3:1 marker), never bold", "§14"],
+    a11y: ["The chart is role=img; its aria-label gives each point's two values and its cell", "The current cell is not background alone: it also has an accent outline; the highlighted point is solid, the rest hollow"],
+    js: `Xxd.viz(el, "quadrant", [{ label: "You", x: 4.6, y: 2.4, highlight: true }], { x: { label: "Attachment anxiety", min: 1, max: 7, cut: 4 }, y: { label: "Attachment avoidance", min: 1, max: 7, cut: 4 }, names: { "low-low": "Secure", … } })
+// React: <Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />`,
+  },
 };

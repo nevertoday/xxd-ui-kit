@@ -1,6 +1,7 @@
 // 小小东独有的 React 组件（优化计划 O5）：Kumo 没有的，直接渲染 @xxd/css 的类名和属性。
 // 需要同时引入 @xxd/css 的样式：import "@xxd/react/xxd.css"。
 import {
+  Fragment,
   forwardRef,
   useCallback,
   useEffect,
@@ -17,7 +18,7 @@ import {
 } from "react";
 import { Icon } from "@xxd/icons/react";
 import { ACCENT_PRESETS } from "@xxd/tokens";
-import { barsModel, calendarModel, dumbbellModel, gaugeModel, matrixModel, proportionModel, waffleModel } from "@xxd/css/viz";
+import { barsModel, calendarModel, dumbbellModel, gaugeModel, matrixModel, proportionModel, quadrantModel, radarModel, waffleModel } from "@xxd/css/viz";
 import { useXxdAppearance } from "./appearance";
 import { useXxdLocale } from "./locale";
 
@@ -964,6 +965,157 @@ export function Dumbbell({
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+/** 雷达图：轴的顺序有意义的轮廓（霍兰德六边形）；几个独立的维度用 Bars */
+export function Radar({
+  axes,
+  min,
+  max,
+  levels,
+  valueLabel,
+  compareLabel,
+  label,
+  className,
+  ...text
+}: {
+  /** 按顺序从正上方顺时针排（3–12 根） */
+  axes: readonly { label: string; value: number; compare?: number | null; highlight?: boolean }[];
+  min?: number;
+  max?: number;
+  /** 几圈网格（缺省 4） */
+  levels?: number;
+  /** 有对照时图例的两个名字 */
+  valueLabel?: string;
+  compareLabel?: string;
+  /** 读屏那句话的开头 */
+  label?: string;
+  unit?: string;
+  decimals?: number;
+  compact?: boolean;
+  format?: (n: number) => string;
+  className?: string;
+}) {
+  const { locale } = useXxdLocale();
+  const m = radarModel(axes, { ...(text as VizText), min, max, levels, valueLabel, compareLabel, label, locale });
+  if (m.empty)
+    return (
+      <div className={cx("xxd-radar", className)}>
+        <Empty text={m.empty} />
+      </div>
+    );
+  return (
+    <div className={cx("xxd-radar", className)} data-emphasis={flag(m.emphasis)}>
+      {m.key && (
+        <p className="xxd-radar__key" aria-hidden="true">
+          {m.key.value && (
+            <span>
+              <span className="xxd-radar__swatch" data-kind="value" />
+              {m.key.value}
+            </span>
+          )}
+          {m.key.compare && (
+            <span>
+              <span className="xxd-radar__swatch" data-kind="compare" />
+              {m.key.compare}
+            </span>
+          )}
+        </p>
+      )}
+      <div className="xxd-radar__plot" role="img" aria-label={m.label}>
+        <div className="xxd-radar__chart">
+          <svg className="xxd-radar__svg" viewBox="-1 -1 2 2" aria-hidden="true">
+            {m.rings.map((p, i) => (
+              <polygon key={i} className="xxd-radar__ring" points={p} />
+            ))}
+            <path className="xxd-radar__spokes" d={m.spokes} />
+            {m.compareArea && <polygon className="xxd-radar__compare" points={m.compareArea} />}
+            <polygon className="xxd-radar__area" points={m.area} />
+          </svg>
+          {m.axes.map((a, i) => (
+            <Fragment key={i}>
+              {a.cx != null && <span className="xxd-radar__dot" data-kind="compare" style={{ left: `${a.cx}%`, top: `${a.cy}%` }} />}
+              <span className="xxd-radar__dot" style={{ left: `${a.x}%`, top: `${a.y}%` }} />
+            </Fragment>
+          ))}
+          <ul className="xxd-radar__axes">
+            {m.axes.map((a, i) => (
+              <li key={i} className="xxd-radar__axis" data-side={a.side} data-edge={a.edge} data-highlight={flag(a.highlight)} style={{ left: `${a.lx}%`, top: `${a.ly}%` }}>
+                <span className="xxd-radar__label">{a.label}</span>
+                <span className="xxd-radar__value">
+                  {a.text}
+                  {a.compareText && <span className="xxd-radar__note">{a.compareText}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type QuadrantAxis = { label?: string; min?: number; max?: number; cut?: number; low?: string; high?: string };
+
+/** 四象限：两个维度各切一刀，看点落在哪一格 */
+export function Quadrant({
+  points,
+  x,
+  y,
+  names,
+  label,
+  className,
+  ...text
+}: {
+  points: readonly { label: string; x: number; y: number; highlight?: boolean }[];
+  /** 横轴：名字、范围、切分点（缺省在中间，等于切分点算高）、两端的名字 */
+  x?: QuadrantAxis;
+  /** 竖轴：同上 */
+  y?: QuadrantAxis;
+  /** 四格的名字，键是「x 的高低-y 的高低」 */
+  names?: Partial<Record<"low-high" | "high-high" | "low-low" | "high-low", string>>;
+  label?: string;
+  unit?: string;
+  decimals?: number;
+  compact?: boolean;
+  format?: (n: number) => string;
+  className?: string;
+}) {
+  const { locale } = useXxdLocale();
+  const m = quadrantModel(points, { ...(text as VizText), x, y, names, label, locale });
+  if (m.empty)
+    return (
+      <div className={cx("xxd-quadrant", className)}>
+        <Empty text={m.empty} />
+      </div>
+    );
+  const end = (k: string, t: string) => t && <span className="xxd-quadrant__end" data-end={k}>{t}</span>;
+  return (
+    <div className={cx("xxd-quadrant", className)} data-emphasis={flag(m.emphasis)}>
+      <div className="xxd-quadrant__plot" role="img" aria-label={m.label} style={{ "--cx": m.cut.x, "--cy": m.cut.y } as CSSProperties}>
+        <div className="xxd-quadrant__cells">
+          {m.cells.map((c) => (
+            <span key={c.key} className="xxd-quadrant__cell" data-cell={c.key} data-current={flag(c.current)}>
+              {c.name && <span className="xxd-quadrant__name">{c.name}</span>}
+            </span>
+          ))}
+        </div>
+        {end("x-low", m.x.low)}
+        {end("x-high", m.x.high)}
+        {end("y-high", m.y.high)}
+        {end("y-low", m.y.low)}
+        <ol className="xxd-quadrant__points">
+          {m.points.map((p, i) => (
+            <li key={i} className="xxd-quadrant__point" data-highlight={flag(p.highlight)} data-flip={flag(p.fx > 0.7)} style={{ "--x": p.fx, "--y": p.fy } as CSSProperties}>
+              <span className="xxd-quadrant__dot" />
+              <span className="xxd-quadrant__label">{p.label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      {m.caption && <p className="xxd-quadrant__caption">{m.caption}</p>}
     </div>
   );
 }
