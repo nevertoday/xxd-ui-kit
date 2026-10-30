@@ -1584,10 +1584,10 @@ async function diagramAudit() {
     const node = (b, t, d) => `<div class="xxd-${b}__node">${t}${d ? `<span class="xxd-${b}__desc">${d}</span>` : ""}</div>`;
     const fstep = (t, d) => `<li class="xxd-flowchart__step">${node("flowchart", t, d)}</li>`;
     S.flow3 = `<ol class="xxd-flowchart">${fstep("打开一个特别长名字的插件，看看会不会折行")}<li class="xxd-flowchart__step">${node("flowchart", "上传的图片多大？")}<ul class="xxd-flowchart__branches" data-merge>${[
-      ["小于 5 MB", [["直接上传"]]],
-      ["5 到 20 MB 之间的图片", [["先压缩", "长边 2000px"], ["Internationalization"]]],
-      ["大于 20 MB", [["提示换一张"]]],
-    ].map(([l, st]) => `<li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">${l}</span><ol class="xxd-flowchart__path">${st.map(([t, d]) => fstep(t, d)).join("")}</ol></li>`).join("")}</ul></li>${fstep("生成封面")}</ol>`;
+      { l: "小于 5 MB", st: [["直接上传"]] },
+      { l: "5 到 20 MB 之间的图片", st: [["先压缩", "长边 2000px"], ["Internationalization"]] },
+      { l: "大于 20 MB", st: [["提示换一张"]] },
+    ].map(({ l, st }) => `<li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">${l}</span><ol class="xxd-flowchart__path">${st.map(([t, d]) => fstep(t, d)).join("")}</ol></li>`).join("")}</ul></li>${fstep("生成封面")}</ol>`;
     S.flowEnd = `<ol class="xxd-flowchart">${fstep("开始")}<li class="xxd-flowchart__step">${node("flowchart", "选哪个？")}<ul class="xxd-flowchart__branches"><li class="xxd-flowchart__branch" data-highlight><span class="xxd-flowchart__label">甲</span><ol class="xxd-flowchart__path">${fstep("走甲")}</ol></li><li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">乙</span><ol class="xxd-flowchart__path">${fstep("走乙")}${fstep("再走一步")}</ol></li></ul></li></ol>`;
     const titem = (t, kids) => `<li class="xxd-tree__item"><span class="xxd-tree__node">${t}</span>${kids ? `<ul class="xxd-tree__group">${kids.join("")}</ul>` : ""}</li>`;
     S.tree2 = `<ul class="xxd-tree">${titem("一个很长很长的根节点名字", ["Internationalization", "二", "三个字", "第四个分类的名字比较长"].map((t) => titem(t)))}</ul>`;
