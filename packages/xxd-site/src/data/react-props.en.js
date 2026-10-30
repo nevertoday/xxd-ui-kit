@@ -81,4 +81,17 @@ export const REACT_PROPS_EN = {
     y: "Vertical axis: the same",
     names: 'Names of the four cells, keyed "x high/low-y high/low"',
   },
+  Flowchart: {
+    steps: "The main line: title, description, highlight; a decision step has branches (label, steps, highlight) and merge (the branches join again)",
+  },
+  Tree: {
+    items: "Nodes: label, description, highlight, children",
+    outline: "Indented outline (without it the layout follows depth and width)",
+  },
+  Cycle: {
+    steps: "3–6 steps: title, description, highlight",
+  },
+  Layers: {
+    items: "Top to bottom: title, description, highlight",
+  },
 };

@@ -28,6 +28,7 @@ export const LABELS = {
     step: (n: number, total: number) => `第 ${n} 步，共 ${total} 步`,
     stepDone: "（已完成）",
     stepCurrent: "（当前）",
+    cycleBack: "（然后回到第 1 步）",
     count: (n: number, max: number) => `${n} / ${max}`,
   },
   en: {
@@ -56,6 +57,7 @@ export const LABELS = {
     step: (n: number, total: number) => `Step ${n} of ${total}`,
     stepDone: " (done)",
     stepCurrent: " (current)",
+    cycleBack: " (then back to step 1)",
     count: (n: number, max: number) => `${n} / ${max}`,
   },
 };

@@ -1581,6 +1581,20 @@ async function diagramAudit() {
         ["预计 12月", "也还没发生", " data-upcoming"],
       ].map(([t, h, a]) => `<li class="xxd-timeline__item"${a}><span class="xxd-timeline__time">${t}</span><div class="xxd-timeline__body"><p class="xxd-timeline__title">${h}</p><p class="xxd-timeline__text">一两行说明，长的时候折行。</p></div></li>`).join("")}</ol>`,
     };
+    const node = (b, t, d) => `<div class="xxd-${b}__node">${t}${d ? `<span class="xxd-${b}__desc">${d}</span>` : ""}</div>`;
+    const fstep = (t, d) => `<li class="xxd-flowchart__step">${node("flowchart", t, d)}</li>`;
+    S.flow3 = `<ol class="xxd-flowchart">${fstep("打开一个特别长名字的插件，看看会不会折行")}<li class="xxd-flowchart__step">${node("flowchart", "上传的图片多大？")}<ul class="xxd-flowchart__branches" data-merge>${[
+      ["小于 5 MB", [["直接上传"]]],
+      ["5 到 20 MB 之间的图片", [["先压缩", "长边 2000px"], ["Internationalization"]]],
+      ["大于 20 MB", [["提示换一张"]]],
+    ].map(([l, st]) => `<li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">${l}</span><ol class="xxd-flowchart__path">${st.map(([t, d]) => fstep(t, d)).join("")}</ol></li>`).join("")}</ul></li>${fstep("生成封面")}</ol>`;
+    S.flowEnd = `<ol class="xxd-flowchart">${fstep("开始")}<li class="xxd-flowchart__step">${node("flowchart", "选哪个？")}<ul class="xxd-flowchart__branches"><li class="xxd-flowchart__branch" data-highlight><span class="xxd-flowchart__label">甲</span><ol class="xxd-flowchart__path">${fstep("走甲")}</ol></li><li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">乙</span><ol class="xxd-flowchart__path">${fstep("走乙")}${fstep("再走一步")}</ol></li></ul></li></ol>`;
+    const titem = (t, kids) => `<li class="xxd-tree__item"><span class="xxd-tree__node">${t}</span>${kids ? `<ul class="xxd-tree__group">${kids.join("")}</ul>` : ""}</li>`;
+    S.tree2 = `<ul class="xxd-tree">${titem("一个很长很长的根节点名字", ["Internationalization", "二", "三个字", "第四个分类的名字比较长"].map((t) => titem(t)))}</ul>`;
+    S.tree3 = `<ul class="xxd-tree">${titem("根", [titem("一", [titem("甲"), titem("乙很长很长很长很长很长很长很长很长很长的名字")]), titem("二"), titem("三", [titem("丙")])])}</ul>`;
+    S.cycle6 = `<ol class="xxd-cycle">${["找参考", "写提示词", "Internationalization", "出图", "挑一张改一改再改", "发出去"].map((t, i, a) => `<li class="xxd-cycle__item">${node("cycle", t + (i === a.length - 1 ? '<span class="xxd-sr-only">（然后回到第 1 步）</span>' : ""))}</li>`).join("")}</ol>`;
+    S.cycle3v = `<ol class="xxd-cycle" data-vertical>${["写", "发", "复盘"].map((t, i, a) => `<li class="xxd-cycle__item">${node("cycle", t + (i === a.length - 1 ? '<span class="xxd-sr-only">（然后回到第 1 步）</span>' : ""), i === 1 ? "说明可能有两行那么长的一句话，放不下就折行" : "")}</li>`).join("")}</ol>`;
+    S.layers = `<ol class="xxd-layers">${["页面", "模式", "Internationalization", "令牌"].map((t, i) => `<li class="xxd-layers__item"${i === 2 ? " data-highlight" : ""}><span class="xxd-layers__title">${t}</span><span class="xxd-layers__desc">一句说明，长的时候折行，不省略也不伸出去</span></li>`).join("")}</ol>`;
     const box = document.createElement("div");
     box.id = "audit-diagrams";
     document.querySelector("main").append(box);
@@ -1685,6 +1699,130 @@ async function diagramAudit() {
     }
     return out;
   };
+  // 流程图、树、循环、分层：线都是伪元素的边框。把每条边拆成线段，量两头有没有接上（节点的边、别的线、箭头），
+  // 有没有穿过不相干的节点（diagram-design 的连线规则 5），有没有压住字；再看宽窄的排法对不对
+  const inspect2 = () => {
+    const out = [];
+    const px = (v) => parseFloat(v) || 0;
+    const forced = matchMedia("(forced-colors: active)").matches;
+    const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+    const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const ratio = (a, b) => { const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+    const Canvas = (() => { const p = document.createElement("span"); p.style.cssText = "color:Canvas;forced-color-adjust:none"; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; })();
+    const name = (el) => el.closest("[data-audit]")?.dataset.audit ?? el.closest("[id]")?.id ?? el.className;
+    // 一个元素的 ::before / ::after（或元素自己）的边 → 线段；转过的方块是箭头
+    const parts = (el, which) => {
+      const cs = getComputedStyle(el, which);
+      if (which && (cs.content === "none" || cs.content === "normal" || cs.display === "none" || cs.visibility === "hidden")) return null;
+      let L, T, W, H;
+      if (!which) {
+        const r = el.getBoundingClientRect();
+        [L, T, W, H] = [r.left, r.top, r.width, r.height];
+      } else if (cs.position === "absolute") {
+        const r = el.getBoundingClientRect();
+        W = px(cs.width) + px(cs.borderLeftWidth) + px(cs.borderRightWidth) + px(cs.paddingLeft) + px(cs.paddingRight);
+        H = px(cs.height) + px(cs.borderTopWidth) + px(cs.borderBottomWidth) + px(cs.paddingTop) + px(cs.paddingBottom);
+        if (cs.boxSizing === "border-box") { W = px(cs.width); H = px(cs.height); }
+        L = r.left + px(getComputedStyle(el).borderLeftWidth) + px(cs.left);
+        T = r.top + px(getComputedStyle(el).borderTopWidth) + px(cs.top);
+      } else {
+        // 文档流里的伪元素（合拢时撑满的那根线）：在最后一个子元素下面
+        const r = el.getBoundingClientRect();
+        const last = el.lastElementChild?.getBoundingClientRect();
+        W = px(cs.width) + px(cs.borderLeftWidth) + px(cs.borderRightWidth);
+        H = px(cs.height) + px(cs.borderTopWidth) + px(cs.borderBottomWidth);
+        L = r.left + px(getComputedStyle(el).paddingLeft) + px(cs.marginLeft);
+        T = (last ? last.bottom : r.top) + px(cs.marginTop);
+      }
+      if (cs.transform !== "none") return { arrow: { x: L + W / 2, y: T + H / 2 }, color: cs.borderTopColor };
+      const segs = [];
+      const side = (k, x1, y1, x2, y2) => { if (px(cs[`border${k}Width`]) > 0 && cs[`border${k}Style`] !== "none") segs.push({ x1, y1, x2, y2, w: px(cs[`border${k}Width`]), color: cs[`border${k}Color`], el, which }); };
+      // 量线的中线（1px 的线中线在边往里 0.5px）
+      const bw = (k) => px(cs[`border${k}Width`]) / 2;
+      side("Top", L, T + bw("Top"), L + W, T + bw("Top"));
+      side("Bottom", L, T + H - bw("Bottom"), L + W, T + H - bw("Bottom"));
+      side("Left", L + bw("Left"), T, L + bw("Left"), T + H);
+      side("Right", L + W - bw("Right"), T, L + W - bw("Right"), T + H);
+      return { segs };
+    };
+    const ptRect = (x, y, r) => Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
+    const ptSeg = (x, y, s) => { const dx = s.x2 - s.x1, dy = s.y2 - s.y1, l = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((x - s.x1) * dx + (y - s.y1) * dy) / l)); return Math.hypot(x - s.x1 - t * dx, y - s.y1 - t * dy); };
+    const roots = "main .xxd-flowchart, main .xxd-tree, main .xxd-cycle, main .xxd-layers";
+    for (const d of document.querySelectorAll(roots)) {
+      if (!d.getClientRects().length) continue;
+      const k = name(d);
+      const box = d.getBoundingClientRect();
+      if (!/^(OL|UL)$/.test(d.tagName) || [...d.querySelectorAll("ol, ul")].some((l) => [...l.children].some((c) => c.tagName !== "LI")) || [...d.children].some((c) => c.tagName !== "LI")) out.push(`${k} 不是列表（读屏要念成列表）`);
+      if (d.scrollWidth > d.clientWidth + 1) out.push(`${k} 横向溢出（${d.scrollWidth} > ${d.clientWidth}）`);
+      for (const el of d.querySelectorAll("*")) {
+        const r = el.getBoundingClientRect();
+        if (r.width && !el.matches(".xxd-sr-only") && (r.left < box.left - 1 || r.right > box.right + 1)) { out.push(`${k} 有东西伸出图外：${el.className || el.tagName}`); break; }
+      }
+      const nodes = [...d.querySelectorAll(".xxd-flowchart__node, .xxd-tree__node, .xxd-cycle__node")].map((n) => n.getBoundingClientRect());
+      const texts = [...d.querySelectorAll(".xxd-flowchart__label, .xxd-flowchart__node, .xxd-tree__node, .xxd-cycle__node")].flatMap((t) => { const rg = document.createRange(); rg.selectNodeContents(t); return [...rg.getClientRects()]; });
+      // 没有框的字（分支名、大纲里的一项）：线指着它，留一点空
+      const words = [...d.querySelectorAll(".xxd-flowchart__label, .xxd-tree__node")].filter((n) => !px(getComputedStyle(n).borderTopWidth)).map((n) => n.getBoundingClientRect());
+      const segs = [], arrows = [];
+      const els = d.classList.contains("xxd-layers") ? [] : [d, ...d.querySelectorAll("*")];
+      for (const el of els) for (const which of ["::before", "::after"]) {
+        const p = parts(el, which);
+        if (!p) continue;
+        if (p.arrow) arrows.push(p.arrow);
+        else segs.push(...p.segs);
+      }
+      for (const lab of d.querySelectorAll(".xxd-flowchart__label")) segs.push(...parts(lab, null).segs);
+      const lines = segs.filter((s) => Math.hypot(s.x2 - s.x1, s.y2 - s.y1) > 1);
+      let bad = 0;
+      for (const s of lines) {
+        for (const [x, y] of [[s.x1, s.y1], [s.x2, s.y2]]) {
+          // 接上：碰到节点的边、别的线、箭头；指向一段字（分支名、大纲里的一项）时留 4px 空也算
+          const ok = nodes.some((r) => ptRect(x, y, r) <= 2) || lines.some((o) => o !== s && ptSeg(x, y, o) <= 2) || arrows.some((a) => Math.hypot(a.x - x, a.y - y) <= 8) || words.some((r) => ptRect(x, y, r) <= 6);
+          if (!ok && bad++ < 2) out.push(`${k} 有一根线的一头没接上（${s.el.className.split(" ")[0]}${s.which}，在 ${Math.round(x - box.left)},${Math.round(y - box.top)}）`);
+        }
+        // 穿过不相干的节点：线段的中点在某个节点里面（缩进 3px）
+        const mx = (s.x1 + s.x2) / 2, my = (s.y1 + s.y2) / 2;
+        if (nodes.some((r) => mx > r.left + 3 && mx < r.right - 3 && my > r.top + 3 && my < r.bottom - 3) && bad++ < 2) out.push(`${k} 有一根线穿过节点`);
+        if (texts.some((t) => Math.min(Math.max(s.x1, s.x2) + s.w / 2, t.right) - Math.max(Math.min(s.x1, s.x2) - s.w / 2, t.left) > 0.5 && Math.min(Math.max(s.y1, s.y2) + s.w / 2, t.bottom) - Math.max(Math.min(s.y1, s.y2) - s.w / 2, t.top) > 0.5) && bad++ < 2) out.push(`${k} 有一根线压住了字`);
+        if (forced && ratio(s.color, Canvas) < 3 && bad++ < 2) out.push(`${k} 高对比模式下线和底色只有 ${ratio(s.color, Canvas).toFixed(2)}:1`);
+      }
+      // 箭头的尖指着一个节点（离节点 ≤ 8px）
+      for (const a of arrows) if (!nodes.some((r) => ptRect(a.x, a.y, r) <= 8) && bad++ < 2) out.push(`${k} 有一个箭头没指着节点`);
+      const w = box.width;
+      if (d.matches(".xxd-flowchart")) {
+        for (const ul of d.querySelectorAll(".xxd-flowchart__branches")) {
+          const b = [...ul.children].map((c) => c.getBoundingClientRect());
+          const across = b.length > 1 && Math.abs(b[0].top - b[1].top) < 1;
+          if (w >= 480 && !across) out.push(`${k} 宽 ${Math.round(w)}px 分支还是上下排`);
+          if (w < 480 && across) out.push(`${k} 宽 ${Math.round(w)}px 放不下并排的分支，没有上下排`);
+          if (ul.children.length > 3) out.push(`${k} 一个判断有 ${ul.children.length} 条分支（最多 3 条）`);
+          if (!ul.hasAttribute("data-merge") && ul.closest(".xxd-flowchart__step").nextElementSibling) out.push(`${k} 分支没合拢，后面还接着步骤（接不上）`);
+        }
+      }
+      if (d.matches(".xxd-tree")) {
+        const deep = !!d.querySelector(".xxd-tree__group .xxd-tree__group");
+        const want = d.hasAttribute("data-outline") || deep || w < 480 ? "大纲" : "组织图";
+        const g = d.querySelector(".xxd-tree__group");
+        const b = g ? [...g.children].map((c) => c.getBoundingClientRect()) : [];
+        const got = b.length > 1 && Math.abs(b[0].top - b[1].top) < 1 ? "组织图" : "大纲";
+        if (b.length > 1 && got !== want) out.push(`${k} 宽 ${Math.round(w)}px${deep ? "、三层" : ""}应该是${want}，画成了${got}`);
+      }
+      if (d.matches(".xxd-cycle")) {
+        const items = [...d.children];
+        if (items.length < 3 || items.length > 6) out.push(`${k} 有 ${items.length} 步（循环要 3–6 步）`);
+        if (!items.at(-1)?.querySelector(".xxd-sr-only")) out.push(`${k} 最后一步没有给读屏的「然后回到第 1 步」`);
+        const row = items.length > 1 && Math.abs(items[0].getBoundingClientRect().top - items[1].getBoundingClientRect().top) < 1;
+        if (!d.hasAttribute("data-vertical") && w >= 480 && !row) out.push(`${k} 宽 ${Math.round(w)}px 还是一步一行`);
+        if ((d.hasAttribute("data-vertical") || w < 480) && row) out.push(`${k} 宽 ${Math.round(w)}px 放不下一排，没有一步一行`);
+      }
+      if (d.matches(".xxd-layers")) {
+        for (const li of d.querySelectorAll("[data-highlight]")) if (getComputedStyle(li).outlineStyle === "none") out.push(`${k} 重点那一层没有记号（只靠底色）`);
+        const it = d.querySelector(".xxd-layers__item");
+        const [t, ds] = [it.querySelector(".xxd-layers__title"), it.querySelector(".xxd-layers__desc")].map((e) => e?.getBoundingClientRect());
+        if (t && ds && w < 360 && ds.top < t.bottom - 1) out.push(`${k} 宽 ${Math.round(w)}px 名字和说明没有上下排`);
+      }
+    }
+    return out;
+  };
   const runs = [
     { id: "桌面", ctx: { viewport: { width: 1280, height: 900 } } },
     { id: "手机", ctx: { ...devices["iPhone 13"] } },
@@ -1695,7 +1833,7 @@ async function diagramAudit() {
   ];
   let count = 0;
   for (const run of runs) {
-    for (const page of ["/components/steps/", "/components/timeline/", "/en/components/steps/", "/en/components/timeline/"]) {
+    for (const page of ["steps", "timeline", "flowchart", "tree", "cycle", "layers"].flatMap((c) => [`/components/${c}/`, `/en/components/${c}/`])) {
       const ctx = await browser.newContext(run.ctx);
       const tab = await ctx.newPage();
       const errors = [];
@@ -1707,17 +1845,18 @@ async function diagramAudit() {
       if (run.print) {
         await tab.emulateMedia({ media: "print" });
         // 打印：做完的标记、重点的点是底色画的，要印出来
-        const bad = await tab.evaluate(() => [...document.querySelectorAll("main .xxd-steps, main .xxd-timeline")].filter((d) => d.getClientRects().length && getComputedStyle(d).printColorAdjust !== "exact").length);
+        const bad = await tab.evaluate(() => [...document.querySelectorAll("main .xxd-steps, main .xxd-timeline, main .xxd-flowchart, main .xxd-tree, main .xxd-cycle, main .xxd-layers")].filter((d) => d.getClientRects().length && getComputedStyle(d).printColorAdjust !== "exact").length);
         if (bad) fail("图解", `${run.id} ${page} ${bad} 个图打印时不印底色（做完的标记会变空）`);
       }
       await tab.waitForTimeout(200);
-      count += await tab.evaluate(() => document.querySelectorAll("main .xxd-steps, main .xxd-timeline").length);
+      count += await tab.evaluate(() => document.querySelectorAll("main .xxd-steps, main .xxd-timeline, main .xxd-flowchart, main .xxd-tree, main .xxd-cycle, main .xxd-layers").length);
       for (const x of await tab.evaluate(inspect)) fail("图解", `${run.id} ${page} ${x}`);
+      for (const x of await tab.evaluate(inspect2)) fail("图解", `${run.id} ${page} ${x}`);
       for (const e of errors) fail("图解", `${run.id} ${page} 脚本出错：${e}`);
       await ctx.close();
     }
   }
-  console.log(`图解：${runs.length} 种环境 × 步骤 / 时间线 × 中英，共量了 ${count} 张图（组件页的示例、React 演示 + 极端的 9 步长标题、英文长词、长时间、还没发生的 × 4 种宽）`);
+  console.log(`图解：${runs.length} 种环境 × 6 种图 × 中英，共量了 ${count} 张图（组件页的示例、React 演示 + 极端的：9 步长标题、长时间、三条分支长名字、不合拢的分支、四个子节点、三层、6 步循环、长说明 × 320 / 479 / 480 / 720 宽）`);
 }
 
 const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };

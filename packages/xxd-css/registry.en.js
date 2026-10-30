@@ -1480,4 +1480,107 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     use: ["Changelogs and version history", "Status history of orders, reviews and tickets"],
     avoid: ["Steps without times: use Steps", "Many records you search or filter: use a table (Table)"],
   },
+  Flowchart: {
+    title: "Flowchart",
+    summary: "Where the path splits: one main line from top to bottom, one decision in the middle splitting into 2–3 branches, each starting with its name, then joining again or ending on their own. Nodes are HTML, lines are borders, arrows point to the next step; when there is no room the branches stack and the trunk runs down the left.",
+    attributes: {
+      "data-merge": "On .xxd-flowchart__branches: the branches join again and continue to the next main step; without it each branch ends and the main line stops there",
+      "data-highlight": "On a node: emphasis (1.5px accent line, at most 1–2); on a branch: the path to follow (its lines and name in the accent)",
+    },
+    markup: `<ol class="xxd-flowchart" style="max-width:520px">
+  <li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Open the extension</div></li>
+  <li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Member?</div><ul class="xxd-flowchart__branches" data-merge><li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">Yes</span><ol class="xxd-flowchart__path"><li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Generate</div></li></ol></li><li class="xxd-flowchart__branch" data-highlight><span class="xxd-flowchart__label">No</span><ol class="xxd-flowchart__path"><li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Use a free try<span class="xxd-flowchart__desc">3 a day</span></div></li></ol></li></ul></li>
+  <li class="xxd-flowchart__step"><div class="xxd-flowchart__node" data-highlight>Download the cover</div></li>
+</ol>`,
+    rules: [
+      "Use it only when there is a decision with branches; a straight line is Steps",
+      "One level of branching, at most 3 branches and 9 nodes (DIAGRAM-PLAN D145). Split anything bigger into an overview plus detail, or use Kumo's Flow (React only, can be dragged)",
+      "Write the decision as a question (\"Member?\") and the branch names as answers (\"Yes\", \"No\"); short, wrapping rather than truncating (D146)",
+      "When branches do not join, the main line stops there: no more steps after it",
+      "At most 1–2 emphasised items: the path to take and the final result",
+      "§14 diagrams; DIAGRAM-PLAN",
+    ],
+    a11y: [
+      "Nested lists: the main line is an <ol>, branches are a <ul>, each branch starts with its name followed by an <ol> of steps, and screen readers read it in that order",
+      "Lines and arrows are pseudo-elements, not read out; emphasis is not color alone: lines and borders thicken to 1.5px",
+    ],
+    examples: [{ title: "Three branches that do not join", markup: `<ol class="xxd-flowchart" style="max-width:640px">
+  <li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Pick an image</div></li>
+  <li class="xxd-flowchart__step"><div class="xxd-flowchart__node">How big?</div><ul class="xxd-flowchart__branches"><li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">Under 5 MB</span><ol class="xxd-flowchart__path"><li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Upload</div></li></ol></li><li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">5–20 MB</span><ol class="xxd-flowchart__path"><li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Compress</div></li><li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Upload</div></li></ol></li><li class="xxd-flowchart__branch"><span class="xxd-flowchart__label">Over 20 MB</span><ol class="xxd-flowchart__path"><li class="xxd-flowchart__step"><div class="xxd-flowchart__node">Ask for another</div></li></ol></li></ul></li>
+</ol>` }],
+    use: ["\"If this, then that\" explanations: members and non-members, file sizes, review results", "Decision flows in help pages"],
+    avoid: ["No branches: use Steps", "Free-form graphs (dependencies, architecture): not a component (DIAGRAM-PLAN phase two)"],
+  },
+  Tree: {
+    title: "Tree",
+    summary: "One thing made of several: up to two levels on a wide enough container it is drawn top-down (an org chart) with one bar to the level below; three levels or a narrow container turn it into an indented outline with one vertical line and a short tick per item.",
+    attributes: {
+      "data-outline": "Indented outline (one vertical line, a tick per item); without it, up to two levels on containers ≥ 480px draw an org chart, and deeper or narrower trees turn into the outline by themselves",
+      "data-highlight": "On a node: emphasis (accent border in the org chart, accent text in the outline)",
+    },
+    markup: `<ul class="xxd-tree" style="max-width:640px">
+  <li class="xxd-tree__item"><span class="xxd-tree__node">XXD UI Kit</span><ul class="xxd-tree__group"><li class="xxd-tree__item"><span class="xxd-tree__node">@xxd/tokens<span class="xxd-tree__desc">Tokens</span></span></li><li class="xxd-tree__item"><span class="xxd-tree__node" data-highlight>@xxd/css<span class="xxd-tree__desc">Web components</span></span></li><li class="xxd-tree__item"><span class="xxd-tree__node">@xxd/react<span class="xxd-tree__desc">React</span></span></li><li class="xxd-tree__item"><span class="xxd-tree__node">@xxd/mini<span class="xxd-tree__desc">Mini programs</span></span></li></ul></li>
+</ul>`,
+    rules: [
+      "Use it only for parts and containment; parallel items are a list",
+      "At most 3 levels and 9 nodes (D145); collapse the next level (wrap it in Collapsible) or paginate beyond that",
+      "The org chart draws two levels only; a third would be crushed into a row, so it switches to the outline",
+      "Nodes are names, with one sentence of note (what the item is), not paragraphs",
+      "§14 diagrams; DIAGRAM-PLAN",
+    ],
+    a11y: ["Nested <ul>s, so screen readers announce the levels and how many items each has", "Lines are pseudo-elements, not read out"],
+    examples: [{ title: "Three levels: becomes an outline by itself", markup: `<ul class="xxd-tree" style="max-width:420px">
+  <li class="xxd-tree__item"><span class="xxd-tree__node">Settings</span><ul class="xxd-tree__group"><li class="xxd-tree__item"><span class="xxd-tree__node">General</span><ul class="xxd-tree__group"><li class="xxd-tree__item"><span class="xxd-tree__node">Appearance</span></li><li class="xxd-tree__item"><span class="xxd-tree__node">Language</span></li></ul></li><li class="xxd-tree__item"><span class="xxd-tree__node">Account</span><ul class="xxd-tree__group"><li class="xxd-tree__item"><span class="xxd-tree__node" data-highlight>Membership</span></li><li class="xxd-tree__item"><span class="xxd-tree__node">Sign out</span></li></ul></li><li class="xxd-tree__item"><span class="xxd-tree__node">About</span></li></ul></li>
+</ul>` }],
+    use: ["The structure of menus and settings", "What a package, module or category is made of"],
+    avoid: ["Steps in order: use Steps", "Deep trees you expand, collapse and select: that is navigation (Sidebar), not a diagram"],
+  },
+  Cycle: {
+    title: "Cycle",
+    summary: "Done, then back to the start: 3–6 steps in a row, arrows to the next step, and a return line under the last step back to the first. Never drawn as a circle (§14: no radial charts); when narrow, one step per row with the return line on the right.",
+    attributes: {
+      "data-vertical": "Always one step per row (narrow places, mini programs); without it containers under 480px switch by themselves",
+      "data-highlight": "On a node: emphasis (1.5px accent line)",
+      "--n": "Number of steps; on the web it is counted from the children (3–6); the mini program component writes it",
+    },
+    markup: `<ol class="xxd-cycle" style="max-width:640px">
+  <li class="xxd-cycle__item"><div class="xxd-cycle__node">Write<span class="xxd-cycle__desc">One long post</span></div></li>
+  <li class="xxd-cycle__item"><div class="xxd-cycle__node">Publish</div></li>
+  <li class="xxd-cycle__item"><div class="xxd-cycle__node">Read the numbers<span class="xxd-cycle__desc">Next morning</span></div></li>
+  <li class="xxd-cycle__item"><div class="xxd-cycle__node" data-highlight>Review<span class="xxd-sr-only"> (then back to step 1)</span><span class="xxd-cycle__desc">What to change next time</span></div></li>
+</ol>`,
+    rules: [
+      "Use it only when the last step really leads back to the first (write → publish → review → write); a flow that ends is Steps",
+      "3–6 steps; merge steps beyond that",
+      "Add a hidden \"(then back to step 1)\" to the last step so screen readers know it loops",
+      "§14 diagrams; DIAGRAM-PLAN",
+    ],
+    a11y: ["An ordered list (<ol>); the last step carries a hidden \"then back to step 1\"", "Arrows and the return line are pseudo-elements, not read out"],
+    use: ["Weekly loops like writing, publishing and reviewing", "The usage loop of a product"],
+    avoid: ["A flow that ends: use Steps", "Items with no order: use a list"],
+  },
+  Layers: {
+    title: "Layers",
+    summary: "One layer built on another: equal-width bands stacked top to bottom, each layer using the one below (pages use components, components use tokens). Each layer has a name and one sentence; width means nothing, so it is never a pyramid.",
+    attributes: {
+      "data-highlight": "The emphasised layer: selected background plus a 1.5px accent line",
+      "--layers-title": "Width of the name column (default 8 characters); below 360px the name and note stack",
+    },
+    markup: `<ol class="xxd-layers" style="max-width:560px">
+  <li class="xxd-layers__item"><span class="xxd-layers__title">Pages</span><span class="xxd-layers__desc">Templates: whole pages put together</span></li>
+  <li class="xxd-layers__item"><span class="xxd-layers__title">Patterns</span><span class="xxd-layers__desc">Fixed combinations: drop zone, two-step confirm</span></li>
+  <li class="xxd-layers__item" data-highlight><span class="xxd-layers__title">Components</span><span class="xxd-layers__desc">Buttons, dialogs, lists</span></li>
+  <li class="xxd-layers__item"><span class="xxd-layers__title">Tokens</span><span class="xxd-layers__desc">Color, type size, spacing, radius: one source, tokens.css</span></li>
+</ol>`,
+    rules: [
+      "Use it only when each layer uses or sits on the one below; parallel items are a list",
+      "Top to bottom is the direction of use: the top is what people see, the bottom is the foundation",
+      "3–6 layers; one sentence per layer about what it is responsible for",
+      "Emphasise at most one layer",
+      "§14 diagrams; DIAGRAM-PLAN",
+    ],
+    a11y: ["An ordered list (<ol>), read top to bottom", "The emphasised layer is not color alone: it has a 1.5px accent outline"],
+    use: ["Tech stacks and the levels of a design system", "Levels of permissions or data"],
+    avoid: ["A funnel with numbers: use the funnel of Bars", "Steps in order: use Steps"],
+  },
 };

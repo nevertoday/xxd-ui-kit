@@ -11,6 +11,10 @@ import {
   Dumbbell,
   Steps,
   Timeline,
+  Flowchart,
+  Tree,
+  Cycle,
+  Layers,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -690,6 +694,75 @@ export function TimelineDemo() {
           { time: "10月23日", dateTime: "2026-10-23", title: "ECharts 图表", children: "饼图每一块按分类色，高对比下换系统色，读屏的一句话自己写。", highlight: true },
           { time: "10月23日", dateTime: "2026-10-23", title: "手机和触屏", children: "粗指针上控件 44 高，输入框 16px，手指不弹提示。" },
           { time: "预计 11月", title: "图解第二批", children: "流程图和树。", upcoming: true },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function FlowchartDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Flowchart
+        steps={[
+          { title: "上传一张图片" },
+          {
+            title: "多大？",
+            merge: true,
+            branches: [
+              { label: "小于 5 MB", steps: [{ title: "直接用" }] },
+              { label: "大于 5 MB", highlight: true, steps: [{ title: "先压缩", description: "长边 2000px" }] },
+            ],
+          },
+          { title: "生成封面", highlight: true },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function TreeDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 640 }}>
+      <Tree
+        items={[
+          {
+            label: "会员站",
+            children: [
+              { label: "风格", description: "按分类浏览" },
+              { label: "提示词", description: "复制就能用", highlight: true },
+              { label: "账号", description: "会员和设备" },
+            ],
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function CycleDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 640 }}>
+      <Cycle
+        steps={[
+          { title: "找参考" },
+          { title: "写提示词" },
+          { title: "出图" },
+          { title: "挑一张改", highlight: true },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function LayersDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Layers
+        items={[
+          { title: "插件", description: "侧边栏、设置页、弹出窗" },
+          { title: "@xxd/css", description: "原生组件，拷进 vendor/xxd/", highlight: true },
+          { title: "@xxd/tokens", description: "颜色、字号、间距、圆角" },
         ]}
       />
     </div>

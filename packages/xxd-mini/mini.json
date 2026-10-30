@@ -449,6 +449,62 @@
       "summaryEn": "What happened, in order: the time on the left, one line through every entry; emphasis in the accent, what has not happened yet hollow."
     },
     {
+      "name": "Flowchart",
+      "zh": "流程图",
+      "en": "Flowchart",
+      "batch": 2,
+      "web": [
+        "Flowchart"
+      ],
+      "blocks": [
+        "xxd-flowchart"
+      ],
+      "summary": "走到这里分几条路：主线从上往下，一个判断分成 2–3 条，合拢或者各自结束。",
+      "summaryEn": "Where the path splits: a main line top to bottom, one decision into 2–3 branches that join again or end."
+    },
+    {
+      "name": "Tree",
+      "zh": "树",
+      "en": "Tree",
+      "batch": 2,
+      "web": [
+        "Tree"
+      ],
+      "blocks": [
+        "xxd-tree"
+      ],
+      "summary": "一个分成几个：两层画成组织图，三层变成缩进的大纲。",
+      "summaryEn": "One thing made of several: two levels as an org chart, three as an indented outline."
+    },
+    {
+      "name": "Cycle",
+      "zh": "循环",
+      "en": "Cycle",
+      "batch": 2,
+      "web": [
+        "Cycle"
+      ],
+      "blocks": [
+        "xxd-cycle"
+      ],
+      "summary": "做完又回到开头：3–6 步一排，最后一根回头线回到第一步。",
+      "summaryEn": "Done, then back to the start: 3–6 steps in a row with a return line to the first."
+    },
+    {
+      "name": "Layers",
+      "zh": "分层",
+      "en": "Layers",
+      "batch": 2,
+      "web": [
+        "Layers"
+      ],
+      "blocks": [
+        "xxd-layers"
+      ],
+      "summary": "一层压一层：一样宽的横带从上往下叠，上层用下层。",
+      "summaryEn": "One layer on another: equal bands stacked top to bottom, each using the one below."
+    },
+    {
       "name": "Collapse",
       "zh": "折叠",
       "en": "Collapse",
@@ -722,6 +778,7 @@
     }
   ],
   "has": {
-    ":has( + [data-upcoming])": "is-before-upcoming"
+    ":has( + [data-upcoming])": "is-before-upcoming",
+    ":has(.xxd-tree__group .xxd-tree__group)": "is-outline"
   }
 }

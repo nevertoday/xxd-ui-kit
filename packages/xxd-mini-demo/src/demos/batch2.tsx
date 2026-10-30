@@ -1,6 +1,6 @@
 // 第二批组件的演示
 import { View } from "@tarojs/components";
-import { Cell, CellGroup, Chart, Collapse, LoadMore, Picker, Progress, SearchBar, Stack, Stat, Stats, Steps, Swipe, SwipeGroup, Text, Timeline, Uploader, useToast, type UploadItem } from "@xxd/mini";
+import { Cell, CellGroup, Chart, Collapse, LoadMore, Picker, Progress, SearchBar, Stack, Stat, Stats, Steps, Swipe, SwipeGroup, Text, Timeline, Flowchart, Tree, Cycle, Layers, Uploader, useToast, type UploadItem } from "@xxd/mini";
 import { useState } from "react";
 import { IMAGES } from "./batch1";
 import type { Demo } from "./types";
@@ -146,6 +146,68 @@ export const BATCH2: Demo[] = [
           { time: "10-28 09:12", title: tr("已下单", "Ordered") },
           { time: "10-29 14:30", title: tr("已发货", "Shipped"), text: tr("顺丰 SF1234567890", "SF Express SF1234567890"), highlight: true },
           { time: tr("预计 10-31", "Exp. 10-31"), title: tr("待签收", "Awaiting delivery"), upcoming: true },
+        ]}
+      />
+    ),
+  },
+  {
+    name: "Flowchart",
+    render: (tr) => (
+      <Flowchart
+        steps={[
+          { title: tr("打开插件", "Open") },
+          {
+            title: tr("有会员吗？", "Member?"),
+            merge: true,
+            branches: [
+              { label: tr("有", "Yes"), steps: [{ title: tr("直接生成", "Generate") }] },
+              { label: tr("没有", "No"), highlight: true, steps: [{ title: tr("用免费的 3 次", "Free try"), description: tr("每天清零", "3 a day") }] },
+            ],
+          },
+          { title: tr("下载封面", "Download"), highlight: true },
+        ]}
+      />
+    ),
+  },
+  {
+    name: "Tree",
+    render: (tr) => (
+      <Tree
+        items={[
+          {
+            label: tr("设置", "Settings"),
+            children: [
+              { label: tr("通用", "General"), children: [{ label: tr("外观", "Appearance") }, { label: tr("语言", "Language") }] },
+              { label: tr("账号", "Account"), children: [{ label: tr("会员", "Membership"), highlight: true }] },
+              { label: tr("关于", "About") },
+            ],
+          },
+        ]}
+      />
+    ),
+  },
+  {
+    name: "Cycle",
+    render: (tr) => (
+      <Cycle
+        vertical
+        steps={[
+          { title: tr("写", "Write"), description: tr("一篇长文", "One long post") },
+          { title: tr("发出去", "Publish") },
+          { title: tr("看数据", "Read the numbers"), description: tr("第二天上午", "Next morning") },
+          { title: tr("复盘", "Review"), highlight: true },
+        ]}
+      />
+    ),
+  },
+  {
+    name: "Layers",
+    render: (tr) => (
+      <Layers
+        items={[
+          { title: tr("页面", "Pages"), description: tr("拼好的整页", "Whole pages") },
+          { title: tr("组件", "Components"), description: tr("按钮、对话框、列表", "Buttons, dialogs, lists"), highlight: true },
+          { title: tr("令牌", "Tokens"), description: tr("颜色、字号、间距、圆角", "Color, type, spacing, radius") },
         ]}
       />
     ),

@@ -1226,3 +1226,151 @@ export function Timeline({ items, className, style }: { items: readonly Timeline
     </ol>
   );
 }
+
+export interface FlowchartStep {
+  title: ReactNode;
+  description?: ReactNode;
+  /** 重点：1.5px 主色线（最多 1–2 个） */
+  highlight?: boolean;
+  /** 这一步是判断：分成 2–3 条（只分一层） */
+  branches?: readonly FlowchartBranch[];
+  /** 分支走完合拢，接主线的下一步；不合拢时主线到这里为止 */
+  merge?: boolean;
+}
+
+export interface FlowchartBranch {
+  /** 分支名，写答案（「有」「没有」） */
+  label: ReactNode;
+  steps: readonly Omit<FlowchartStep, "branches" | "merge">[];
+  /** 重点那一条路 */
+  highlight?: boolean;
+}
+
+const nodeBody = (block: string, title: ReactNode, description?: ReactNode, extra?: ReactNode) => (
+  <>
+    {title}
+    {extra}
+    {description != null && <span className={`${block}__desc`}>{description}</span>}
+  </>
+);
+
+function FlowchartStepItem({ step }: { step: FlowchartStep }) {
+  return (
+    <li className="xxd-flowchart__step">
+      <div className="xxd-flowchart__node" data-highlight={flag(step.highlight)}>
+        {nodeBody("xxd-flowchart", step.title, step.description)}
+      </div>
+      {step.branches && (
+        <ul className="xxd-flowchart__branches" data-merge={flag(step.merge)}>
+          {step.branches.map((b, i) => (
+            <li key={i} className="xxd-flowchart__branch" data-highlight={flag(b.highlight)}>
+              <span className="xxd-flowchart__label">{b.label}</span>
+              <ol className="xxd-flowchart__path">
+                {b.steps.map((s, j) => (
+                  <FlowchartStepItem key={j} step={s} />
+                ))}
+              </ol>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+/** 流程图：一条从上往下的主线，中间一个判断分成 2–3 条，合拢（merge）或者各自结束。放不下时分支上下排、主干在左边。 */
+export function Flowchart({ steps, className, style }: { steps: readonly FlowchartStep[]; className?: string; style?: CSSProperties }) {
+  const count = steps.reduce((n, s) => n + 1 + (s.branches ?? []).reduce((m, b) => m + b.steps.length, 0), 0);
+  if (count > 9) warnOnce("flowchart-nodes", "Flowchart 超过 9 个节点：拆成总览加细节（DIAGRAM-PLAN D145）");
+  if (steps.some((s) => (s.branches?.length ?? 0) > 3)) warnOnce("flowchart-branches", "Flowchart 一个判断最多 3 条分支（D145）");
+  if (steps.some((s, i) => s.branches && !s.merge && i < steps.length - 1)) warnOnce("flowchart-dangling", "Flowchart 分支不合拢（merge）时主线到这里为止，后面的步骤接不上");
+  return (
+    <ol className={cx("xxd-flowchart", className)} style={style}>
+      {steps.map((s, i) => (
+        <FlowchartStepItem key={i} step={s} />
+      ))}
+    </ol>
+  );
+}
+
+export interface TreeNode {
+  label: ReactNode;
+  description?: ReactNode;
+  highlight?: boolean;
+  children?: readonly TreeNode[];
+}
+
+function TreeItem({ node }: { node: TreeNode }) {
+  return (
+    <li className="xxd-tree__item">
+      <span className="xxd-tree__node" data-highlight={flag(node.highlight)}>
+        {nodeBody("xxd-tree", node.label, node.description)}
+      </span>
+      {node.children?.length ? (
+        <ul className="xxd-tree__group">
+          {node.children.map((c, i) => (
+            <TreeItem key={i} node={c} />
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+/** 树：一个分成几个。两层以内、够宽时画成组织图；三层、outline 或者窄时是缩进的大纲。 */
+export function Tree({ items, outline, className, style }: { items: readonly TreeNode[]; /** 缩进的大纲（不写时按层数和宽度自己选） */ outline?: boolean; className?: string; style?: CSSProperties }) {
+  const depth = (n: readonly TreeNode[]): number => (n.length ? 1 + Math.max(...n.map((x) => depth(x.children ?? []))) : 0);
+  const size = (n: readonly TreeNode[]): number => n.reduce((m, x) => m + 1 + size(x.children ?? []), 0);
+  if (depth(items) > 3 || size(items) > 9) warnOnce("tree", "Tree 超过 3 层或 9 个节点：折叠下一层，或者分页（DIAGRAM-PLAN D145）");
+  return (
+    <ul className={cx("xxd-tree", className)} data-outline={flag(outline)} style={style}>
+      {items.map((n, i) => (
+        <TreeItem key={i} node={n} />
+      ))}
+    </ul>
+  );
+}
+
+export interface CycleStep {
+  title: ReactNode;
+  description?: ReactNode;
+  highlight?: boolean;
+}
+
+/** 循环：3–6 步排成一排，最后一步一根回头线回到第一步（不画成一圈）。窄时一步一行，回头线在右边。 */
+export function Cycle({ steps, className, style }: { steps: readonly CycleStep[]; className?: string; style?: CSSProperties }) {
+  const { t } = useXxdLocale();
+  if (steps.length < 3 || steps.length > 6) warnOnce("cycle", "Cycle 要 3–6 步：少了不成圈，多了合并几步（DIAGRAM-PLAN）");
+  return (
+    <ol className={cx("xxd-cycle", className)} style={style}>
+      {steps.map((s, i) => (
+        <li key={i} className="xxd-cycle__item">
+          <div className="xxd-cycle__node" data-highlight={flag(s.highlight)}>
+            {nodeBody("xxd-cycle", s.title, s.description, i === steps.length - 1 ? <span className="xxd-sr-only">{t.cycleBack}</span> : null)}
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export interface LayerItem {
+  title: ReactNode;
+  description?: ReactNode;
+  highlight?: boolean;
+}
+
+/** 分层：几条一样宽的横带从上往下叠，上层用下层；宽窄不表示多少（不画金字塔）。 */
+export function Layers({ items, className, style }: { items: readonly LayerItem[]; className?: string; style?: CSSProperties }) {
+  if (items.length > 6) warnOnce("layers", "Layers 超过 6 层：合并几层（DIAGRAM-PLAN）");
+  return (
+    <ol className={cx("xxd-layers", className)} style={style}>
+      {items.map((x, i) => (
+        <li key={i} className="xxd-layers__item" data-highlight={flag(x.highlight)}>
+          <span className="xxd-layers__title">{x.title}</span>
+          {x.description != null && <span className="xxd-layers__desc">{x.description}</span>}
+        </li>
+      ))}
+    </ol>
+  );
+}

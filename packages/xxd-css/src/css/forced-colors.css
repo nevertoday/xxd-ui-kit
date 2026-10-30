@@ -280,6 +280,24 @@
       background: Canvas;
     }
 
+    /* 图解第二、三批：重点的节点、那一层是 Highlight 框；里面的字和箭头自己写系统色（不跟着换了） */
+    :is(.xxd-flowchart__node, .xxd-tree__node, .xxd-cycle__node, .xxd-layers__item)[data-highlight] {
+      forced-color-adjust: none;
+      border-color: Highlight;
+      outline-color: Highlight;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    :is(.xxd-flowchart__node, .xxd-tree__node, .xxd-cycle__node, .xxd-layers__item)[data-highlight] * {
+      color: CanvasText;
+    }
+
+    :is(.xxd-flowchart__node, .xxd-cycle__node)[data-highlight]::before,
+    :is(.xxd-flowchart__node, .xxd-cycle__node)[data-highlight]::after {
+      border-color: CanvasText;
+    }
+
     /* tab：选中的那一个有 2px 下边框（伪元素的背景会被抹掉） */
     .xxd-tabs__ink {
       background: Highlight;

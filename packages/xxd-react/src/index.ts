@@ -44,6 +44,15 @@ export {
   type StepItem,
   Timeline,
   type TimelineItem,
+  Flowchart,
+  type FlowchartStep,
+  type FlowchartBranch,
+  Tree,
+  type TreeNode,
+  Cycle,
+  type CycleStep,
+  Layers,
+  type LayerItem,
 } from "./xxd";
 export { Icon, IconContext, createIcon, icons, ICON_NAMES } from "@xxd/icons/react";
 export { ACCENT_PRESETS, type XxdSettings } from "@xxd/tokens";

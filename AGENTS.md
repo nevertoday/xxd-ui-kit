@@ -29,7 +29,7 @@
    图例画出线型并让行、柱状图类目不藏、刻度缩写、参考线的字在图里、没有进场动画；`watchChartTheme` 管尺寸和触屏提示；Kumo 的图表在有令牌时用令牌的颜色；D123–D136，audit 加 `--only=chart`）。
    2026-10-30：`DIAGRAM-PLAN.md`（图解：只做步骤、时间线、流程、树、循环、分层 6 种，参考 diagram-design（MIT）的规则；
    节点是 HTML、线是伪元素的边框（不用 grid，Skyline 不认），读屏是列表，窄屏变竖排不横向滚动；一次性的工程图交给第二阶段的 AI 技能；D140–D149）。
-   第一批 `Steps`、`Timeline` 做完（小程序原来的 `Steps` 改成网页版的样子），audit 加 `--only=diagram`；第二批 `Flowchart`、`Tree` 还没开工。
+   三批都做完：`Steps`、`Timeline`（小程序原来的 `Steps` 改成网页版的样子）；`Flowchart`、`Tree`、Kumo `Flow` 套令牌；`Cycle`、`Layers`。audit 加 `--only=diagram`（连线逐段量两头接没接上）；AI 技能待定。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 

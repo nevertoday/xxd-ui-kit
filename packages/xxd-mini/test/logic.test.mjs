@@ -438,3 +438,29 @@ test("图解（DIAGRAM-PLAN）：步骤和时间线的类名和网页版一样�
   }
   v.unmount();
 });
+
+test("图解第二、三批：流程图的分支和合拢、树三层自己变大纲、循环写出步数和「回到第 1 步」、分层", async () => {
+  const { Flowchart, Tree, Cycle, Layers } = mini;
+  const v = render(
+    app(
+      h(Flowchart, { steps: [{ title: "a" }, { title: "b？", merge: true, branches: [{ label: "有", steps: [{ title: "c" }] }, { label: "没有", highlight: true, steps: [{ title: "d" }] }] }, { title: "e" }] }),
+      h(Tree, { items: [{ label: "根", children: [{ label: "一", children: [{ label: "甲" }] }, { label: "二" }] }] }),
+      h(Tree, { items: [{ label: "根", children: [{ label: "一" }, { label: "二" }] }] }),
+      h(Cycle, { steps: [{ title: "写" }, { title: "发" }, { title: "复盘" }, { title: "改" }] }),
+      h(Layers, { items: [{ title: "页面" }, { title: "组件", highlight: true }] }),
+    ),
+  );
+  await tick(10);
+  assert.ok(cls(v.byClass("xxd-flowchart__branches")[0]).includes("is-merge"));
+  assert.equal(v.byClass("xxd-flowchart__branch").length, 2);
+  assert.ok(cls(v.byClass("xxd-flowchart__branch")[1]).includes("is-highlight"));
+  assert.equal(v.byClass("xxd-flowchart__step").length, 5);
+  const trees = v.byClass("xxd-tree");
+  assert.ok(cls(trees[0]).includes("is-outline"), "三层自己变大纲");
+  assert.ok(!cls(trees[1]).includes("is-outline"), "两层是组织图");
+  const cycle = v.byClass("xxd-cycle")[0];
+  assert.equal(cycle.props.style, "--n:4");
+  assert.equal(v.byClass("xxd-cycle__item").at(-1).props.ariaLabel, "改（然后回到第 1 步）");
+  assert.ok(cls(v.byClass("xxd-layers__item")[1]).includes("is-highlight"));
+  v.unmount();
+});

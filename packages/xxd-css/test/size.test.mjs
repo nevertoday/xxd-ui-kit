@@ -22,7 +22,9 @@ import { describe, expect, it } from "vitest";
 //   两种图的样子、高对比和打印约 0.9 KB；换算和 HTML 约 1.7 KB。图的样子和别的图一样放在 xxd.min.css 里（React、小程序共用一份类名），没有单拆
 // xxd.min.css 2026-10-30 从 27 调到 28、xxd.shadow.css.js 从 28 调到 29：图解第一批（DIAGRAM-PLAN）——步骤和时间线，约 0.9 KB；
 // 连线是边框、窄了换排法靠容器查询，都在 CSS 里，不加 JS
-const BUDGET_KB = { "xxd.min.css": 28, "xxd.js": 39, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 29 };
+// xxd.min.css 2026-10-30 再从 28 调到 30、xxd.shadow.css.js 从 29 调到 31：图解第二、三批（流程图、树、循环、分层），约 1.7 KB。
+// 每段线、每个箭头一条规则；树的大纲和循环的一步一行各要写两遍（属性 / :has 一份，容器查询里一份：容器查询改不了容器自己，也不能和属性写在一条里）
+const BUDGET_KB = { "xxd.min.css": 30, "xxd.js": 39, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 31 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

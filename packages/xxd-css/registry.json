@@ -2193,6 +2193,176 @@
         "很多条、要搜索筛选的记录：用表格（Table）"
       ],
       "block": true
+    },
+    {
+      "name": "Flowchart",
+      "zh": "流程图",
+      "category": "图解",
+      "classes": [
+        "xxd-flowchart",
+        "xxd-flowchart__step",
+        "xxd-flowchart__node",
+        "xxd-flowchart__desc",
+        "xxd-flowchart__branches",
+        "xxd-flowchart__branch",
+        "xxd-flowchart__label",
+        "xxd-flowchart__path"
+      ],
+      "attributes": {
+        "data-merge": "写在 .xxd-flowchart__branches 上：几条分支走完合拢，接主线的下一步；不写时各自结束，主线到这里为止",
+        "data-highlight": "节点上：重点（1.5px 主色线，最多 1–2 个）；分支上：重点那一条路（线和分支名是主色）"
+      },
+      "markup": "<ol class=\"xxd-flowchart\" style=\"max-width:520px\">\n  <li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">打开插件</div></li>\n  <li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">有会员吗？</div><ul class=\"xxd-flowchart__branches\" data-merge><li class=\"xxd-flowchart__branch\"><span class=\"xxd-flowchart__label\">有</span><ol class=\"xxd-flowchart__path\"><li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">直接生成</div></li></ol></li><li class=\"xxd-flowchart__branch\" data-highlight><span class=\"xxd-flowchart__label\">没有</span><ol class=\"xxd-flowchart__path\"><li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">用免费的 3 次<span class=\"xxd-flowchart__desc\">每天清零</span></div></li></ol></li></ul></li>\n  <li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\" data-highlight>下载封面</div></li>\n</ol>",
+      "react": "Flowchart",
+      "summary": "走到这里分几条路：一条从上往下的主线，中间一个判断分成 2–3 条，每条前写分支名，走完合拢或者各自结束。节点是 HTML，连线是边框，箭头指着下一步；放不下时分支上下排，主干在左边。",
+      "rules": [
+        "有判断、有分支才用它；一条直线走到底用步骤（Steps）",
+        "只分一层，最多 3 条分支；节点最多 9 个（DIAGRAM-PLAN D145）。更复杂的拆成总览加细节，或者用 Kumo 的 Flow（只有 React 版，能拖动）",
+        "判断节点写成问题（「有会员吗？」），分支名写答案（「有」「没有」），最多 8 个字，长了折行不省略（D146）",
+        "分支不合拢时，主线到这里为止：后面不再接步骤",
+        "重点最多 1–2 个：要走的那一条路、最后的结果",
+        "§14 图解；DIAGRAM-PLAN"
+      ],
+      "a11y": [
+        "是嵌套的列表：主线是 <ol>，分支是 <ul>，每条分支的分支名在最前面、步骤是 <ol>，读屏照着念",
+        "连线和箭头是伪元素，读屏不念；重点不只靠颜色：线和框加粗到 1.5px"
+      ],
+      "examples": [
+        {
+          "title": "三条分支、不合拢",
+          "markup": "<ol class=\"xxd-flowchart\" style=\"max-width:640px\">\n  <li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">选一张图片</div></li>\n  <li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">多大？</div><ul class=\"xxd-flowchart__branches\"><li class=\"xxd-flowchart__branch\"><span class=\"xxd-flowchart__label\">小于 5 MB</span><ol class=\"xxd-flowchart__path\"><li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">直接上传</div></li></ol></li><li class=\"xxd-flowchart__branch\"><span class=\"xxd-flowchart__label\">5–20 MB</span><ol class=\"xxd-flowchart__path\"><li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">先压缩</div></li><li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">再上传</div></li></ol></li><li class=\"xxd-flowchart__branch\"><span class=\"xxd-flowchart__label\">大于 20 MB</span><ol class=\"xxd-flowchart__path\"><li class=\"xxd-flowchart__step\"><div class=\"xxd-flowchart__node\">提示换一张</div></li></ol></li></ul></li>\n</ol>"
+        }
+      ],
+      "use": [
+        "「如果……就……」的说明：会员和非会员、文件大小、审核结果",
+        "帮助文档里的判断流程"
+      ],
+      "avoid": [
+        "没有分支：用步骤（Steps）",
+        "任意连线的网状图（依赖、架构）：不做成组件（DIAGRAM-PLAN 第二阶段）"
+      ],
+      "block": true
+    },
+    {
+      "name": "Tree",
+      "zh": "树",
+      "category": "图解",
+      "classes": [
+        "xxd-tree",
+        "xxd-tree__item",
+        "xxd-tree__node",
+        "xxd-tree__desc",
+        "xxd-tree__group"
+      ],
+      "attributes": {
+        "data-outline": "缩进的大纲（左边一根竖线、每项一根短横线）；不写时两层以内、容器 ≥ 480px 画成从上往下的组织图，更深或更窄自己变大纲",
+        "data-highlight": "节点上：重点（组织图是主色框，大纲里是主色字）"
+      },
+      "markup": "<ul class=\"xxd-tree\" style=\"max-width:640px\">\n  <li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">小小东 UI Kit</span><ul class=\"xxd-tree__group\"><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">@xxd/tokens<span class=\"xxd-tree__desc\">令牌</span></span></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\" data-highlight>@xxd/css<span class=\"xxd-tree__desc\">网页组件</span></span></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">@xxd/react<span class=\"xxd-tree__desc\">React</span></span></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">@xxd/mini<span class=\"xxd-tree__desc\">小程序</span></span></li></ul></li>\n</ul>",
+      "react": "Tree",
+      "summary": "一个分成几个：两层以内、够宽时从上往下画（组织图），一根横线连着下一层；三层或者窄时变成缩进的大纲，左边一根竖线、每项一根短横线。",
+      "rules": [
+        "上下级、包含关系才用它；几件并列的事用列表",
+        "最多 3 层、9 个节点（D145）；更多就折叠（用 Collapsible 包住下一层）或者分页",
+        "组织图只画两层；第三层会挤成一排，自动换成大纲",
+        "节点写名字，说明写一句（这一项是什么），不写长段落",
+        "§14 图解；DIAGRAM-PLAN"
+      ],
+      "a11y": [
+        "是嵌套的 <ul>，读屏念出层级和每层几项",
+        "连线是伪元素，读屏不念"
+      ],
+      "examples": [
+        {
+          "title": "三层：自己变成大纲",
+          "markup": "<ul class=\"xxd-tree\" style=\"max-width:420px\">\n  <li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">设置</span><ul class=\"xxd-tree__group\"><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">通用</span><ul class=\"xxd-tree__group\"><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">外观</span></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">语言</span></li></ul></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">账号</span><ul class=\"xxd-tree__group\"><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\" data-highlight>会员</span></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">退出登录</span></li></ul></li><li class=\"xxd-tree__item\"><span class=\"xxd-tree__node\">关于</span></li></ul></li>\n</ul>"
+        }
+      ],
+      "use": [
+        "菜单、设置的结构",
+        "包、模块、分类的组成"
+      ],
+      "avoid": [
+        "有先后的几步：用步骤（Steps）",
+        "很多层、要展开收起、能选中的树：做成导航（Sidebar），不是图"
+      ],
+      "block": true
+    },
+    {
+      "name": "Cycle",
+      "zh": "循环",
+      "category": "图解",
+      "classes": [
+        "xxd-cycle",
+        "xxd-cycle__item",
+        "xxd-cycle__node",
+        "xxd-cycle__desc"
+      ],
+      "attributes": {
+        "data-vertical": "一直一步一行（窄的地方、小程序）；不写时容器窄于 480px 自己变",
+        "data-highlight": "节点上：重点（1.5px 主色线）",
+        "--n": "步数，网页按子元素数自己算（3–6）；小程序版组件自己写"
+      },
+      "markup": "<ol class=\"xxd-cycle\" style=\"max-width:640px\">\n  <li class=\"xxd-cycle__item\"><div class=\"xxd-cycle__node\">写<span class=\"xxd-cycle__desc\">一篇长文</span></div></li>\n  <li class=\"xxd-cycle__item\"><div class=\"xxd-cycle__node\">发出去</div></li>\n  <li class=\"xxd-cycle__item\"><div class=\"xxd-cycle__node\">看数据<span class=\"xxd-cycle__desc\">第二天上午</span></div></li>\n  <li class=\"xxd-cycle__item\"><div class=\"xxd-cycle__node\" data-highlight>复盘<span class=\"xxd-sr-only\">（然后回到第 1 步）</span><span class=\"xxd-cycle__desc\">下一篇改什么</span></div></li>\n</ol>",
+      "react": "Cycle",
+      "summary": "做完又回到开头：3–6 步排成一排，箭头指向下一步，最后一步下面一根回头线回到第一步。不画成一圈（§14 不做放射图）；窄时一步一行，回头线在右边。",
+      "rules": [
+        "最后一步真的会回到第一步才用它（写作 → 发布 → 复盘 → 写作）；走完就结束的用步骤（Steps）",
+        "3–6 步；更多就合并几步",
+        "最后一步的字里加一句看不见的「（然后回到第 1 步）」，读屏才知道是循环",
+        "§14 图解；DIAGRAM-PLAN"
+      ],
+      "a11y": [
+        "是一个有序列表（<ol>）；最后一步有一句给读屏的「然后回到第 1 步」",
+        "箭头和回头线是伪元素，读屏不念"
+      ],
+      "use": [
+        "写作、发布、复盘这类每周一圈的工作",
+        "产品的使用闭环"
+      ],
+      "avoid": [
+        "走完就结束：用步骤（Steps）",
+        "不分先后的几件事：用列表"
+      ],
+      "block": true
+    },
+    {
+      "name": "Layers",
+      "zh": "分层",
+      "category": "图解",
+      "classes": [
+        "xxd-layers",
+        "xxd-layers__item",
+        "xxd-layers__title",
+        "xxd-layers__desc"
+      ],
+      "attributes": {
+        "data-highlight": "重点那一层：选中底加 1.5px 主色线",
+        "--layers-title": "名字那一列的宽度（缺省 8 个字宽）；容器窄于 360px 时名字和说明上下排"
+      },
+      "markup": "<ol class=\"xxd-layers\" style=\"max-width:560px\">\n  <li class=\"xxd-layers__item\"><span class=\"xxd-layers__title\">页面</span><span class=\"xxd-layers__desc\">模板：拼好的整页</span></li>\n  <li class=\"xxd-layers__item\"><span class=\"xxd-layers__title\">模式</span><span class=\"xxd-layers__desc\">几个组件拼成的固定做法：拖放区、两次确认</span></li>\n  <li class=\"xxd-layers__item\" data-highlight><span class=\"xxd-layers__title\">组件</span><span class=\"xxd-layers__desc\">按钮、对话框、列表</span></li>\n  <li class=\"xxd-layers__item\"><span class=\"xxd-layers__title\">令牌</span><span class=\"xxd-layers__desc\">颜色、字号、间距、圆角：唯一来源 tokens.css</span></li>\n</ol>",
+      "react": "Layers",
+      "summary": "一层压一层：几条一样宽的横带从上往下叠，上层用下层（页面用组件、组件用令牌）。每层一个名字和一句说明；宽窄不表示多少，不画成金字塔。",
+      "rules": [
+        "上层用下层、一层建在另一层上才用它；几件并列的事用列表",
+        "从上往下是「用」的方向：最上面是用的人看得到的，最下面是基础",
+        "3–6 层；每层一句说明，写这一层管什么",
+        "重点最多一层",
+        "§14 图解；DIAGRAM-PLAN"
+      ],
+      "a11y": [
+        "是一个有序列表（<ol>），从上往下念",
+        "重点那一层不只靠颜色：有一圈 1.5px 的主色线"
+      ],
+      "use": [
+        "技术栈、设计系统的层次",
+        "权限、数据的层级"
+      ],
+      "avoid": [
+        "有数量的漏斗：用条形榜（Bars）的漏斗",
+        "有先后的几步：用步骤（Steps）"
+      ],
+      "block": true
     }
   ]
 }

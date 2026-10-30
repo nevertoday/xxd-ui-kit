@@ -329,10 +329,762 @@
     }
   }
 
+  /* ── 节点（流程图、树、循环共用）：直角框（跟圆角开关走），结构线色的边，不加阴影（D143）；重点是 1.5px 主色线 ── */
+  .xxd-flowchart__node,
+  .xxd-tree__node,
+  .xxd-cycle__node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    padding: var(--inset-sm-y) var(--inset-sm);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+
+  :is(.xxd-flowchart__node, .xxd-tree__node, .xxd-cycle__node)[data-highlight] {
+    border: 1.5px solid var(--action);
+    padding: calc(var(--inset-sm-y) - 0.5px) calc(var(--inset-sm) - 0.5px);
+  }
+
+  .xxd-flowchart__desc,
+  .xxd-tree__desc,
+  .xxd-cycle__desc {
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  /* 箭头：7px 的方块转 45° 只留两条边，尖端离节点 1px（不做实心三角：高对比下背景会被抹掉） */
+  .xxd-flowchart__step + .xxd-flowchart__step > .xxd-flowchart__node::before,
+  .xxd-flowchart__path > .xxd-flowchart__step:first-child > .xxd-flowchart__node::before {
+    content: "";
+    position: absolute;
+    /* 8.5px 的框转 45°：尖端离中心 6px，落在节点上边往上 1px */
+    top: -11.25px;
+    inset-inline-start: calc(var(--fc-x) - 4.25px);
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid var(--line-strong);
+    border-bottom: 1.5px solid var(--line-strong);
+    transform: rotate(45deg);
+  }
+
+  /* ── 流程图：一条从上往下的主线，中间一个判断分成 2–3 条，再合拢（data-merge）或者各自结束 ──
+   * 线：每一步上面一根进来的线（::before）；分叉的横线是每条分支（最后一条除外）往右画到下一条的中间；
+   * 判断到横线那一段是分支列表的 ::before；合拢时每条分支下面长出一根线（::after，在文档流里撑满），横线同样往右画 */
+  .xxd-flowchart {
+    --fc-gap: var(--space-6);
+    --fc-branch-gap: var(--space-4);
+    /* 连线在一步里的横向位置：宽时在正中，窄时离开头 16px */
+    --fc-x: 50%;
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--fc-gap);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-flowchart__path {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fc-gap);
+    margin: 0;
+    padding: var(--fc-gap) 0 0;
+    list-style: none;
+  }
+
+  .xxd-flowchart__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .xxd-flowchart__node {
+    width: max-content;
+    min-width: calc(var(--text-sm) * 7);
+    max-width: min(100%, calc(var(--text-sm) * 18));
+    text-align: center;
+  }
+
+  .xxd-flowchart__step + .xxd-flowchart__step::before,
+  .xxd-flowchart__path > .xxd-flowchart__step:first-child::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--fc-gap));
+    height: calc(var(--fc-gap) - 1.5px);
+    inset-inline-start: calc(var(--fc-x) - 0.5px);
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  .xxd-flowchart__branches {
+    position: relative;
+    display: flex;
+    gap: var(--fc-branch-gap);
+    align-self: stretch;
+    margin: var(--fc-gap) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* 判断到分叉横线 */
+  .xxd-flowchart__branches::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--fc-gap));
+    height: var(--fc-gap);
+    inset-inline-start: calc(50% - 0.5px);
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  .xxd-flowchart__branch {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* 分叉的横线：从这条的中间画到下一条的中间 */
+  .xxd-flowchart__branch:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline: calc(50% - 0.5px) calc(-50% - var(--fc-branch-gap) - 0.5px);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  /* 分支名：写在往下那根线的右边，线就是它的边（D146） */
+  .xxd-flowchart__label {
+    margin-inline-start: calc(50% - 0.5px);
+    padding: var(--space-1) 0 0 var(--space-2);
+    border-inline-start: 1px solid var(--line-strong);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    overflow-wrap: anywhere;
+  }
+
+  /* 合拢：每条分支下面一根线撑到底，横线往右画到下一条的中间；下一步上面那根线从横线的正中接下去 */
+  .xxd-flowchart__branches[data-merge] > .xxd-flowchart__branch::after {
+    content: "";
+    flex: 1;
+    min-height: var(--fc-gap);
+    margin-top: 1px;
+    margin-inline: calc(50% - 0.5px) calc(-50% - var(--fc-branch-gap) - 0.5px);
+    border-inline-start: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .xxd-flowchart__branches[data-merge] > .xxd-flowchart__branch:last-child::after {
+    margin-inline-end: calc(50% - 0.5px);
+    border-bottom: 0;
+  }
+
+  /* 重点那一条路：主色 1.5px */
+  .xxd-flowchart__branch[data-highlight] > .xxd-flowchart__label {
+    border-inline-start: 1.5px solid var(--action);
+    color: var(--ink);
+  }
+
+  .xxd-flowchart__branch[data-highlight] .xxd-flowchart__step::before,
+  .xxd-flowchart__branches[data-merge] > .xxd-flowchart__branch[data-highlight]::after {
+    border-inline-start: 1.5px solid var(--action);
+  }
+
+  .xxd-flowchart__branch[data-highlight] .xxd-flowchart__step > .xxd-flowchart__node::before {
+    border-color: var(--action);
+  }
+
+  /* 窄（< 480px）：分支上下排，一根竖线（主干）在左边，每条分支前一个短横线和分支名；连线离开头 16px */
+  @container (max-width: 479px) {
+    .xxd-flowchart__step {
+      --fc-x: var(--space-4);
+      align-items: flex-start;
+    }
+
+    .xxd-flowchart__node {
+      text-align: start;
+    }
+
+    .xxd-flowchart__branches {
+      flex-direction: column;
+      gap: 0;
+      margin-inline-start: calc(var(--space-4) - 0.5px);
+    }
+
+    .xxd-flowchart__branches::before {
+      inset-inline-start: 0;
+    }
+
+    .xxd-flowchart__branch {
+      padding-inline-start: var(--space-4);
+    }
+
+    /* 主干：每条分支画自己那一段；不合拢时最后一条只画到分支名的高度 */
+    .xxd-flowchart__branch::before,
+    .xxd-flowchart__branch:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      inset-inline: 0 auto;
+      border-top: 0;
+      border-inline-start: 1px solid var(--line-strong);
+    }
+
+    .xxd-flowchart__branches:not([data-merge]) > .xxd-flowchart__branch:last-child::before {
+      bottom: auto;
+      height: calc(var(--space-1) + var(--leading-xs) / 2);
+    }
+
+    .xxd-flowchart__label {
+      position: relative;
+      margin-inline-start: 0;
+      padding: var(--space-1) 0 0;
+      border-inline-start: 0;
+    }
+
+    .xxd-flowchart__label::before {
+      content: "";
+      position: absolute;
+      top: calc(var(--space-1) + var(--leading-xs) / 2);
+      inset-inline-start: calc(-1 * var(--space-4));
+      width: var(--space-3);
+      border-top: 1px solid var(--line-strong);
+    }
+
+    .xxd-flowchart__branch[data-highlight] > .xxd-flowchart__label {
+      border-inline-start: 0;
+    }
+
+    .xxd-flowchart__branches[data-merge] > .xxd-flowchart__branch::after {
+      display: none;
+    }
+
+    /* 合拢以后下一步接在主干上：主干的最后一段到分支列表的底 */
+    .xxd-flowchart__branches[data-merge] > .xxd-flowchart__branch:last-child {
+      padding-bottom: var(--space-2);
+    }
+  }
+
+  /* ── 树：一个分成几个。两层以内、够宽时从上往下画（组织图）；更深、data-outline 或者窄时是缩进的大纲 ── */
+  .xxd-tree {
+    --tree-gap: var(--space-4);
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-tree__item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .xxd-tree > .xxd-tree__item {
+    align-self: stretch;
+  }
+
+  .xxd-tree__node {
+    width: max-content;
+    max-width: min(100%, calc(var(--text-sm) * 16));
+    text-align: center;
+  }
+
+  .xxd-tree__group {
+    position: relative;
+    display: flex;
+    gap: var(--space-3);
+    align-self: stretch;
+    margin: var(--tree-gap) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* 上一层到横线 */
+  .xxd-tree__group::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--tree-gap));
+    height: var(--tree-gap);
+    inset-inline-start: calc(50% - 0.5px);
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  .xxd-tree__group > .xxd-tree__item {
+    flex: 1 1 0;
+    padding-top: var(--tree-gap);
+  }
+
+  /* 横线：从这一个的中间画到下一个的中间；往下一根线到自己的框 */
+  .xxd-tree__group > .xxd-tree__item:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline: calc(50% - 0.5px) calc(-50% - var(--space-3) - 0.5px);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .xxd-tree__group > .xxd-tree__item::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    height: var(--tree-gap);
+    inset-inline-start: calc(50% - 0.5px);
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  /* 大纲：左边一根竖线，每一项一根短横线；框换成一行字（大纲里一项一行，框会太重） */
+  .xxd-tree[data-outline],
+  .xxd-tree:has(.xxd-tree__group .xxd-tree__group) {
+    align-items: stretch;
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__item {
+    align-items: flex-start;
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__node {
+    width: auto;
+    max-width: 100%;
+    padding: var(--space-0-5) 0;
+    border: 0;
+    background: none;
+    text-align: start;
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__node[data-highlight] {
+    padding: var(--space-0-5) 0;
+    border: 0;
+    color: var(--action-text);
+    font-weight: var(--weight-medium);
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group {
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding-inline-start: var(--space-6);
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group::before {
+    display: none;
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group > .xxd-tree__item {
+    padding-top: var(--space-1);
+  }
+
+  /* 竖线在上一层的字下面（离开头 12px）：最后一项只画到自己那一行 */
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group > .xxd-tree__item::before,
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group > .xxd-tree__item:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline: calc(-1 * var(--space-3) - 0.5px) auto;
+    border-top: 0;
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group > .xxd-tree__item:last-child::before {
+    bottom: auto;
+    height: calc(var(--space-1) + var(--space-0-5) + var(--leading-sm) / 2);
+  }
+
+  :is(.xxd-tree[data-outline], .xxd-tree:has(.xxd-tree__group .xxd-tree__group)) .xxd-tree__group > .xxd-tree__item::after {
+    top: calc(var(--space-1) + var(--space-0-5) + var(--leading-sm) / 2);
+    height: 0;
+    width: var(--space-2);
+    inset-inline-start: calc(-1 * var(--space-3));
+    border-inline-start: 0;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  /* 窄（< 480px）：组织图放不下，也是大纲 */
+  @container (max-width: 479px) {
+    .xxd-tree {
+      align-items: stretch;
+    }
+
+    .xxd-tree .xxd-tree__item {
+      align-items: flex-start;
+    }
+
+    .xxd-tree .xxd-tree__node {
+      width: auto;
+      max-width: 100%;
+      padding: var(--space-0-5) 0;
+      border: 0;
+      background: none;
+      text-align: start;
+    }
+
+    .xxd-tree .xxd-tree__node[data-highlight] {
+      padding: var(--space-0-5) 0;
+      border: 0;
+      color: var(--action-text);
+      font-weight: var(--weight-medium);
+    }
+
+    .xxd-tree .xxd-tree__group {
+      flex-direction: column;
+      gap: 0;
+      margin: 0;
+      padding-inline-start: var(--space-6);
+    }
+
+    .xxd-tree .xxd-tree__group::before {
+      display: none;
+    }
+
+    .xxd-tree .xxd-tree__group > .xxd-tree__item {
+      padding-top: var(--space-1);
+    }
+
+    .xxd-tree .xxd-tree__group > .xxd-tree__item::before,
+    .xxd-tree .xxd-tree__group > .xxd-tree__item:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      inset-inline: calc(-1 * var(--space-3) - 0.5px) auto;
+      border-top: 0;
+      border-inline-start: 1px solid var(--line-strong);
+    }
+
+    .xxd-tree .xxd-tree__group > .xxd-tree__item:last-child::before {
+      bottom: auto;
+      height: calc(var(--space-1) + var(--space-0-5) + var(--leading-sm) / 2);
+    }
+
+    .xxd-tree .xxd-tree__group > .xxd-tree__item::after {
+      top: calc(var(--space-1) + var(--space-0-5) + var(--leading-sm) / 2);
+      height: 0;
+      width: var(--space-2);
+      inset-inline-start: calc(-1 * var(--space-3));
+      border-inline-start: 0;
+      border-top: 1px solid var(--line-strong);
+    }
+  }
+
+  /* ── 循环：做完又回到开头（3–6 步）。排成一排，最后一步下面一根回头线回到第一步；不画成一圈（§14 不做放射图） ──
+   * 一排里的每一步一样宽：回头线的两头在第一步和最后一步的正中（--n 是步数，网页按子元素数自己算） */
+  .xxd-cycle {
+    --n: 3;
+    --cy-gap: var(--space-6);
+    --cy-back: 24px;
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 480px;
+    position: relative;
+    display: flex;
+    /* 宽时每步 flex-basis 是 0，不会折行；窄时每步占满一行（容器查询改不了容器自己，只能改里面的） */
+    flex-wrap: wrap;
+    gap: var(--cy-gap);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-cycle:has(> :nth-child(4)) { --n: 4; }
+  .xxd-cycle:has(> :nth-child(5)) { --n: 5; }
+  .xxd-cycle:has(> :nth-child(6)) { --n: 6; }
+
+  .xxd-cycle__item {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    /* 下面留给回头线 */
+    margin-bottom: var(--cy-back);
+  }
+
+  .xxd-cycle__node {
+    flex: 1;
+  }
+
+  /* 一步到下一步：横线加箭头 */
+  .xxd-cycle__item + .xxd-cycle__item::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    inset-inline-start: calc(-1 * var(--cy-gap));
+    width: calc(var(--cy-gap) - 1.5px);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .xxd-cycle__item + .xxd-cycle__item::after {
+    content: "";
+    position: absolute;
+    top: calc(50% - 4.25px);
+    inset-inline-start: -11.25px;
+    width: 7px;
+    height: 7px;
+    border-top: 1.5px solid var(--line-strong);
+    border-right: 1.5px solid var(--line-strong);
+    transform: rotate(45deg);
+  }
+
+  .xxd-cycle__item + .xxd-cycle__item:dir(rtl)::after {
+    transform: rotate(-135deg);
+  }
+
+  /* 回头线：最后一步的正中往下、往回、到第一步的正中往上，箭头指着第一步 */
+  .xxd-cycle::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    height: calc(var(--cy-back) - 1.5px);
+    inset-inline: calc((100% - (var(--n) - 1) * var(--cy-gap)) / (2 * var(--n)) - 0.5px);
+    box-sizing: border-box;
+    border: 1px solid var(--line-strong);
+    border-top: 0;
+  }
+
+  .xxd-cycle::before {
+    content: "";
+    position: absolute;
+    bottom: calc(var(--cy-back) - 11.25px);
+    inset-inline-start: calc((100% - (var(--n) - 1) * var(--cy-gap)) / (2 * var(--n)) - 4.25px);
+    width: 7px;
+    height: 7px;
+    border-top: 1.5px solid var(--line-strong);
+    border-left: 1.5px solid var(--line-strong);
+    transform: rotate(45deg);
+  }
+
+  /* data-vertical：一直一步一行（小程序里没有容器查询，窄的地方自己选）；和下面窄的时候一样 */
+  .xxd-cycle[data-vertical] > .xxd-cycle__item {
+    flex-basis: 100%;
+    margin-bottom: 0;
+    margin-inline-end: var(--cy-back);
+  }
+
+  .xxd-cycle[data-vertical] > .xxd-cycle__item:last-child {
+    margin-bottom: var(--space-3);
+  }
+
+  .xxd-cycle[data-vertical] > .xxd-cycle__item + .xxd-cycle__item::before {
+    top: calc(-1 * var(--cy-gap));
+    inset-inline-start: calc(var(--space-6) - 0.5px);
+    width: 0;
+    height: calc(var(--cy-gap) - 1.5px);
+    border-top: 0;
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  .xxd-cycle[data-vertical] > .xxd-cycle__item + .xxd-cycle__item::after,
+  .xxd-cycle[data-vertical] > .xxd-cycle__item + .xxd-cycle__item:dir(rtl)::after {
+    top: -11.25px;
+    inset-inline-start: calc(var(--space-6) - 4.25px);
+    transform: rotate(135deg);
+  }
+
+  .xxd-cycle[data-vertical]::after {
+    top: calc(var(--inset-sm-y) + var(--leading-sm) / 2);
+    bottom: 0;
+    height: auto;
+    inset-inline: auto 4px;
+    width: calc(var(--cy-back) - 5px);
+    border: 1px solid var(--line-strong);
+    border-inline-start: 0;
+  }
+
+  .xxd-cycle[data-vertical]::before {
+    top: calc(var(--inset-sm-y) + var(--leading-sm) / 2 - 4.25px);
+    bottom: auto;
+    /* 尖端在第一步的边外 1px：离右边 23px，方块的右边离右边 12.75px */
+    inset-inline: auto calc(var(--cy-back) - 11.25px);
+    transform: rotate(-45deg);
+  }
+
+  .xxd-cycle[data-vertical]:dir(rtl)::before {
+    transform: rotate(135deg);
+  }
+
+  /* 最后一步下面接到回头线 */
+  .xxd-cycle[data-vertical] > .xxd-cycle__item:last-child > .xxd-cycle__node::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    height: var(--space-3);
+    inset-inline: calc(var(--space-6) - 0.5px) -4px;
+    box-sizing: border-box;
+    border-inline-start: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  /* 窄（< 480px）：一步一行，箭头往下；回头线在右边（⊐）从最后一步下面回到第一步的第一行 */
+  @container (max-width: 479px) {
+    .xxd-cycle__item {
+      flex-basis: 100%;
+      margin-bottom: 0;
+      margin-inline-end: var(--cy-back);
+    }
+
+    .xxd-cycle__item:last-child {
+      margin-bottom: var(--space-3);
+    }
+
+    .xxd-cycle__item + .xxd-cycle__item::before {
+      top: calc(-1 * var(--cy-gap));
+      inset-inline-start: calc(var(--space-6) - 0.5px);
+      width: 0;
+      height: calc(var(--cy-gap) - 1.5px);
+      border-top: 0;
+      border-inline-start: 1px solid var(--line-strong);
+    }
+
+    .xxd-cycle__item + .xxd-cycle__item::after,
+    .xxd-cycle__item + .xxd-cycle__item:dir(rtl)::after {
+      top: -11.25px;
+      inset-inline-start: calc(var(--space-6) - 4.25px);
+      transform: rotate(135deg);
+    }
+
+    .xxd-cycle::after {
+      top: calc(var(--inset-sm-y) + var(--leading-sm) / 2);
+      bottom: 0;
+      height: auto;
+      inset-inline: auto 4px;
+      width: calc(var(--cy-back) - 5px);
+      border: 1px solid var(--line-strong);
+      border-inline-start: 0;
+    }
+
+    .xxd-cycle::before {
+      top: calc(var(--inset-sm-y) + var(--leading-sm) / 2 - 4.25px);
+      bottom: auto;
+      /* 尖端在第一步的边外 1px：离右边 23px，方块的右边离右边 12.75px */
+      inset-inline: auto calc(var(--cy-back) - 11.25px);
+      transform: rotate(-45deg);
+    }
+
+    .xxd-cycle:dir(rtl)::before {
+      transform: rotate(135deg);
+    }
+
+    /* 最后一步下面接到回头线 */
+    .xxd-cycle__item:last-child > .xxd-cycle__node::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      height: var(--space-3);
+      inset-inline: calc(var(--space-6) - 0.5px) -4px;
+      box-sizing: border-box;
+      border-inline-start: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+    }
+  }
+
+  /* ── 分层：一层压一层（页面 → 组件 → 令牌）。上层用下层；几条一样宽的横带，宽窄不表示多少（不画金字塔） ── */
+  .xxd-layers {
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 480px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-md);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-layers__item {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding: var(--inset-md-y) var(--inset-md);
+  }
+
+  .xxd-layers__item + .xxd-layers__item {
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .xxd-layers__title {
+    flex: none;
+    width: var(--layers-title, calc(var(--text-sm) * 8));
+    overflow-wrap: anywhere;
+    color: var(--ink);
+    font-weight: var(--weight-medium);
+  }
+
+  .xxd-layers__desc {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--muted);
+  }
+
+  /* 重点那一层：选中底加 1.5px 主色线（≥ 3:1 的记号），线画在里面，不改尺寸 */
+  .xxd-layers__item[data-highlight] {
+    background: var(--selected-bg);
+    outline: 1.5px solid var(--action);
+    outline-offset: -1.5px;
+  }
+
+  .xxd-layers__item:first-child {
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
+
+  .xxd-layers__item:last-child {
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+  }
+
+  /* 窄（< 360px）：名字和说明上下排 */
+  @container (max-width: 359px) {
+    .xxd-layers__item {
+      flex-direction: column;
+      gap: var(--space-0-5);
+    }
+
+    .xxd-layers__title {
+      width: auto;
+    }
+  }
+
   /* 打印：做完的标记是底色画的，浏览器缺省不印背景 */
   @media print {
     .xxd-steps,
-    .xxd-timeline {
+    .xxd-timeline,
+    .xxd-flowchart,
+    .xxd-tree,
+    .xxd-cycle,
+    .xxd-layers {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }

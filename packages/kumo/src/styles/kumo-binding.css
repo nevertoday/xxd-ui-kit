@@ -869,4 +869,22 @@
     --color-kumo-line: var(--line-raised, #e9e7e4);
     --color-kumo-hairline: var(--line-raised, #e9e7e4);
   }
+
+  /* ── Flow（可以拖动的大流程，只有 React 版；DIAGRAM-PLAN 第二批）：节点不加阴影，框和连线一样是结构线色（和 @xxd/css 的流程图节点一样）、小圆角跟开关走；
+     连线是结构线色 1.5px（Kumo 是占位字色 2px）。只认它写的 data-node-id 和类名，不改行为 ── */
+  li[data-node-id][data-node-index].shadow.ring[class] {
+    box-shadow: none;
+    outline: 1px solid var(--line-strong, #ccc9c5);
+    outline-offset: -1px;
+    border-radius: var(--r-sm, 0);
+    font-size: var(--text-sm, 13px);
+    line-height: var(--leading-sm, 20px);
+    color: var(--ink, #111111);
+  }
+  svg.overflow-visible.text-kumo-placeholder:has(> defs > marker)[class] {
+    color: var(--line-strong, #ccc9c5);
+  }
+  svg.overflow-visible.text-kumo-placeholder:has(> defs > marker) path[stroke="currentColor"] {
+    stroke-width: 1.5px;
+  }
 }

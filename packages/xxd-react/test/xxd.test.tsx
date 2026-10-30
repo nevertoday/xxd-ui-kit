@@ -31,6 +31,10 @@ import {
   Quadrant,
   Steps,
   Timeline,
+  Flowchart,
+  Tree,
+  Cycle,
+  Layers,
   Pagination,
   Search,
   Segmented,
@@ -674,6 +678,47 @@ describe("图解（DIAGRAM-PLAN）：React 和注册表里的 HTML 一模一样"
     const { container } = render(<><Steps current={0} items={items} /><Steps current={1} items={items} /></>);
     expect(container.querySelectorAll(".xxd-steps__item")).toHaveLength(24);
     expect(warn.mock.calls.filter((c) => String(c[0]).includes("超过 9 步"))).toHaveLength(1);
+    warn.mockRestore();
+  });
+});
+
+describe("图解第二、三批（DIAGRAM-PLAN）：React 和注册表里的 HTML 一模一样", () => {
+  const registry = JSON.parse(readFileSync(join(import.meta.dirname, "../../xxd-css/registry.json"), "utf8")).components as { name: string; markup: string; examples?: { markup: string }[] }[];
+  const norm = (el: Element) => {
+    const c = el.cloneNode(true) as Element;
+    c.removeAttribute("style");
+    return c.outerHTML.replace(/>\s+</g, "><");
+  };
+  const sample = (name: string, i: number) => {
+    const c = registry.find((x) => x.name === name)!;
+    const host = document.createElement("div");
+    host.innerHTML = i === 0 ? c.markup : c.examples![i - 1].markup;
+    return norm(host.firstElementChild!);
+  };
+  const html = (node: ReactNode) => norm(render(<XxdLocaleProvider locale="zh-CN">{node}</XxdLocaleProvider>).container.firstElementChild!);
+
+  it("Flowchart：合拢的两条分支、不合拢的三条分支", () => {
+    expect(html(<Flowchart steps={[{"title": "打开插件"}, {"title": "有会员吗？", "merge": true, "branches": [{"label": "有", "steps": [{"title": "直接生成"}]}, {"label": "没有", "highlight": true, "steps": [{"title": "用免费的 3 次", "description": "每天清零"}]}]}, {"title": "下载封面", "highlight": true}]} />)).toBe(sample("Flowchart", 0));
+    expect(html(<Flowchart steps={[{"title": "选一张图片"}, {"title": "多大？", "branches": [{"label": "小于 5 MB", "steps": [{"title": "直接上传"}]}, {"label": "5–20 MB", "steps": [{"title": "先压缩"}, {"title": "再上传"}]}, {"label": "大于 20 MB", "steps": [{"title": "提示换一张"}]}]}]} />)).toBe(sample("Flowchart", 1));
+  });
+
+  it("Tree：两层的组织图、三层的大纲", () => {
+    expect(html(<Tree items={[{"label": "小小东 UI Kit", "children": [{"label": "@xxd/tokens", "description": "令牌"}, {"label": "@xxd/css", "description": "网页组件", "highlight": true}, {"label": "@xxd/react", "description": "React"}, {"label": "@xxd/mini", "description": "小程序"}]}]} />)).toBe(sample("Tree", 0));
+    expect(html(<Tree items={[{"label": "设置", "children": [{"label": "通用", "children": [{"label": "外观"}, {"label": "语言"}]}, {"label": "账号", "children": [{"label": "会员", "highlight": true}, {"label": "退出登录"}]}, {"label": "关于"}]}]} />)).toBe(sample("Tree", 1));
+  });
+
+  it("Cycle：最后一步有给读屏的「然后回到第 1 步」", () => {
+    expect(html(<Cycle steps={[{"title": "写", "description": "一篇长文"}, {"title": "发出去"}, {"title": "看数据", "description": "第二天上午"}, {"title": "复盘", "highlight": true, "description": "下一篇改什么"}]} />)).toBe(sample("Cycle", 0));
+  });
+
+  it("Layers", () => {
+    expect(html(<Layers items={[{"title": "页面", "description": "模板：拼好的整页"}, {"title": "模式", "description": "几个组件拼成的固定做法：拖放区、两次确认"}, {"title": "组件", "description": "按钮、对话框、列表", "highlight": true}, {"title": "令牌", "description": "颜色、字号、间距、圆角：唯一来源 tokens.css"}]} />)).toBe(sample("Layers", 0));
+  });
+
+  it("分支不合拢、后面还有步骤：提醒一次", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    render(<Flowchart steps={[{ title: "a", branches: [{ label: "x", steps: [{ title: "b" }] }, { label: "y", steps: [{ title: "c" }] }] }, { title: "d" }]} />);
+    expect(warn.mock.calls.filter((c) => String(c[0]).includes("接不上"))).toHaveLength(1);
     warn.mockRestore();
   });
 });

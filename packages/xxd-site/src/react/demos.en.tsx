@@ -11,6 +11,10 @@ import {
   Dumbbell,
   Steps,
   Timeline,
+  Flowchart,
+  Tree,
+  Cycle,
+  Layers,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -690,6 +694,75 @@ export function TimelineDemo() {
           { time: "Oct 23", dateTime: "2026-10-23", title: "ECharts charts", children: "Pie slices take the category colors, system colors in high contrast, and our own screen-reader sentence.", highlight: true },
           { time: "Oct 23", dateTime: "2026-10-23", title: "Phones and touch", children: "Controls 44 high on coarse pointers, 16px inputs, no tooltips on fingers." },
           { time: "Expected Nov", title: "Diagrams, batch two", children: "Flowchart and tree.", upcoming: true },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function FlowchartDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Flowchart
+        steps={[
+          { title: "Upload an image" },
+          {
+            title: "How big?",
+            merge: true,
+            branches: [
+              { label: "Under 5 MB", steps: [{ title: "Use it" }] },
+              { label: "Over 5 MB", highlight: true, steps: [{ title: "Compress", description: "Long edge 2000px" }] },
+            ],
+          },
+          { title: "Make the cover", highlight: true },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function TreeDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 640 }}>
+      <Tree
+        items={[
+          {
+            label: "Member site",
+            children: [
+              { label: "Styles", description: "Browse by category" },
+              { label: "Prompts", description: "Copy and use", highlight: true },
+              { label: "Account", description: "Plan and devices" },
+            ],
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function CycleDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 640 }}>
+      <Cycle
+        steps={[
+          { title: "Find references" },
+          { title: "Write the prompt" },
+          { title: "Generate" },
+          { title: "Pick one and refine", highlight: true },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function LayersDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Layers
+        items={[
+          { title: "Extensions", description: "Side panels, options pages, popups" },
+          { title: "@xxd/css", description: "Native components, copied into vendor/xxd/", highlight: true },
+          { title: "@xxd/tokens", description: "Color, type size, spacing, radius" },
         ]}
       />
     </div>
