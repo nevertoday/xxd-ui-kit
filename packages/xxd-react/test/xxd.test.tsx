@@ -29,6 +29,8 @@ import {
   Dumbbell,
   Radar,
   Quadrant,
+  Steps,
+  Timeline,
   Pagination,
   Search,
   Segmented,
@@ -590,5 +592,88 @@ describe("图型对抗测试（CHART-REVIEW-PLAN）", () => {
     expect(container.querySelector(".xxd-bars__track > .xxd-bars__bar > .xxd-bars__fill")).not.toBeNull();
     expect(container.querySelector(".xxd-bars__track > .xxd-bars__compare")).not.toBeNull();
     expect(container.querySelectorAll(".xxd-proportion__part")).toHaveLength(1);
+  });
+});
+
+describe("图解（DIAGRAM-PLAN）：React 和注册表里的 HTML 一模一样", () => {
+  const registry = JSON.parse(readFileSync(join(import.meta.dirname, "../../xxd-css/registry.json"), "utf8")).components as { name: string; markup: string; examples?: { markup: string }[] }[];
+  // 图标：原生写 <i data-xxd-icon>，React 直接是 <svg>；内联的 style 只是示例的宽度
+  const norm = (el: Element) => {
+    const c = el.cloneNode(true) as Element;
+    c.removeAttribute("style");
+    for (const m of c.querySelectorAll(".xxd-steps__mark")) if (m.querySelector("svg, i")) m.innerHTML = "✓";
+    return c.outerHTML.replace(/>\s+</g, "><");
+  };
+  const sample = (name: string, i: number) => {
+    const c = registry.find((x) => x.name === name)!;
+    const host = document.createElement("div");
+    host.innerHTML = i === 0 ? c.markup : c.examples![i - 1].markup;
+    return norm(host.firstElementChild!);
+  };
+  const html = (node: ReactNode) => norm(render(<XxdLocaleProvider locale="zh-CN">{node}</XxdLocaleProvider>).container.firstElementChild!);
+
+  it("Steps：横排、竖排带说明、做完的步能点回去", () => {
+    expect(html(<Steps label="上手" current={1} items={[{ title: "装好插件" }, { title: "打开侧边栏", description: "点工具栏上的图标" }, { title: "选一个模板" }, { title: "发第一条" }]} />)).toBe(sample("Steps", 0));
+    expect(
+      html(
+        <Steps
+          vertical
+          label="接入"
+          current={2}
+          items={[
+            { title: "新建插件", description: "pnpm xxd new ./today，组件拷进 vendor/xxd/" },
+            { title: "在 Chrome 里加载", description: "扩展程序页面打开开发者模式，选「加载已解压的扩展程序」" },
+            { title: "体检", description: "改完跑 pnpm xxd doctor ./today，按提示改" },
+          ]}
+        />,
+      ),
+    ).toBe(sample("Steps", 1));
+    expect(html(<Steps label="开通会员" current={2} onStepClick={() => {}} items={[{ title: "填资料" }, { title: "选套餐" }, { title: "付款" }]} />)).toBe(sample("Steps", 2));
+  });
+
+  it("Steps：点做完的步回到那一步；英文的进度", () => {
+    const onStepClick = vi.fn();
+    const { container } = render(<XxdLocaleProvider locale="zh-CN"><Steps current={1} onStepClick={onStepClick} items={[{ title: "填资料" }, { title: "付款" }]} /></XxdLocaleProvider>);
+    const buttons = container.querySelectorAll("button");
+    expect([...buttons].map((b) => b.textContent)).toEqual(["填资料（已完成，回到这一步）"]);
+    fireEvent.click(buttons[0]);
+    expect(onStepClick).toHaveBeenCalledWith(0);
+    cleanup();
+    render(<XxdLocaleProvider locale="en"><Steps label="Join" current={0} items={[{ title: "a" }, { title: "b" }]} /></XxdLocaleProvider>);
+    expect(screen.getByRole("list", { name: "Join: Step 1 of 2" })).toBeTruthy();
+  });
+
+  it("Timeline：重点、还没发生、没有 datetime 时是普通文字", () => {
+    expect(
+      html(
+        <Timeline
+          items={[
+            { time: "10月23日", dateTime: "2026-10-23", title: "ECharts 图表", children: "饼图每一块按分类色，高对比下换系统色，读屏的一句话自己写。", highlight: true },
+            { time: "10月23日", dateTime: "2026-10-23", title: "手机和触屏", children: "粗指针上控件 44 高，输入框 16px，手指不弹提示。" },
+            { time: "10月22日", dateTime: "2026-10-22", title: "截断和长文字", children: "内容折行、标签才省略，数字永不截断。" },
+          ]}
+        />,
+      ),
+    ).toBe(sample("Timeline", 0));
+    expect(
+      html(
+        <Timeline
+          items={[
+            { time: "10-28 09:12", dateTime: "2026-10-28T09:12", title: "已下单" },
+            { time: "10-29 14:30", dateTime: "2026-10-29T14:30", title: "已发货", children: "顺丰 SF1234567890", highlight: true },
+            { time: "预计 10-31", title: "待签收", upcoming: true },
+          ]}
+        />,
+      ),
+    ).toBe(sample("Timeline", 1));
+  });
+
+  it("超过 9 步只提醒一次，不截掉", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const items = Array.from({ length: 12 }, (_, i) => ({ title: `第 ${i + 1} 步` }));
+    const { container } = render(<><Steps current={0} items={items} /><Steps current={1} items={items} /></>);
+    expect(container.querySelectorAll(".xxd-steps__item")).toHaveLength(24);
+    expect(warn.mock.calls.filter((c) => String(c[0]).includes("超过 9 步"))).toHaveLength(1);
+    warn.mockRestore();
   });
 });

@@ -155,11 +155,11 @@
  * 按钮自己的点按区在 button.css（任何指针都有）。 */
 @layer xxd.components {
   @media (pointer: coarse) {
-    :is(.xxd-segmented > *, .xxd-chip, .xxd-toolbar__item, .xxd-tabs > [role="tab"], .xxd-toc a, .xxd-pagination > *, .xxd-swatch, .xxd-breadcrumbs__more, .xxd-sort-handle, .xxd-glyphs > button, .xxd-rail > *, .xxd-sidebar__item, .xxd-check, .xxd-radio, .xxd-switch) {
+    :is(.xxd-segmented > *, .xxd-chip, .xxd-toolbar__item, .xxd-tabs > [role="tab"], .xxd-toc a, .xxd-pagination > *, .xxd-swatch, .xxd-breadcrumbs__more, .xxd-sort-handle, .xxd-glyphs > button, .xxd-rail > *, .xxd-sidebar__item, .xxd-steps__link, .xxd-check, .xxd-radio, .xxd-switch) {
       position: relative;
     }
 
-    :is(.xxd-segmented > *, .xxd-chip, .xxd-toolbar__item, .xxd-tabs > [role="tab"], .xxd-toc a, .xxd-pagination > *, .xxd-swatch, .xxd-breadcrumbs__more, .xxd-sort-handle, .xxd-glyphs > button, .xxd-input-clear, .xxd-rail > *, .xxd-sidebar__item, .xxd-check, .xxd-radio)::before,
+    :is(.xxd-segmented > *, .xxd-chip, .xxd-toolbar__item, .xxd-tabs > [role="tab"], .xxd-toc a, .xxd-pagination > *, .xxd-swatch, .xxd-breadcrumbs__more, .xxd-sort-handle, .xxd-glyphs > button, .xxd-input-clear, .xxd-rail > *, .xxd-sidebar__item, .xxd-steps__link, .xxd-check, .xxd-radio)::before,
     .xxd-switch::after {
       content: "";
       position: absolute;

@@ -20,7 +20,9 @@ import { describe, expect, it } from "vitest";
 //   刻度缩写、watchChartTheme 管尺寸和触屏提示，约 2.6 KB。想过拆进 viz.js：Xxd.chartOptions 是 xxd.js 的公开接口，只加载 xxd.js + ECharts 的页面会丢掉这些修正，所以没拆
 // xxd.min.css 2026-10-28 从 26 调到 27、xxd.shadow.css.js 从 27 调到 28、viz.js 从 10 调到 11：雷达图和四象限（CHART-TYPES-PLAN 第 7 节）——
 //   两种图的样子、高对比和打印约 0.9 KB；换算和 HTML 约 1.7 KB。图的样子和别的图一样放在 xxd.min.css 里（React、小程序共用一份类名），没有单拆
-const BUDGET_KB = { "xxd.min.css": 27, "xxd.js": 39, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 28 };
+// xxd.min.css 2026-10-30 从 27 调到 28、xxd.shadow.css.js 从 28 调到 29：图解第一批（DIAGRAM-PLAN）——步骤和时间线，约 0.9 KB；
+// 连线是边框、窄了换排法靠容器查询，都在 CSS 里，不加 JS
+const BUDGET_KB = { "xxd.min.css": 28, "xxd.js": 39, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 29 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

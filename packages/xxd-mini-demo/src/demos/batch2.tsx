@@ -1,6 +1,6 @@
 // 第二批组件的演示
 import { View } from "@tarojs/components";
-import { Cell, CellGroup, Chart, Collapse, LoadMore, Picker, Progress, SearchBar, Stack, Stat, Stats, Steps, Swipe, SwipeGroup, Text, Uploader, useToast, type UploadItem } from "@xxd/mini";
+import { Cell, CellGroup, Chart, Collapse, LoadMore, Picker, Progress, SearchBar, Stack, Stat, Stats, Steps, Swipe, SwipeGroup, Text, Timeline, Uploader, useToast, type UploadItem } from "@xxd/mini";
 import { useState } from "react";
 import { IMAGES } from "./batch1";
 import type { Demo } from "./types";
@@ -128,14 +128,26 @@ export const BATCH2: Demo[] = [
         <Steps current={1} items={[{ title: tr("填资料", "Details") }, { title: tr("选套餐", "Plan") }, { title: tr("付款", "Pay") }]} />
         <Steps
           vertical
-          current={1}
+          current={2}
           items={[
-            { title: tr("下单", "Ordered"), description: tr("10 月 12 日 14:02", "Oct 12, 14:02") },
-            { title: tr("已发货", "Shipped"), description: tr("顺丰 · 预计明天到", "Arrives tomorrow") },
-            { title: tr("签收", "Delivered") },
+            { title: tr("新建插件", "Create"), description: tr("pnpm xxd new ./today", "pnpm xxd new ./today") },
+            { title: tr("在 Chrome 里加载", "Load in Chrome"), description: tr("打开开发者模式，加载已解压的扩展程序", "Developer mode, then Load unpacked") },
+            { title: tr("体检", "Check"), description: tr("改完跑 pnpm xxd doctor", "Run pnpm xxd doctor after changes") },
           ]}
         />
       </Stack>
+    ),
+  },
+  {
+    name: "Timeline",
+    render: (tr) => (
+      <Timeline
+        items={[
+          { time: "10-28 09:12", title: tr("已下单", "Ordered") },
+          { time: "10-29 14:30", title: tr("已发货", "Shipped"), text: tr("顺丰 SF1234567890", "SF Express SF1234567890"), highlight: true },
+          { time: tr("预计 10-31", "Exp. 10-31"), title: tr("待签收", "Awaiting delivery"), upcoming: true },
+        ]}
+      />
     ),
   },
   {

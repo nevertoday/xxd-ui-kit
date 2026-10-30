@@ -10,6 +10,7 @@ export const categories = {
   反馈: "Feedback",
   内容: "Content",
   展示: "Data display",
+  图解: "Diagrams",
 };
 
 export const components = {
@@ -1391,5 +1392,92 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     a11y: ["The chart is role=img; its aria-label gives each point's two values and its cell", "The current cell is not background alone: it also has an accent outline; the highlighted point is solid, the rest hollow"],
     js: `Xxd.viz(el, "quadrant", [{ label: "You", x: 4.6, y: 2.4, highlight: true }], { x: { label: "Attachment anxiety", min: 1, max: 7, cut: 4 }, y: { label: "Attachment avoidance", min: 1, max: 7, cut: 4 }, names: { "low-low": "Secure", … } })
 // React: <Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />`,
+  },
+  Steps: {
+    title: "Steps",
+    summary: "One job in a few steps: done steps get a check, the current step has the selected background and an accent line, steps still ahead are grey. Horizontal shows progress, vertical carries notes; when horizontal does not fit it turns vertical by itself, never scrolling sideways. Also works as the step bar of a multi-step form.",
+    attributes: {
+      'data-state="done | current"': "Done / current step (default: not reached yet); also put aria-current=\"step\" on the current one",
+      "data-vertical": "Vertical (when steps have a few lines of notes); without it the steps run across and turn vertical when they do not fit (container < 480px)",
+      ".xxd-steps__link": "Done steps you can go back to: make the title a <button> / <a> with this class",
+    },
+    markup: `<ol class="xxd-steps" aria-label="Getting started: step 2 of 4" style="max-width:640px">
+  <li class="xxd-steps__item" data-state="done"><span class="xxd-steps__mark" aria-hidden="true"><i data-xxd-icon="Check"></i></span><span class="xxd-steps__text"><span class="xxd-steps__title">Install<span class="xxd-sr-only"> (done)</span></span></span></li>
+  <li class="xxd-steps__item" data-state="current" aria-current="step"><span class="xxd-steps__mark" aria-hidden="true">2</span><span class="xxd-steps__text"><span class="xxd-steps__title">Open the side panel</span><span class="xxd-steps__desc">Click the icon in the toolbar</span></span></li>
+  <li class="xxd-steps__item"><span class="xxd-steps__mark" aria-hidden="true">3</span><span class="xxd-steps__text"><span class="xxd-steps__title">Pick a template</span></span></li>
+  <li class="xxd-steps__item"><span class="xxd-steps__mark" aria-hidden="true">4</span><span class="xxd-steps__text"><span class="xxd-steps__title">Post your first one</span></span></li>
+</ol>`,
+    rules: [
+      "Use it only when the steps happen in order; parallel items are a list, choosing one path is a radio group or cards",
+      "At most 9 steps (DIAGRAM-PLAN D145); group or split beyond that",
+      "Each title is an action (\"Open the side panel\"); the note says how or how long, one or two lines",
+      "Done is an ink check, not green; the current step's mark is a 1.5px accent line (≥ 3:1), not just a shade",
+      "Multi-step forms: only done steps link back; the current step and those ahead are not links",
+      "§14 diagrams; DIAGRAM-PLAN",
+    ],
+    a11y: [
+      "An ordered list (<ol>), so screen readers say \"item 2 of 4\"; the list's aria-label gives the progress (\"step 2 of 4\")",
+      "The current step has aria-current=\"step\"; done steps add a hidden \"(done)\" to the title, and the check is aria-hidden",
+      "Numbers in the marks and the connecting lines are aria-hidden (the list already numbers itself)",
+      "Steps you can go back to are <button> or <a>, reachable by keyboard, with a 44 touch target on fingers (TOUCH-REVIEW-PLAN)",
+    ],
+    examples: [
+      {
+        title: "Vertical, with notes",
+        markup: `<ol class="xxd-steps" data-vertical aria-label="Set up: step 3 of 3" style="max-width:420px">
+  <li class="xxd-steps__item" data-state="done"><span class="xxd-steps__mark" aria-hidden="true"><i data-xxd-icon="Check"></i></span><span class="xxd-steps__text"><span class="xxd-steps__title">Create the extension<span class="xxd-sr-only"> (done)</span></span><span class="xxd-steps__desc">pnpm xxd new ./today copies the components into vendor/xxd/</span></span></li>
+  <li class="xxd-steps__item" data-state="done"><span class="xxd-steps__mark" aria-hidden="true"><i data-xxd-icon="Check"></i></span><span class="xxd-steps__text"><span class="xxd-steps__title">Load it in Chrome<span class="xxd-sr-only"> (done)</span></span><span class="xxd-steps__desc">Turn on developer mode on the extensions page and choose Load unpacked</span></span></li>
+  <li class="xxd-steps__item" data-state="current" aria-current="step"><span class="xxd-steps__mark" aria-hidden="true">3</span><span class="xxd-steps__text"><span class="xxd-steps__title">Check it</span><span class="xxd-steps__desc">After each change run pnpm xxd doctor ./today and fix what it reports</span></span></li>
+</ol>`,
+      },
+      {
+        title: "Multi-step form: done steps link back",
+        markup: `<ol class="xxd-steps" aria-label="Join: step 3 of 3" style="max-width:520px">
+  <li class="xxd-steps__item" data-state="done"><span class="xxd-steps__mark" aria-hidden="true"><i data-xxd-icon="Check"></i></span><span class="xxd-steps__text"><button type="button" class="xxd-steps__title xxd-steps__link">Details<span class="xxd-sr-only"> (done, go back)</span></button></span></li>
+  <li class="xxd-steps__item" data-state="done"><span class="xxd-steps__mark" aria-hidden="true"><i data-xxd-icon="Check"></i></span><span class="xxd-steps__text"><button type="button" class="xxd-steps__title xxd-steps__link">Plan<span class="xxd-sr-only"> (done, go back)</span></button></span></li>
+  <li class="xxd-steps__item" data-state="current" aria-current="step"><span class="xxd-steps__mark" aria-hidden="true">3</span><span class="xxd-steps__text"><span class="xxd-steps__title">Pay</span></span></li>
+</ol>`,
+      },
+    ],
+    use: ["Onboarding and setup guides: a few steps to get one thing done", "Multi-step forms and sign-up flows: which step you are on"],
+    avoid: ["Parallel items with no order: use a list", "Only how much is done: use a meter (Progress)", "Events in time (with dates): use Timeline"],
+  },
+  Timeline: {
+    title: "Timeline",
+    summary: "What happened, in order: the time on the left, one vertical line through every entry, each with a title and a line or two. The newest entry can be emphasised; what has not happened yet is a hollow dot and a dashed line. When narrow, the time moves above the title.",
+    attributes: {
+      "data-highlight": "Emphasis (the latest release, the current status): a solid accent dot; at most 1–2 per timeline",
+      "data-upcoming": "Not happened yet (the next planned release, awaiting delivery): hollow dot, grey text, dashed line",
+      "--timeline-time": "Width of the time column (default 6.5 characters); below 360px the time moves above the title",
+    },
+    markup: `<ol class="xxd-timeline" style="max-width:560px">
+  <li class="xxd-timeline__item" data-highlight><time class="xxd-timeline__time" datetime="2026-10-23">Oct 23</time><div class="xxd-timeline__body"><p class="xxd-timeline__title">ECharts charts</p><p class="xxd-timeline__text">Pie slices take the category colors, system colors in high contrast, and our own screen-reader sentence.</p></div></li>
+  <li class="xxd-timeline__item"><time class="xxd-timeline__time" datetime="2026-10-23">Oct 23</time><div class="xxd-timeline__body"><p class="xxd-timeline__title">Phones and touch</p><p class="xxd-timeline__text">Controls 44 high on coarse pointers, 16px inputs, no tooltips on fingers.</p></div></li>
+  <li class="xxd-timeline__item"><time class="xxd-timeline__time" datetime="2026-10-22">Oct 22</time><div class="xxd-timeline__body"><p class="xxd-timeline__title">Truncation and long text</p><p class="xxd-timeline__text">Content wraps, only labels get an ellipsis, numbers are never cut.</p></div></li>
+</ol>`,
+    rules: [
+      "Use it only for events with times, in order; steps without times are Steps",
+      "Newest first (changelogs) or oldest first (order progress) both work; pick one per page",
+      "At most 1–2 emphasised entries (the latest release, the current status), in the accent; the rest are grey dots",
+      "Write just enough of the time to tell entries apart (\"Oct 23\" within one year); the full date for machines goes in <time datetime>",
+      "At most 9 entries (DIAGRAM-PLAN D145); paginate or group by month beyond that",
+      "§14 diagrams; DIAGRAM-PLAN",
+    ],
+    a11y: [
+      "An ordered list (<ol>); times are <time datetime>",
+      "Dots and the line are pseudo-elements, not read out; emphasis and not-yet are not color alone: say it in the text (\"Expected Nov\", \"Awaiting delivery\")",
+    ],
+    examples: [
+      {
+        title: "Order progress: what has not happened is a hollow dot",
+        markup: `<ol class="xxd-timeline" style="max-width:420px">
+  <li class="xxd-timeline__item"><time class="xxd-timeline__time" datetime="2026-10-28T09:12">10-28 09:12</time><div class="xxd-timeline__body"><p class="xxd-timeline__title">Ordered</p></div></li>
+  <li class="xxd-timeline__item" data-highlight><time class="xxd-timeline__time" datetime="2026-10-29T14:30">10-29 14:30</time><div class="xxd-timeline__body"><p class="xxd-timeline__title">Shipped</p><p class="xxd-timeline__text">SF Express SF1234567890</p></div></li>
+  <li class="xxd-timeline__item" data-upcoming><span class="xxd-timeline__time">Expected 10-31</span><div class="xxd-timeline__body"><p class="xxd-timeline__title">Awaiting delivery</p></div></li>
+</ol>`,
+      },
+    ],
+    use: ["Changelogs and version history", "Status history of orders, reviews and tickets"],
+    avoid: ["Steps without times: use Steps", "Many records you search or filter: use a table (Table)"],
   },
 };

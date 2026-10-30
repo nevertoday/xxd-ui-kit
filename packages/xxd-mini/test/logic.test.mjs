@@ -410,3 +410,31 @@ test("图型对抗测试（CHART-REVIEW-PLAN）：热力格点一格写出这一
   assert.deepEqual(chartPalette(vars), ["a", "g9", "a8", "g10", "g11"]);
   v.unmount();
 });
+
+test("图解（DIAGRAM-PLAN）：步骤和时间线的类名和网页版一样；做完 / 当前写进读屏；通到还没发生的那一段是虚线", async () => {
+  const { Steps, Timeline } = mini;
+  const v = render(
+    app(
+      h(Steps, { current: 1, items: [{ title: "填资料" }, { title: "选套餐", description: "按月或按年" }, { title: "付款" }] }),
+      h(Timeline, { items: [{ time: "10-28", title: "已下单" }, { time: "10-29", title: "已发货", highlight: true }, { time: "预计 10-31", title: "待签收", upcoming: true }] }),
+    ),
+  );
+  await tick(10);
+  assert.equal(v.byClass("xxd-steps")[0].props.ariaLabel, "第 2 步，共 3 步");
+  const items = v.byClass("xxd-steps__item");
+  assert.deepEqual(items.map((n) => cls(n).match(/is-state-(\w+)/)?.[1] ?? "todo"), ["done", "current", "todo"]);
+  assert.deepEqual(items.map((n) => n.props.ariaLabel), ["填资料（已完成）", "选套餐（当前）", "付款"]);
+  assert.equal(v.byClass("xxd-steps__desc").length, 1);
+  const rows = v.byClass("xxd-timeline__item");
+  assert.ok(cls(rows[1]).includes("is-highlight") && cls(rows[1]).includes("is-before-upcoming"));
+  assert.ok(cls(rows[2]).includes("is-upcoming"));
+  assert.ok(!cls(rows[0]).includes("is-before-upcoming"));
+  // 网页版的类名都在（样式是从网页版改写来的）
+  const web = JSON.parse((await import("node:fs")).readFileSync(new URL("../../xxd-css/registry.json", import.meta.url), "utf8")).components;
+  for (const name of ["Steps", "Timeline"]) {
+    const used = new Set(v.all(() => true).flatMap((n) => cls(n).split(/\s+/)).filter((c) => c.startsWith("xxd-")));
+    const known = new Set(web.find((c) => c.name === name).classes);
+    for (const c of used) if (c.startsWith(known.values().next().value + "__") || c === known.values().next().value) assert.ok(known.has(c), `${c} 不在网页版的 ${name} 里`);
+  }
+  v.unmount();
+});

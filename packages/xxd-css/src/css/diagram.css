@@ -1,0 +1,340 @@
+/* 图解（DIAGRAM-PLAN）：说明「怎么运作」的图。节点和字是 HTML，连线是边框（D141）：
+ * 高对比模式下边框跟着换成系统色（背景色会被抹掉），打印、从右往左也跟着 CSS 走；读屏念的是一张有序列表（D144）。 */
+@layer xxd.components {
+  /* ── 步骤：一件事分几步。做完的打勾，当前这步是选中底加主色线（D143） ──
+   * 只用 flex 和定位（小程序的 Skyline 不认 grid）：标记和字在文档流里，线是伪元素的边框 */
+  .xxd-steps {
+    --steps-mark: 24px;
+    /* 按自己的宽度换排法（D142）：放不下横排时一步一行 */
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 480px;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-steps__item {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    min-width: 0;
+    color: var(--muted);
+  }
+
+  /* 横排：标记右边一根线，连到下一步的标记（两头各空 8px） */
+  .xxd-steps__item::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--steps-mark) / 2);
+    inset-inline: calc(var(--steps-mark) + var(--space-2)) var(--space-2);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .xxd-steps__item:last-child::after {
+    display: none;
+  }
+
+  /* 走过的那一段是主色 1.5px */
+  .xxd-steps__item[data-state="done"]::after {
+    border-top: 1.5px solid var(--action);
+  }
+
+  .xxd-steps__mark {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--steps-mark);
+    height: var(--steps-mark);
+    border: 1px solid var(--line-strong);
+    /* 点、色块跟圆角开关走（§3）：直角时是方块 */
+    border-radius: var(--r-pill);
+    background: var(--paper);
+    color: var(--muted);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .xxd-steps__mark svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .xxd-steps__item[data-state="current"] > .xxd-steps__mark {
+    border: 1.5px solid var(--action);
+    background: var(--selected-bg);
+    color: var(--action-text);
+  }
+
+  .xxd-steps__item[data-state="done"] > .xxd-steps__mark {
+    border-color: var(--action-fill);
+    background: var(--action-fill);
+    color: var(--on-action);
+  }
+
+  .xxd-steps__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    min-width: 0;
+    max-width: 100%;
+    padding-inline-end: var(--space-3);
+    box-sizing: border-box;
+  }
+
+  .xxd-steps__title {
+    /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
+    overflow-wrap: anywhere;
+    font-weight: var(--weight-medium);
+  }
+
+  .xxd-steps__item[data-state="done"] .xxd-steps__title,
+  .xxd-steps__item[data-state="current"] .xxd-steps__title {
+    color: var(--ink);
+  }
+
+  /* 走过的步可以点回去（多步表单）：标题是按钮或链接 */
+  .xxd-steps__link {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-weight: var(--weight-medium);
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .xxd-steps__link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .xxd-steps__desc {
+    overflow-wrap: anywhere;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  /* 竖排：标记在左，标记之间一根竖线；每步可以有几行说明 */
+  .xxd-steps[data-vertical] > .xxd-steps__item {
+    flex-basis: 100%;
+    flex-direction: row;
+    gap: var(--space-3);
+  }
+
+  .xxd-steps[data-vertical] > .xxd-steps__item::after {
+    top: calc(var(--steps-mark) + var(--space-1));
+    bottom: var(--space-1);
+    inset-inline: calc(var(--steps-mark) / 2 - 0.5px) auto;
+    border-top: 0;
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  .xxd-steps[data-vertical] > .xxd-steps__item[data-state="done"]::after {
+    inset-inline-start: calc(var(--steps-mark) / 2 - 0.75px);
+    border-top: 0;
+    border-inline-start: 1.5px solid var(--action);
+  }
+
+  .xxd-steps[data-vertical] .xxd-steps__text {
+    flex: 1;
+    /* 标题的第一行（20px）和 24px 的标记居中对齐；步和步之间 16px */
+    padding-block: var(--space-0-5) var(--space-4);
+    padding-inline-end: 0;
+  }
+
+  .xxd-steps[data-vertical] > .xxd-steps__item:last-child .xxd-steps__text {
+    padding-bottom: 0;
+  }
+
+  /* 窄（< 480px）：横排放不下就竖排，和 data-vertical 一样 */
+  @container (max-width: 479px) {
+    .xxd-steps > .xxd-steps__item {
+      flex-basis: 100%;
+      flex-direction: row;
+      gap: var(--space-3);
+    }
+
+    .xxd-steps > .xxd-steps__item::after {
+      top: calc(var(--steps-mark) + var(--space-1));
+      bottom: var(--space-1);
+      inset-inline: calc(var(--steps-mark) / 2 - 0.5px) auto;
+      border-top: 0;
+      border-inline-start: 1px solid var(--line-strong);
+    }
+
+    .xxd-steps > .xxd-steps__item[data-state="done"]::after {
+      inset-inline-start: calc(var(--steps-mark) / 2 - 0.75px);
+      border-top: 0;
+      border-inline-start: 1.5px solid var(--action);
+    }
+
+    .xxd-steps .xxd-steps__text {
+      flex: 1;
+      padding-block: var(--space-0-5) var(--space-4);
+      padding-inline-end: 0;
+    }
+
+    .xxd-steps > .xxd-steps__item:last-child .xxd-steps__text {
+      padding-bottom: 0;
+    }
+  }
+
+  /* ── 时间线：先后发生了什么。时间在左，一根竖线串起每条；最新的一条可以标重点 ──
+   * 同样只用 flex 和定位：时间、内容在文档流里，点和竖线是伪元素，画在「时间 + 间距」之后那条 16px 的轨道正中 */
+  .xxd-timeline {
+    --timeline-time: calc(var(--text-sm) * 6.5);
+    --timeline-mark: 9px;
+    /* 轨道从哪儿开始（窄时是 0：时间写到标题上面） */
+    --timeline-rail: calc(var(--timeline-time) + var(--space-3));
+    container-type: inline-size;
+    contain-intrinsic-inline-size: 480px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-timeline__item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .xxd-timeline__time {
+    flex: none;
+    width: var(--timeline-time);
+    overflow-wrap: anywhere;
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    /* 和标题的第一行对齐（标题 20px 行高） */
+    line-height: var(--leading-sm);
+    text-align: end;
+  }
+
+  /* 点：在轨道正中，和标题的第一行居中 */
+  .xxd-timeline__item::before {
+    content: "";
+    position: absolute;
+    top: calc((var(--leading-sm) - var(--timeline-mark)) / 2);
+    inset-inline-start: calc(var(--timeline-rail) + (var(--space-4) - var(--timeline-mark)) / 2);
+    box-sizing: border-box;
+    width: var(--timeline-mark);
+    height: var(--timeline-mark);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--line-strong);
+  }
+
+  /* 竖线：在点下面接到下一条的点上面 */
+  .xxd-timeline__item::after {
+    content: "";
+    position: absolute;
+    top: calc((var(--leading-sm) + var(--timeline-mark)) / 2 + var(--space-1));
+    bottom: calc(var(--space-1) - (var(--leading-sm) - var(--timeline-mark)) / 2);
+    inset-inline-start: calc(var(--timeline-rail) + var(--space-4) / 2 - 0.5px);
+    border-inline-start: 1px solid var(--line-strong);
+  }
+
+  .xxd-timeline__item:last-child::after {
+    display: none;
+  }
+
+  .xxd-timeline__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+    /* 让出 16px 的轨道和轨道后面的 12px */
+    margin-inline-start: calc(var(--space-4) + var(--space-3));
+    padding-bottom: var(--space-5);
+    color: var(--ink);
+  }
+
+  .xxd-timeline__item:last-child > .xxd-timeline__body {
+    padding-bottom: 0;
+  }
+
+  .xxd-timeline__title {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-weight: var(--weight-medium);
+  }
+
+  .xxd-timeline__text {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--muted);
+  }
+
+  /* 重点（最多 1–2 条）：主色实心 */
+  .xxd-timeline__item[data-highlight]::before {
+    border-color: var(--action);
+    background: var(--action);
+  }
+
+  /* 还没发生的（订单的「待签收」、计划里的下一版）：空心、灰字 */
+  .xxd-timeline__item[data-upcoming]::before {
+    background: var(--paper);
+  }
+
+  .xxd-timeline__item[data-upcoming] > .xxd-timeline__body,
+  .xxd-timeline__item[data-upcoming] .xxd-timeline__title {
+    color: var(--muted);
+  }
+
+  /* 通到「还没发生」的那一段是虚线 */
+  .xxd-timeline__item:has(+ [data-upcoming])::after,
+  .xxd-timeline__item[data-upcoming]::after {
+    border-inline-start-style: dashed;
+  }
+
+  /* 窄（< 360px）：时间写到标题上面，不占一列；轨道在最前面 */
+  @container (max-width: 359px) {
+    .xxd-timeline__item {
+      --timeline-rail: 0px;
+      flex-direction: column;
+      gap: 0;
+      padding-inline-start: calc(var(--space-4) + var(--space-2));
+    }
+
+    .xxd-timeline__time {
+      width: auto;
+      text-align: start;
+    }
+
+    .xxd-timeline__body {
+      margin-inline-start: 0;
+    }
+  }
+
+  /* 打印：做完的标记是底色画的，浏览器缺省不印背景 */
+  @media print {
+    .xxd-steps,
+    .xxd-timeline {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+}

@@ -261,17 +261,20 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
       if (cs.textAlign === "center" || cs.justifyContent === "center" || cs.position === "absolute") continue;
       if ((cs.display.includes("flex") && cs.flexDirection.startsWith("column") && cs.alignItems === "center") || (cs.display.includes("grid") && cs.justifyItems === "center")) continue; // 竖排居中（侧栏图标 + 字）
       const v = visibleBox(k);
-      const l = boxed(k, cs) ? b.left : v.l;
+      // 靠右对齐的字（雷达图左边的名字和数）：比的是右边，左边参差是本来就该有的
+      const end = !boxed(k, cs) && (cs.textAlign === "right" || (cs.textAlign === "end" && cs.direction === "ltr"));
+      const l = boxed(k, cs) ? b.left : end ? v.r : v.l;
       if (!Number.isFinite(l)) continue;
       // 内容在自己的框里居中（演示区、按钮组、图例居中）：左边离多远是凑出来的，不算
       if (!boxed(k, cs) && v.l - b.left > 4 && Math.abs(v.l - b.left - (b.right - v.r)) < 2) continue;
-      items.push({ k, l });
+      items.push({ k, l, end });
     }
     if (!vertical) continue;
     for (let i = 1; i < items.length; i++) {
+      if (items[i].end !== items[i - 1].end) continue;
       const d = Math.abs(items[i].l - items[i - 1].l);
       if (d > 0.75 && d <= 3) {
-        out.push({ kind: "差一点没对齐", where: name(stack), detail: `${name(items[i - 1].k).split("›").pop().trim()} 和 ${name(items[i].k).split("›").pop().trim()} 左边差 ${d.toFixed(1)}px` });
+        out.push({ kind: "差一点没对齐", where: name(stack), detail: `${name(items[i - 1].k).split("›").pop().trim()} 和 ${name(items[i].k).split("›").pop().trim()} ${items[i].end ? "右" : "左"}边差 ${d.toFixed(1)}px` });
         break;
       }
     }

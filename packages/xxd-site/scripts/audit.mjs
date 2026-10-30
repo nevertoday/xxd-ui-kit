@@ -24,7 +24,7 @@
 //   15. 动效（MOTION-REVIEW-PLAN D90）：按下的同一刻就有看得见的变化；减少动效下只剩慢淡入淡出，进行中的按钮不定住。
 //   16. 状态（ACCEPTANCE-REVIEW）：选中 / 禁用 / 出错叠上悬停、聚焦后按优先级不变。
 //   17. 截断（TRUNCATION-REVIEW-PLAN D96）：长文字不硬裁、内容和数字不省略、省略的悬停能看到全文、字不互相压；React 不伸出格子。
-// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch|chart]
+// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch|chart|diagram]
 // 需要 Chromium：CHROME_EXE=<chrome-headless-shell 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
 import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -1560,7 +1560,167 @@ async function chartAudit() {
   console.log(`图表：${runs.length} 种环境 × 中英，组件页的图 + 7 张极端图（饼、7 条线、十亿级柱、横向条形、参考线、坏值、时间轴）`);
 }
 
-const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit };
+/* ── 图解（DIAGRAM-PLAN）：线接得上、不穿字、窄了变竖排、不横向滚动、高对比看得见、读屏是列表 ── */
+async function diagramAudit() {
+  // 在组件页里另放几组极端的：9 步长标题、英文长词、长时间、还没发生的；每组放进 320 / 479 / 480 / 720 宽的格子
+  const extreme = () => {
+    const check = '<span class="xxd-steps__mark" aria-hidden="true"><svg viewBox="0 0 24 24"></svg></span>';
+    const step = (t, i, cur) => {
+      const state = i < cur ? "done" : i === cur ? "current" : "";
+      const mark = state === "done" ? check : `<span class="xxd-steps__mark" aria-hidden="true">${i + 1}</span>`;
+      return `<li class="xxd-steps__item"${state ? ` data-state="${state}"` : ""}${state === "current" ? ' aria-current="step"' : ""}>${mark}<span class="xxd-steps__text"><span class="xxd-steps__title">${t}${state === "done" ? '<span class="xxd-sr-only">（已完成）</span>' : ""}</span><span class="xxd-steps__desc">说明写怎么做，可能有两行那么长的一句话</span></span></li>`;
+    };
+    const titles = ["装好插件", "Internationalization", "打开侧边栏并且选好一个默认的模板", "选一个模板", "发第一条", "看数据", "复盘", "再写一条", "完成"];
+    const S = {
+      steps9: `<ol class="xxd-steps" aria-label="第 4 步，共 9 步">${titles.map((t, i) => step(t, i, 3)).join("")}</ol>`,
+      steps3v: `<ol class="xxd-steps" data-vertical aria-label="第 3 步，共 3 步">${titles.slice(0, 3).map((t, i) => step(t, i, 2)).join("")}</ol>`,
+      timeline: `<ol class="xxd-timeline">${[
+        ["2026年10月23日 上午 09:12", "一个很长很长的标题，放不下就折行，不省略", ""],
+        ["10月22日", "Internationalization", " data-highlight"],
+        ["预计 11月", "还没发生", " data-upcoming"],
+        ["预计 12月", "也还没发生", " data-upcoming"],
+      ].map(([t, h, a]) => `<li class="xxd-timeline__item"${a}><span class="xxd-timeline__time">${t}</span><div class="xxd-timeline__body"><p class="xxd-timeline__title">${h}</p><p class="xxd-timeline__text">一两行说明，长的时候折行。</p></div></li>`).join("")}</ol>`,
+    };
+    const box = document.createElement("div");
+    box.id = "audit-diagrams";
+    document.querySelector("main").append(box);
+    for (const [k, html] of Object.entries(S))
+      for (const w of [320, 479, 480, 720]) {
+        const d = document.createElement("div");
+        d.style.cssText = `width:${w}px;max-width:100%;margin:24px 0`;
+        d.dataset.audit = `${k}@${w}`;
+        d.innerHTML = html;
+        box.append(d);
+      }
+  };
+  const inspect = () => {
+    const out = [];
+    const px = (v) => parseFloat(v) || 0;
+    const forced = matchMedia("(forced-colors: active)").matches;
+    const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+    const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const ratio = (a, b) => { const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+    const Canvas = (() => { const p = document.createElement("span"); p.style.cssText = "color:Canvas;forced-color-adjust:none"; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; })();
+    // 伪元素画的线 / 点：按它算好的位置换成页面上的矩形（相对于 li 的内边距盒）
+    const pseudo = (li, which) => {
+      const cs = getComputedStyle(li, which);
+      if (cs.display === "none" || cs.content === "none" || cs.visibility === "hidden") return null;
+      const r = li.getBoundingClientRect();
+      const x = r.left + px(cs.left);
+      const y = r.top + px(cs.top);
+      const w = px(cs.width) + px(cs.borderLeftWidth) + px(cs.borderRightWidth);
+      const h = px(cs.height) + px(cs.borderTopWidth) + px(cs.borderBottomWidth);
+      const color = px(cs.borderLeftWidth) || px(cs.borderRightWidth) ? (px(cs.borderLeftWidth) ? cs.borderLeftColor : cs.borderRightColor) : cs.borderTopColor;
+      return { left: x, top: y, right: x + w, bottom: y + h, w, h, color };
+    };
+    const hit = (a, b) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.5 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.5;
+    const gapX = (a, b) => Math.max(b.left - a.right, a.left - b.right);
+    const name = (el) => el.closest("[data-audit]")?.dataset.audit ?? el.closest("[id]")?.id ?? el.className;
+    for (const d of document.querySelectorAll("main .xxd-steps, main .xxd-timeline")) {
+      if (!d.getClientRects().length) continue;
+      const k = name(d);
+      const steps = d.classList.contains("xxd-steps");
+      const items = [...d.children];
+      if (d.tagName !== "OL" || items.some((li) => li.tagName !== "LI")) out.push(`${k} 不是 <ol><li>（读屏要念成有序列表）`);
+      const box = d.getBoundingClientRect();
+      if (d.scrollWidth > d.clientWidth + 1) out.push(`${k} 横向溢出（${d.scrollWidth} > ${d.clientWidth}）`);
+      for (const el of d.querySelectorAll("*")) {
+        const r = el.getBoundingClientRect();
+        if (r.width && (r.left < box.left - 1 || r.right > box.right + 1)) { out.push(`${k} 有东西伸出图外：${el.className || el.tagName}`); break; }
+      }
+      const texts = [...d.querySelectorAll(".xxd-steps__title, .xxd-steps__desc, .xxd-timeline__time, .xxd-timeline__title, .xxd-timeline__text")].flatMap((t) => [...t.getClientRects()]);
+      const lines = [];
+      if (steps) {
+        const vertical = items.length > 1 && items[1].getBoundingClientRect().top >= items[0].getBoundingClientRect().bottom - 1;
+        if (!d.hasAttribute("data-vertical") && box.width >= 480 && vertical) out.push(`${k} 宽 ${Math.round(box.width)}px 还是竖排`);
+        if (box.width < 480 && !vertical) out.push(`${k} 宽 ${Math.round(box.width)}px 放不下横排，没有变竖排`);
+        const current = items.filter((li) => li.dataset.state === "current");
+        if (current.length > 1) out.push(`${k} 有 ${current.length} 个当前步`);
+        for (const li of current) if (li.getAttribute("aria-current") !== "step") out.push(`${k} 当前这步没写 aria-current="step"`);
+        for (const li of items.filter((x) => x.dataset.state === "done")) if (!li.querySelector(".xxd-sr-only")) out.push(`${k} 做完的步没有给读屏的「已完成」`);
+        for (const m of d.querySelectorAll(".xxd-steps__mark")) if (m.getAttribute("aria-hidden") !== "true") out.push(`${k} 标记没有 aria-hidden`);
+        items.forEach((li, i) => {
+          const line = pseudo(li, "::after");
+          const last = i === items.length - 1;
+          if (last) return line && out.push(`${k} 最后一步后面还有线`);
+          if (!line) return out.push(`${k} 第 ${i + 1} 步后面没有线`);
+          lines.push(line);
+          const a = li.querySelector(".xxd-steps__mark").getBoundingClientRect();
+          const b = items[i + 1].querySelector(".xxd-steps__mark").getBoundingClientRect();
+          if (vertical) {
+            const cx = (line.left + line.right) / 2;
+            if (Math.abs(cx - (a.left + a.right) / 2) > 1) out.push(`${k} 第 ${i + 1} 步的竖线没在标记正下方（差 ${(cx - (a.left + a.right) / 2).toFixed(1)}px）`);
+            const g1 = line.top - a.bottom, g2 = b.top - line.bottom;
+            if (g1 < 2 || g1 > 6 || g2 < 2 || g2 > 6) out.push(`${k} 第 ${i + 1} 步的竖线没接上标记（上 ${g1.toFixed(1)}px、下 ${g2.toFixed(1)}px）`);
+          } else {
+            const cy = (line.top + line.bottom) / 2;
+            if (Math.abs(cy - (a.top + a.bottom) / 2) > 1) out.push(`${k} 第 ${i + 1} 步的线没在标记中间的高度`);
+            const g1 = gapX(line, a), g2 = gapX(line, b);
+            if (g1 < 6 || g1 > 10 || g2 < 6 || g2 > 10) out.push(`${k} 第 ${i + 1} 步的线没接上两头的标记（${g1.toFixed(1)}px、${g2.toFixed(1)}px）`);
+          }
+        });
+      } else {
+        const dots = items.map((li) => pseudo(li, "::before"));
+        items.forEach((li, i) => {
+          const dot = dots[i];
+          if (!dot) return out.push(`${k} 第 ${i + 1} 条没有点`);
+          const time = li.querySelector(".xxd-timeline__time").getBoundingClientRect();
+          const lh = px(getComputedStyle(li.querySelector(".xxd-timeline__time")).lineHeight);
+          if (Math.abs((dot.top + dot.bottom) / 2 - (time.top + lh / 2)) > 1.5) out.push(`${k} 第 ${i + 1} 条的点和第一行字没对齐`);
+          const line = pseudo(li, "::after");
+          if (i === items.length - 1) return line && out.push(`${k} 最后一条下面还有线`);
+          if (!line) return out.push(`${k} 第 ${i + 1} 条下面没有线`);
+          lines.push(line, dot);
+          if (Math.abs((line.left + line.right) / 2 - (dot.left + dot.right) / 2) > 1) out.push(`${k} 第 ${i + 1} 条的线没在点的正下方`);
+          const g1 = line.top - dot.bottom, g2 = dots[i + 1].top - line.bottom;
+          if (g1 < 2 || g1 > 6 || g2 < 2 || g2 > 6) out.push(`${k} 第 ${i + 1} 条的线没接上点（上 ${g1.toFixed(1)}px、下 ${g2.toFixed(1)}px）`);
+          const dashed = getComputedStyle(li, "::after").borderLeftStyle === "dashed" || getComputedStyle(li, "::after").borderRightStyle === "dashed";
+          if (items[i + 1].hasAttribute("data-upcoming") !== dashed) out.push(`${k} 第 ${i + 1} 条下面的线${dashed ? "是虚线，下一条已经发生了" : "通到还没发生的一条，不是虚线"}`);
+        });
+      }
+      for (const l of lines) {
+        if (texts.some((t) => hit(l, t))) { out.push(`${k} 线或点压住了字`); break; }
+        if (forced && ratio(l.color, Canvas) < 3) { out.push(`${k} 高对比模式下线和底色只有 ${ratio(l.color, Canvas).toFixed(2)}:1`); break; }
+      }
+    }
+    return out;
+  };
+  const runs = [
+    { id: "桌面", ctx: { viewport: { width: 1280, height: 900 } } },
+    { id: "手机", ctx: { ...devices["iPhone 13"] } },
+    { id: "从右往左", ctx: { viewport: { width: 1280, height: 900 } }, rtl: true },
+    { id: "暗", ctx: { viewport: { width: 1280, height: 900 }, colorScheme: "dark" }, theme: "dark" },
+    { id: "高对比·暗", ctx: { viewport: { width: 1280, height: 900 }, forcedColors: "active", colorScheme: "dark" } },
+    { id: "打印", ctx: { viewport: { width: 1280, height: 900 } }, print: true },
+  ];
+  let count = 0;
+  for (const run of runs) {
+    for (const page of ["/components/steps/", "/components/timeline/", "/en/components/steps/", "/en/components/timeline/"]) {
+      const ctx = await browser.newContext(run.ctx);
+      const tab = await ctx.newPage();
+      const errors = [];
+      tab.on("pageerror", (e) => errors.push(e.message));
+      await tab.goto(origin + page, { waitUntil: "networkidle" });
+      await tab.evaluate(extreme);
+      if (run.rtl) await tab.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
+      if (run.theme) await tab.evaluate((t) => document.documentElement.setAttribute("data-theme", t), run.theme);
+      if (run.print) {
+        await tab.emulateMedia({ media: "print" });
+        // 打印：做完的标记、重点的点是底色画的，要印出来
+        const bad = await tab.evaluate(() => [...document.querySelectorAll("main .xxd-steps, main .xxd-timeline")].filter((d) => d.getClientRects().length && getComputedStyle(d).printColorAdjust !== "exact").length);
+        if (bad) fail("图解", `${run.id} ${page} ${bad} 个图打印时不印底色（做完的标记会变空）`);
+      }
+      await tab.waitForTimeout(200);
+      count += await tab.evaluate(() => document.querySelectorAll("main .xxd-steps, main .xxd-timeline").length);
+      for (const x of await tab.evaluate(inspect)) fail("图解", `${run.id} ${page} ${x}`);
+      for (const e of errors) fail("图解", `${run.id} ${page} 脚本出错：${e}`);
+      await ctx.close();
+    }
+  }
+  console.log(`图解：${runs.length} 种环境 × 步骤 / 时间线 × 中英，共量了 ${count} 张图（组件页的示例、React 演示 + 极端的 9 步长标题、英文长词、长时间、还没发生的 × 4 种宽）`);
+}
+
+const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

@@ -9,6 +9,8 @@ import {
   Waffle,
   Heatmap,
   Dumbbell,
+  Steps,
+  Timeline,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -662,6 +664,34 @@ export function DumbbellDemo() {
   return (
     <div style={{ width: "100%", maxWidth: 520 }}>
       <Dumbbell unit="分钟" fromLabel="改版前" toLabel="改版后" rows={[{ label: "写第一篇", from: 14, to: 6 }, { label: "配好图片", from: 9, to: 4 }, { label: "排好版", from: 21, to: 12 }]} />
+    </div>
+  );
+}
+
+export function StepsDemo() {
+  const [step, setStep] = useState(1);
+  const items = [{ title: "填资料" }, { title: "选套餐", description: "按月或按年" }, { title: "付款" }];
+  return (
+    <div style={{ display: "grid", gap: 24, width: "100%", maxWidth: 520 }}>
+      <Steps label="开通会员" current={step} items={items} onStepClick={setStep} />
+      <div className="xxd-cluster">
+        <button className="xxd-btn" data-size="sm" disabled={step === 0} onClick={() => setStep(step - 1)}>上一步</button>
+        <button className="xxd-btn" data-size="sm" data-variant="primary" disabled={step >= items.length} onClick={() => setStep(step + 1)}>{step >= items.length - 1 ? "完成" : "下一步"}</button>
+      </div>
+    </div>
+  );
+}
+
+export function TimelineDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Timeline
+        items={[
+          { time: "10月23日", dateTime: "2026-10-23", title: "ECharts 图表", children: "饼图每一块按分类色，高对比下换系统色，读屏的一句话自己写。", highlight: true },
+          { time: "10月23日", dateTime: "2026-10-23", title: "手机和触屏", children: "粗指针上控件 44 高，输入框 16px，手指不弹提示。" },
+          { time: "预计 11月", title: "图解第二批", children: "流程图和树。", upcoming: true },
+        ]}
+      />
     </div>
   );
 }

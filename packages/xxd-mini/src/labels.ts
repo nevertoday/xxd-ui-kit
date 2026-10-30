@@ -26,6 +26,8 @@ export const LABELS = {
     decrease: "减一",
     units: { year: "年", month: "月", day: "日", hour: "时", minute: "分" },
     step: (n: number, total: number) => `第 ${n} 步，共 ${total} 步`,
+    stepDone: "（已完成）",
+    stepCurrent: "（当前）",
     count: (n: number, max: number) => `${n} / ${max}`,
   },
   en: {
@@ -52,6 +54,8 @@ export const LABELS = {
     decrease: "Decrease",
     units: { year: "", month: "", day: "", hour: "", minute: "" },
     step: (n: number, total: number) => `Step ${n} of ${total}`,
+    stepDone: " (done)",
+    stepCurrent: " (current)",
     count: (n: number, max: number) => `${n} / ${max}`,
   },
 };

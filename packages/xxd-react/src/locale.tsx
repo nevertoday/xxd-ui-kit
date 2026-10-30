@@ -28,6 +28,12 @@ export interface XxdStrings {
   material: string;
   dropVeil: string;
   mainNav: string;
+  /** 步骤条的 aria-label：「第 {n} 步，共 {total} 步」 */
+  stepOf: string;
+  /** 做完的步在标题后面加的一句（读屏） */
+  stepDone: string;
+  /** 做完、能点回去的步 */
+  stepBack: string;
 }
 
 // 外观设置的叫法和原生版共用一份（@xxd/css/labels），两边不会各说各的
@@ -44,16 +50,19 @@ const XXD: Record<XxdLocale, XxdStrings> = {
     clear: "清空", close: "关闭", confirm: "确定", cancel: "取消", confirmDelete: "确认删除", search: "搜索",
     ...appearance("zh-CN"),
     dropVeil: "松手，放进来", mainNav: "主导航",
+    stepOf: "第 {n} 步，共 {total} 步", stepDone: "（已完成）", stepBack: "（已完成，回到这一步）",
   },
   "zh-Hant": {
     clear: "清除", close: "關閉", confirm: "確定", cancel: "取消", confirmDelete: "確認刪除", search: "搜尋",
     ...appearance("zh-Hant"),
     dropVeil: "放開，放進來", mainNav: "主導覽",
+    stepOf: "第 {n} 步，共 {total} 步", stepDone: "（已完成）", stepBack: "（已完成，回到這一步）",
   },
   en: {
     clear: "Clear", close: "Close", confirm: "OK", cancel: "Cancel", confirmDelete: "Confirm delete", search: "Search",
     ...appearance("en"),
     dropVeil: "Drop to add", mainNav: "Main navigation",
+    stepOf: "Step {n} of {total}", stepDone: " (done)", stepBack: " (done, go back)",
   },
 };
 

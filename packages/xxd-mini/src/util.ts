@@ -42,3 +42,11 @@ export function nextId(prefix = "xxd"): string {
 export function imgAlt(alt: string): Record<string, unknown> {
   return IS_H5 ? { nativeProps: { alt } } : {};
 }
+
+const warned = new Set<string>();
+/** 同一件事只提醒一次（超过上限这类，不悄悄截掉） */
+export function warnOnce(key: string, text: string): void {
+  if (warned.has(key)) return;
+  warned.add(key);
+  console.warn(`[@xxd/mini] ${text}`);
+}

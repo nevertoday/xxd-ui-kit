@@ -9,6 +9,8 @@ import {
   Waffle,
   Heatmap,
   Dumbbell,
+  Steps,
+  Timeline,
   AppearanceSettings,
   Card,
   CardGrid,
@@ -662,6 +664,34 @@ export function DumbbellDemo() {
   return (
     <div style={{ width: "100%", maxWidth: 520 }}>
       <Dumbbell unit="min" fromLabel="Before" toLabel="After" rows={[{ label: "First post", from: 14, to: 6 }, { label: "Images ready", from: 9, to: 4 }, { label: "Layout", from: 21, to: 12 }]} />
+    </div>
+  );
+}
+
+export function StepsDemo() {
+  const [step, setStep] = useState(1);
+  const items = [{ title: "Details" }, { title: "Plan", description: "Monthly or yearly" }, { title: "Pay" }];
+  return (
+    <div style={{ display: "grid", gap: 24, width: "100%", maxWidth: 520 }}>
+      <Steps label="Join" current={step} items={items} onStepClick={setStep} />
+      <div className="xxd-cluster">
+        <button className="xxd-btn" data-size="sm" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</button>
+        <button className="xxd-btn" data-size="sm" data-variant="primary" disabled={step >= items.length} onClick={() => setStep(step + 1)}>{step >= items.length - 1 ? "Finish" : "Next"}</button>
+      </div>
+    </div>
+  );
+}
+
+export function TimelineDemo() {
+  return (
+    <div style={{ width: "100%", maxWidth: 560 }}>
+      <Timeline
+        items={[
+          { time: "Oct 23", dateTime: "2026-10-23", title: "ECharts charts", children: "Pie slices take the category colors, system colors in high contrast, and our own screen-reader sentence.", highlight: true },
+          { time: "Oct 23", dateTime: "2026-10-23", title: "Phones and touch", children: "Controls 44 high on coarse pointers, 16px inputs, no tooltips on fingers." },
+          { time: "Expected Nov", title: "Diagrams, batch two", children: "Flowchart and tree.", upcoming: true },
+        ]}
+      />
     </div>
   );
 }

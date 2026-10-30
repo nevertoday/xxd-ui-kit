@@ -27,8 +27,9 @@
    `@media (hover: hover)`（`xxd-css/scripts/hover-only.mjs`，源码照旧写 `:hover`）；安全区、滚动不传出去、手指不弹提示；D115–D122，audit 加 `--only=touch`）。
    2026-10-23：`ECHARTS-REVIEW-PLAN.md`（ECharts 图表：`Xxd.chartOptions` 按图种套色、饼图没有坐标轴、高对比换系统色加花纹、读屏的一句话自己写（三语）、
    图例画出线型并让行、柱状图类目不藏、刻度缩写、参考线的字在图里、没有进场动画；`watchChartTheme` 管尺寸和触屏提示；Kumo 的图表在有令牌时用令牌的颜色；D123–D136，audit 加 `--only=chart`）。
-   2026-10-30 方案（还没开工）：`DIAGRAM-PLAN.md`（图解：只做步骤、时间线、流程、树、循环、分层 6 种，参考 diagram-design（MIT）的规则；
-   节点是 HTML、线是边框，读屏是列表，窄屏变竖排不横向滚动；一次性的工程图交给第二阶段的 AI 技能；D140–D149）。
+   2026-10-30：`DIAGRAM-PLAN.md`（图解：只做步骤、时间线、流程、树、循环、分层 6 种，参考 diagram-design（MIT）的规则；
+   节点是 HTML、线是伪元素的边框（不用 grid，Skyline 不认），读屏是列表，窄屏变竖排不横向滚动；一次性的工程图交给第二阶段的 AI 技能；D140–D149）。
+   第一批 `Steps`、`Timeline` 做完（小程序原来的 `Steps` 改成网页版的样子），audit 加 `--only=diagram`；第二批 `Flowchart`、`Tree` 还没开工。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
@@ -43,4 +44,4 @@
 - 不手改生成文件（`theme-kumo.css`、`ai/*`、`src/primitives/*`、`xxd-react/src/kumo-exports.ts`、`xxd-icons/src/{names.d.ts,each.js,each.d.ts}`），改源配置再 codegen / 构建。
 - 展示站有中英两版：改 `packages/xxd-css/registry.json` / `patterns.json` 时同步改旁边的 `registry.en.js` / `patterns.en.js`；加展示站页面时 `src/pages/en/` 也加一个（正文写在 `src/views/`）。测试会检查。
 - 字体只用系统无衬线（不用宋体 / 衬线），不加载网络字体。
-- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1458 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏、`--only=chart` ECharts 图表）。
+- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1458 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏、`--only=chart` ECharts 图表、`--only=diagram` 图解）。

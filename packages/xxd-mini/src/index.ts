@@ -31,6 +31,7 @@ export { SearchBar, type SearchBarProps } from "./searchbar";
 export { LoadMore, type LoadMoreProps } from "./loadmore";
 export { Progress, type ProgressProps } from "./progress";
 export { Steps, type StepsProps } from "./steps";
+export { Timeline, type TimelineProps, type TimelineItem } from "./timeline";
 export { Collapse, type CollapseProps } from "./collapse";
 export { Swipe, SwipeGroup, type SwipeProps, type SwipeAction } from "./swipe";
 export { Picker, type PickerProps, type PickerOption } from "./picker";

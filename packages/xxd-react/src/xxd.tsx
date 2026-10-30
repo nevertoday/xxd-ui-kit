@@ -1119,3 +1119,110 @@ export function Quadrant({
     </div>
   );
 }
+
+/* ── 图解（DIAGRAM-PLAN）：节点和字是 HTML，连线是 CSS 的边框；读屏念的是有序列表 ── */
+
+// 超过上限（D145）只提醒一次，不悄悄截掉
+const warned = new Set<string>();
+const warnOnce = (key: string, text: string) => {
+  if (warned.has(key)) return;
+  warned.add(key);
+  console.warn(`[xxd] ${text}`);
+};
+
+export interface StepItem {
+  title: ReactNode;
+  description?: ReactNode;
+}
+
+/** 步骤：一件事分几步。做完的打勾，当前这步是选中底加主色线；放不下横排时自己变竖排。给了 onStepClick 时做完的步能点回去（多步表单）。 */
+export function Steps({
+  items,
+  current,
+  vertical,
+  label,
+  onStepClick,
+  className,
+}: {
+  items: readonly StepItem[];
+  /** 当前第几步，从 0 开始；等于 items.length 表示全部做完 */
+  current: number;
+  /** 竖排（每步有几行说明时） */
+  vertical?: boolean;
+  /** 列表的 aria-label，缺省「第 n 步，共 m 步」；写了会接在前面（「开通会员：第 2 步，共 3 步」） */
+  label?: string;
+  /** 点做完的步（回到那一步） */
+  onStepClick?: (index: number) => void;
+  className?: string;
+}) {
+  const { t } = useXxdLocale();
+  if (items.length > 9) warnOnce("steps", "Steps 超过 9 步：分组，或者拆成几段（DIAGRAM-PLAN D145）");
+  const progress = t.stepOf.replace("{n}", String(Math.min(current + 1, items.length))).replace("{total}", String(items.length));
+  return (
+    <ol className={cx("xxd-steps", className)} data-vertical={flag(vertical)} aria-label={label ? `${label}${t.stepOf.startsWith("Step") ? ": " : "："}${progress}` : progress}>
+      {items.map((item, i) => {
+        const state = i < current ? "done" : i === current ? "current" : undefined;
+        const back = state === "done" && onStepClick;
+        return (
+          <li key={i} className="xxd-steps__item" data-state={state} aria-current={state === "current" ? "step" : undefined}>
+            <span className="xxd-steps__mark" aria-hidden="true">
+              {state === "done" ? <Icon name="Check" size={14} /> : i + 1}
+            </span>
+            <span className="xxd-steps__text">
+              {back ? (
+                <button type="button" className="xxd-steps__title xxd-steps__link" onClick={() => onStepClick(i)}>
+                  {item.title}
+                  <span className="xxd-sr-only">{t.stepBack}</span>
+                </button>
+              ) : (
+                <span className="xxd-steps__title">
+                  {item.title}
+                  {state === "done" && <span className="xxd-sr-only">{t.stepDone}</span>}
+                </span>
+              )}
+              {item.description != null && <span className="xxd-steps__desc">{item.description}</span>}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+export interface TimelineItem {
+  /** 看得见的时间（「10月23日」） */
+  time: ReactNode;
+  /** 机器读的完整时间（<time datetime>）；不写时时间是普通文字（「预计 10-31」） */
+  dateTime?: string;
+  title: ReactNode;
+  /** 一两行说明，或者任意内容 */
+  children?: ReactNode;
+  /** 重点：主色实心点（最多 1–2 条） */
+  highlight?: boolean;
+  /** 还没发生：空心点、灰字、虚线 */
+  upcoming?: boolean;
+}
+
+/** 时间线：先后发生了什么。时间在左，一根竖线串起每条；窄时时间写到标题上面。 */
+export function Timeline({ items, className, style }: { items: readonly TimelineItem[]; className?: string; style?: CSSProperties }) {
+  if (items.length > 9) warnOnce("timeline", "Timeline 超过 9 条：分页，或者按月份分组（DIAGRAM-PLAN D145）");
+  return (
+    <ol className={cx("xxd-timeline", className)} style={style}>
+      {items.map((item, i) => (
+        <li key={i} className="xxd-timeline__item" data-highlight={flag(item.highlight)} data-upcoming={flag(item.upcoming)}>
+          {item.dateTime ? (
+            <time className="xxd-timeline__time" dateTime={item.dateTime}>
+              {item.time}
+            </time>
+          ) : (
+            <span className="xxd-timeline__time">{item.time}</span>
+          )}
+          <div className="xxd-timeline__body">
+            <p className="xxd-timeline__title">{item.title}</p>
+            {typeof item.children === "string" ? <p className="xxd-timeline__text">{item.children}</p> : item.children}
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}

@@ -425,12 +425,28 @@
       "zh": "步骤",
       "en": "Steps",
       "batch": 2,
-      "web": [],
+      "web": [
+        "Steps"
+      ],
       "blocks": [
         "xxd-steps"
       ],
-      "summary": "一件事分几步：横排看进度，竖排带说明。",
-      "summaryEn": "Multi-step flows: horizontal for progress, vertical with notes."
+      "summary": "一件事分几步：做完的打勾，当前这步是选中底加主色线；横排看进度，竖排带说明。",
+      "summaryEn": "Multi-step flows: done steps get a check, the current step has the selected background and an accent line; horizontal for progress, vertical with notes."
+    },
+    {
+      "name": "Timeline",
+      "zh": "时间线",
+      "en": "Timeline",
+      "batch": 2,
+      "web": [
+        "Timeline"
+      ],
+      "blocks": [
+        "xxd-timeline"
+      ],
+      "summary": "先后发生了什么：时间在左，一根竖线串起每条；重点主色，还没发生的空心。",
+      "summaryEn": "What happened, in order: the time on the left, one line through every entry; emphasis in the accent, what has not happened yet hollow."
     },
     {
       "name": "Collapse",
@@ -705,5 +721,7 @@
       "summaryEn": "Submitted, payment failed, under review: a tone icon, one sentence and the next step."
     }
   ],
-  "has": {}
+  "has": {
+    ":has( + [data-upcoming])": "is-before-upcoming"
+  }
 }

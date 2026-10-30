@@ -635,7 +635,9 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 // 开关、标签输入有了出错的样子，约 0.7 KB。
 // 2026-10-29 从 89 KB 调到 93 KB：雷达图、四象限（CHART-TYPES-PLAN 第 9 节）两个组件约 3.9 KB。雷达图的网格和面积画成图片，
 // 给 SVG 上色的类已经 skip 掉；四格用绝对定位（不用 grid，Skyline 也排得对），四个端点名、翻到左边的点各一条规则，没有更少的写法。
-export const SIZE_BUDGET = 93 * 1024;
+// 2026-10-30 从 93 KB 调到 97 KB：图解第一批（DIAGRAM-PLAN）——步骤改成网页版的样子（标记、连线、当前这步的记号），加了时间线，约 3 KB。
+// 两个组件只用 flex 和定位画（Skyline 不认 grid），线是伪元素的边框；网页版窄了换排法的容器查询小程序里本来就去掉了。
+export const SIZE_BUDGET = 97 * 1024;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tokensJson = join(tokensDir, "dist/tokens.json");

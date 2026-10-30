@@ -1211,6 +1211,8 @@
   .xxd-radar__axis {
     position: absolute;
     display: grid;
+    /* 一列、可以比最长的词窄：不然长链接把这一列撑出最大宽度，伸出图外（截断 audit） */
+    grid-template-columns: minmax(0, 1fr);
     width: max-content;
     max-width: calc(var(--text-sm) * 6.5);
     color: var(--muted);

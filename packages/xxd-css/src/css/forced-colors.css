@@ -246,6 +246,40 @@
       background: Highlight;
     }
 
+    /* 图解（DIAGRAM-PLAN）：底色会被抹掉，做完的标记和重点的点用系统色重画；当前这步是 Highlight 框 */
+    .xxd-steps__mark,
+    .xxd-timeline__item::before {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    .xxd-steps__item[data-state="current"] > .xxd-steps__mark {
+      border-color: Highlight;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    .xxd-steps__item[data-state="done"] > .xxd-steps__mark {
+      border-color: CanvasText;
+      background: CanvasText;
+      color: Canvas;
+    }
+
+    .xxd-timeline__item::before {
+      background: CanvasText;
+    }
+
+    .xxd-timeline__item[data-highlight]::before {
+      border-color: Highlight;
+      background: Highlight;
+    }
+
+    .xxd-timeline__item[data-upcoming]::before {
+      background: Canvas;
+    }
+
     /* tab：选中的那一个有 2px 下边框（伪元素的背景会被抹掉） */
     .xxd-tabs__ink {
       background: Highlight;

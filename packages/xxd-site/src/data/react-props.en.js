@@ -60,4 +60,25 @@ export const REACT_PROPS_EN = {
     min: "Range of positions (default: the data's range)",
     compact: 'Abbreviate large numbers: "12.5K"',
   },
+  Steps: {
+    items: "The steps: title and an optional note",
+    current: "Current step, from 0; items.length means everything is done",
+    vertical: "Vertical (when steps have a few lines of notes)",
+    label: 'The list\'s aria-label, default "Step n of m"; when given it goes in front ("Join: Step 2 of 3")',
+    onStepClick: "Click a done step (go back to it)",
+  },
+  Timeline: {
+    items: "The entries: time, dateTime (full time for <time datetime>; without it the time is plain text), title, children (a line or two, or any content), highlight (a solid accent dot, at most 1–2), upcoming (not happened yet: hollow dot, grey text, dashed line)",
+  },
+  Radar: {
+    axes: "In order, clockwise from the top (3–12)",
+    levels: "Number of grid rings (default 4)",
+    valueLabel: "The two names in the key when there is a comparison",
+    label: "Start of the screen-reader sentence",
+  },
+  Quadrant: {
+    x: "Horizontal axis: name, range, cut point (default the middle; the cut point counts as high), names of the two ends",
+    y: "Vertical axis: the same",
+    names: 'Names of the four cells, keyed "x high/low-y high/low"',
+  },
 };

@@ -2089,6 +2089,110 @@
         "当前格不只靠底色：还有一圈主色线；重点的点实心、其余空心"
       ],
       "js": "Xxd.viz(el, \"quadrant\", [{ label: \"你\", x: 4.6, y: 2.4, highlight: true }], { x: { label: \"依恋焦虑\", min: 1, max: 7, cut: 4 }, y: { label: \"依恋回避\", min: 1, max: 7, cut: 4 }, names: { \"low-low\": \"安全型\", … } })\n// React：<Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />"
+    },
+    {
+      "name": "Steps",
+      "zh": "步骤",
+      "category": "图解",
+      "classes": [
+        "xxd-steps",
+        "xxd-steps__item",
+        "xxd-steps__mark",
+        "xxd-steps__text",
+        "xxd-steps__title",
+        "xxd-steps__link",
+        "xxd-steps__desc"
+      ],
+      "attributes": {
+        "data-state=\"done | current\"": "做完的 / 当前这步（缺省是还没到）；当前这步同时写 aria-current=\"step\"",
+        "data-vertical": "竖排（每步有几行说明时）；不写时横排，放不下（容器 < 480px）自己变竖排",
+        ".xxd-steps__link": "做完的步可以点回去：标题写成 <button> / <a>，加这个类"
+      },
+      "markup": "<ol class=\"xxd-steps\" aria-label=\"上手：第 2 步，共 4 步\" style=\"max-width:640px\">\n  <li class=\"xxd-steps__item\" data-state=\"done\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\"><i data-xxd-icon=\"Check\"></i></span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">装好插件<span class=\"xxd-sr-only\">（已完成）</span></span></span></li>\n  <li class=\"xxd-steps__item\" data-state=\"current\" aria-current=\"step\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\">2</span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">打开侧边栏</span><span class=\"xxd-steps__desc\">点工具栏上的图标</span></span></li>\n  <li class=\"xxd-steps__item\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\">3</span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">选一个模板</span></span></li>\n  <li class=\"xxd-steps__item\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\">4</span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">发第一条</span></span></li>\n</ol>",
+      "react": "Steps",
+      "summary": "一件事分几步：做完的打勾，当前这步是选中底加主色线，还没到的是灰字。横排看进度，竖排带说明；放不下横排时自己变竖排，不横向滚动。也当多步表单的步骤条用。",
+      "rules": [
+        "步骤是先后关系才用它；几件并列的事用列表，几条路选一条用单选或卡片",
+        "最多 9 步（DIAGRAM-PLAN D145）；更多就分组，或者拆成几段",
+        "每步的标题写动作（「打开侧边栏」），说明写怎么做或要多久，一两行",
+        "做完是墨色勾、不用绿色；当前这步的记号是 1.5px 主色线（≥ 3:1），不只靠颜色深浅",
+        "多步表单：只有做完的步能点回去，当前和还没到的步不是链接",
+        "§14 图解；DIAGRAM-PLAN"
+      ],
+      "a11y": [
+        "是一个有序列表（<ol>），读屏念出「第几项，共几项」；列表的 aria-label 写进度（「第 2 步，共 4 步」）",
+        "当前这步写 aria-current=\"step\"；做完的步在标题里加一句看不见的「（已完成）」，勾是 aria-hidden",
+        "标记里的数字和连线都 aria-hidden（列表本身有序号）",
+        "能点回去的步是 <button> 或 <a>，键盘可达，手指上的点按区 44（TOUCH-REVIEW-PLAN）"
+      ],
+      "examples": [
+        {
+          "title": "竖排，带说明",
+          "markup": "<ol class=\"xxd-steps\" data-vertical aria-label=\"接入：第 3 步，共 3 步\" style=\"max-width:420px\">\n  <li class=\"xxd-steps__item\" data-state=\"done\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\"><i data-xxd-icon=\"Check\"></i></span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">新建插件<span class=\"xxd-sr-only\">（已完成）</span></span><span class=\"xxd-steps__desc\">pnpm xxd new ./today，组件拷进 vendor/xxd/</span></span></li>\n  <li class=\"xxd-steps__item\" data-state=\"done\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\"><i data-xxd-icon=\"Check\"></i></span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">在 Chrome 里加载<span class=\"xxd-sr-only\">（已完成）</span></span><span class=\"xxd-steps__desc\">扩展程序页面打开开发者模式，选「加载已解压的扩展程序」</span></span></li>\n  <li class=\"xxd-steps__item\" data-state=\"current\" aria-current=\"step\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\">3</span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">体检</span><span class=\"xxd-steps__desc\">改完跑 pnpm xxd doctor ./today，按提示改</span></span></li>\n</ol>"
+        },
+        {
+          "title": "多步表单：做完的步能点回去",
+          "markup": "<ol class=\"xxd-steps\" aria-label=\"开通会员：第 3 步，共 3 步\" style=\"max-width:520px\">\n  <li class=\"xxd-steps__item\" data-state=\"done\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\"><i data-xxd-icon=\"Check\"></i></span><span class=\"xxd-steps__text\"><button type=\"button\" class=\"xxd-steps__title xxd-steps__link\">填资料<span class=\"xxd-sr-only\">（已完成，回到这一步）</span></button></span></li>\n  <li class=\"xxd-steps__item\" data-state=\"done\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\"><i data-xxd-icon=\"Check\"></i></span><span class=\"xxd-steps__text\"><button type=\"button\" class=\"xxd-steps__title xxd-steps__link\">选套餐<span class=\"xxd-sr-only\">（已完成，回到这一步）</span></button></span></li>\n  <li class=\"xxd-steps__item\" data-state=\"current\" aria-current=\"step\"><span class=\"xxd-steps__mark\" aria-hidden=\"true\">3</span><span class=\"xxd-steps__text\"><span class=\"xxd-steps__title\">付款</span></span></li>\n</ol>"
+        }
+      ],
+      "use": [
+        "新手引导、接入说明：几步做完一件事",
+        "多步表单、开通流程：现在在第几步"
+      ],
+      "avoid": [
+        "几件并列、没有先后的事：用列表",
+        "只想表示做了多少：用计量条（Progress）",
+        "先后发生的事件（带时间）：用时间线（Timeline）"
+      ],
+      "block": true
+    },
+    {
+      "name": "Timeline",
+      "zh": "时间线",
+      "category": "图解",
+      "classes": [
+        "xxd-timeline",
+        "xxd-timeline__item",
+        "xxd-timeline__time",
+        "xxd-timeline__body",
+        "xxd-timeline__title",
+        "xxd-timeline__text"
+      ],
+      "attributes": {
+        "data-highlight": "重点（最新的一版、当前的状态）：主色实心点；一条时间线最多 1–2 条",
+        "data-upcoming": "还没发生（计划里的下一版、待签收）：空心点、灰字、虚线",
+        "--timeline-time": "时间那一列的宽度（缺省 6.5 个字宽）；容器窄于 360px 时时间写到标题上面"
+      },
+      "markup": "<ol class=\"xxd-timeline\" style=\"max-width:560px\">\n  <li class=\"xxd-timeline__item\" data-highlight><time class=\"xxd-timeline__time\" datetime=\"2026-10-23\">10月23日</time><div class=\"xxd-timeline__body\"><p class=\"xxd-timeline__title\">ECharts 图表</p><p class=\"xxd-timeline__text\">饼图每一块按分类色，高对比下换系统色，读屏的一句话自己写。</p></div></li>\n  <li class=\"xxd-timeline__item\"><time class=\"xxd-timeline__time\" datetime=\"2026-10-23\">10月23日</time><div class=\"xxd-timeline__body\"><p class=\"xxd-timeline__title\">手机和触屏</p><p class=\"xxd-timeline__text\">粗指针上控件 44 高，输入框 16px，手指不弹提示。</p></div></li>\n  <li class=\"xxd-timeline__item\"><time class=\"xxd-timeline__time\" datetime=\"2026-10-22\">10月22日</time><div class=\"xxd-timeline__body\"><p class=\"xxd-timeline__title\">截断和长文字</p><p class=\"xxd-timeline__text\">内容折行、标签才省略，数字永不截断。</p></div></li>\n</ol>",
+      "react": "Timeline",
+      "summary": "先后发生了什么：时间在左，一根竖线串起每条，每条一个标题和一两行说明。最新的一条可以标重点，还没发生的是空心点和虚线。窄时时间写到标题上面。",
+      "rules": [
+        "事件有时间、按先后排才用它；没有时间的几步用步骤（Steps）",
+        "新的在上（更新记录）或旧的在上（订单进度）都行，一个页面里统一一种",
+        "重点最多 1–2 条（最新的一版、当前的状态），用主色；其余是灰点",
+        "时间写到能区分就够（同一年里写「10月23日」），机器读的完整日期写在 <time datetime>",
+        "最多 9 条（DIAGRAM-PLAN D145）；更多就分页，或者按月份分组",
+        "§14 图解；DIAGRAM-PLAN"
+      ],
+      "a11y": [
+        "是一个有序列表（<ol>）；时间是 <time datetime>",
+        "点和竖线是伪元素，读屏不念；重点和还没发生不只靠颜色：还没发生的写在字里（「预计 11月」「待签收」）"
+      ],
+      "examples": [
+        {
+          "title": "订单进度：还没发生的是空心点",
+          "markup": "<ol class=\"xxd-timeline\" style=\"max-width:420px\">\n  <li class=\"xxd-timeline__item\"><time class=\"xxd-timeline__time\" datetime=\"2026-10-28T09:12\">10-28 09:12</time><div class=\"xxd-timeline__body\"><p class=\"xxd-timeline__title\">已下单</p></div></li>\n  <li class=\"xxd-timeline__item\" data-highlight><time class=\"xxd-timeline__time\" datetime=\"2026-10-29T14:30\">10-29 14:30</time><div class=\"xxd-timeline__body\"><p class=\"xxd-timeline__title\">已发货</p><p class=\"xxd-timeline__text\">顺丰 SF1234567890</p></div></li>\n  <li class=\"xxd-timeline__item\" data-upcoming><span class=\"xxd-timeline__time\">预计 10-31</span><div class=\"xxd-timeline__body\"><p class=\"xxd-timeline__title\">待签收</p></div></li>\n</ol>"
+        }
+      ],
+      "use": [
+        "更新记录、版本历史",
+        "订单、审核、工单的状态历史"
+      ],
+      "avoid": [
+        "没有时间的步骤：用步骤（Steps）",
+        "很多条、要搜索筛选的记录：用表格（Table）"
+      ],
+      "block": true
     }
   ]
 }

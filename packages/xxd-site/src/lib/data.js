@@ -14,7 +14,7 @@ export const CDN_VERSION = cssPkg.version;
 
 export const slug = (name) => name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 
-const CATEGORY_ORDER = ["基础", "操作", "表单", "导航", "设置", "浮层", "反馈", "内容", "展示"];
+const CATEGORY_ORDER = ["基础", "操作", "表单", "导航", "设置", "浮层", "反馈", "内容", "展示", "图解"];
 const byCategory = (a, b) => (CATEGORY_ORDER.indexOf(a) + 1 || 99) - (CATEGORY_ORDER.indexOf(b) + 1 || 99);
 
 /**
