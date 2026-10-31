@@ -72,12 +72,15 @@
     min-width: 0;
   }
 
+  /* 块级：button.xxd-row / label.xxd-row 里只能放 span，标题和说明照样上下两行（D150） */
   .xxd-row__title {
+    display: block;
     color: var(--ink);
     font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
   }
 
   .xxd-row__desc {
+    display: block;
     margin-top: var(--space-0-5);
     color: var(--muted);
     font-size: var(--text-xs);

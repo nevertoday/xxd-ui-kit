@@ -8,6 +8,7 @@
 | D137 | 闪电发布的侧边栏（380 宽）设置页 | 12 个主色色块排成 11 + 1 | 色块组加 `data-balance`：色块改成行内块 + `text-wrap: balance`，放得下就一行，放不下各行一样多（12 个是 6 + 6），什么个数、什么宽度都对；间距改用外边距，容器收回最后一列和最后一行那一份。`mountAppearance` 和 React 的外观设置自己带上。先试过改成所有 `.xxd-swatches` 的默认，同步时发现封面拼图的背景色、小小东VPS 站点的主色弹层自己把组排成 flex / grid + gap，外边距会叠上去，所以只在带属性的组上 | 2026-10-24 |
 | D138 | 闪电发布的阿拉伯语界面 | `.xxd-error` 的图标写死 `left: 0`，从右往左时图标在字的末尾、压在字上 | 改成 `inset-inline-start: 0`（留白本来就是 `padding-inline-start`） | 2026-10-24 |
 | D139 | 同上 | 单个滑块的已填部分写死 `to right`，从右往左时最小值在右边，颜色却从左边长 | 加 `:dir(rtl)` 一条，改成 `to left` | 2026-10-24 |
+| D150 | 公众号封面的设置页（「自己的 Key」改成整行可点的 `button.xxd-row[data-chevron]`） | `button` 里只能放 span，`.xxd-row__title` / `__desc` 不是块级，标题和说明挤成一行；闪电发布在自己的 CSS 里补了块级，xxd-pj 几个插件的 `label.xxd-row` 也写 span | `.xxd-row__title`、`.xxd-row__desc` 加 `display: block`（写 div 的照旧） | 2026-10-31 |
 
 验证：`pnpm xxd:build && pnpm xxd:test`，`test/contract.test.mjs` 加了「窄面板和从右往左」三条。
 用 dist 的 xxd.css + boot.js 截了 `Xxd.mountAppearance` 在 300 / 380 宽、从左往右 / 从右往左，和 400 宽一行放得下的情况。

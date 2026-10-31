@@ -323,4 +323,8 @@ describe("窄面板和从右往左", () => {
   it("从右往左时滑块从右边填（D139）", () => {
     expect(decl(".xxd-range[data-fill]:dir(rtl)::-webkit-slider-runnable-track").background).toMatch(/^linear-gradient\(to left,/);
   });
+  it("可点的行里写 span，标题和说明也是上下两行（D150）", () => {
+    expect(decl(".xxd-row__title")).toMatchObject({ display: "block" });
+    expect(decl(".xxd-row__desc")).toMatchObject({ display: "block" });
+  });
 });
