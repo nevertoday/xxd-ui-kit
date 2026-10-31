@@ -207,9 +207,20 @@
 
   /* 主色色块（跟圆角开关走，D61）：<div class="xxd-swatches" role="radiogroup"><button class="xxd-swatch" role="radio" aria-checked="true" style="--swatch:#3b74b8">… */
   .xxd-swatches {
+    /* 色块的大小和间距（D151）：粗指针上 28px、间距 12px。22px 间距 8px 时，每块补到 44 的点按区和左右上下的邻居叠在一起，
+     * 手指点在两块之间落到后一块上；28 + 12 时补出来的部分只在缝里叠 4px。鼠标上照旧 22 / 8。 */
+    --swatch-size: 22px;
+    --swatch-gap: var(--space-2);
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2);
+    gap: var(--swatch-gap);
+  }
+
+  @media (pointer: coarse) {
+    .xxd-swatches {
+      --swatch-size: 28px;
+      --swatch-gap: var(--space-3);
+    }
   }
 
   /* data-balance：放不下一行时各行一样多（12 个是 6 + 6，不是 11 + 1）。外观设置组里的主色用它。
@@ -217,8 +228,8 @@
    * 只在带这个属性的组上：自己把组排成 grid / flex 的项目不受影响。 */
   .xxd-swatches[data-balance] {
     display: block;
-    margin-block-end: calc(-1 * var(--space-2));
-    margin-inline-end: calc(-1 * var(--space-2));
+    margin-block-end: calc(-1 * var(--swatch-gap));
+    margin-inline-end: calc(-1 * var(--swatch-gap));
     line-height: 1;
     text-wrap: balance;
   }
@@ -227,14 +238,14 @@
     display: inline-block;
     vertical-align: top;
     margin: 0;
-    margin-inline-end: var(--space-2);
-    margin-block-end: var(--space-2);
+    margin-inline-end: var(--swatch-gap);
+    margin-block-end: var(--swatch-gap);
   }
 
   .xxd-swatch {
     position: relative;
-    width: 22px;
-    height: 22px;
+    width: var(--swatch-size, 22px);
+    height: var(--swatch-size, 22px);
     padding: 0;
     border: 1px solid var(--swatch-edge);
     border-radius: var(--r-pill);

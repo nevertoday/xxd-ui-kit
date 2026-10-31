@@ -312,7 +312,7 @@ describe("窄面板和从右往左", () => {
     expect(decl(".xxd-swatches[data-balance]")).toMatchObject({ "text-wrap": "balance" });
     expect(decl(".xxd-swatches[data-balance] > .xxd-swatch")).toMatchObject({ display: "inline-block" });
     // 不带的组和单独用的色块不变：项目自己排的 grid / flex 不会多出外边距
-    expect(decl(".xxd-swatches")).toMatchObject({ display: "flex", gap: "var(--space-2)" });
+    expect(decl(".xxd-swatches")).toMatchObject({ display: "flex", gap: "var(--swatch-gap)" });
     expect(Object.keys(decl(".xxd-swatch")).filter((p) => p.startsWith("margin"))).toEqual([]);
   });
   it("错误的图标在开头那一边，不写死左边（D138）", () => {
@@ -322,6 +322,18 @@ describe("窄面板和从右往左", () => {
   });
   it("从右往左时滑块从右边填（D139）", () => {
     expect(decl(".xxd-range[data-fill]:dir(rtl)::-webkit-slider-runnable-track").background).toMatch(/^linear-gradient\(to left,/);
+  });
+  it("色块在粗指针上 28px、间距 12px，鼠标上 22 / 8（D151）", () => {
+    // 粗粒度解析不认 @media：两条规则按源码顺序，先是平常的，后是 @media (pointer: coarse) 里的
+    const [plain, coarse] = all.filter((r) => r.selector === ".xxd-swatches").map((r) => Object.fromEntries(r.decls));
+    expect(plain).toMatchObject({ "--swatch-size": "22px", "--swatch-gap": "var(--space-2)" });
+    expect(coarse).toMatchObject({ "--swatch-size": "28px", "--swatch-gap": "var(--space-3)" });
+    expect(files["content.css"]).toMatch(/@media \(pointer: coarse\) \{\s*\.xxd-swatches \{\s*--swatch-size: 28px;/);
+    expect(decl(".xxd-swatch")).toMatchObject({ width: "var(--swatch-size, 22px)", height: "var(--swatch-size, 22px)" });
+  });
+  it("开关关着时滑块用 --switch-knob-off，开着时是纸色（D152）", () => {
+    expect(decl(".xxd-switch::before").background).toBe("var(--switch-knob-off)");
+    expect(decl(".xxd-switch:checked::before").background).toBe("var(--paper)");
   });
   it("可点的行里写 span，标题和说明也是上下两行（D150）", () => {
     expect(decl(".xxd-row__title")).toMatchObject({ display: "block" });

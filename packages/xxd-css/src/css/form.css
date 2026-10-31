@@ -323,7 +323,8 @@
     width: calc(var(--switch-h) - 6px);
     height: calc(var(--switch-h) - 6px);
     border-radius: var(--r-pill);
-    background: var(--paper);
+    /* 关着时用 --switch-knob-off（暗色下是浅灰；用纸色时比底还暗，看不出开关在哪一边，D152），开着时是纸色 */
+    background: var(--switch-knob-off);
     box-shadow: 0 0 0 0.5px rgba(var(--shadow-rgb), 0.18);
     transition: transform var(--motion-medium) var(--ease-out-expo);
   }
@@ -334,6 +335,7 @@
   }
 
   .xxd-switch:checked::before {
+    background: var(--paper);
     transform: translateX(calc(var(--switch-w) - var(--switch-h)));
   }
 

@@ -25,6 +25,7 @@
   --wash-strong: #eeece9;
   --selected-bg: #eeece9; /* 和 --wash-strong 同一个值（以前差 1，肉眼分不出；设计师评审 V2-4） */
   --switch-on: #111111; /* 开关「开」是墨色（设计师评审 D22：以前的深灰在亮纸上像禁用） */
+  --switch-knob-off: #ffffff; /* 开关「关」时的滑块（D152）：亮色是白，暗色是浅灰（纸色会比底还暗，看不出来） */
   --ink: #111111;
   --ink-rgb: 17, 17, 17;
   --on-ink: #ffffff;
@@ -408,6 +409,7 @@
   --wash-strong: #312f28;
   --selected-bg: #38362e;
   --switch-on: #cfc9bd;
+  --switch-knob-off: #a7a194;
   --ink: #f3f0ea;
   --ink-rgb: 243, 240, 234;
   --on-ink: #171612;
@@ -590,6 +592,7 @@
   --wash-strong: #eeece9;
   --selected-bg: #eeece9;
   --switch-on: #111111;
+  --switch-knob-off: #ffffff;
   --ink: #111111;
   --ink-rgb: 17, 17, 17;
   --on-ink: #ffffff;
