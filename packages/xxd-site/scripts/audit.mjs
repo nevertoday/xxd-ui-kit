@@ -1606,7 +1606,21 @@ async function diagramAudit() {
         d.innerHTML = html;
         box.append(d);
       }
+    // 外面是 grid 的 auto 列、flex 横排、flex 竖排居中：图都不能把外面撑宽（真项目里撞上过两次）
+    for (const [k, html] of Object.entries(S))
+      for (const parent of ["display:grid", "display:flex", "display:flex;flex-direction:column;align-items:center"]) {
+        const d = document.createElement("div");
+        d.style.cssText = "width:320px;max-width:100%;margin:24px 0";
+        d.dataset.auditParent = `${k} 放在 ${parent} 里`;
+        d.innerHTML = `<div style="${parent}">${html}</div>`;
+        box.append(d);
+      }
   };
+  const parents = () =>
+    [...document.querySelectorAll("[data-audit-parent]")].flatMap((d) => {
+      const [o, r] = [d, d.firstElementChild.firstElementChild].map((e) => e.getBoundingClientRect().width);
+      return r > o + 0.5 ? [`${d.dataset.auditParent}：图宽 ${Math.round(r)}px，把外面 ${Math.round(o)}px 的格子撑宽了`] : [];
+    });
   const inspect = () => {
     const out = [];
     const px = (v) => parseFloat(v) || 0;
@@ -1852,11 +1866,12 @@ async function diagramAudit() {
       count += await tab.evaluate(() => document.querySelectorAll("main .xxd-steps, main .xxd-timeline, main .xxd-flowchart, main .xxd-tree, main .xxd-cycle, main .xxd-layers").length);
       for (const x of await tab.evaluate(inspect)) fail("图解", `${run.id} ${page} ${x}`);
       for (const x of await tab.evaluate(inspect2)) fail("图解", `${run.id} ${page} ${x}`);
+      for (const x of await tab.evaluate(parents)) fail("图解", `${run.id} ${page} ${x}`);
       for (const e of errors) fail("图解", `${run.id} ${page} 脚本出错：${e}`);
       await ctx.close();
     }
   }
-  console.log(`图解：${runs.length} 种环境 × 6 种图 × 中英，共量了 ${count} 张图（组件页的示例、React 演示 + 极端的：9 步长标题、长时间、三条分支长名字、不合拢的分支、四个子节点、三层、6 步循环、长说明 × 320 / 479 / 480 / 720 宽）`);
+  console.log(`图解：${runs.length} 种环境 × 6 种图 × 中英，共量了 ${count} 张图（组件页的示例、React 演示 + 极端的：9 步长标题、长时间、三条分支长名字、不合拢的分支、四个子节点、三层、6 步循环、长说明 × 320 / 479 / 480 / 720 宽，再各放进 grid、flex 横排、flex 竖排居中的 320 宽格子）`);
 }
 
 const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };
