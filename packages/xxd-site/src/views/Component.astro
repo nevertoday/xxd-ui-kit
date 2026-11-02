@@ -56,7 +56,7 @@ const headings = [
 // 页头（G7）：别的库里的叫法、样式源码和改动记录
 const ownNames = new Set([c.name, c.label, c.zh, ...(c.classes ?? [])].map((x) => String(x).toLowerCase()));
 const aka = [...new Set((SEARCH_ALIASES[c.name] ?? "").split(/\s+/).filter(Boolean))]
-  .filter((w) => !ownNames.has(w.toLowerCase()) && (lang !== "en" || /^[\x00-\x7f]+$/.test(w)))
+  .filter((w) => !ownNames.has(w.toLowerCase()) && (lang !== "en" || /^[ -~]+$/.test(w)))
   .slice(0, 6);
 const cssFile = cssFileOf(c.classes[0]);
 const REPO = "https://github.com/nevertoday/xxd-ui-kit";
