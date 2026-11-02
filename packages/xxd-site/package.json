@@ -2,7 +2,7 @@
   "name": "@xxd/site",
   "version": "0.1.0",
   "private": true,
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "description": "小小东 UI Kit 展示站：用和 Kumo 文档站同样的架构（Astro + 活演示 + 注册表生成），呈现小小东风格。",
   "type": "module",
   "scripts": {

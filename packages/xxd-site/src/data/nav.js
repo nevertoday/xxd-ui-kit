@@ -20,6 +20,7 @@ export function navFor(lang = "zh") {
         { label: L.pageStart, href: "/start" },
         { label: L.pageDesigners, href: "/designers" },
         { label: L.pagePrinciples, href: "/principles" },
+        { label: L.pageLicense, href: "/license" },
       ],
     },
     {

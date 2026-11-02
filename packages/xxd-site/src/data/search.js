@@ -77,5 +77,6 @@ export const PAGE_KEYWORDS = {
   "/start": "install setup getting-started quick-start cdn 安装 开始 上手 快速开始",
   "/tools": "cli command doctor sync init 命令行 工具 体检 同步",
   "/tools/parity": "parity react html compare same 对照 一致 两种实现 react 版",
+  "/license": "license licensing commercial pricing polyform noncommercial mit 授权 许可 商用 商业 付费 协议 联系",
   "/principles": "principles guidelines rules 原则 规则 设计",
 };

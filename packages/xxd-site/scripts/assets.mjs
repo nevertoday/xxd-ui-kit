@@ -155,7 +155,7 @@ export async function iconsZip() {
   const keywords = {};
   for (const g of ICON_GROUPS) for (const [name, kw] of Object.entries(g.icons)) keywords[name] = { group: { zh: g.zh, en: g.en }, keywords: kw };
   files.push(["keywords.json", Buffer.from(JSON.stringify(keywords, null, 2) + "\n")]);
-  files.push(["README.txt", Buffer.from(`小小东 UI 图标 / XXD UI icons (MIT)\n${ICON_NAMES.length} 个 SVG：24 × 24 网格、1.5 线宽、圆头、斜接角、不填充，颜色是 currentColor。\n放大缩小时把线宽保持 1.5px（设计工具里关掉「缩放描边」）。\n${ICON_NAMES.length} SVGs on a 24 × 24 grid, 1.5 stroke, round caps, miter joins, no fill, currentColor.\nKeep the stroke at 1.5px when resizing (turn off "scale strokes").\nhttps://ui.xiaoxiaodong.ai/foundations/icons\n`)]);
+  files.push(["README.txt", Buffer.from(`小小东 UI 图标 / XXD UI icons — PolyForm Noncommercial 1.0.0，商用请先取得授权 / commercial use needs a license: https://ui.xiaoxiaodong.ai/license\n${ICON_NAMES.length} 个 SVG：24 × 24 网格、1.5 线宽、圆头、斜接角、不填充，颜色是 currentColor。\n放大缩小时把线宽保持 1.5px（设计工具里关掉「缩放描边」）。\n${ICON_NAMES.length} SVGs on a 24 × 24 grid, 1.5 stroke, round caps, miter joins, no fill, currentColor.\nKeep the stroke at 1.5px when resizing (turn off "scale strokes").\nhttps://ui.xiaoxiaodong.ai/foundations/icons\n`)]);
   return zipStore(files);
 }
 

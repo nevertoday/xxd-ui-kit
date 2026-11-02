@@ -1,6 +1,6 @@
 # xxd-ui-kit 工作说明（给 AI 编程助手）
 
-小小东的开源设计系统（MIT），fork 自 cloudflare/kumo。这里是工程约定，人和 AI 都适用；给人看的贡献流程见 `CONTRIBUTING.md`。
+小小东的设计系统，源码公开：非商业免费，商用要付费授权（PolyForm Noncommercial 1.0.0，见 `COMMERCIAL.md`、`docs/maintainers/LICENSE-PLAN.md`），fork 自 cloudflare/kumo。这里是工程约定，人和 AI 都适用；给人看的贡献流程见 `CONTRIBUTING.md`。
 
 ## 开工前必读
 
@@ -35,7 +35,7 @@
 
 ## 硬规则
 
-- **许可与发布**：MIT 开源。来自 Kumo 的代码保留 `LICENSE-KUMO`。不要 push 到 `upstream`（那是 Cloudflare 的仓库）。推送、发布 npm、部署展示站都是维护者的决定，AI 助手不要自己做，等维护者明确说了再做。package 暂时保持 `private: true`，防止误发 npm。
+- **许可与发布**：PolyForm Noncommercial 1.0.0，商用另外授权；不要再写「MIT 开源」，说「源码公开」。来自 Kumo 的代码保留 `LICENSE-KUMO`（那部分仍是 MIT）。新加的构建产物文件头照着现有的写（PolyForm Noncommercial，商用见 /license）。不要 push 到 `upstream`（那是 Cloudflare 的仓库）。推送、发布 npm、部署展示站都是维护者的决定，AI 助手不要自己做，等维护者明确说了再做。package 暂时保持 `private: true`，防止误发 npm。
 - **别的仓库**：插件、网站各有自己的仓库，常有未提交的工作。要改的话用 `git worktree add -b <新分支>` 在临时目录里改、在新分支上提交，不推送、不合并。
 - **令牌唯一来源**是 `packages/xxd-tokens/tokens.css`。组件里不写死颜色、圆角、阴影、字重；颜色用色阶的用途名（`--danger-tint`、`--accent-border`……），不写 `color-mix()`（测试会拦）。
 - 矩形圆角只用 `--r-xs / sm / md / lg / pill`；`--r-circle` 只给单选和转圈（头像、点、色块跟开关走，用 `--r-pill`）。默认直角。

@@ -4,9 +4,9 @@
 
 **Quiet, restrained UI components: square corners, black, white and gray, hairlines, system fonts.<br>One CSS file and one JS file. Chrome extensions, web pages, React and WeChat mini programs all look the same.**
 
-[![CI](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml/badge.svg)](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-555555?style=flat-square)](LICENSE) ![73 components](https://img.shields.io/badge/components-73-555555?style=flat-square) ![500+ icons](https://img.shields.io/badge/icons-500%2B-555555?style=flat-square)
+[![CI](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml/badge.svg)](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml) [![Free for noncommercial use · commercial license required](https://img.shields.io/badge/license-noncommercial_·_commercial_license_required-555555?style=flat-square)](COMMERCIAL.en.md) ![73 components](https://img.shields.io/badge/components-73-555555?style=flat-square) ![500+ icons](https://img.shields.io/badge/icons-500%2B-555555?style=flat-square)
 
-**[Showcase](https://ui.xiaoxiaodong.ai/en/) · [Get started](https://ui.xiaoxiaodong.ai/en/start) · [Design principles](https://ui.xiaoxiaodong.ai/en/principles) · [Changelog](CHANGELOG.en.md)**
+**[Showcase](https://ui.xiaoxiaodong.ai/en/) · [Get started](https://ui.xiaoxiaodong.ai/en/start) · [Design principles](https://ui.xiaoxiaodong.ai/en/principles) · [Changelog](CHANGELOG.en.md) · [Commercial license](COMMERCIAL.en.md)**
 
 [中文](README.md) · **English**
 
@@ -95,12 +95,14 @@ Every change runs more than 1,900 unit tests, plus 22 checks in a real browser: 
 | Good for | Big admin apps, complex forms | Editing every component yourself | Chrome extensions, small sites, tool pages |
 | Look | Its own, deeply customizable | A starting point, change it to anything | This one look; change the accent, corners and density |
 | Framework | React | React + Tailwind | None |
+| License | MIT, commercial use is free | MIT, commercial use is free | Free for noncommercial use; commercial use needs a paid license |
 
 The downsides, plainly:
 
 - Early days (0.x). Not on npm yet, and versions may break things (see the [changelog](CHANGELOG.en.md)).
 - There is one style. If you want a completely different look, this isn't it.
 - For big admin apps and complex tables and forms, use Ant Design.
+- Commercial use needs a paid license (see [License](#license) below).
 
 ## Install
 
@@ -197,11 +199,15 @@ Issues and improvements are welcome. Start with [CONTRIBUTING](CONTRIBUTING.en.m
 
 ## Kumo
 
-The React components come from Cloudflare's open-source component library [Kumo](https://github.com/cloudflare/kumo) (MIT), restyled; everything else is this project's own. This project is not affiliated with or endorsed by Cloudflare.
+The React components come from Cloudflare's open-source component library [Kumo](https://github.com/cloudflare/kumo) (MIT), restyled; everything else is this project's own. The original Kumo code stays under MIT (see [LICENSE-KUMO](LICENSE-KUMO)). This project is not affiliated with or endorsed by Cloudflare.
 
 ## License
 
-MIT, see [LICENSE](LICENSE); code from Kumo is under [LICENSE-KUMO](LICENSE-KUMO).
+The source is public. **Noncommercial use is free; commercial use needs a paid license from XXD first.**
+
+- License: [PolyForm Noncommercial 1.0.0](LICENSE).
+- What counts as commercial and how to get a license: see [Licensing and commercial use](COMMERCIAL.en.md), or the [commercial license](https://ui.xiaoxiaodong.ai/en/license) page on the showcase.
+- Versions released under MIT up to and including 2026-11-01: if you already have one, you can keep using it under MIT.
 
 <div align="center"><br>
 

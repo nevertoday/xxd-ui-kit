@@ -1,7 +1,7 @@
 {
   "name": "xxd-ui-kit",
   "private": true,
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "description": "小小东 UI Kit：中文优先、不依赖框架的界面组件，专门照顾 Chrome 插件（MV3）；React 版基于 Cloudflare Kumo（MIT）",
   "type": "module",
   "scripts": {

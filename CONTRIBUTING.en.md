@@ -2,7 +2,7 @@
 
 [中文](CONTRIBUTING.md) · **English**
 
-This is an MIT open-source project — issues and pull requests are welcome. It is also the design system of one maker's brand, and **the author makes the design calls**, so please read “What's welcome” below before you start, to avoid wasted work.
+This is a source-available project (free for noncommercial use; commercial use needs a license, see [Licensing and commercial use](COMMERCIAL.en.md)). Issues and pull requests are welcome. It is also the design system of one maker's brand, and **the author makes the design calls**, so please read “What's welcome” below before you start, to avoid wasted work.
 When you change the internals of `packages/kumo`, upstream's guide in `docs/upstream/KUMO-CONTRIBUTING.md` still applies.
 
 ## What's welcome
@@ -97,7 +97,14 @@ Visual changes: attach screenshots of all four appearances (light / dark × squa
 
 ## License
 
-Contributions are released under the MIT License. Keep `LICENSE-KUMO` for code that comes from Kumo.
+This project is released under the [PolyForm Noncommercial License 1.0.0](LICENSE), with paid commercial licenses on the side (see [Licensing and commercial use](COMMERCIAL.en.md)).
+
+By opening a pull request you agree that:
+
+1. what you submit is your own work, or you have the right to submit it this way;
+2. XXD (小小东) may release it under this project's license and include it in commercial licenses granted to others, without asking you again and without further payment.
+
+Keep `LICENSE-KUMO` for code that comes from Kumo.
 
 ## Conduct and security
 

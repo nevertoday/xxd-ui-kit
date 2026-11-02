@@ -4,9 +4,9 @@
 
 **安静、克制的界面组件：直角、黑白灰、细线、系统字体。<br>一个 CSS 加一个 JS 就能用，Chrome 插件、网页、React、微信小程序是同一个样子。**
 
-[![CI](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml/badge.svg)](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-555555?style=flat-square)](LICENSE) ![组件 73](https://img.shields.io/badge/组件-73-555555?style=flat-square) ![图标 500+](https://img.shields.io/badge/图标-500%2B-555555?style=flat-square)
+[![CI](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml/badge.svg)](https://github.com/nevertoday/xxd-ui-kit/actions/workflows/xxd.yml) [![非商业免费 · 商用需授权](https://img.shields.io/badge/许可-非商业免费_·_商用需授权-555555?style=flat-square)](COMMERCIAL.md) ![组件 73](https://img.shields.io/badge/组件-73-555555?style=flat-square) ![图标 500+](https://img.shields.io/badge/图标-500%2B-555555?style=flat-square)
 
-**[展示站](https://ui.xiaoxiaodong.ai) · [开始使用](https://ui.xiaoxiaodong.ai/start) · [设计原则](docs/DESIGN-PRINCIPLES.md) · [更新记录](CHANGELOG.md)**
+**[展示站](https://ui.xiaoxiaodong.ai) · [开始使用](https://ui.xiaoxiaodong.ai/start) · [设计原则](docs/DESIGN-PRINCIPLES.md) · [更新记录](CHANGELOG.md) · [商用授权](COMMERCIAL.md)**
 
 **中文** · [English](README.en.md)
 
@@ -95,12 +95,14 @@
 | 适合 | 大型后台、复杂表单 | 想自己改每个组件 | Chrome 插件、小网站、工具页 |
 | 样子 | 自己的一套，可以深度定制 | 起点，改成什么都行 | 只有这一种，能换主色、圆角、疏密 |
 | 框架 | React | React + Tailwind | 不要框架 |
+| 授权 | MIT，随便商用 | MIT，随便商用 | 非商业免费，商用要付费授权 |
 
 短处也说清楚：
 
 - 还在早期（0.x），没发布到 npm，版本之间可能有不兼容的改动（见[更新记录](CHANGELOG.md)）。
 - 风格只有一种。想要完全不同的样子，它不合适。
 - 大型后台、复杂的表格和表单，还是用 Ant Design。
+- 商用要付费取得授权（见下面的[许可](#许可)）。
 
 ## 装起来
 
@@ -197,11 +199,15 @@ xxd-ui help            # 全部命令
 
 ## 和 Kumo 的关系
 
-React 组件来自 Cloudflare 的开源组件库 [Kumo](https://github.com/cloudflare/kumo)（MIT），换上了小小东的样子；其他部分是这个项目自己写的。本项目和 Cloudflare 没有关系，也没有得到它的认可。
+React 组件来自 Cloudflare 的开源组件库 [Kumo](https://github.com/cloudflare/kumo)（MIT），换上了小小东的样子；其他部分是这个项目自己写的。Kumo 原有的代码一直是 MIT（见 [LICENSE-KUMO](LICENSE-KUMO)）。本项目和 Cloudflare 没有关系，也没有得到它的认可。
 
 ## 许可
 
-MIT，见 [LICENSE](LICENSE)；来自 Kumo 的代码见 [LICENSE-KUMO](LICENSE-KUMO)。
+源码公开，**非商业用途免费，商业用途要先联系小小东付费取得授权**。
+
+- 协议：[PolyForm Noncommercial 1.0.0](LICENSE)。
+- 什么算商用、怎么取得授权：看[授权与商用](COMMERCIAL.md)，或者到展示站的[商用授权](https://ui.xiaoxiaodong.ai/license)页扫码联系。
+- 2026-11-01 和更早按 MIT 发布的版本，已经拿到的人可以继续按 MIT 用那一版。
 
 <div align="center"><br>
 

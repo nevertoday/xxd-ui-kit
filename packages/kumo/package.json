@@ -10,7 +10,7 @@
     "react",
     "ui"
   ],
-  "license": "MIT",
+  "license": "(MIT AND PolyForm-Noncommercial-1.0.0)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cloudflare/kumo.git",

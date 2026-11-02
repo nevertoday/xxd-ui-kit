@@ -4,8 +4,11 @@ Kumo — MIT License, Copyright (c) 2026 Cloudflare, Inc. The full MIT text foll
 stay with any copy of the code derived from Kumo.
 
 Modifications by 小小东 (the 小小东 reskin: theme mapping, radius and shadow mapping, icon
-replacement, contract tests) — Copyright (c) 2026 小小东 (xiaoxiaodong.ai), also under the MIT
-License. See the LICENSE file at the root of the xxd-ui-kit repository.
+replacement, contract tests) — Copyright (c) 2026 小小东 (xiaoxiaodong.ai). Modifications made
+up to and including commit 8aa80f12 (2026-11-01) were released under the MIT License; later
+modifications are under the PolyForm Noncommercial License 1.0.0 (see the LICENSE file at the
+root of the xxd-ui-kit repository). Commercial use of those modifications requires a separate
+license: https://ui.xiaoxiaodong.ai/license. The original Kumo code stays under the MIT License.
 
 ------------------------------------------------------------------------------
 

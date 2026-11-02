@@ -1,12 +1,12 @@
 ---
 name: xxd-ui
-description: Build or restyle any 小小东 interface with the open-source (MIT) 小小东 UI Kit (xxd-ui-kit) — Chrome extension side panels, options pages, popups, content-script UI, the 小小东提示词 member site, or React apps. Use whenever the user asks to 做一个新插件、新建插件、写个侧边栏、做设置页、改界面、统一样式、换成小小东风格、用 UI Kit、接入 xxd-ui-kit, or edits UI in any 小小东 project, even if the kit is not named. Covers scaffolding (pnpm xxd new), syncing (pnpm xxd sync), component lookup (pnpm xxd doc), the design rules (square corners by default, ink emphasis, warm-black dark, 1.5 miter icons, dialog action order) and the checks to run.
+description: Build or restyle any 小小东 interface with the source-available 小小东 UI Kit (xxd-ui-kit; free for noncommercial use, commercial use needs a license) — Chrome extension side panels, options pages, popups, content-script UI, the 小小东提示词 member site, or React apps. Use whenever the user asks to 做一个新插件、新建插件、写个侧边栏、做设置页、改界面、统一样式、换成小小东风格、用 UI Kit、接入 xxd-ui-kit, or edits UI in any 小小东 project, even if the kit is not named. Covers scaffolding (pnpm xxd new), syncing (pnpm xxd sync), component lookup (pnpm xxd doc), the design rules (square corners by default, ink emphasis, warm-black dark, 1.5 miter icons, dialog action order) and the checks to run.
 ---
 
 # 小小东 UI Kit
 
 仓库：这个 Skill 所在目录往上两级（`skills/xxd-ui/` → 仓库根目录；Skill 通常是从仓库链接过去的）；也可以用环境变量 `XXD_UI_KIT_DIR` 指定。
-MIT 开源；不 push `upstream`；推送、发 npm、部署等用户说了再做。装过 `pnpm xxd link` 的话，任何目录都能用 `xxd-ui …` 代替 `pnpm xxd …`。
+源码公开，非商业免费、商用要授权（PolyForm Noncommercial）；不 push `upstream`；推送、发 npm、部署等用户说了再做。装过 `pnpm xxd link` 的话，任何目录都能用 `xxd-ui …` 代替 `pnpm xxd …`。
 
 ## 先读
 

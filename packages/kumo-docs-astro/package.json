@@ -2,7 +2,7 @@
   "name": "@cloudflare/kumo-docs-astro",
   "version": "1.5.22",
   "private": true,
-  "license": "MIT",
+  "license": "(MIT AND PolyForm-Noncommercial-1.0.0)",
   "type": "module",
   "exports": {
     "./demo-metadata.json": "./dist/demo-metadata.json"

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "小小东 UI 的 Chrome 插件工具：新建插件、同步组件和外观设置、xxd-ui 命令行 / XXD UI Chrome extension kit and CLI",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "author": "小小东 (nevertoday)",
   "homepage": "https://ui.xiaoxiaodong.ai",
   "bugs": {

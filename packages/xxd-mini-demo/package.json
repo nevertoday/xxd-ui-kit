@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "小小东 UI 演示小程序：组件目录、待办、外观设置（也是 @xxd/mini 的试点）",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "author": "小小东 (nevertoday)",
   "type": "module",
   "scripts": {

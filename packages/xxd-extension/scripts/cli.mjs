@@ -76,7 +76,7 @@ export async function buildExtension() {
     throw new Error(say("先构建令牌和组件：pnpm xxd:build", "Build tokens and components first: pnpm xxd:build"));
   }
   mkdirSync(join(pkgDir, "dist"), { recursive: true });
-  const banner = "/* @xxd/extension — Copyright (c) 2026 小小东 (xiaoxiaodong.ai). MIT License. */";
+  const banner = "/* @xxd/extension — Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */";
   await build({
     entryPoints: [join(pkgDir, "src/global.js")],
     bundle: true,

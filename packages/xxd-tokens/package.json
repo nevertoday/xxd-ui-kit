@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "小小东 UI 的设计令牌：颜色、字号、间距、圆角的唯一来源，加首帧主题脚本 / XXD UI design tokens",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "author": "小小东 (nevertoday)",
   "homepage": "https://ui.xiaoxiaodong.ai",
   "bugs": {

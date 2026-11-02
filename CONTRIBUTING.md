@@ -2,7 +2,7 @@
 
 **中文** · [English](CONTRIBUTING.en.md)
 
-这是 MIT 开源项目，欢迎提 issue 和 PR。这是作者个人品牌的设计系统，**审美上的决定由作者来做**，所以先读下面「欢迎什么」再动手，免得白做。
+这是源码公开的项目（非商业免费，商用需授权，见[授权与商用](COMMERCIAL.md)），欢迎提 issue 和 PR。这是作者个人品牌的设计系统，**审美上的决定由作者来做**，所以先读下面「欢迎什么」再动手，免得白做。
 改 `packages/kumo` 内部时，上游的贡献指南 `docs/upstream/KUMO-CONTRIBUTING.md` 仍然有效。
 
 ## 欢迎什么
@@ -96,7 +96,14 @@ pnpm --filter @xxd/site run audit    # 无障碍、长文字、恶意宿主页�
 
 ## 许可
 
-提交的代码以 MIT 许可开源。来自 Kumo 的部分保留 `LICENSE-KUMO`，不要删。
+本项目按 [PolyForm Noncommercial 1.0.0](LICENSE) 发布，商用另外付费授权（见[授权与商用](COMMERCIAL.md)）。
+
+提交 PR，就表示你同意下面两件事：
+
+1. 你提交的内容是你自己写的，或者你有权利这样提交；
+2. 小小东可以按本项目的协议发布它，也可以把它放进商业授权，一起授权给别人，不用另外问你，也不另外付费。
+
+来自 Kumo 的部分保留 `LICENSE-KUMO`，不要删。
 
 ## 行为准则与安全
 

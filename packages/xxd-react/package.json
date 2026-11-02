@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "小小东 UI 的 React 组件：Kumo 换皮，加小小东独有组件和外观、语言 Provider / XXD UI React components",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "author": "小小东 (nevertoday)",
   "homepage": "https://ui.xiaoxiaodong.ai",
   "bugs": {
