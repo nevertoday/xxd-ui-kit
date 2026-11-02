@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const src = join(root, "src");
 const dist = join(root, "dist");
-const banner = "/* @xxd/mini — 小小东 UI 小程序版。Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */";
+const banner = "/* @xxd/mini — 小小东 UI 小程序版。(c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */";
 
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });

@@ -44,7 +44,7 @@ function isStale(dir, out) {
 // 和 @xxd/tokens 用同一个转换（:root → :host、令牌在 Shadow 内部再声明、继承属性重置）
 const { toShadow } = await import("../../xxd-tokens/scripts/build.mjs");
 const { hoverOnly } = await import("./hover-only.mjs");
-const banner = "/* @xxd/css — 小小东原生组件。Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */";
+const banner = "/* @xxd/css — (c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */";
 
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });

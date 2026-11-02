@@ -96,7 +96,7 @@ export function toLayered(css) {
   // :root → :where(:root)：layer 里本来就最弱，再去掉优先级；文字上也和老项目自己的 :root[...] 块区分开
   // （有些老测试按文本找第一个 `:root[data-theme="dark"] {`）。
   const scoped = rewriteSelectors(css, (sel) => (rootToWhere(sel) ? [rootToWhere(sel)] : null));
-  return `/* @xxd/tokens（layered）— Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */\n@layer xxd.tokens {\n${scoped.trim()}\n}\n`;
+  return `/* @xxd/tokens（layered）— (c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */\n@layer xxd.tokens {\n${scoped.trim()}\n}\n`;
 }
 
 const MODE_NAMES = {
@@ -121,12 +121,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ? `\n/* 没有 JS 时也跟随系统暗色（scripts/build.mjs 从暗色块生成；boot.js 写了 data-theme 以后以它为准） */\n@media (prefers-color-scheme: dark) {\n  :root:not([data-theme]) {\n    color-scheme: dark;\n${darkVars.map(([k, v]) => `    ${k}: ${v};`).join("\n")}\n  }\n}\n`
     : "";
   const full = source + fallback;
-  writeFileSync(join(dist, "tokens.css"), `/* @xxd/tokens — Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */\n${full}`);
+  writeFileSync(join(dist, "tokens.css"), `/* @xxd/tokens — (c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */\n${full}`);
   writeFileSync(join(dist, "tokens.shadow.css"), toShadow(full));
   writeFileSync(join(dist, "tokens.layered.css"), toLayered(full));
   // 全局规则（减少动效、选中色、输入光标）：不是变量，单独一份
   const base = readFileSync(join(root, "base.css"), "utf8");
-  writeFileSync(join(dist, "base.css"), `/* @xxd/tokens base — Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */\n${base}`);
+  writeFileSync(join(dist, "base.css"), `/* @xxd/tokens base — (c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */\n${base}`);
 
   const json = {};
   for (const [selector, vars] of Object.entries(blocks)) {
@@ -157,7 +157,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     `/** 小小东设计令牌的 CSS 变量名（自动生成）。 */\nexport type XxdToken =\n${names.map((n) => `  | "${n}"`).join("\n")};\n`,
   );
 
-  const common = { bundle: true, target: "es2020", legalComments: "none", banner: { js: "/* @xxd/tokens — Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */" } };
+  const common = { bundle: true, target: "es2020", legalComments: "none", banner: { js: "/* @xxd/tokens — (c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */" } };
   await build({ ...common, entryPoints: [join(root, "src/boot.js")], format: "iife", minify: true, outfile: join(dist, "boot.js") });
   await build({ ...common, entryPoints: [join(root, "src/index.js")], format: "esm", outfile: join(dist, "theme.js") });
   console.log(`@xxd/tokens: ${names.length} tokens → dist/`);

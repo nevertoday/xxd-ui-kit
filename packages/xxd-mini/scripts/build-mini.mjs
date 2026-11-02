@@ -19,7 +19,7 @@ const tokensDir = dirname(require.resolve("@xxd/tokens/package.json"));
 const cssDir = dirname(require.resolve("@xxd/css/package.json"));
 
 export const HEADER = "/*postcss-pxtransform disable*/";
-const BANNER = "/* @xxd/mini — 小小东 UI 小程序版。由 scripts/build-mini.mjs 从 @xxd/css 生成，请勿手改。Copyright (c) 2026 小小东 (xiaoxiaodong.ai). PolyForm Noncommercial 1.0.0; commercial use needs a license: https://ui.xiaoxiaodong.ai/license */";
+const BANNER = "/* @xxd/mini — 小小东 UI 小程序版。由 scripts/build-mini.mjs 从 @xxd/css 生成，请勿手改。(c) 2026 小小东. PolyForm Noncommercial; ui.xiaoxiaodong.ai/license */";
 
 /* ───────────── 选择器 ───────────── */
 
