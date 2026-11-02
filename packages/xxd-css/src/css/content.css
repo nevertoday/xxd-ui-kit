@@ -242,6 +242,23 @@
     margin-block-end: var(--swatch-gap);
   }
 
+  /* data-grid：排成格子铺满整行（外观设置组里的主色，D161）。以前（data-balance）色块 22 / 28px 靠左，浮层 320 宽时右边空出一大块。
+   * 色块固定 36px（不用百分比 + aspect-ratio：浮层按内容量高度时会量成 0，第二排被裁掉），各列两端对齐分开，
+   * 列与列至少隔 --space-1，最多隔 24px（宽的设置页里不散得太开）。列数由 --swatch-cols 给，缺省 6。 */
+  .xxd-swatches[data-grid] {
+    --swatch-size: 36px;
+    display: grid;
+    grid-template-columns: repeat(var(--swatch-cols, 6), var(--swatch-size));
+    justify-content: space-between;
+    gap: var(--swatch-gap) var(--space-1);
+    max-inline-size: calc(var(--swatch-cols, 6) * (var(--swatch-size) + 24px) - 24px);
+  }
+
+  /* 放在设置行的控件位置（flex、按内容宽）里时，格子只有内容那么宽、铺不开；外面那层改成块 */
+  .xxd-row__control:has(> .xxd-swatches[data-grid]) {
+    display: block;
+  }
+
   .xxd-swatch {
     position: relative;
     width: var(--swatch-size, 22px);

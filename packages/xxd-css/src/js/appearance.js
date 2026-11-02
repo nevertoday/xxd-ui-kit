@@ -101,8 +101,8 @@ export function mountAppearance(container, options = {}) {
 
   const swatches = doc.createElement("div");
   swatches.className = "xxd-swatches";
-  // 放不下一行时各行一样多（FIELD-FIXES D137）
-  swatches.setAttribute("data-balance", "");
+  // 排成格子铺满整行（TOUCH-REVIEW-PLAN D161）：每行最多 7 个，各行一样多（12 个是 6 + 6）
+  swatches.setAttribute("data-grid", "");
   swatches.setAttribute("role", "radiogroup");
   swatches.setAttribute("aria-label", L.accent);
   // 和分段控件同一套键盘：← → ↑ ↓ Home End 选择，Tab 只停在选中的那一个
@@ -127,6 +127,8 @@ export function mountAppearance(container, options = {}) {
     swatches.append(b);
   }
   if (![...swatches.children].some((b) => b.tabIndex === 0)) swatches.firstElementChild.tabIndex = 0;
+  const rows = Math.ceil(presets.length / 7);
+  swatches.style.setProperty("--swatch-cols", String(Math.ceil(presets.length / rows)));
   // 点击和方向键都由 install() 的分段控件委托处理，派发 xxd:change
   // 选中的那个颜色的名字直接写在标题旁边（设计师评审 E2：以前只能悬停一个个看）
   const current = doc.createElement("span");

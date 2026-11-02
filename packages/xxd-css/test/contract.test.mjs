@@ -308,6 +308,11 @@ describe("能打字的框一个框只有一个框（§4）", () => {
 describe("窄面板和从右往左", () => {
   // 同一个选择器可能出现在几处（高对比里也有一条），合在一起看
   const decl = (selector) => Object.fromEntries(all.filter((r) => r.selector === selector).flatMap((r) => r.decls));
+  it("色块组带 data-grid 时 36px 色块排成格子、两端对齐铺满整行（D161）", () => {
+    expect(decl(".xxd-swatches[data-grid]")).toMatchObject({ display: "grid", "--swatch-size": "36px", "justify-content": "space-between" });
+    expect(decl(".xxd-row__control:has(> .xxd-swatches[data-grid])")).toMatchObject({ display: "block" });
+  });
+
   it("色块组带 data-balance 时放不下一行各行一样多，不带的照旧（D137）", () => {
     expect(decl(".xxd-swatches[data-balance]")).toMatchObject({ "text-wrap": "balance" });
     expect(decl(".xxd-swatches[data-balance] > .xxd-swatch")).toMatchObject({ display: "inline-block" });
