@@ -1,8 +1,11 @@
 /* 展示站自己的布局。颜色、圆角、字号全部来自 @xxd/tokens；组件全部是 @xxd/css。 */
 @layer site {
   /* 外框的竖线（SPACING-REVIEW-PLAN D57）：标志、侧栏的字贴页边 16；搜索框的左边就是正文的左边；右上角最后一个图标的右边也在页边 16 */
+  /* 整个版面是一个框（G14）：侧栏 232 · 正文 · 目录 200，最宽 1680，宽屏上居中；正文列在框里跟着宽度伸缩 */
   :root {
     --site-nav-w: 232px;
+    --site-toc-w: 200px;
+    --site-frame: 1680px;
   }
 
   html {
@@ -22,18 +25,39 @@
     font-style: normal;
   }
 
+  /* 顶栏和下面的页面用同一套列（DOCS-NAV-PLAN G13）：侧栏 · 正文（最宽 1200）· 目录 200。
+     每样东西对齐它那一列自己的线：品牌在页边 16；栏目从正文左线开始，搜索框停在正文右线；
+     四个图标里第一个的图形对齐目录的字，最后一个对齐页边 16（D58） */
   .site-top {
     position: sticky;
     top: 0;
     z-index: var(--z-dock);
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--site-nav-w) minmax(0, 1fr) var(--site-toc-w);
     align-items: center;
-    gap: var(--space-3);
     height: 56px;
-    padding: 0 var(--space-4);
+    /* 顶栏的线和底色铺满整个屏幕，里面的东西和下面的版面框对齐 */
+    padding-inline: max(0px, (100% - var(--site-frame)) / 2);
     border-bottom: 1px solid var(--line);
     background: color-mix(in srgb, var(--bg) 94%, transparent);
     backdrop-filter: blur(10px);
+  }
+
+  .site-top__bar {
+    grid-column: 2 / 4;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--site-toc-w);
+    align-items: center;
+    align-self: stretch;
+  }
+
+  .site-top__main {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    gap: var(--space-6);
+    min-width: 0;
+    padding: 0 var(--space-8);
   }
 
   .site-menu {
@@ -43,19 +67,15 @@
   .site-brand {
     display: inline-flex;
     align-items: center;
+    justify-self: start;
     gap: var(--space-2);
+    margin-left: var(--space-4);
     color: var(--ink);
     font: var(--weight-strong) var(--text-base) / 1 var(--font-body);
     text-decoration: none;
     white-space: nowrap;
   }
 
-  /* 桌面上品牌占住「侧栏 + 正文左边距」那么宽，搜索框就从正文那条线开始 */
-  @media (min-width: 1024px) {
-    .site-brand {
-      width: calc(var(--site-nav-w) + var(--space-8) - var(--space-4) - var(--space-3));
-    }
-  }
 
   /* 品牌标志：墨色方块中间一个「东」。字是用直线画的（和图标同一种画法：圆头、斜接角），四周留出一圈白，
      不用字体——苹方、雅黑、思源的「东」长得不一样。和 public/favicon.svg 是同一个图形。 */
@@ -78,7 +98,8 @@
 
   .site-search {
     display: inline-flex;
-    flex: 0 1 280px;
+    flex: 0 1 240px;
+    margin-left: auto;
     align-items: center;
     gap: var(--space-2);
     height: 32px;
@@ -102,11 +123,91 @@
     color: var(--ink);
   }
 
+  /* 顶栏的栏目条（DOCS-NAV-PLAN G1、G3）：当前栏目底下一条 2px 的线，和左栏「当前页」同一种颜色（D74：≥ 3:1）；不加粗 */
+  .site-sections {
+    display: flex;
+    align-self: stretch;
+    gap: var(--space-4);
+  }
+
+  .site-sections a {
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted);
+    font: var(--weight-regular) var(--text-sm) / 1 var(--font-body);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .site-sections a:hover {
+    color: var(--ink);
+  }
+
+  .site-sections a[aria-current="true"] {
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--action);
+  }
+
+  .site-sections a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  /* ≤ 1023：顶栏放不下品牌那一列 + 六个栏目（英文的栏目名一共 456 宽），栏目搬到侧栏最上面两排；手机抽屉里也是这两排（G3） */
+  @media (max-width: 1023px) {
+    .site-sections {
+      display: none;
+    }
+
+    .site-nav ul.site-nav__sections {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-1);
+      margin: 0 0 var(--space-4);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .site-nav__sections a {
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .site-nav__sections a[aria-current="true"] {
+      background: var(--selected-bg);
+      box-shadow: inset 0 -2px 0 var(--action);
+    }
+  }
+
+  /* 抽屉里的栏目（只在 ≤ 820 出现） */
+  .site-nav__sections {
+    display: none;
+  }
+
+  /* 目录那一列：四个图标两端对齐，第一个的图形在目录的字那条线上，最后一个在页边 16 */
   .site-appearance {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    margin-left: auto;
+    justify-content: space-between;
+    gap: var(--space-1);
+    padding: 0 var(--space-4);
+  }
+
+  .site-appearance > .site-theme {
+    margin-inline-start: calc((var(--icon-lg) - var(--btn-box)) / 2);
+  }
+
+  /* 亮暗切换：亮色时显示月亮（点了变暗），暗色时显示太阳 */
+  .site-theme [data-icon] {
+    display: inline-flex;
+  }
+
+  .site-theme [data-icon="sun"],
+  :root[data-theme="dark"] .site-theme [data-icon="moon"] {
+    display: none;
+  }
+
+  :root[data-theme="dark"] .site-theme [data-icon="sun"] {
+    display: inline-flex;
   }
 
   .site-appearance .xxd-segmented > button {
@@ -118,26 +219,20 @@
     margin-inline-end: calc((var(--icon-lg) - var(--btn-box)) / 2);
   }
 
-  .site-accent-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: var(--r-pill);
-    background: var(--site-accent, var(--ink));
-    box-shadow: 0 0 0 1px var(--line-strong);
-  }
-
   .site-accents {
     width: 248px;
     min-width: 0;
   }
 
-  /* 「外观」弹出层里只在窄屏出现的那两组（主题 ≤ 480、圆角 ≤ 820；宽屏时它们在顶栏上） */
+  /* 「外观」弹出层：主题、圆角、主色、密度、质感都在这里，任何宽度都一样（G3） */
   .site-more__compact {
-    display: none;
+    display: grid;
+    gap: var(--space-2);
     margin-bottom: var(--space-3);
   }
 
   .site-more__github {
+    display: none;
     margin: var(--space-3) 0 0;
     padding-top: var(--space-3);
     border-top: 1px solid var(--line);
@@ -147,22 +242,18 @@
     width: 100%;
   }
 
-  @media (max-width: 820px) {
-    .site-more__compact[data-show="narrow"] {
-      display: grid;
-      gap: var(--space-2);
-    }
-  }
-
+  /* 手机：GitHub 从顶栏收进「外观」弹层最下面；最后一个变成语言按钮，按它的字对齐页边（D58、G13） */
   @media (max-width: 480px) {
-    .site-more__compact[data-show="phone"] {
+    .site-more__github {
       display: grid;
-      gap: var(--space-2);
     }
 
-    .site-appearance > .xxd-segmented[data-name="theme"],
     .site-appearance > .site-github {
       display: none;
+    }
+
+    .site-appearance > .site-lang {
+      margin-inline-end: calc(-1 * var(--control-pad-x-sm, 12px));
     }
   }
 
@@ -178,18 +269,22 @@
     display: flex;
   }
 
-  /* 正文栏最宽 1200px，目录紧跟在正文后面（不再贴到屏幕最右边、中间空一大片）；更宽的屏幕只在最右边留白 */
+  /* 版面框（G14）：以前正文最宽 1200、靠左，1920 宽时右边空出一大条，2560 时空一半。现在三列放进最宽 1680 的框，
+     框在屏幕中间；正文列跟着框伸缩（1440 宽时和以前一样），目录紧跟正文 */
   .site-body {
     display: grid;
-    grid-template-columns: var(--site-nav-w) minmax(0, 1200px) 200px;
+    grid-template-columns: var(--site-nav-w) minmax(0, 1fr) var(--site-toc-w);
     align-items: start;
+    max-width: var(--site-frame);
+    margin-inline: auto;
   }
 
+  /* 三列的第一行在同一条线上：侧栏的第一个组名、正文的第一行、目录的「本页」都离顶栏 32（G13） */
   .site-nav {
     position: sticky;
     top: 56px;
     height: calc(100vh - 56px);
-    padding: var(--space-4) var(--space-2) var(--space-8);
+    padding: var(--space-8) var(--space-2) var(--space-8);
     overflow-y: auto;
     border-right: 1px solid var(--line);
     scrollbar-width: thin;
@@ -251,7 +346,7 @@
     grid-column: 2 / -1;
   }
 
-  /* 整页宽的页面不受 1200px 正文上限：大屏上组件墙、图标格子一直铺到右边，不留一大片空白 */
+  /* 整页宽的页面（没有目录）：正文占掉目录那一列，铺满版面框 */
   .site-body:has(> .site-main--wide) {
     grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
   }
@@ -271,29 +366,19 @@
     font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
   }
 
-  .site-toc ul {
+  .site-toc .xxd-toc {
     margin: 0 0 var(--space-4);
-    padding: 0;
-    list-style: none;
-  }
-
-  .site-toc li.is-sub {
-    padding-left: var(--space-3);
-  }
-
-  .site-toc a {
-    display: block;
-    padding: var(--space-1) 0;
-    color: var(--muted);
-    text-decoration: none;
-  }
-
-  .site-toc a:hover {
-    color: var(--ink);
   }
 
   .site-toc__md {
+    display: block;
+    padding: var(--space-1) 0;
     color: var(--muted) !important;
+    text-decoration: none;
+  }
+
+  .site-toc__md:hover {
+    color: var(--ink) !important;
   }
 
   /* 正文 */
@@ -323,6 +408,66 @@
   .site-h3 {
     margin: var(--space-6) 0 var(--space-2);
     font: var(--weight-medium) var(--text-lg) / var(--leading-md) var(--font-body);
+  }
+
+  /* 组件总览（DOCS-NAV-PLAN G5）：卡片只有名字和一句话 */
+  .site-catalog {
+    padding-top: var(--space-6);
+  }
+
+  .site-catalog > section + section {
+    margin-top: var(--space-8);
+  }
+
+  .site-catalog .site-h2 {
+    margin-top: 0;
+  }
+
+  .site-catalog__grid {
+    --grid-min: 220px;
+  }
+
+  /* 名字的另一种写法：卡片标题 13px，英文名是等宽字、小一档（D71）是 12px；中文名不小于 12px（D68） */
+  .site-catalog__name {
+    margin-left: var(--space-2);
+    color: var(--muted);
+    font: var(--text-xs) / var(--leading-xs) var(--font-mono);
+  }
+
+  .site-catalog__label {
+    margin-left: var(--space-2);
+    color: var(--muted);
+    font: var(--weight-regular) var(--text-xs) / var(--leading-xs) var(--font-body);
+  }
+
+  /* 状态表上面的图例：一列名字一句话 */
+  .site-legend {
+    display: grid;
+    gap: var(--gap-tight);
+    margin: 0 0 var(--space-5);
+    font: var(--text-sm) / var(--leading-sm) var(--font-body);
+  }
+
+  .site-legend > div {
+    display: grid;
+    grid-template-columns: 10em minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .site-legend dt {
+    font-weight: var(--weight-medium);
+  }
+
+  .site-legend dd {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  @media (max-width: 560px) {
+    .site-legend > div {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
   }
 
   .site-p {
@@ -369,14 +514,27 @@
     }
   }
 
+  /* 圆点在正文那条线上，和勾、叉一样（G13）；跟圆角开关走（直角时是方点） */
   .site-rules li::before {
-    content: "·";
+    content: "";
     position: absolute;
-    left: var(--space-1-5);
-    color: var(--muted);
+    top: calc(var(--leading-md) / 2 - 2px);
+    left: 0;
+    width: 4px;
+    height: 4px;
+    border-radius: var(--r-pill);
+    background: var(--muted);
   }
 
   /* 什么时候用 / 别用：前面一个勾或叉（不只靠颜色） */
+  .site-rules:is([data-kind="use"], [data-kind="avoid"]) li::before {
+    top: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+  }
+
   .site-rules[data-kind="use"] li::before {
     content: "✓";
     left: 0;
@@ -430,6 +588,8 @@
     min-height: 120px;
     padding: var(--space-8) var(--space-6);
     background: var(--bg);
+    /* 局部换了主题（「换亮暗」）时字色也跟着这张面 */
+    color: var(--ink);
   }
 
   /* 演示里的东西不比演示框宽：长文字时组件自己收缩、出省略号，而不是把外面那层撑开（React 的演示外面多一层岛，TRUNCATION-REVIEW-PLAN） */
@@ -706,6 +866,11 @@
 
   .site-codeblock + .site-codeblock {
     margin-top: var(--space-3);
+  }
+
+  /* 代码块后面接着的字：和代码块之间留一段，不贴着（G13） */
+  .site-codeblock {
+    margin-bottom: var(--space-4);
   }
 
   .site-code__copy {
@@ -1188,6 +1353,37 @@
     font-weight: var(--weight-medium);
   }
 
+  /* 只有一句话、没有演示的对错（组件页，G10） */
+  .site-dodont figcaption:first-child {
+    border-top: 0;
+  }
+
+  /* 相关组件：名字 + 什么情况用它（G10） */
+  .site-related {
+    display: grid;
+    gap: var(--gap-tight);
+    margin: 0;
+    font: var(--text-sm) / var(--leading-sm) var(--font-body);
+  }
+
+  .site-related > div {
+    display: grid;
+    grid-template-columns: 10em minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .site-related dd {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  @media (max-width: 560px) {
+    .site-related > div {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+  }
+
   .site-dodont [data-kind="do"] figcaption b {
     color: var(--success);
   }
@@ -1393,16 +1589,62 @@
     }
   }
 
+  /* 顶栏窄了只有一处变化（DOCS-NAV-PLAN G3）：≤ 1180 搜索框只留放大镜，和旁边的图标按钮一样没有框。
+     这时没有目录那一列：顶栏也只剩侧栏 · 正文两列，图标排在正文那一列的最后，最后一个停在正文右线（G13） */
+  @media (max-width: 1180px) {
+    .site-top {
+      grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+    }
+
+    .site-top__bar {
+      grid-column: 2;
+      display: flex;
+      gap: var(--space-3);
+      padding: 0 var(--space-8);
+    }
+
+    .site-top__main {
+      flex: 1;
+      padding: 0;
+    }
+
+    .site-appearance {
+      justify-content: flex-start;
+      padding: 0;
+    }
+
+    .site-appearance > .site-theme {
+      margin-inline-start: 0;
+    }
+
+    .site-search span,
+    .site-search kbd {
+      display: none;
+    }
+
+    .site-search {
+      flex: none;
+      width: var(--control-h-sm);
+      height: var(--control-h-sm);
+      padding: 0;
+      justify-content: center;
+      border-color: transparent;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .site-search:hover {
+      border-color: transparent;
+      background: var(--wash);
+    }
+  }
+
   .site-lang__short {
     display: none;
   }
 
   /* 手机：顶栏放不下全部文字 —— 品牌名和「主色」只留给读屏，语言按钮缩成 EN / 中，间距收紧（320px 也不溢出） */
   @media (max-width: 560px) {
-    .site-top {
-      gap: var(--space-2);
-    }
-
     .site-brand__name,
     .site-accent__label {
       position: absolute;
@@ -1437,26 +1679,27 @@
   }
 
   @media (max-width: 820px) {
+    /* 手机：没有侧栏那一列，顶栏回到一行：菜单 · 品牌 ……… 放大镜 · 亮暗 · 外观 · 语言，两头贴页边 16 */
+    .site-top {
+      display: flex;
+      gap: var(--space-2);
+      padding: 0 var(--space-4);
+    }
+
+    .site-brand {
+      margin-left: 0;
+    }
+
+    .site-top__bar {
+      flex: 1;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
     .site-menu {
       display: inline-flex;
     }
 
-    .site-search span,
-    .site-search kbd {
-      display: none;
-    }
-
-    .site-search {
-      flex: none;
-      width: 32px;
-      margin-left: 0;
-      padding: 0;
-      justify-content: center;
-    }
-
-    .site-appearance > .xxd-segmented[data-name="corners"] {
-      display: none;
-    }
 
     .site-body {
       display: block;
@@ -1466,6 +1709,7 @@
       position: fixed;
       top: 56px;
       left: 0;
+      padding-top: var(--space-4);
       z-index: var(--z-dialog);
       width: min(300px, 86vw);
       background: var(--bg);

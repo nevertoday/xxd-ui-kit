@@ -5,7 +5,7 @@
      里面的输入框、菜单项、分隔线跟着一起抬，不用一个个改（设计师评审 V4-3）。
      !important：浮层跟着局部主题抄了 data-theme 时（DARK-REVIEW-PLAN D108），令牌文件的主题块（不在层里）会在同一个元素上
      重写 --paper，没有它就抬不起来（层里的 !important 才压得过层外的普通声明） */
-  :is(.xxd-surface-float, .xxd-dialog, .xxd-menu, .xxd-popover, .xxd-sheet, .xxd-panel, .xxd-toast, .xxd-palette) {
+  :is(.xxd-surface-float, .xxd-dialog, .xxd-menu, .xxd-popover, .xxd-sheet, .xxd-panel, .xxd-toast, .xxd-palette, .xxd-listbox) {
     --paper: var(--paper-raised) !important;
     --wash: var(--wash-raised) !important;
     --wash-strong: var(--wash-strong-raised) !important;
@@ -77,9 +77,31 @@
     width: min(640px, calc(100vw - 32px));
   }
 
+  /* 长的对话框只有正文滚（J29：以前整个对话框一起滚，标题、关闭和底下的按钮都滚出去） */
+  .xxd-dialog[open]:has(> .xxd-dialog__body, > form > .xxd-dialog__body) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .xxd-dialog[open] > form:has(> .xxd-dialog__body) {
+    display: contents;
+  }
+
+  .xxd-dialog:has(.xxd-dialog__body) :is(.xxd-dialog__head, .xxd-dialog__actions) {
+    flex: none;
+  }
+
+  .xxd-dialog[open] .xxd-dialog__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* 标题折成两行时，关闭按钮对齐第一行（§6）：按钮自己的上下外边距已经按一行的行高居中 */
   .xxd-dialog__head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-2);
     padding: var(--inset-lg-y) var(--inset-lg) 0;
   }
@@ -175,8 +197,14 @@
     gap: var(--space-1);
   }
 
+  /* 主按钮永远在末尾、靠右（J30：放不下换行时以前落在第二行的左边） */
   .xxd-dock__primary {
     flex: none;
+    margin-inline-start: auto;
+  }
+
+  .xxd-dock {
+    anchor-name: --xxd-dock;
   }
 
   /* 破坏性操作单独放，并写清楚 */
@@ -229,6 +257,14 @@
       visibility 0s linear var(--motion-sheet-out);
   }
 
+  /* 停在 dock 的上沿上面（J31：以前写死 bottom 64，dock 放不下换成两行、变成 97–113 高时，面板压在它的状态和工具上） */
+  @supports (anchor-name: --a) {
+    .xxd-sheet-host:has(> .xxd-dock) > .xxd-sheet {
+      bottom: calc(anchor(--xxd-dock top) + var(--space-2));
+      max-height: calc(100% - anchor-size(--xxd-dock height) - var(--space-8));
+    }
+  }
+
   .xxd-sheet[data-open] {
     opacity: 1;
     transform: none;
@@ -241,7 +277,7 @@
 
   .xxd-sheet__head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-2);
     padding: var(--inset-md-y) var(--inset-md) var(--space-2);
   }
@@ -325,10 +361,15 @@
     line-height: var(--leading-sm);
   }
 
+  /* 关闭按钮按图标对齐内容的右线和第一行（J34、D58）；内容右边给它让出位置，标题不再钻到 × 下面 */
   .xxd-popover__close {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: calc(var(--inset-md-y) - (var(--btn-box) - var(--leading-sm)) / 2);
+    right: calc(var(--inset-md) - (var(--btn-box) - var(--icon-lg)) / 2);
+  }
+
+  .xxd-popover:has(> .xxd-popover__close) {
+    padding-inline-end: calc(var(--inset-md) + var(--icon-lg) + var(--space-2));
   }
 
   /* 小箭头（可选）：data-arrow；floating.js 写 --xxd-arrow-x 和 data-side。旋转的小方块，跟随圆角开关。 */
@@ -356,8 +397,11 @@
     border-left: 0;
   }
 
+  /* 再长的菜单也不超出屏幕：超出的部分在菜单里滚（J33：28 项的菜单以前 906 高，屏幕外的项点不到） */
   .xxd-menu {
+    max-height: calc(100dvh - var(--space-4));
     padding: var(--space-1);
+    overflow-y: auto;
   }
 
   .xxd-popover {
@@ -448,7 +492,9 @@
     border-radius: var(--r-xs);
     background: var(--ink);
     color: var(--on-ink);
-    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    /* 会折行：12 / 20，不留单独一个字在最后一行（§6） */
+    font: var(--weight-medium) var(--text-xs) / var(--leading-sm) var(--font-body);
+    text-wrap: pretty;
     box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.16);
     opacity: 0;
     transform: scale(0.96);
@@ -713,14 +759,18 @@
   }
 
   /* Toast 堆叠：最多叠 3 张，旧的往上缩一点；hover / 聚焦展开。同一句话再来时不加新的，只轻轻动一下。 */
+  /* 叠起来的几张一样宽（最宽那张的宽）：后面的只露出边，不出现一个空着的宽框套着前面的小条（J35） */
   .xxd-toast-region[data-stack] {
     display: grid;
     grid-template-areas: "stack";
+    grid-template-columns: minmax(0, max-content);
+    justify-content: center;
     align-items: end;
   }
 
   .xxd-toast-region[data-stack] > .xxd-toast {
     grid-area: stack;
+    justify-self: stretch;
     transform: translateY(calc(var(--i, 0) * -8px)) scale(calc(1 - var(--i, 0) * 0.04));
     transform-origin: bottom center;
     transition: transform var(--motion-medium) var(--ease-out-expo), opacity var(--motion-quick) ease;
@@ -776,7 +826,9 @@
 /* 窄屏抽屉（I12）：对话框、右侧面板在 640px 以下变成底部抽屉，顶部一条把手，可以下滑关闭 */
 @layer xxd.components {
   @media (max-width: 640px) {
-    .xxd-dialog {
+    /* 带 data-size 的也一样整宽（J2）：sm / xl 的宽度规则一样具体、写在前面，以前在手机上把抽屉压成 358 宽、贴着左边 */
+    .xxd-dialog,
+    .xxd-dialog[data-size] {
       width: 100vw;
       max-width: 100vw;
       max-height: 88dvh;
@@ -820,8 +872,13 @@
       transform: translateY(100%);
     }
 
-    .xxd-palette {
-      margin-top: 0;
+    /* 命令面板不是底部抽屉：四边都有线和圆角，浮在上面（J36：以前拿到了抽屉的方角、没底线，像被切掉） */
+    .xxd-dialog.xxd-palette {
+      width: calc(100vw - 2 * var(--space-4));
+      margin: var(--space-4) auto auto;
+      padding-bottom: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: var(--r-lg);
     }
   }
 }
@@ -849,3 +906,9 @@
   }
 }
 
+/* 带操作的 toast：右边的按钮自带内边距，收回去，左右看起来一样宽（§6） */
+@layer xxd.components {
+  .xxd-toast:has(> .xxd-toast__action) {
+    padding-inline-end: var(--space-1);
+  }
+}

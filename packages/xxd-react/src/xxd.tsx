@@ -882,7 +882,7 @@ export function Heatmap({
   const days = m.columns.flat();
   return (
     <div className={cx("xxd-heatmap", className)} {...on}>
-      <div className="xxd-heatmap__body">
+      <div className="xxd-heatmap__body" style={{ "--weeks": m.columns.length } as CSSProperties}>
         <div className="xxd-heatmap__days" aria-hidden="true">
           {m.weekdays.map((d, i) => (
             <span key={i}>{i % 2 === 0 ? d : ""}</span>

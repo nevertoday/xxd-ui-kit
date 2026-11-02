@@ -628,7 +628,72 @@ async function smokeAudit() {
     }
   }
   for (const x of hung) fail("冒烟", `首页在 ${x} 宽时卡住（组件墙排版停不下来）`);
-  console.log("冒烟：层叠层顺序、reset 下的对话框、注入宿主的定位；首页 1000–2600 宽都排得完");
+  // 顶栏加了栏目条（DOCS-NAV-PLAN G3）：821–2600 宽中英两版都排得下，不溢出、不重叠；左栏只有当前栏目的组
+  const SECTION_OF = { "/components/button/": "组件", "/foundations/colors/": "基础", "/templates/article/": "模式", "/changelog/": "工具", "/miniprogram/": "小程序", "/start/": "开始" };
+  for (const page of ["/components/button/", "/en/components/button/"]) {
+    const c = await browser.newContext({ viewport: { width: 1600, height: 800 } });
+    const tab = await c.newPage();
+    await tab.goto(origin + page);
+    for (let w = 821; w <= 2600; w += w < 1500 ? 10 : 100) {
+      await tab.setViewportSize({ width: w, height: 800 });
+      const r = await tab.evaluate(() => {
+        const top = document.querySelector(".site-top");
+        // 量顶栏里一样一样看得见的东西（品牌、栏目、搜索、每个图标），不量装它们的那几层（它们本来就铺到边）
+        const kids = [...top.querySelectorAll(".site-menu, .site-brand, .site-sections, .site-search, .site-appearance > .xxd-btn")]
+          .filter((e) => getComputedStyle(e).display !== "none" && e.getBoundingClientRect().width > 0)
+          .map((e) => e.getBoundingClientRect())
+          .sort((a, b) => a.left - b.left);
+        const overlap = kids.some((b, i) => i && b.left < kids[i - 1].right - 0.5);
+        return { over: top.scrollWidth > top.clientWidth, overlap, right: kids.at(-1).right };
+      });
+      if (r.over || r.overlap || r.right > w - 8) fail("冒烟", `${page} 在 ${w}px 宽时顶栏排不下（溢出 ${r.over}，重叠 ${r.overlap}）`);
+    }
+    await c.close();
+  }
+  // 顶栏和页面同一套列（G13）：栏目从正文左线开始、搜索框停在正文右线、第一个图标对齐目录的字、最后一个对齐页边或正文右线；
+  // 侧栏第一个组名、正文第一行、目录的「本页」在同一条横线上
+  for (const [page, w] of [["/components/button/", 1440], ["/en/components/button/", 1440], ["/components/button/", 2000], ["/components/button/", 1100], ["/en/components/button/", 1100]]) {
+    const c = await browser.newContext({ viewport: { width: w, height: 900 } });
+    const tab = await c.newPage();
+    await tab.goto(origin + page);
+    const r = await tab.evaluate(() => {
+      const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+      const text = (sel) => { const e = document.querySelector(sel); const n = e && [...e.childNodes].find((x) => x.nodeType === 3 && x.textContent.trim()); if (!n) return null; const rg = document.createRange(); rg.selectNodeContents(n); return rg.getBoundingClientRect(); };
+      const main = document.querySelector(".site-main"); const cs = getComputedStyle(main); const mb = main.getBoundingClientRect();
+      const icons = [...document.querySelectorAll(".site-appearance > .xxd-btn")].filter((e) => e.getClientRects().length);
+      const visibleSvg = (e) => [...e.querySelectorAll("svg")].find((s) => s.getClientRects().length) ?? e;
+      return {
+        left: mb.left + parseFloat(cs.paddingLeft), right: mb.right - parseFloat(cs.paddingRight),
+        section: text(".site-sections a")?.left, search: box(".site-search").right, searchWide: box(".site-search").width > 40,
+        first: visibleSvg(icons[0]).getBoundingClientRect().left, last: visibleSvg(icons.at(-1)).getBoundingClientRect().right,
+        toc: document.querySelector(".site-toc")?.getClientRects().length ? text(".site-toc h2")?.left : null,
+        tops: [text(".site-nav__group h2")?.top, text(".site-main .site-head .xxd-text")?.top, document.querySelector(".site-toc")?.getClientRects().length ? text(".site-toc h2")?.top : null].filter((x) => x != null),
+        vw: innerWidth,
+      };
+    });
+    const off = (a, b) => Math.abs(a - b) > 1;
+    const bad = [];
+    if (off(r.section, r.left)) bad.push(`栏目 ${Math.round(r.section)} ≠ 正文左线 ${Math.round(r.left)}`);
+    if (r.searchWide && off(r.search, r.right)) bad.push(`搜索框右边 ${Math.round(r.search)} ≠ 正文右线 ${Math.round(r.right)}`);
+    if (r.toc != null && off(r.first, r.toc)) bad.push(`第一个图标 ${Math.round(r.first)} ≠ 目录的字 ${Math.round(r.toc)}`);
+    if (r.toc != null ? off(r.last, Math.min(r.vw - 16, r.toc - 16 + 200 - 16)) : off(r.last, r.right)) bad.push(`最后一个图标 ${Math.round(r.last)} 没对齐`);
+    if (Math.max(...r.tops) - Math.min(...r.tops) > 1) bad.push(`三列的第一行不齐：${r.tops.map(Math.round).join(" / ")}`);
+    for (const b of bad) fail("冒烟", `${page} ${w}px 顶栏没对齐：${b}`);
+    await c.close();
+  }
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const tab = await c.newPage();
+    for (const [page, want] of Object.entries(SECTION_OF)) {
+      if (!pages.includes(page)) continue;
+      await tab.goto(origin + page);
+      const r = await tab.evaluate(() => ({ current: document.querySelector('.site-sections a[aria-current="true"]')?.textContent.trim(), groups: [...document.querySelectorAll(".site-nav__group h2")].map((h) => h.textContent.trim()) }));
+      if (r.current !== want) fail("冒烟", `${page} 顶栏当前栏目是「${r.current}」，应该是「${want}」`);
+      if (r.groups.length > 12 || r.groups.includes("工具") !== (want === "工具")) fail("冒烟", `${page} 左栏不止当前栏目：${r.groups.join("、")}`);
+    }
+    await c.close();
+  }
+  console.log("冒烟：层叠层顺序、reset 下的对话框、注入宿主的定位；首页 1000–2600 宽都排得完；顶栏 821–2600 宽中英都排得下、各项对齐页面的列，左栏只列当前栏目");
 }
 
 /* ── 9. 读屏：键盘走关键流程，读无障碍树和播报区（scripts/sr.mjs） ── */
@@ -1874,7 +1939,61 @@ async function diagramAudit() {
   console.log(`图解：${runs.length} 种环境 × 6 种图 × 中英，共量了 ${count} 张图（组件页的示例、React 演示 + 极端的：9 步长标题、长时间、三条分支长名字、不合拢的分支、四个子节点、三层、6 步循环、长说明 × 320 / 479 / 480 / 720 宽，再各放进 grid、flex 横排、flex 竖排居中的 320 宽格子）`);
 }
 
-const sections = { axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };
+/* ── 控件那把尺（COMPONENT-JURY-PLAN J1）：同一个 data-size 的控件并排时一样高 ── */
+async function sizesAudit() {
+  const ROW = (s) => {
+    const d = s ? ` data-size="${s}"` : "";
+    const chip = ` data-size="${s || "md"}"`;
+    return `<div class="xxd-cluster" data-row="${s || "md"}" style="align-items:center;flex-wrap:nowrap">
+      <button class="xxd-btn" data-k="按钮"${d}>按钮</button>
+      <button class="xxd-btn" data-k="图标按钮" data-icon-only aria-label="加"${d}><i data-xxd-icon="Plus" data-size="16"></i></button>
+      <input class="xxd-input" data-k="输入框" aria-label="输入"${d} style="width:96px">
+      <div class="xxd-input-wrap" data-k="搜索" style="width:120px"><i data-xxd-icon="Search" data-size="16"></i><input class="xxd-input" type="search" aria-label="搜索"${d}></div>
+      <label class="xxd-select" data-k="下拉"${d}><select aria-label="质量"><option>高</option></select></label>
+      <div class="xxd-input-group" data-k="输入组"${d} style="width:150px"><span class="xxd-input-group__addon">https://</span><input aria-label="域名" value="a"></div>
+      <div class="xxd-picker" data-xxd-picker data-k="自定义下拉"${d} style="width:96px"><button class="xxd-picker__trigger"><span class="xxd-picker__value"></span></button><div class="xxd-listbox"><div class="xxd-option" data-value="a" aria-selected="true">高</div></div></div>
+      <div class="xxd-segmented" data-xxd-segmented data-k="分段" role="radiogroup" aria-label="类型"${d}><button role="radio" aria-checked="true">文本</button><button role="radio" aria-checked="false">图片</button></div>
+      <button class="xxd-chip" data-k="chip"${chip}>海报</button>
+      ${s === "xs" ? "" : `<div class="xxd-taginput" data-xxd-taginput data-k="标签输入"${s === "sm" || s === "lg" ? d : ""} style="width:110px"><input aria-label="标签"></div>`}
+    </div>`;
+  };
+  const html = `<div id="sizes-probe" style="display:grid;gap:16px;padding:16px">${["xs", "sm", "", "lg"].map(ROW).join("")}</div>`;
+  let n = 0;
+  for (const [density, touch] of [["comfortable", false], ["compact", false], ["comfortable", true]]) {
+    const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 }, hasTouch: touch });
+    await ctx.addInitScript((d) => localStorage.setItem("xxd-site", JSON.stringify({ theme: "light", corners: "square", accent: "", density: d, finish: "flat" })), density);
+    const tab = await ctx.newPage();
+    await tab.goto(origin + "/components/button/");
+    const bad = await tab.evaluate((html) => {
+      document.querySelector("main").insertAdjacentHTML("afterbegin", html);
+      window.Xxd?.init?.(document.getElementById("sizes-probe"));
+      const root = getComputedStyle(document.documentElement);
+      const want = { xs: root.getPropertyValue("--control-h-xs"), sm: root.getPropertyValue("--control-h-sm"), md: root.getPropertyValue("--control-h"), lg: root.getPropertyValue("--control-h-lg") };
+      const coarse = matchMedia("(pointer: coarse)").matches;
+      const out = [];
+      for (const row of document.querySelectorAll("#sizes-probe > [data-row]")) {
+        const tier = row.dataset.row;
+        const h = parseFloat(want[tier]);
+        for (const el of row.children) {
+          // 量看得见的那个框：外层没有边框时量里面的控件
+          let box = el;
+          if (getComputedStyle(el).borderTopWidth === "0px" && !el.matches(".xxd-btn, .xxd-chip, .xxd-segmented")) box = el.querySelector(".xxd-input, select, .xxd-picker__trigger") ?? el;
+          const got = box.getBoundingClientRect().height;
+          // 触屏上 xs 的输入框没法补点按区，只能 44（写在文档里的例外）
+          if (coarse && tier === "xs" && ["输入框", "搜索", "下拉"].includes(el.dataset.k)) continue;
+          if (Math.abs(got - h) > 0.5) out.push(`${tier} ${el.dataset.k} ${Math.round(got * 10) / 10}，应该 ${h}`);
+        }
+      }
+      return out;
+    }, html);
+    n += 1;
+    for (const b of bad) fail("尺寸", `${density}${touch ? " + 触屏" : ""}：${b}`);
+    await ctx.close();
+  }
+  console.log(`尺寸：${n} 种环境（标准 / 紧凑 / 触屏）× xs / sm / 缺省 / lg × 10 种控件，同一档一样高`);
+}
+
+const sections = { sizes: sizesAudit, axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

@@ -79,6 +79,9 @@ export function watchTabsOverflow(list) {
   update();
   if (watched.has(list)) return;
   watched.add(list);
+  // 一开始选中的那个也滚进视野（J13）；只动这一条的 scrollLeft，不用 scrollIntoView（它会连页面一起滚）
+  const sel = list.querySelector('[aria-selected="true"]');
+  if (sel && sel.offsetLeft + sel.offsetWidth > list.clientWidth) list.scrollLeft = sel.offsetLeft - 32;
   list.addEventListener("scroll", update, { passive: true });
   list.addEventListener("xxd:change", () => {
     list.querySelector('[aria-selected="true"]')?.scrollIntoView?.({ block: "nearest", inline: "nearest" });

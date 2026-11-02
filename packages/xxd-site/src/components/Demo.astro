@@ -71,6 +71,8 @@ const miniSource = mini ? miniCode(mini.name, lang) : "";
       {hasReact && <button role="tab" id={`${id}-t2`} aria-controls={`${id}-react ${id}-code2`}>React</button>}
       {mini && <button role="tab" id={`${id}-t3`} aria-controls={`${id}-mini ${id}-code3`}>{L.miniTab}</button>}
     </div>
+    {/* 只把这块演示换成另一种主题（局部 data-theme，DOCS-NAV-PLAN G11）；小程序标签页是 iframe，不跟 */}
+    <button class="xxd-btn" data-variant="ghost" data-size="sm" data-site-flip aria-pressed="false"><Fragment set:html={icon("Contrast", 14)} />{L.flipTheme}</button>
     <button class="xxd-btn" data-variant="ghost" data-size="sm" data-site-code-wrap aria-pressed="false">{L.codeWrap}</button>
     <button class="xxd-btn" data-variant="ghost" data-size="sm" data-site-code-toggle aria-expanded="true">
       <Fragment set:html={icon("Code", 14)} />{L.code}
@@ -141,6 +143,22 @@ const miniSource = mini ? miniCode(mini.name, lang) : "";
       }
       demo.addEventListener("xxd:change", show);
       show();
+      // 「换亮暗」：舞台换成和整页相反的主题；整页切主题时跟着重算
+      const flip = demo.querySelector("[data-site-flip]");
+      const stages = [...demo.querySelectorAll(".site-demo__stage")];
+      const applyFlip = () => {
+        const on = flip.getAttribute("aria-pressed") === "true";
+        const page = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+        for (const st of stages) {
+          if (on) st.setAttribute("data-theme", page === "dark" ? "light" : "dark");
+          else st.removeAttribute("data-theme");
+        }
+      };
+      flip.addEventListener("click", () => {
+        flip.setAttribute("aria-pressed", String(flip.getAttribute("aria-pressed") !== "true"));
+        applyFlip();
+      });
+      window.addEventListener("xxd:settings", applyFlip);
     }
     // 「折行」：缺省长行横向滚动；打开后所有代码块都折行（记在这台浏览器里）
     const KEY = "xxd-site-code-wrap";

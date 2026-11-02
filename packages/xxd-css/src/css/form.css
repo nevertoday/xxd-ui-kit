@@ -147,9 +147,10 @@
     font-size: var(--text-xs);
   }
 
+  /* 和大号按钮一样高（J1）：以前输入框 +4、按钮 +8，大号的输入框和按钮并排时永远差 4px */
   .xxd-input[data-size="lg"],
   .xxd-select[data-size="lg"] > select {
-    height: calc(var(--control-h) + 4px);
+    height: var(--control-h-lg);
     padding-inline: var(--space-4);
     font-size: var(--text-base);
   }
@@ -262,7 +263,7 @@
 
   .xxd-input-wrap > .ui-icon {
     position: absolute;
-    left: 12px;
+    left: var(--field-pad-x);
     color: var(--muted);
     pointer-events: none;
   }
@@ -271,13 +272,14 @@
     padding-left: var(--field-icon-slot); /* 左边距 + 图标 + 间隔 */
   }
 
+  /* 清空按钮跟着密度（J23：以前写死 28，紧凑的小号框才 26 高，按钮比框还高、伸出框外） */
   .xxd-input-wrap > .xxd-input-clear {
     position: absolute;
-    right: 6px;
+    right: var(--space-1);
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
+    width: calc(var(--control-h-xs) + var(--space-1));
+    height: calc(var(--control-h-xs) + var(--space-1));
     padding: 0;
     border: 0;
     border-radius: var(--r-xs);
@@ -289,6 +291,16 @@
   .xxd-input-wrap > .xxd-input-clear:hover {
     background: var(--wash);
     color: var(--ink);
+  }
+
+  /* 长的搜索词不钻到清空按钮下面（J23） */
+  .xxd-input-wrap:has(> .xxd-input-clear) > .xxd-input {
+    padding-right: calc(var(--control-h-xs) + var(--space-1) * 3);
+  }
+
+  .xxd-input-wrap:has(> .xxd-input[data-size="xs"]) > .xxd-input-clear {
+    width: calc(var(--control-h-xs) - var(--space-1));
+    height: calc(var(--control-h-xs) - var(--space-1));
   }
 
   .xxd-input-wrap > .xxd-input:placeholder-shown ~ .xxd-input-clear {
@@ -379,7 +391,8 @@
   }
 
   .xxd-check:hover,
-  .xxd-radio:hover {
+  .xxd-radio:hover,
+  .xxd-switch:not(:checked, :disabled):hover {
     border-color: var(--line-control-hover);
   }
 
@@ -515,6 +528,30 @@
     background: var(--paper);
   }
 
+  /* 禁用（J4）：以前和能用的一模一样、指针还是手。轨道、填色、圆点换成禁用令牌 */
+  .xxd-range:disabled {
+    --xxd-range-fill: var(--disabled-line);
+    cursor: not-allowed;
+  }
+
+  .xxd-range:disabled::-webkit-slider-runnable-track {
+    background: var(--disabled-line);
+  }
+
+  .xxd-range:disabled::-webkit-slider-thumb {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+  }
+
+  .xxd-range:disabled::-moz-range-track {
+    background: var(--disabled-line);
+  }
+
+  .xxd-range:disabled::-moz-range-thumb {
+    border-color: var(--disabled-line);
+    background: var(--disabled-bg);
+  }
+
   /* 日期：原生控件，只统一外观 */
   .xxd-input[type="date"],
   .xxd-input[type="time"],
@@ -536,11 +573,45 @@
     align-items: center;
     gap: var(--space-1-5);
     min-height: var(--control-h);
-    padding: var(--space-1) var(--space-2);
+    /* 字的左线和输入框一样（框的内边距 + 输入框自己的 4 = --field-pad-x） */
+    padding: var(--space-1) calc(var(--field-pad-x) - var(--space-1));
     border: 1px solid var(--line-control);
     border-radius: var(--r-sm);
     background: var(--paper);
     cursor: text;
+  }
+
+  /* 尺寸跟控件那把尺（J1）：框的最小高度 = 同一档的控件高，里面的 chip 跟着收（框高 − 上下内边距 − 边框，
+     紧凑密度里也放得下，框不会被 chip 撑高） */
+  .xxd-taginput > .xxd-chip {
+    height: calc(var(--control-h) - 12px);
+  }
+
+  .xxd-taginput[data-size="sm"] {
+    min-height: var(--control-h-sm);
+    padding: var(--space-0-5) var(--space-1-5);
+  }
+
+  .xxd-taginput[data-size="sm"] > .xxd-chip {
+    height: calc(var(--control-h-sm) - 8px);
+  }
+
+  .xxd-taginput[data-size="sm"] > input {
+    height: calc(var(--control-h-sm) - 8px);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-taginput[data-size="lg"] > input {
+    height: calc(var(--control-h-lg) - 14px);
+  }
+
+  .xxd-taginput[data-size="lg"] {
+    min-height: var(--control-h-lg);
+    padding: var(--space-1-5) var(--space-2);
+  }
+
+  .xxd-taginput[data-size="lg"] > .xxd-chip {
+    height: calc(var(--control-h-lg) - 14px);
   }
 
   .xxd-taginput:focus-within {
@@ -560,7 +631,7 @@
   .xxd-taginput > input {
     flex: 1;
     min-width: 80px;
-    height: 26px;
+    height: calc(var(--control-h) - 12px);
     padding: 0 var(--space-1);
     border: 0;
     background: transparent;

@@ -1,6 +1,6 @@
 ---
 // 展示站的外壳：顶栏（外观开关 + 搜索）、左侧导航、正文、右侧目录。界面本身全部用 @xxd/css。
-import { navFor, flatPagesFor } from "../data/nav.js";
+import { navFor, flatPagesFor, sectionOf, sectionsFor } from "../data/nav.js";
 import { icon, ACCENT_PRESETS } from "../lib/data.js";
 import { HTML_LANG, counterpart, langOf, mdHref as mdOf, t, withLang } from "../i18n/index.js";
 
@@ -18,7 +18,10 @@ const { title, description = L.description, headings = [], wide = false, charts 
 // 当前页（不带结尾斜杠）；导航里的 href 也是这个形式，英文首页是 /en
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 const isCurrent = (href) => (href.replace(/\/$/, "") || "/") === path;
-const nav = navFor(lang);
+// 左栏只列当前栏目的组；顶栏的栏目条标出当前栏目（DOCS-NAV-PLAN G1–G3）
+const section = sectionOf(path);
+const sections = sectionsFor(lang);
+const nav = navFor(lang).filter((g) => g.section === section);
 const searchIndex = JSON.stringify(flatPagesFor(lang).map((p) => ({ label: p.label, hint: p.sub ? `${p.sub} · ${p.group}` : p.group, href: p.href, keywords: p.keywords })));
 const mdHref = mdOf(path, lang);
 const other = counterpart(path, lang);
@@ -61,25 +64,28 @@ const strings = JSON.stringify({ placeholder: L.searchPlaceholder, empty: L.sear
     <header class="site-top">
       <button class="xxd-btn site-menu" data-variant="ghost" data-icon-only aria-label={L.openNav} id="site-menu" aria-controls="site-nav" aria-expanded="false" set:html={icon("Menu", 18)} />
       <a class="site-brand" href={withLang("/", lang)}><span class="site-mark" aria-hidden="true"></span><span class="site-brand__name">{L.brand}</span></a>
-      <button class="site-search" id="site-search" type="button">
-        <Fragment set:html={icon("Search", 14)} /><span>{L.search}</span><kbd class="xxd-kbd">⌘K</kbd>
-      </button>
+      {/* 顶栏只有一种排法（DOCS-NAV-PLAN G3），而且和下面的页面用同一套列（G13）：
+          侧栏那一列放品牌；正文那一列放栏目（从正文的左线开始）和搜索（右边停在正文的右线）；目录那一列放四个图标。
+          窄了只有搜索框缩成放大镜，手机上栏目进抽屉 */}
+      <div class="site-top__bar">
+        <div class="site-top__main">
+          <nav class="site-sections" aria-label={L.sections}>
+            {sections.map((s) => <a href={s.href} aria-current={s.key === section ? "true" : undefined}>{s.label}</a>)}
+          </nav>
+          <button class="site-search" id="site-search" type="button" aria-label={L.search}>
+            <Fragment set:html={icon("Search", 14)} /><span>{L.search}</span><kbd class="xxd-kbd">⌘K</kbd>
+          </button>
+        </div>
       <div class="site-appearance" id="site-appearance" role="group" aria-label={L.appearance}>
-        <div class="xxd-segmented" data-xxd-segmented data-name="theme" aria-label={L.theme}>
-          <button role="radio" data-value="light" aria-label={L.light} data-tooltip={L.light} set:html={icon("Sun", 14)} />
-          <button role="radio" data-value="dark" aria-label={L.dark} data-tooltip={L.dark} set:html={icon("Moon", 14)} />
-          <button role="radio" data-value="system" aria-label={L.system} data-tooltip={L.system} set:html={icon("Contrast", 14)} />
-        </div>
-        <div class="xxd-segmented" data-xxd-segmented data-name="corners" aria-label={L.corners}>
-          <button role="radio" data-value="square">{L.square}</button>
-          <button role="radio" data-value="rounded">{L.rounded}</button>
-        </div>
-        <button class="xxd-btn site-accent" data-size="sm" data-variant="ghost" data-xxd-popover="site-accents" aria-label={L.appearanceMore}>
-          <span class="site-accent-dot" aria-hidden="true"></span><span class="site-accent__label">{L.appearanceButton}</span>
+        {/* 一下切亮暗；「跟随系统」和其余外观设置都在「外观」弹层里，任何宽度都一样 */}
+        <button class="xxd-btn site-theme" id="site-theme" type="button" data-size="sm" data-variant="ghost" data-icon-only aria-label={L.toggleTheme} data-tooltip={L.toggleTheme}>
+          <span data-icon="moon" set:html={icon("Moon", 16)} /><span data-icon="sun" set:html={icon("Sun", 16)} />
+        </button>
+        <button class="xxd-btn site-accent" data-size="sm" data-variant="ghost" data-icon-only data-xxd-popover="site-accents" aria-label={L.appearance} data-tooltip={L.appearance}>
+          <Fragment set:html={icon("SlidersHorizontal", 16)} />
         </button>
         <div class="xxd-popover site-accents" id="site-accents" popover data-placement="bottom-end" aria-label={L.appearanceMore}>
-          {/* 窄屏：顶栏放不下的主题、圆角收进这里（设计师评审 V3-8），宽屏不显示 */}
-          <div class="site-more__compact" data-show="phone">
+          <div class="site-more__compact">
             <p class="site-more__label">{L.theme}</p>
             <div class="xxd-segmented" data-xxd-segmented data-name="theme" aria-label={L.theme}>
               <button role="radio" data-value="light">{L.light}</button>
@@ -87,7 +93,7 @@ const strings = JSON.stringify({ placeholder: L.searchPlaceholder, empty: L.sear
               <button role="radio" data-value="system">{L.system}</button>
             </div>
           </div>
-          <div class="site-more__compact" data-show="narrow">
+          <div class="site-more__compact">
             <p class="site-more__label">{L.corners}</p>
             <div class="xxd-segmented" data-xxd-segmented data-name="corners" aria-label={L.corners}>
               <button role="radio" data-value="square">{L.square}</button>
@@ -112,10 +118,15 @@ const strings = JSON.stringify({ placeholder: L.searchPlaceholder, empty: L.sear
         <a class="xxd-btn site-lang" data-size="sm" data-variant="ghost" href={other} hreflang={HTML_LANG[otherLang]} lang={HTML_LANG[otherLang]} aria-label={L.switchLangLabel}><span class="site-lang__full">{L.switchLang}</span><span class="site-lang__short" aria-hidden="true">{lang === "en" ? "中" : "EN"}</span></a>
         <a class="xxd-btn site-github" data-size="sm" data-variant="ghost" data-icon-only href={REPO} aria-label={L.github} data-tooltip={L.github} set:html={GITHUB_MARK} />
       </div>
+      </div>
     </header>
 
     <div class="site-body">
       <nav class="site-nav" id="site-nav" aria-label={L.nav}>
+        {/* 窄屏（≤ 820）顶栏放不下栏目条：抽屉最上面一排切栏目 */}
+        <ul class="site-nav__sections" aria-label={L.sections}>
+          {sections.map((s) => <li><a href={s.href} aria-current={s.key === section ? "true" : undefined}>{s.label}</a></li>)}
+        </ul>
         {
           nav.map((group) => (
             <section class="site-nav__group">
@@ -143,9 +154,10 @@ const strings = JSON.stringify({ placeholder: L.searchPlaceholder, empty: L.sear
         headings.length > 1 && (
           <aside class="site-toc" aria-label={L.onThisPage}>
             <h2>{L.onThisPage}</h2>
-            <ul>
+            {/* 用组件自己的目录：滚到哪一节，哪一项 aria-current（DOCS-NAV-PLAN G8） */}
+            <ul class="xxd-toc" data-spy>
               {headings.map((h) => (
-                <li class={h.depth === 3 ? "is-sub" : undefined}>
+                <li data-depth={h.depth === 3 ? "3" : undefined}>
                   <a href={`#${h.slug}`}>{h.text}</a>
                 </li>
               ))}
@@ -194,6 +206,11 @@ const strings = JSON.stringify({ placeholder: L.searchPlaceholder, empty: L.sear
           b.addEventListener("click", () => { T.set({ accent: p.id }); sync(); });
           sw.append(b);
         }
+        // 亮暗一键切换：按现在看到的那一种换成另一种（「跟随系统」在弹层里选）
+        document.getElementById("site-theme").addEventListener("click", () => {
+          T.set({ theme: document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark" });
+          sync();
+        });
         root.addEventListener("xxd:change", (e) => {
           const name = e.target.dataset && e.target.dataset.name;
           if (name) { T.set({ [name]: e.detail.value }); sync(); }

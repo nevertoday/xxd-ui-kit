@@ -1,0 +1,128 @@
+---
+// 组件总览（DOCS-NAV-PLAN G5–G6）：按分类 · 按字母 · 状态表。卡片的一句话取 registry 的 summary 第一句。中文 / 英文共用，语言看路径。
+import Site from "../layouts/Site.astro";
+import { categoriesFor, componentsFor } from "../lib/data.js";
+import { langOf, t, withLang } from "../i18n/index.js";
+import { richText } from "../lib/markup.js";
+import { STATUS_KEYS, STATUS_TEXT, statusOf } from "../lib/status.js";
+
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const L = t(lang);
+const S = STATUS_TEXT[lang];
+const components = componentsFor(lang);
+const categories = categoriesFor(lang).map((cat) => ({ ...cat, items: components.filter((c) => c.category === cat.key) }));
+const alphabetical = [...components].sort((a, b) => a.name.localeCompare(b.name, "en"));
+// 第一句：中文到「。」，英文到 ". "
+const first = (s = "") => (en ? s.split(/(?<=\.)\s/)[0] : s.split(/(?<=。)/)[0]);
+const T = en
+  ? {
+      title: "All components",
+      lead: `${components.length} components in ${categories.length} groups, by what they are for. Not sure which one? Read the first line of each card, or press ⌘K and search for the name another library uses (Modal, Snackbar, Accordion…).`,
+      views: "Views",
+      byCategory: "By category",
+      byName: "A–Z",
+      status: "Status",
+      statusLead: "How far each component has got. Every cell is one of three: yes, partial, no.",
+      component: "Component",
+    }
+  : {
+      title: "全部组件",
+      lead: `${components.length} 个组件，按用途分成 ${categories.length} 类。不知道用哪个？先看每张卡片的第一句；或者按 ⌘K，搜别的库里的叫法（Modal、Snackbar、Accordion……）也能找到。`,
+      views: "视图",
+      byCategory: "按分类",
+      byName: "按字母",
+      status: "状态",
+      statusLead: "每个组件做到了哪一步。每格只有三种：有、部分、没有。",
+      component: "组件",
+    };
+const TONE = { yes: "success", partial: "warning", no: undefined };
+---
+
+<Site title={T.title} description={T.lead} wide>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{L.navComponents}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  <div class="xxd-tabs" data-xxd-tabs aria-label={T.views}>
+    <button role="tab" id="cv-t1" aria-controls="cv-p1" aria-selected="true">{T.byCategory}</button>
+    <button role="tab" id="cv-t2" aria-controls="cv-p2">{T.byName}</button>
+    <button role="tab" id="cv-t3" aria-controls="cv-p3">{T.status}</button>
+  </div>
+
+  <div class="xxd-tabpanel site-catalog" id="cv-p1" role="tabpanel" aria-labelledby="cv-t1">
+    {
+      categories.map((cat) => (
+        <section>
+          <h2 class="site-h2">{cat.label}</h2>
+          <div class="xxd-grid site-catalog__grid">
+            {cat.items.map((c) => (
+              <a class="xxd-card" href={withLang(`/components/${c.slug}`, lang)}>
+                <div class="xxd-card__body">
+                  <p class="xxd-card__title">{c.label}{!en && <span class="site-catalog__name">{c.name}</span>}</p>
+                  <p class="xxd-card__meta" set:html={richText(first(c.summary))} />
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+
+  <div class="xxd-tabpanel site-catalog" id="cv-p2" role="tabpanel" aria-labelledby="cv-t2" hidden>
+    <div class="xxd-grid site-catalog__grid">
+      {
+        alphabetical.map((c) => (
+          <a class="xxd-card" href={withLang(`/components/${c.slug}`, lang)}>
+            <div class="xxd-card__body">
+              <p class="xxd-card__title">{c.name}{!en && <span class="site-catalog__label">{c.label}</span>}</p>
+              <p class="xxd-card__meta" set:html={richText(first(c.summary))} />
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="xxd-tabpanel site-catalog" id="cv-p3" role="tabpanel" aria-labelledby="cv-t3" hidden>
+    <p class="site-p">{T.statusLead}</p>
+    <dl class="site-legend">
+      {S.legend.map(([k, text]) => (
+        <div>
+          <dt>{S.cols[k]}</dt>
+          <dd>{text}</dd>
+        </div>
+      ))}
+    </dl>
+    <div class="xxd-table-wrap">
+      <table class="xxd-table" data-interactive data-sticky-head>
+        <thead>
+          <tr>
+            <th data-sticky="start">{T.component}</th>
+            {STATUS_KEYS.map((k) => <th>{S.cols[k]}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            categories.flatMap((cat) =>
+              cat.items.map((c) => {
+                const st = statusOf(c, lang);
+                return (
+                  <tr>
+                    <td data-sticky="start"><a class="xxd-link" href={withLang(`/components/${c.slug}`, lang)}>{c.label}</a>{!en && <span class="site-catalog__name">{c.name}</span>}</td>
+                    {STATUS_KEYS.map((k) => (
+                      <td><span class="xxd-badge" data-appearance="dot" data-tone={TONE[st[k]]}>{S.values[st[k]]}</span></td>
+                    ))}
+                  </tr>
+                );
+              }),
+            )
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Site>

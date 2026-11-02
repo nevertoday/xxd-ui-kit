@@ -66,7 +66,7 @@ export const VIZ_HTML = {
     const cells = m.columns.flat().map((c) => `<i class="xxd-heatmap__cell" data-level="${c.level < 0 ? "none" : c.level}"${c.title ? ` data-tip="${esc(c.title)}"` : ""}></i>`).join("");
     const grid = `<div class="xxd-heatmap__grid" role="img" aria-label="${esc(m.label)}">${cells}</div>`;
     // 星期在滚动区外面：滚到最近一周时也看得见
-    return { attrs: { "data-variant": null }, html: `<div class="xxd-heatmap__body">${days}<div class="xxd-heatmap__scroll" role="region" aria-label="${esc(m.title)}" tabindex="0"><div class="xxd-heatmap__frame" style="--weeks:${m.columns.length}">${months}${grid}</div></div></div>${scaleHtml(m)}` };
+    return { attrs: { "data-variant": null }, html: `<div class="xxd-heatmap__body" style="--weeks:${m.columns.length}">${days}<div class="xxd-heatmap__scroll" role="region" aria-label="${esc(m.title)}" tabindex="0"><div class="xxd-heatmap__frame" style="--weeks:${m.columns.length}">${months}${grid}</div></div></div>${scaleHtml(m)}` };
   },
   matrix(m, o) {
     if (m.empty) return { attrs: { "data-variant": "matrix" }, html: emptyHtml(m.empty) };

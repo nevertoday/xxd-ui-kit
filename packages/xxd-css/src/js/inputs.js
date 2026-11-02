@@ -192,8 +192,10 @@ function cbOpen(wrap) {
   // 300ms 后才播报：那时组件已经不在页面上（关了、换页了）就不播，免得盖掉别处的播报
   if (raw) wrap._announceTimer = setTimeout(() => wrap.isConnected && announce(list.hidden ? t("commandEmpty", null, wrap) : t("resultsCount", { n: cbVisible(list).filter((o) => !o.hasAttribute("data-create")).length }, wrap), { within: wrap }), 300);
   if (!list.hidden) {
-    list.style.minWidth = `${input.offsetWidth}px`;
-    place(input, list, { placement: "bottom-start", offset: 4 });
+    // 多选时输入框包在 .xxd-taginput 里：列表跟着整个框（左边、宽度），不跟着里面越来越窄的输入框（J7）
+    const anchor = input.closest(".xxd-taginput") ?? input;
+    list.style.minWidth = `${anchor.offsetWidth}px`;
+    place(anchor, list, { placement: "bottom-start", offset: 4 });
   }
 }
 

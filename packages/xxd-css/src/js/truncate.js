@@ -3,7 +3,7 @@
 //     CSS 换成画得出省略号的排法（宽高不变）；放得下了再去掉。
 //   · 被省略的字悬停、键盘聚焦时提示全文（就是 data-tooltip 那个提示）。读屏念的本来就是全文，提示不连 aria-describedby。
 //     作者自己写了 title / data-tooltip 的不动。
-export const FIT = ".xxd-btn:not([data-icon-only]), .xxd-chip, .xxd-badge, .xxd-logo, .xxd-toolbar__item";
+export const FIT = ".xxd-btn:not([data-icon-only]), .xxd-chip, .xxd-badge, .xxd-logo, .xxd-toolbar__item, .xxd-breadcrumbs > li";
 export const AUTO_TIP = "data-xxd-full";
 
 /** 字被裁掉了没有：横向裁（省略号、clip）或多行截断。滚动区、表单控件、只给读屏的字不算。 */
@@ -82,7 +82,11 @@ export function markFull(target, deep) {
   if (!target?.matches) return;
   const chain = [];
   if (deep) chain.push(target, ...[...target.querySelectorAll("*")].slice(0, 40));
-  else for (let a = target, d = 0; a && a.nodeType === 1 && d < 4; a = a.parentElement, d += 1) chain.push(a);
+  else {
+    for (let a = target, d = 0; a && a.nodeType === 1 && d < 4; a = a.parentElement, d += 1) chain.push(a);
+    // 按钮里包在 <span> 的长标签：省略号画在 span 上，指在按钮的空白处时也要量它（J28）
+    if (target.matches(FIT)) chain.push(...target.children);
+  }
   // 先清掉这条链上以前自动加的提示（字可能已经放得下了），再按现在量的结果加
   chain.forEach(clearTip);
   let hit = null;
@@ -90,7 +94,8 @@ export function markFull(target, deep) {
     if (el.matches(FIT)) fitText(el);
     if (!hit && clipped(el)) hit = el;
   }
-  if (hit) setTip(deep ? target : hit, fullText(hit));
+  // 被裁的是指到的那个里面的东西时，提示挂在指到的那个上（指针在它上面，提示才出得来）
+  if (hit) setTip(deep || !hit.contains(target) ? target : hit, fullText(hit));
 }
 
 export function installTruncation(root) {

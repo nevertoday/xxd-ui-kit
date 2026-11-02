@@ -97,7 +97,9 @@
    *   <div class="xxd-segmented" role="radiogroup" data-xxd-segmented>
    *     <button role="radio" aria-checked="true">亮</button> …
    *   </div> */
+  /* 一行控件里放不下时，分段不先让（J14：以前它最先被挤，「列表 / 网格」只剩「列.」「网.」） */
   .xxd-segmented {
+    flex-shrink: 0;
     display: inline-flex;
     gap: var(--space-0-5);
     padding: var(--space-0-5);
@@ -108,7 +110,7 @@
   .xxd-segmented > [role="radio"],
   .xxd-segmented > button {
     flex: 1 0 auto;
-    height: calc(var(--control-h-sm) - 4px);
+    height: calc(var(--control-h) - 4px);
     padding: 0 var(--space-3);
     border: 0;
     border-radius: calc(var(--r-sm) - 2px);
@@ -126,20 +128,28 @@
 
   .xxd-segmented > [aria-checked="true"],
   .xxd-segmented > [aria-pressed="true"] {
-    background: var(--paper);
+    /* 抬起来的纸：暗色下纸比托盘还暗，选中的那段像凹进去（J14）；亮色时两者一样 */
+    background: var(--paper-raised);
     color: var(--ink);
     /* 选中的那段要有一个 ≥ 3:1 的记号，不只靠纸色和托盘那 1.1:1 的差（COLOR-REVIEW-PLAN D76） */
     box-shadow: 0 0 0 1px var(--line-control);
   }
 
-  /* 尺寸（ACCEPTANCE-REVIEW：React 输出了 data-size，CSS 以前没有）：缺省托盘 = 小号控件高；sm = xs 控件高；lg = 标准控件高 */
-  .xxd-segmented[data-size="sm"] > :is([role="radio"], button) {
+  /* 尺寸跟控件那把尺（J1）：托盘的外框 = 同一档控件的高（托盘内边距 2，段 = 控件高 − 4）。
+     以前缺省的托盘是小号控件高、sm 是 xs 高，比旁边的按钮、输入框矮一档，并排时对不齐 */
+  .xxd-segmented[data-size="xs"] > :is([role="radio"], button) {
     height: calc(var(--control-h-xs) - 4px);
     padding: 0 var(--space-2);
   }
 
+  .xxd-segmented[data-size="sm"] > :is([role="radio"], button) {
+    height: calc(var(--control-h-sm) - 4px);
+    padding: 0 var(--space-2);
+  }
+
   .xxd-segmented[data-size="lg"] > :is([role="radio"], button) {
-    height: calc(var(--control-h) - 4px);
+    height: calc(var(--control-h-lg) - 4px);
+    font-size: var(--text-sm);
   }
 
   /* 禁用（ACCEPTANCE-REVIEW：分段、tab、chip、链接以前禁用了和默认一样，悬停还会变深）：字用禁用色，悬停不变 */
@@ -178,7 +188,9 @@
     display: block;
     flex: 0 1 auto;
     min-width: 0;
-    overflow: hidden;
+    /* clip + 4px 的余量：省略号照旧，但里面链接的焦点环、触屏补的点按区不被裁掉（J12） */
+    overflow: clip;
+    overflow-clip-margin: var(--space-1);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -245,6 +257,11 @@
     white-space: nowrap;
   }
 
+  /* 只有一个箭头图标的上一页 / 下一页：方的，和页码一样大（J15：紧凑时以前 30 × 26） */
+  .xxd-pagination > :is(a, button)[aria-label]:has(> svg:only-child) {
+    padding: 0;
+  }
+
   .xxd-pagination > a,
   .xxd-pagination > button {
     display: inline-grid;
@@ -302,7 +319,9 @@
     justify-items: center;
     gap: var(--space-1);
     width: 48px;
-    padding: var(--space-1-5) 0 var(--space-1);
+    /* 标签居中、不贴边（J16：以前「Bookma / rks」左对齐、贴着两边）；一个词放不下 48 宽时照旧断开，不伸出去 */
+    padding: var(--space-1-5) var(--space-0-5) var(--space-1);
+    text-align: center;
     border: 0;
     border-radius: var(--r-sm);
     background: transparent;
@@ -339,7 +358,8 @@
     align-items: center;
     gap: var(--space-2);
     height: 56px;
-    padding: 0 var(--space-4);
+    /* 跟着密度（J18）：紧凑时和面板里的内容一样收到 12 */
+    padding: 0 var(--inset-md);
     border-bottom: 1px solid var(--line);
     background: var(--bg);
   }
@@ -353,6 +373,15 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* 两头的纯图标按钮按图标对齐页边（J18、D58）：标题从 16 开始，最后一个图标的图形也停在 16 */
+  .xxd-topbar > .xxd-btn[data-icon-only]:last-child {
+    margin-inline-end: calc((var(--icon-lg) - var(--btn-box)) / 2);
+  }
+
+  .xxd-topbar > .xxd-btn[data-icon-only]:first-child {
+    margin-inline-start: calc((var(--icon-lg) - var(--btn-box)) / 2);
+  }
+
 
   @keyframes xxd-fade-in {
     from {

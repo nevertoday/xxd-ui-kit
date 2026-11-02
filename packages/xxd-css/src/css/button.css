@@ -149,7 +149,7 @@
   }
 
   .xxd-btn[data-size="lg"] {
-    height: calc(var(--control-h) + 8px);
+    height: var(--control-h-lg);
     padding: 0 var(--control-pad-x-lg, 20px);
     font-size: var(--text-base);
   }
@@ -168,6 +168,11 @@
 
   .xxd-btn[data-icon-only][data-size="xs"] {
     --btn-box: var(--control-h-xs);
+  }
+
+  /* 大号图标按钮和大号按钮、输入框一样高（J1；以前停在 40） */
+  .xxd-btn[data-icon-only][data-size="lg"] {
+    --btn-box: var(--control-h-lg);
   }
 
   /* 圆形图标按钮：它不是语义上的圆，所以跟随圆角开关（直角模式下是方的）。 */
@@ -328,8 +333,9 @@
   .xxd-link[data-external]::after {
     content: "";
     display: inline-block;
-    width: 0.8em;
-    height: 0.8em;
+    /* 不小于 12px（J27：0.8em 在 13px 的字里只有 10px，线挤成一个实心方块） */
+    width: max(12px, 0.9em);
+    height: max(12px, 0.9em);
     margin-left: 0.2em;
     vertical-align: -0.05em;
     background: currentColor;
@@ -365,9 +371,19 @@
     border-end-end-radius: var(--r-sm);
   }
 
+  /* 按下的那个整圈 ≥ 3:1 的边都露出来（J26：以前只有悬停、聚焦才排到上面，右边那条被下一个按钮盖住）；聚焦的再高一层 */
   .xxd-btn-group > .xxd-btn:hover,
-  .xxd-btn-group > .xxd-btn:focus-visible {
+  .xxd-btn-group > .xxd-btn[aria-pressed="true"] {
     z-index: 1;
+  }
+
+  .xxd-btn-group > .xxd-btn:focus-visible {
+    z-index: 2;
+  }
+
+  /* 组里禁用的那个照旧用控件的边：整组的外框不断开（J26），禁用靠字色和底色 */
+  .xxd-btn-group > .xxd-btn:is(:disabled, [aria-disabled="true"]) {
+    --btn-bd: var(--line-control);
   }
 
   @keyframes xxd-spin {

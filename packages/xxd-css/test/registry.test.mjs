@@ -26,6 +26,17 @@ describe("registry.json", () => {
     expect(missing).toEqual([]);
   });
 
+  it("每个组件都写了「什么时候用 / 别用」；对和错、相关组件写全了，相关组件指向真的组件（DOCS-NAV-PLAN G10、G12）", () => {
+    const names = new Set(registry.components.map((c) => c.name));
+    const bad = [];
+    for (const c of registry.components) {
+      if (!c.use?.length || !c.avoid?.length) bad.push(`${c.name}：没有 use / avoid`);
+      for (const d of c.dos ?? []) if (!d.do || !d.dont) bad.push(`${c.name}.dos：好和不好都要写`);
+      for (const r of c.related ?? []) if (!names.has(r.name) || r.name === c.name || !r.why) bad.push(`${c.name}.related：${r.name}`);
+    }
+    expect(bad).toEqual([]);
+  });
+
   it("示例里没有写死的宽度（width: Npx 会在手机上溢出，用 max-width）", () => {
     const bad = [...registry.components, ...patternsFile.patterns].filter((c) => /style="[^"]*(?<!max-|min-)width:\s*\d+px/.test(c.markup)).map((c) => c.name);
     expect(bad).toEqual([]);
@@ -66,7 +77,7 @@ function englishGaps(items, en) {
     if (!e.title) gaps.push(`${item.name}.title`);
     for (const [k, v] of Object.entries(item)) if (!SKIP.has(k) && hasHan(v) && e[k] === undefined) gaps.push(`${item.name}.${k} 缺英文`);
     for (const [k, v] of Object.entries(e)) if (hasHan(v)) gaps.push(`${item.name}.${k} 英文里有汉字`);
-    for (const k of ["rules", "a11y", "anatomy", "examples"]) if (item[k] && e[k] && item[k].length !== e[k].length) gaps.push(`${item.name}.${k} 条数不同`);
+    for (const k of ["rules", "a11y", "anatomy", "examples", "use", "avoid", "dos", "writing", "related"]) if (item[k] && e[k] && item[k].length !== e[k].length) gaps.push(`${item.name}.${k} 条数不同`);
     if (item.attributes && e.attributes && Object.keys(item.attributes).length !== Object.keys(e.attributes).length) gaps.push(`${item.name}.attributes 条数不同`);
   }
   for (const k of Object.keys(en)) if (!items.some((i) => i.name === k)) gaps.push(`多出来的英文：${k}`);

@@ -292,9 +292,12 @@
   --bp-desktop: 1024px;
 
   /* ── 控件尺寸：会员站 40px；侧边栏用 data-density="compact" ── */
+  /* 控件高度只有这一把尺（COMPONENT-JURY-PLAN J1）：按钮、输入框、搜索、下拉、输入组、自定义下拉、标签输入、分段、chip，
+     写同一个 data-size 就一样高。xs 24 · sm 32 · 缺省 40 · lg 48 */
   --control-h: 40px;
   --control-h-sm: 32px;
   --control-h-xs: 24px;
+  --control-h-lg: 48px;
   --icon-button: var(--control-h); /* 和 --control-h 一样高：同一行的图标按钮、输入框、按钮上下对齐（改控件高时一起变） */
   --hit-min: 40px;
   /* 组件级的内边距（标准密度；紧凑密度在下面的 data-density="compact" 里一起收） */
@@ -355,6 +358,9 @@
   :root {
     --hit-min: 44px;
     --control-h: 44px;
+    /* 小号也 44：输入框在触屏上没法补看不见的点按区、只能自己 44 高，小号按钮跟着一样高，并排时才齐（J1） */
+    --control-h-sm: 44px;
+    --control-h-lg: 52px;
   }
 }
 
@@ -364,12 +370,14 @@
   --control-h: 32px;
   --control-h-sm: 26px;
   --control-h-xs: 20px;
+  --control-h-lg: 40px;
   --icon-button: var(--control-h);
   /* 组件级的内边距一起收（高度跟着 --control-h 自己变：标签页 = 控件高，列表行 +4，设置行 +8） */
   --control-pad-x: 12px;
   --control-pad-x-sm: 8px;
   --control-pad-x-lg: 16px;
   --field-pad-x: 8px;
+  --field-icon-slot: 30px; /* 边距 8 + 图标 14 + 间隔 8（J22：以前紧凑时还是 34，搜索、下拉的字比输入框往里 4px） */
   --row-pad-y: 8px;
   --row-pad-x: 12px;
   --list-row-pad-y: 4px;

@@ -58,6 +58,8 @@
     grid-template-columns: 1fr auto;
     grid-template-areas: "label label" "value spark" "delta spark";
     align-items: end;
+    /* 一排等高的统计卡：多出来的高度放在底下，标签和数字在每张卡上对齐（J39：以前标签离卡顶 13–34px 不等） */
+    align-content: start;
     column-gap: var(--space-3);
     padding: var(--inset-md-y) var(--inset-md);
     border: 1px solid var(--line);
@@ -414,8 +416,9 @@
       white-space: normal;
     }
 
+    /* 比下面的基本规则具体一点（J38：以前同样具体、写在前面，窄的时候刻度还在第 2 列，「0」印在条的 103px 以右） */
     .xxd-bars__item > .xxd-bars__track,
-    .xxd-bars__ticks {
+    .xxd-bars > .xxd-bars__ticks {
       grid-column: 1 / 3;
     }
 
@@ -813,6 +816,16 @@
     direction: rtl;
   }
 
+  /* 日历的格子跟着宽度缩（J37）：一年 53 周在 760 宽的卡片里以前多出 32px，最左边的月份被切成「l1月」。
+     放得下时 12px，放不下最小缩到 8px，再窄才横着滚；自己写了 --heat-cell 的照旧 */
+  .xxd-heatmap__body {
+    container-type: inline-size;
+  }
+
+  .xxd-heatmap__body > * {
+    --heat-cell-fit: clamp(8px, (100cqi - 2.5em) / var(--weeks, 53) - 2px, 12px);
+  }
+
   .xxd-heatmap__frame {
     direction: ltr;
     display: grid;
@@ -827,7 +840,7 @@
 
   .xxd-heatmap__months {
     display: grid;
-    grid-template-columns: repeat(var(--weeks), var(--heat-cell, 12px));
+    grid-template-columns: repeat(var(--weeks), var(--heat-cell, var(--heat-cell-fit, 12px)));
     column-gap: var(--space-0-5);
     white-space: nowrap;
   }
@@ -835,7 +848,7 @@
   .xxd-heatmap__days {
     display: grid;
     flex: none;
-    grid-template-rows: repeat(7, var(--heat-cell, 12px));
+    grid-template-rows: repeat(7, var(--heat-cell, var(--heat-cell-fit, 12px)));
     row-gap: var(--space-0-5);
     padding-top: calc(var(--text-xs) + var(--space-1));
   }
@@ -843,16 +856,16 @@
   .xxd-heatmap__grid {
     display: grid;
     grid-auto-flow: column;
-    grid-template-rows: repeat(7, var(--heat-cell, 12px));
-    grid-auto-columns: var(--heat-cell, 12px);
+    grid-template-rows: repeat(7, var(--heat-cell, var(--heat-cell-fit, 12px)));
+    grid-auto-columns: var(--heat-cell, var(--heat-cell-fit, 12px));
     gap: var(--space-0-5);
   }
 
   .xxd-heatmap__cell {
     display: block;
     font-style: normal;
-    min-width: var(--heat-cell, 12px);
-    min-height: var(--heat-cell, 12px);
+    min-width: var(--heat-cell, var(--heat-cell-fit, 12px));
+    min-height: var(--heat-cell, var(--heat-cell-fit, 12px));
     border-radius: var(--r-xs);
     background: var(--wash);
   }

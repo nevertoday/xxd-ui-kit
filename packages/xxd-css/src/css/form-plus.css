@@ -37,11 +37,12 @@
     box-shadow: inset 0 0 0 1px var(--danger);
   }
 
+  /* 字的左线和输入框一样跟着 --field-pad-x（J22：以前写死 12，紧凑时比输入框往里 4px） */
   .xxd-input-group > input {
     flex: 1;
     min-width: 5ch;
     height: 100%;
-    padding: 0 var(--space-3);
+    padding: 0 var(--field-pad-x);
     border: 0;
     background: transparent;
     color: var(--ink);
@@ -70,7 +71,7 @@
   /* 前缀（「https://」）通常很短：尽量不缩，先缩后缀 */
   .xxd-input-group__addon {
     flex-shrink: 0.2;
-    padding-left: var(--space-3);
+    padding-left: var(--field-pad-x);
   }
 
   .xxd-input-group__addon + input {
@@ -78,30 +79,63 @@
   }
 
   .xxd-input-group__suffix {
-    padding-right: var(--space-3);
+    padding-right: var(--field-pad-x);
   }
 
   input + .xxd-input-group__suffix {
     margin-left: -8px;
   }
 
+  /* 框里的按钮比框矮一圈（上下各 4），悬停的底色不压到框线（J25：以前同一档的按钮和框一样高） */
   .xxd-input-group > .xxd-btn {
     flex: none;
+    height: calc(100% - 2 * var(--space-1));
     margin-right: var(--space-1);
+  }
+
+  .xxd-input-group > .xxd-btn[data-icon-only] {
+    --btn-box: calc(var(--control-h) - 2 * var(--space-1));
+  }
+
+  .xxd-input-group[data-size="sm"] > .xxd-btn[data-icon-only] {
+    --btn-box: calc(var(--control-h-sm) - 2 * var(--space-1));
+  }
+
+  .xxd-input-group[data-size="lg"] > .xxd-btn[data-icon-only] {
+    --btn-box: calc(var(--control-h-lg) - 2 * var(--space-1));
+  }
+
+  /* 显示 / 隐藏密钥：图标已经说了状态，按下不再画一个框（框里只有一个框） */
+  .xxd-secret > .xxd-btn[aria-pressed="true"] {
+    --btn-bd: transparent;
+    --btn-bg: transparent;
   }
 
   .xxd-input-group > .xxd-btn + .xxd-btn {
     margin-left: -2px;
   }
 
+  /* 尺寸跟控件那把尺（J1）：xs / sm / 缺省 / lg 和同一档的按钮、输入框一样高 */
+  .xxd-input-group[data-size="xs"] {
+    height: var(--control-h-xs);
+  }
+
   .xxd-input-group[data-size="sm"] {
     height: var(--control-h-sm);
   }
 
-  .xxd-input-group[data-size="sm"] > input,
-  .xxd-input-group[data-size="sm"] .xxd-input-group__addon,
-  .xxd-input-group[data-size="sm"] .xxd-input-group__suffix {
+  .xxd-input-group[data-size="lg"] {
+    height: var(--control-h-lg);
+  }
+
+  .xxd-input-group:is([data-size="xs"], [data-size="sm"]) > input,
+  .xxd-input-group:is([data-size="xs"], [data-size="sm"]) .xxd-input-group__addon,
+  .xxd-input-group:is([data-size="xs"], [data-size="sm"]) .xxd-input-group__suffix {
     font-size: var(--text-xs);
+  }
+
+  .xxd-input-group[data-size="lg"] > input {
+    font-size: var(--text-base);
   }
 
   /* 密钥输入：遮住、显示 / 隐藏、复制。
@@ -128,7 +162,7 @@
     gap: var(--space-1);
     max-width: 100%;
     height: var(--control-h);
-    padding: 0 var(--space-1) 0 var(--space-3);
+    padding: 0 var(--space-1) 0 var(--field-pad-x);
     border: 1px solid var(--line-control);
     border-radius: var(--r-sm);
     background: var(--wash);
@@ -147,8 +181,18 @@
   .xxd-clipboard[data-size="sm"] {
     height: var(--control-h-sm);
   }
+  /* 复制框里的图标按钮比框矮一圈（J25） */
+  .xxd-clipboard > .xxd-btn[data-icon-only] {
+    --btn-box: calc(var(--control-h) - 2 * var(--space-1));
+  }
+
+  .xxd-clipboard[data-size="sm"] > .xxd-btn[data-icon-only] {
+    --btn-box: calc(var(--control-h-sm) - 2 * var(--space-1));
+  }
+
 
   /* 正文里一段可复制的字：hover 出复制图标 */
+  /* 能复制的是命令、ID：等宽字、小一档（和行内代码一样，D69），l / 1 / I 分得清（J9） */
   .xxd-inline-copy {
     display: inline-flex;
     align-items: center;
@@ -158,25 +202,20 @@
     background: none;
     color: inherit;
     font: inherit;
+    font-family: var(--font-mono);
+    font-size: max(var(--text-xs), calc(1em - clamp(1px, 1em - 14px, 4px)));
     cursor: copy;
   }
 
-  /* 复制图标常显为淡色（看得出能复制，也不会在字后面留一截空白），hover / 聚焦时加深 */
+  /* 复制图标常显、实色的灰（J9：以前是灰再 45% 透明，对底只有 1.9:1，看不出能复制），hover / 聚焦时变墨色 */
   .xxd-inline-copy > .ui-icon {
-    opacity: 0.45;
     color: var(--muted);
-    transition: opacity var(--motion-quick) ease;
+    transition: color var(--motion-quick) ease;
   }
 
   .xxd-inline-copy:is(:hover, :focus-visible) > .ui-icon,
   .xxd-inline-copy[data-done] > .ui-icon {
-    opacity: 1;
-  }
-
-  @media (hover: none) {
-    .xxd-inline-copy > .ui-icon {
-      opacity: 1;
-    }
+    color: var(--ink);
   }
 
   /* 自定义下拉（Picker）：原生 <select> 做不到的 —— 分组、每项说明、图标、多选。
@@ -199,7 +238,7 @@
     align-items: center;
     gap: var(--space-2);
     height: var(--control-h);
-    padding: 0 var(--field-icon-slot) 0 var(--space-3);
+    padding: 0 var(--field-icon-slot) 0 var(--field-pad-x);
     border: 1px solid var(--line-control);
     border-radius: var(--r-sm);
     background: var(--paper);
@@ -247,8 +286,21 @@
 
   .xxd-picker[data-size="sm"] .xxd-picker__trigger {
     height: var(--control-h-sm);
-    padding-left: var(--space-3);
+    padding-left: var(--field-pad-x);
     font-size: var(--text-xs);
+  }
+
+  /* 其余两档（J1）：和同一档的按钮、输入框一样高 */
+  .xxd-picker[data-size="xs"] .xxd-picker__trigger {
+    height: var(--control-h-xs);
+    padding-left: var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .xxd-picker[data-size="lg"] .xxd-picker__trigger {
+    height: var(--control-h-lg);
+    padding-left: var(--space-4);
+    font-size: var(--text-base);
   }
 
   /* 出错：标在 .xxd-picker 上或按钮上都算；出错又聚焦 / 打开时里面那 1px 也是红的 */
@@ -324,5 +376,28 @@
       opacity: 0;
       transform: scale(0.96);
     }
+  }
+}
+
+/* 粗指针：输入组、密钥框里能打字的框也是 16px（J24：form.css 那条写在前面，被这个文件里同样具体的字号盖掉了，iOS 一聚焦就放大） */
+@layer xxd.components {
+  @media (pointer: coarse) {
+    .xxd-input-group > input,
+    .xxd-secret > input {
+      font-size: var(--text-lg);
+    }
+  }
+}
+
+/* 禁用：下拉的箭头、输入组里的字和前后缀都用禁用色（以前箭头比禁用的字还深，输入组的字照旧是墨色） */
+@layer xxd.components {
+  .xxd-select:has(> select:disabled)::after,
+  .xxd-picker[data-disabled] .xxd-picker__trigger::after {
+    background: var(--disabled-ink);
+  }
+
+  .xxd-input-group > input:disabled,
+  .xxd-input-group:has(> input:disabled) :is(.xxd-input-group__addon, .xxd-input-group__suffix) {
+    color: var(--disabled-ink);
   }
 }

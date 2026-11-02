@@ -68,7 +68,8 @@
     /* 28px（紧凑 24），落在 4px 刻度上；和小号输入框、按钮并排时写 data-size="sm"，一样高 */
     height: calc(var(--control-h-xs) + var(--space-1));
     padding: 0 var(--space-3);
-    border: 1px solid transparent;
+    /* 一圈线（J21）：以前边是透明的，底色就是 --wash，放在洗色的面上（分层卡片的次要区、横幅、凹下去的面）只剩一个字，看不出能点 */
+    border: 1px solid var(--line);
     border-radius: var(--r-pill);
     background: var(--wash);
     color: var(--ink);
@@ -87,8 +88,24 @@
     cursor: not-allowed;
   }
 
+  /* 写了 data-size 的 chip 是控件行里的一员，和同一档的按钮、输入框一样高（J1）；不写的是 28 的标签 */
+  .xxd-chip[data-size="xs"] {
+    height: var(--control-h-xs);
+    padding: 0 var(--space-2);
+  }
+
   .xxd-chip[data-size="sm"] {
     height: var(--control-h-sm);
+  }
+
+  .xxd-chip[data-size="md"] {
+    height: var(--control-h);
+  }
+
+  .xxd-chip[data-size="lg"] {
+    height: var(--control-h-lg);
+    padding: 0 var(--space-4);
+    font-size: var(--text-sm);
   }
 
   .xxd-chip:hover {
@@ -506,5 +523,13 @@
     50% {
       opacity: 0.35;
     }
+  }
+}
+
+/* 中性徽标放在和它同色的面上时（选中的行、当前项、凹下去的面、分层卡片的次要区、横幅）：换成纸色加一圈线，不消失（J21） */
+@layer xxd.components {
+  :is([aria-selected="true"], [aria-current]:not([aria-current="false"]), .xxd-surface[data-level="sunken"], .xxd-layer__secondary, .xxd-banner) .xxd-badge:not([data-tone], [data-variant]) {
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line);
   }
 }

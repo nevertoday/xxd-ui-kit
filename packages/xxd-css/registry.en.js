@@ -15,6 +15,8 @@ export const categories = {
 
 export const components = {
   Text: {
+    use: ["Titles, body, captions and monospace numbers on pages and cards: pick a data-variant instead of setting a font size", "A title with a one-line description: .xxd-text-pair keeps the two lines close"],
+    avoid: ["Long articles: use Prose (reading width and paragraph spacing are already set)", "Separating levels by color: change size or weight; color is kept for meaning (success, error)"],
     title: "Text styles",
     summary: "A fixed set of sizes for titles, body, captions and monospace. Hierarchy comes from size and weight, not color.",
     attributes: {
@@ -36,6 +38,8 @@ export const components = {
     ],
   },
   Interaction: {
+    use: ["Rarely used actions in a list or table row: shown on hover (.xxd-reveal), always visible on touch", "Custom controls where the whole row is clickable and gives pressed feedback"],
+    avoid: ["The main action: keep it visible, don't hide it behind hover", "A row with a single button: just place the button"],
     title: "Interaction utilities",
     summary: "Small interaction helpers: actions that appear on hover (.xxd-reveal), whole-row click targets, press-down feedback.",
     markup: `<div class="xxd-row xxd-frame"><div class="xxd-row__text">Hover this row</div><button class="xxd-btn xxd-reveal" data-size="xs">Edit</button></div>
@@ -52,13 +56,16 @@ export const components = {
     ],
   },
   Button: {
+    dos: [{"do": "One solid button per area; the rest are the default secondary", "dont": "Two solid buttons side by side, so neither reads as the main one", "doMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\">Save draft</button><button class=\"xxd-btn\" data-variant=\"primary\">Publish</button></div>", "dontMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\" data-variant=\"primary\">Save draft</button><button class=\"xxd-btn\" data-variant=\"primary\">Publish</button></div>"}, {"do": "Say what the click does, and name the object when it's destructive", "dont": "“OK”, which makes people reread the context to know what will happen", "doMarkup": "<button class=\"xxd-btn\" data-variant=\"danger\">Delete 3 drafts</button>", "dontMarkup": "<button class=\"xxd-btn\" data-variant=\"danger\">OK</button>"}],
+    writing: ["Start with a verb that says what this click does: “Publish”, “Save as a new post”", "One to four words; no “please” or “click”", "Name the object for destructive actions: “Delete 3 drafts”", "Sentence case, no period or exclamation mark"],
+    related: [{"name": "Link", "why": "Going to another page, or a secondary action inside a sentence"}, {"name": "ButtonGroup", "why": "Several ways of doing the same thing joined into one bar"}, {"name": "Menu", "why": "A few rarely used actions behind one button"}],
     title: "Button",
     use: ["Doing one thing: submit, save, open a dialog. The label says what the next click will do", "At most one primary per screen; the rest are the default secondary, ghost in toolbars and for low priority"],
     avoid: ["Just going to another page: use a link (Link)", "outline is only for colored or image backgrounds; on paper it looks the same as secondary, so use secondary"],
     summary: "A button's label says what the next click will do. One solid button per area.",
     attributes: {
       "data-variant": "primary (one main action per screen) | secondary (default, most buttons) | ghost (toolbars, low priority) | outline (on colored or image backgrounds) | danger (irreversible things like delete) | danger-outline (dangerous but not the main action on this screen)",
-      "data-size": "xs | sm | md | lg",
+      "data-size": "xs | sm | md | lg: 24 / 32 / 40 / 48, the same height as inputs, selects and segmented controls of the same size (compact 20 / 26 / 32 / 40; on touch sm and md are both 44)",
       "data-icon-only": "Icon only (aria-label required)",
       "aria-pressed": "Toggle state",
       "aria-busy": "In progress: width stays put, spinner centered; Xxd.runBusy(btn, task) shows a check when done",
@@ -123,6 +130,9 @@ export const components = {
     ],
   },
   Link: {
+    use: ["A secondary action inside a sentence: “Create a new one instead”, “View all”", "Going to another page or an external site (data-external adds an arrow)"],
+    avoid: ["Doing something, like submit or save: use Button", "A row of side-by-side actions: use ButtonGroup or ghost buttons"],
+    related: [{"name": "Button", "why": "Doing something: submit, save, open a dialog"}, {"name": "Breadcrumbs", "why": "Going back up a hierarchy"}],
     title: "Link button",
     summary: "A button that looks like a link: a secondary action inside a sentence, such as “Start a new post instead”.",
     attributes: {
@@ -138,6 +148,9 @@ export const components = {
     ],
   },
   ButtonGroup: {
+    use: ["Several ways of doing the same thing joined into one bar: alignment, export format", "A main button with a “more” dropdown (split button)"],
+    avoid: ["Picking one of several values that stays selected: use Segmented", "Unrelated actions: place them apart with space between"],
+    related: [{"name": "Segmented", "why": "Picking one value that stays shown as selected"}, {"name": "Toolbar", "why": "A group of formatting buttons in an editor"}],
     title: "Button group",
     summary: "A few buttons joined into one strip: different ways to do the same thing.",
     markup: `<div class="xxd-btn-group"><button class="xxd-btn" data-size="sm">Left</button><button class="xxd-btn" data-size="sm">Right</button></div>`,
@@ -147,6 +160,11 @@ export const components = {
     ],
   },
   Field: {
+    use: ["One row of a form: label above, then the input, then help or error text below", "Single-line text, email, numbers, multi-line (textarea; data-autosize grows with the content)"],
+    avoid: ["Choosing from a fixed set: use Select, Radio or Picker", "Prefixes, suffixes or a button inside the box: use InputGroup", "Keys and tokens: use SecretInput"],
+    dos: [{"do": "A label that stays outside the box, with help text below", "dont": "A placeholder used as the label: once you type, you can't see what the field is for", "doMarkup": "<div class=\"xxd-field\"><label class=\"xxd-label\" for=\"dd-title-do\">Title</label><input class=\"xxd-input\" id=\"dd-title-do\" aria-describedby=\"dd-title-do-help\"><p class=\"xxd-help\" id=\"dd-title-do-help\">Up to 100 characters</p></div>", "dontMarkup": "<div class=\"xxd-field\"><input class=\"xxd-input\" aria-label=\"Title\" placeholder=\"Title (up to 100 characters)\"></div>"}, {"do": "Put the error below the whole control and say how to fix it", "dont": "An error that says “Invalid input”, or only turns the border red"}],
+    writing: ["Labels are nouns: “Title”, “Email”, not questions", "Placeholder text is only an example; it never replaces the label or the help text", "Help text gives limits and format: “Up to 100 characters”", "Errors say how to fix it: “The email is missing an @”, not “Invalid input”"],
+    related: [{"name": "InputGroup", "why": "With a prefix, suffix or a button inside the box"}, {"name": "SecretInput", "why": "Keys and tokens, hidden by default"}, {"name": "Select", "why": "Choosing one from a fixed set"}],
     title: "Field",
     summary: "Label + input + help or error: one row of a form.",
     attributes: {
@@ -219,6 +237,8 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
   },
 
   Select: {
+    dos: [{"do": "A few plain-text options: the native dropdown works with keyboards, screen readers and phones", "dont": "A dropdown for just two options: it takes two clicks to see the other one; use Radio or Segmented"}],
+    related: [{"name": "Picker", "why": "Groups, descriptions, icons or multiple selection"}, {"name": "Combobox", "why": "Many options that need filtering by typing"}, {"name": "Radio", "why": "2–5 options that should all be visible"}],
     title: "Select",
     use: ["Picking one of a list of plain-text options: the native select, best for keyboards and screen readers"],
     avoid: ["Options need groups, descriptions, icons or multiple selection: use Picker", "People need to type to search: use Combobox"],
@@ -230,6 +250,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["Without a visible label, give the <select> an aria-label", "Keyboard and screen reader behavior is the browser's own"],
   },
   Picker: {
+    related: [{"name": "Select", "why": "A few plain-text options"}, {"name": "Combobox", "why": "Many options that need filtering by typing"}],
     title: "Custom select",
     use: ["Options with groups, a line of description or an icon each, or multiple selection"],
     avoid: ["A few plain-text options: use Select (native)", "Many options that need searching: use Combobox"],
@@ -237,7 +258,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     attributes: {
       "data-multiple": "Multiple selection (checkmarks; the list stays open)",
       "data-placeholder": "Text shown when nothing is selected",
-      "data-size": "sm",
+      "data-size": "xs | sm | lg: the same height as buttons and inputs of the same size",
       "aria-invalid": "Error",
       "data-disabled": "Disabled",
     },
@@ -277,6 +298,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Search: {
+    use: ["Filtering the list in front of you (records, extensions, icons) as you type", "The main search box on a page, reachable with ⌘F"],
+    avoid: ["Searching commands or jumping to pages: use CommandPalette", "Picking a value where typing only narrows the options: use Combobox"],
+    related: [{"name": "CommandPalette", "why": "Searching commands and jumping to pages"}, {"name": "Combobox", "why": "Typing to pick a value"}],
     title: "Search box",
     summary: "A search box with a magnifier and a clear button. Esc clears first; press it again to leave.",
     markup: `<div class="xxd-input-wrap">
@@ -291,9 +315,11 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   InputGroup: {
+    use: ["An input with a unit, a prefix (https://, $) or a button inside the box (copy, generate)", "The group should read as one box: the whole border darkens on focus"],
+    avoid: ["A plain input: use Field", "Two separate fields side by side: give each its own Field, don't merge them into one box"],
     title: "Input group",
     summary: "Prefixes, suffixes and inline buttons. The whole group is one box; on focus its border darkens once.",
-    attributes: { "data-size": "sm", "aria-invalid": "Error" },
+    attributes: { "data-size": "xs | sm | lg: the same height as buttons and inputs of the same size", "aria-invalid": "Error" },
     markup: `<div class="xxd-input-group" style="width:100%;max-width:320px">
   <span class="xxd-input-group__addon">https://</span>
   <input aria-label="Subdomain" value="today">
@@ -304,6 +330,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["Prefixes and suffixes are plain text; the input still needs its own label or aria-label", "Buttons in the group are separate Tab stops"],
   },
   SecretInput: {
+    use: ["API keys, access tokens, webhook URLs: hidden by default, shown when the user asks", "A value pasted once in settings and rarely looked at again"],
+    avoid: ["Sign-in passwords: use the browser's password field (type=\"password\") so password managers can fill it", "Read-only values that aren't secret: use ClipboardText"],
+    related: [{"name": "ClipboardText", "why": "Read-only values that don't need hiding"}, {"name": "Field", "why": "Ordinary text input"}],
     title: "Secret input",
     summary: "API keys and tokens: masked by default, can be shown or hidden, copied in one click. Used for the member site's API settings and the extensions' AI service keys.",
     markup: `<div class="xxd-field" style="width:100%;max-width:340px">
@@ -319,6 +348,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["The show / hide button is a toggle (aria-pressed) and its label changes with it", "The “Copied” confirmation is announced through a live region"],
   },
   ClipboardText: {
+    use: ["Read-only values meant to be used elsewhere: install commands, feed URLs, invite links", "A value that fits on one line, with a copy button beside it"],
+    avoid: ["A short piece inside a sentence: use InlineCopy", "Multi-line code: use Code (it has a copy button)", "Keys that should be hidden: use SecretInput"],
+    related: [{"name": "InlineCopy", "why": "A short piece inside a sentence"}, {"name": "Code", "why": "Multi-line code"}, {"name": "SecretInput", "why": "Keys that should be hidden"}],
     title: "Copyable value",
     summary: "A read-only value with a copy button. After copying, “Copied” pops up above the button and the icon briefly turns into a check.",
     attributes: { "data-size": "sm" },
@@ -333,6 +365,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   InlineCopy: {
+    use: ["A short piece inside a sentence that people copy: a command, an ID", "A value mentioned in passing that shouldn't take its own line"],
+    avoid: ["A long value on its own line: use ClipboardText", "Multi-line code: use Code"],
+    related: [{"name": "ClipboardText", "why": "A value on its own line"}, {"name": "Code", "why": "Multi-line code"}],
     title: "Inline copy",
     summary: "A piece of copyable text inside a sentence (a command, an ID): click to copy, and “Copied” pops up.",
     markup: `<p class="xxd-text">Run <button class="xxd-inline-copy" data-copy="pnpm xxd ls" data-copy-done="Command copied">pnpm xxd ls<i data-xxd-icon="Copy" data-size="12"></i></button> — one click copies it.</p>`,
@@ -343,6 +378,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Switch: {
+    dos: [{"do": "The switch takes effect as soon as it's flipped", "dont": "A switch that only counts after pressing Save: use a checkbox", "doMarkup": "<label class=\"xxd-choice\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" checked>Completion sound</label>", "dontMarkup": "<div class=\"xxd-stack\"><label class=\"xxd-choice\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" checked>Completion sound</label><button class=\"xxd-btn\" data-size=\"sm\">Save</button></div>"}],
+    writing: ["The label names what is on: “Completion sound”, not “Turn on completion sound”", "Not a question", "Don't add “On / Off” next to it; the switch already says so"],
+    related: [{"name": "Checkbox", "why": "Submitted together with a form"}, {"name": "Segmented", "why": "More than two values"}],
     title: "Switch",
     use: ["A setting that takes effect immediately: on means on, no Save needed"],
     avoid: ["An option submitted together with other fields: use Checkbox"],
@@ -357,6 +395,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Checkbox: {
+    related: [{"name": "Switch", "why": "Takes effect immediately"}, {"name": "Radio", "why": "Only one of several can be chosen"}],
     title: "Checkbox",
     use: ["Yes / no or several choices in a form, submitted with the other fields"],
     avoid: ["A setting that takes effect immediately: use Switch", "Exactly one of several: use Radio or Segmented"],
@@ -370,6 +409,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Radio: {
+    use: ["2–5 mutually exclusive options that are easier to choose when all are visible: export format, how to be notified", "Each option needs a line of description"],
+    avoid: ["More than 5 options: use Select", "Instant switches such as changing the view: use Segmented", "More than one can be chosen: use Checkbox"],
+    related: [{"name": "Select", "why": "More than 5 options"}, {"name": "Segmented", "why": "Switches instantly, nothing to submit"}, {"name": "Checkbox", "why": "More than one can be chosen"}],
     title: "Radio",
     summary: "Pick exactly one in a group. Use it for 2–5 options that should all be visible; for more, use a select.",
     markup: `<fieldset class="xxd-choices">
@@ -385,6 +427,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Range: {
+    use: ["Numbers that don't need to be exact (volume, opacity, a font size preview), where you see the effect while dragging", "A range such as price or duration (two thumbs)"],
+    avoid: ["An exact number: use a number input (Field, type=\"number\")", "Only two or three levels: use Segmented or Radio"],
+    related: [{"name": "Field", "why": "Typing an exact number"}, {"name": "Segmented", "why": "Only two or three levels"}],
     title: "Slider",
     summary: "Drag to pick a number; with data-fill the left part fills with the accent. For a range use two sliders (.xxd-range-pair).",
     attributes: {
@@ -400,6 +445,10 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   TagInput: {
+    attributes: { "data-size": "sm | lg: minimum height matches inputs of the same size" },
+    use: ["Several short free-form words: keywords, tags, recipients", "Values the user makes up, not picked from a fixed list"],
+    avoid: ["Picking several from an existing list: use Combobox (data-multiple)", "Just one value: use Field"],
+    related: [{"name": "Combobox", "why": "Picking several from an existing list"}],
     title: "Tag input",
     summary: "Enter or a comma turns the text into a tag; Backspace removes the last one.",
     markup: `<div class="xxd-taginput" data-xxd-taginput><input placeholder="Press Enter to add" aria-label="Tags"></div>`,
@@ -410,6 +459,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Combobox: {
+    use: ["Many options (dozens or hundreds) that need filtering by typing: country, font, project", "Multiple selection as chips, or creating a new entry when it isn't in the list (data-creatable)"],
+    avoid: ["Up to ten plain-text options: use Select", "Searching content rather than picking a value: use Search"],
+    related: [{"name": "Select", "why": "Up to ten plain-text options"}, {"name": "TagInput", "why": "Free-form words, not picked from a list"}, {"name": "Search", "why": "Searching content rather than picking a value"}],
     title: "Combobox",
     summary: "A dropdown you can type into to filter. data-multiple turns picks into chips; data-creatable lets you add new ones.",
     attributes: {
@@ -426,6 +478,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Tabs: {
+    dos: [{"do": "Switching between views of the same thing: Writing / History / Settings", "dont": "Using tabs for a step-by-step flow, which lets people skip earlier steps; use Steps"}],
+    writing: ["One or two nouns: “Writing”, “History”, “Settings”", "Keep the labels about the same length", "No status on a tab except a count, and put the count in a badge"],
+    related: [{"name": "Segmented", "why": "Switching a value, not a whole block of content"}, {"name": "Steps", "why": "Going through steps in order"}],
     title: "Tabs",
     use: ["Several faces of the same thing: Home / History / Settings"],
     avoid: ["Switching a value (view mode, time range): use Segmented", "Going step by step: use steps, not tabs"],
@@ -448,6 +503,8 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Segmented: {
+    attributes: { "data-size": "xs | sm | lg: the tray is as tall as buttons and inputs of the same size (default 40)" },
+    related: [{"name": "Tabs", "why": "Switching whole blocks of content"}, {"name": "Radio", "why": "Options that need descriptions"}],
     title: "Segmented control",
     use: ["Two to five mutually exclusive values, switched immediately: list / grid, light / dark"],
     avoid: ["Switching whole sections of content: use Tabs", "Many options: use Select"],
@@ -463,6 +520,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Breadcrumbs: {
+    use: ["Hierarchies two or more levels deep: show where you are and go back up in one step (resources → category → detail)", "Deep hierarchies fold the middle levels into “…” (data-collapse)"],
+    avoid: ["Only one level: the page title is enough", "Progress through steps: use Steps", "Narrow panels like an extension side panel: use a back button"],
+    related: [{"name": "Steps", "why": "Progress through steps"}, {"name": "PageHeader", "why": "Breadcrumbs usually sit in the page header"}],
     title: "Breadcrumbs",
     summary: "Where this page is: one line of path. With data-collapse=\"4\" the middle levels fold into a “…” menu.",
     attributes: { "data-collapse": "Fold the middle into a “…” menu beyond N items (default 4)", "data-size": "sm" },
@@ -474,6 +534,8 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     rules: ["Never wraps: when it doesn't fit, earlier items shrink to an ellipsis first and the current page shrinks last"],
   },
   Pagination: {
+    use: ["Many records viewed page by page: the resource list on the member site, admin tables", "People need to know how many pages there are and jump to one"],
+    avoid: ["Everything fits on one page: don't paginate", "A feed you keep scrolling: load more at the bottom", "A narrow side panel: add data-simple, which keeps only “‹ 3 / 12 ›”"],
     title: "Pagination",
     summary: "Page numbers, previous / next and page size. JS builds the buttons from data-total and dispatches xxd:change.",
     attributes: {
@@ -493,6 +555,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     rules: ["Page numbers never wrap; when the bar is narrower than 420px (or on phones) only “‹ 3 / 12 ›” remains"],
   },
   Rail: {
+    use: ["The icon strip on the left of an extension side panel: 3–6 main destinations", "Top-level switching that should always be visible in a narrow panel"],
+    avoid: ["Wide web admin pages that need groups and submenus: use Sidebar", "Only two or three destinations: use Tabs"],
+    related: [{"name": "Sidebar", "why": "Wide pages that need groups and submenus"}, {"name": "Tabs", "why": "Only two or three destinations"}],
     title: "Rail",
     summary: "A narrow icon navigation rail (the strip on the left of an extension side panel).",
     markup: `<nav class="xxd-rail" aria-label="Main navigation"><a href="#" aria-current="page"><i data-xxd-icon="House"></i>Home</a><a href="#"><i data-xxd-icon="Bookmark"></i>Saved</a></nav>`,
@@ -500,6 +565,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["<nav aria-label>; the current item has aria-current=\"page\"", "Icon-only items each need an aria-label and a tooltip"],
   },
   Sidebar: {
+    use: ["Web admin and the member site: groups, submenus, badges; collapses to an icon bar", "Many pages where the whole structure should stay visible"],
+    avoid: ["Narrow panels like an extension side panel: use Rail", "Only a few pages: use Topbar with Tabs"],
+    related: [{"name": "Rail", "why": "Narrow extension side panels"}, {"name": "TableOfContents", "why": "The sections within one page"}],
     title: "Sidebar",
     summary: "A full sidebar: groups, submenus, badges, collapsing to a 56px icon bar (labels fade out, tooltips on hover), resizable width; floating and inset variants.",
     attributes: {
@@ -541,6 +609,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["When collapsed, each item's name becomes its aria-label and tooltip automatically", "Submenu buttons carry aria-expanded"],
   },
   Topbar: {
+    use: ["The strip at the top of a page or panel: a title and two or three icon buttons (settings, help)", "The top of an extension popup or side panel"],
+    avoid: ["Resource pages with breadcrumbs, a description and several actions: use PageHeader", "Main navigation: use Sidebar or Rail"],
+    related: [{"name": "PageHeader", "why": "Pages with breadcrumbs, a description and several actions"}, {"name": "Dock", "why": "Status and the main button at the bottom of a side panel"}],
     title: "Top bar",
     summary: "One strip across the top of a page: a title + a few icon buttons.",
     markup: `<header class="xxd-topbar"><span class="xxd-topbar__title">Prompts</span><button class="xxd-btn" data-variant="ghost" data-icon-only aria-label="Search"><i data-xxd-icon="Search"></i></button></header>`,
@@ -548,6 +619,8 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["Every icon-only button needs an aria-label", "With only one top bar on the page it can be a <header> (banner)"],
   },
   Toolbar: {
+    use: ["A group of related small buttons such as bold, link and align in an editor; arrow keys move between them", "All the buttons act on the same piece of content"],
+    avoid: ["The main actions of a page: use regular buttons in a prominent place", "Only one or two buttons: place them directly, no toolbar needed"],
     title: "Toolbar",
     summary: "Like an editor's formatting bar: a set of small buttons; ← → move between them (roving tabindex).",
     attributes: {
@@ -569,6 +642,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     a11y: ["← → Home End move between items; Tab enters and leaves the whole toolbar in one stop"],
   },
   PageHeader: {
+    use: ["The top of resource and settings pages: breadcrumbs, title, a line of description, actions on the right, tabs below", "Only one per page"],
+    avoid: ["The top of an extension popup: use Topbar", "Section titles in the middle of a page: use Text heading2 / heading3"],
+    related: [{"name": "Topbar", "why": "The top of an extension popup or side panel"}, {"name": "Breadcrumbs", "why": "Sits at the top of the page header"}],
     title: "Page header",
     summary: "Breadcrumbs, title, description, actions, tabs — the top of a resource or settings page.",
     markup: `<header class="xxd-page-header">
@@ -586,6 +662,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   SettingsGroup: {
+    use: ["Settings pages: related settings grouped together, each row with a title, a description and a control on the right", "Rows that open a deeper level: use a.xxd-row (it adds the chevron)"],
+    avoid: ["Long forms submitted together: stack Fields in a column", "The theme, corners and accent group: use Appearance as is"],
+    related: [{"name": "Appearance", "why": "The ready-made theme, corners and accent group"}, {"name": "List", "why": "A list of similar items, not settings"}],
     title: "Settings group",
     summary: "One group on a settings page: a group name + rows (title, description, control).",
     markup: `<section class="xxd-group">
@@ -609,6 +688,8 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Appearance: {
+    use: ["The appearance settings of every extension and the member site: theme, corners, accent and density in one go", "Mount it with one line: Xxd.mountAppearance(container)"],
+    avoid: ["Writing your own theme switch: people would have to relearn it in each product", "Only following the system light/dark mode: no setting needed, boot.js follows the system by default"],
     title: "Appearance settings",
     summary: "A ready-made settings group for theme, corners, accent, density and finish: Xxd.mountAppearance(container).",
     js: `Xxd.mountAppearance(el, { locale: "en", showDensity: false, lockCorners: false, languages, onLanguage })
@@ -624,6 +705,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   List: {
+    related: [{"name": "Table", "why": "Comparing and sorting by column"}, {"name": "SettingsGroup", "why": "A group of settings"}, {"name": "Card", "why": "Clickable items with an image"}],
     title: "List",
     use: ["A column of similar things: history, files, extensions; each row can have actions"],
     avoid: ["Comparing or sorting by column: use Table", "A group of settings: use SettingsGroup"],
@@ -644,6 +726,8 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     ],
   },
   Glyphs: {
+    use: ["Choosing one from a small set of symbols: numbering style, separators, emoji", "The symbol itself is the option and needs no explanation"],
+    avoid: ["Options that need words to be understood: use Radio or Picker", "Finding one among hundreds of icons: use search plus a grid (like the icons page)"],
     title: "Symbol picker",
     summary: "A grid with one symbol per cell to pick from (numbers, punctuation, emoji).",
     rules: ["Bare characters; filled only on hover"],
@@ -654,6 +738,9 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     markup: `<div class="xxd-glyphs"><button aria-label="Circled digit one" aria-pressed="true">①</button><button aria-label="Circled digit two">②</button><button aria-label="Circled digit three">③</button></div>`,
   },
   Dialog: {
+    dos: [{"do": "Cancel first, the main action last and rightmost", "dont": "The main action first, so people reaching for the right-hand button hit Cancel", "doMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\">Cancel</button><button class=\"xxd-btn\" data-variant=\"danger\">Delete</button></div>", "dontMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\" data-variant=\"danger\">Delete</button><button class=\"xxd-btn\">Cancel</button></div>"}, {"do": "Ask in the title: “Delete these 3 drafts?”, and give the consequence in the body", "dont": "A title like “Notice” or “Warning” with the real question buried in the body"}],
+    writing: ["The title is a question or the task: “Delete these 3 drafts?”", "One or two sentences of body text about the consequence; don't repeat the title", "The main button uses the title's verb: ask “Delete?”, label it “Delete”, not “OK”", "Cancel is just “Cancel”"],
+    related: [{"name": "Sheet", "why": "Secondary content in an extension side panel"}, {"name": "Panel", "why": "Viewing details or editing a few fields beside the main content"}, {"name": "Toast", "why": "Just letting people know"}, {"name": "Popover", "why": "A light piece of explanation"}],
     title: "Dialog",
     use: ["A question that must be answered before going on: confirm a delete, pick one of two", "A very short form (one or two fields) that closes when done"],
     avoid: ["Just letting people know: use Toast", "Long forms or content people go back and forth on: use Panel or a new page", "Most overlays in an extension side panel: use Sheet"],
@@ -685,6 +772,8 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   Dock: {
+    use: ["The bar that stays at the bottom of an extension side panel: status on the left, tools in the middle, the screen's main button on the right", "The main action stays within reach while the content scrolls"],
+    avoid: ["Navigation: use Rail", "Wide web pages: put the main button at the end of the form or in PageHeader"],
     title: "Dock",
     summary: "The strip pinned to the bottom of an extension side panel: status + tools + the primary button.",
     markup: `<footer class="xxd-dock">
@@ -699,6 +788,7 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     a11y: ["Status changes are announced via role=status (e.g. “Saved”)", "Only one primary button, and it says what it does (“Post to X”)"],
   },
   Sheet: {
+    related: [{"name": "Dialog", "why": "A confirmation that must be answered first"}, {"name": "Panel", "why": "Details on a desktop web page"}],
     title: "Sheet",
     use: ["Secondary tasks in an extension side panel or popup: pick a cover, a group of settings", "A panel rising from the bottom on phones"],
     avoid: ["A confirmation people must answer first: use Dialog", "Details on a desktop page: use Panel"],
@@ -716,6 +806,7 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   Panel: {
+    related: [{"name": "Dialog", "why": "A question that must be answered first"}, {"name": "Sheet", "why": "Narrow extension side panels"}],
     title: "Details panel",
     attributes: {
       ".xxd-panel-room": "Content next to the panel makes room while it is open instead of being covered (on narrow screens the panel is a bottom drawer and nothing moves)",
@@ -733,6 +824,9 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   Menu: {
+    dos: [{"do": "Put destructive items last, after a separator", "dont": "Delete sandwiched between Rename and Export, where a slip of the hand hits it"}, {"do": "Only one or two actions: show them as buttons", "dont": "Hiding the only action inside a “More” menu, so it takes an extra click to find"}],
+    writing: ["Start each item with a verb: “Rename”, “Export as”", "Items that ask again (open a dialog) end with “…”", "Use one style of wording within a menu"],
+    related: [{"name": "Select", "why": "Picking a value"}, {"name": "CommandPalette", "why": "Searching every command by keyboard"}],
     title: "Menu",
     use: ["Several actions behind one button: rename, export, delete", "Many options that aren't used often enough to show"],
     avoid: ["Choosing a value: use Select or Picker", "Only one or two actions: just show the buttons"],
@@ -767,6 +861,7 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   Popover: {
+    related: [{"name": "Tooltip", "why": "One line shown on hover"}, {"name": "Dialog", "why": "Something that must be answered first"}],
     title: "Popover",
     use: ["Click to read an explanation; it can hold a link or a tiny form"],
     avoid: ["A short line people should see on hover: use Tooltip", "Something that must be answered first: use Dialog"],
@@ -780,6 +875,7 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   Tooltip: {
+    related: [{"name": "Popover", "why": "Opened by a click, can contain links"}],
     title: "Tooltip",
     use: ["The name and shortcut of an icon-only button"],
     avoid: ["Important information or anything clickable: touch screens have no hover, so put it in the UI or use Popover"],
@@ -800,6 +896,9 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   Toast: {
+    dos: [{"do": "One sentence about the result, with Undo when it can be undone", "dont": "Using a toast for something that must be read or decided: it disappears in a few seconds"}, {"do": "For actions inside a panel, show the toast inside that panel (within)", "dont": "Always popping up in the bottom-right corner of the page, far from where the click happened"}],
+    writing: ["State the result: “Saved”, “Copied”", "One short sentence; long text disappears before it's read", "On failure, say what to do and offer “Retry”", "Avoid empty phrases like “Operation successful”"],
+    related: [{"name": "Banner", "why": "A status that should stay visible"}, {"name": "Dialog", "why": "Something that must be read or decided"}],
     title: "Toast",
     use: ["Saying something finished or failed, optionally with Undo / Retry", "Actions inside a panel: pass within so it appears right there"],
     avoid: ["Things people must read or choose: use Dialog", "A state that should stay visible: use Banner or the status line"],
@@ -822,6 +921,8 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     ],
   },
   CommandPalette: {
+    use: ["Lots of commands and pages, and experienced users want to jump by keyboard: ⌘K", "A searchable, grouped command list with recent items"],
+    avoid: ["As the only way in: newcomers don't know ⌘K, so common actions must also be on screen", "Filtering a list of content: use Search"],
     title: "Command palette",
     summary: "⌘K: search commands and jump to pages; supports groups, recent items and async loading.",
     markup: `<button class="xxd-btn" onclick="Xxd.openCommandPalette({ recentKey: 'xxd-site-demo-en', items: [{ label: 'New post', hint: '⌘N', group: 'Writing', run(){} }, { label: 'Post to X', group: 'Writing', run(){} }, { label: 'Toggle theme', group: 'Appearance', run(){ XxdTheme.set({ theme: XxdTheme.read().theme === 'dark' ? 'light' : 'dark' }) } }, { label: 'Toggle corners', group: 'Appearance', run(){ XxdTheme.set({ corners: XxdTheme.read().corners === 'rounded' ? 'square' : 'rounded' }) } }] })">Command palette ⌘K</button>`,
@@ -838,6 +939,9 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     ],
   },
   Badge: {
+    dos: [{"do": "One- or two-word states; color only where it means something", "dont": "A different color on every badge: the colors mean nothing, so you can't tell which one matters", "doMarkup": "<div class=\"xxd-cluster\"><span class=\"xxd-badge\">Draft</span><span class=\"xxd-badge\">Draft</span><span class=\"xxd-badge\" data-tone=\"warning\">Outdated</span></div>", "dontMarkup": "<div class=\"xxd-cluster\"><span class=\"xxd-badge\" data-tone=\"action\">Draft</span><span class=\"xxd-badge\" data-tone=\"success\">Draft</span><span class=\"xxd-badge\" data-tone=\"warning\">Draft</span></div>"}],
+    writing: ["One or two words, or a number: “New”, “Beta”, “12”", "States are adjectives or past participles: “Draft”, “Published”", "Never a sentence"],
+    related: [{"name": "Chip", "why": "Clickable filters and removable tags"}, {"name": "Dot", "why": "A status that already has words next to it"}],
     title: "Badge",
     use: ["A very short state or count: New, Beta, 12"],
     avoid: ["A clickable filter: use Chip", "A sentence of information: use Banner or plain text"],
@@ -852,10 +956,11 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     ],
   },
   Chip: {
+    related: [{"name": "Badge", "why": "Showing a status that isn't clickable"}],
     title: "Chip",
     attributes: {
       "aria-pressed": "Selected",
-      "data-size": "sm: in the same row as a small input or button (32px, same height)",
+      "data-size": "xs | sm | md | lg: in a row of controls, use the same size as its neighbours to match their height; without it, a 28px tag",
     },
     use: ["A clickable filter or a removable tag"],
     avoid: ["Just showing a state: use Badge"],
@@ -867,6 +972,9 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     a11y: ["It is a <button aria-pressed>; screen readers announce “pressed”", "The selected state is outlined in high-contrast mode, not just tinted"],
   },
   Dot: {
+    use: ["A status with words next to it: running, stopped, failed", "Spotting the abnormal rows in a list or table at a glance"],
+    avoid: ["A dot on its own with no words: color alone isn't enough, write the status next to it", "A status label that needs emphasis: use Badge"],
+    related: [{"name": "Badge", "why": "A status label that needs emphasis"}],
     title: "Status dot",
     summary: "A small dot that shows a status (running, error).",
     rules: ["Follows the corner switch: a square dot in square mode, a round dot in rounded mode (--r-pill)"],
@@ -881,6 +989,9 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
 </div>`,
   },
   Banner: {
+    dos: [{"do": "Say what happened and what to do, with one next step", "dont": "Just “Something went wrong”, with no reason and no next step", "doMarkup": "<div class=\"xxd-banner\" data-tone=\"warning\"><i data-xxd-icon=\"TriangleAlert\"></i><div><p class=\"xxd-banner__title\">1 post left today</p><p class=\"xxd-banner__text\">Resets at midnight; members have no limit.</p></div><div class=\"xxd-banner__actions\"><button class=\"xxd-btn\" data-size=\"sm\">Become a member</button></div></div>", "dontMarkup": "<div class=\"xxd-banner\" data-tone=\"danger\"><i data-xxd-icon=\"CircleAlert\"></i><div><p class=\"xxd-banner__title\">Something went wrong</p></div></div>"}],
+    writing: ["The title states the situation; the body says why and what to do", "The action names the next step: “Become a member”, “Reconnect”", "Don't use “Note” or “Notice” as the title", "If it can be dismissed, don't bring it right back"],
+    related: [{"name": "Toast", "why": "The result of one action"}, {"name": "Empty", "why": "When there's no content yet"}],
     title: "Banner",
     use: ["A state the whole page or section should know about: quota almost used up, offline", "Can be dismissed and can carry one action"],
     avoid: ["The result of one action: use Toast", "An error in one form field: put it under that field (Field)"],
@@ -898,6 +1009,9 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     rules: ["When the banner is narrower than 440px, the actions move below the text instead of being squeezed; the close button stays top right"],
   },
   Empty: {
+    dos: [{"do": "Say why it's empty and offer one next step", "dont": "Just a big illustration and “No data”", "doMarkup": "<div class=\"xxd-empty\" data-size=\"sm\"><i data-xxd-icon=\"FileText\"></i><p class=\"xxd-empty__title\">No records yet</p><p class=\"xxd-empty__text\">Posts you publish will show up here.</p><button class=\"xxd-btn\" data-size=\"sm\">Write the first one</button></div>", "dontMarkup": "<div class=\"xxd-empty\" data-size=\"sm\"><i data-xxd-icon=\"Inbox\"></i><p class=\"xxd-empty__title\">No data</p></div>"}],
+    writing: ["The title states the situation: “No records yet”", "One sentence of why, or how", "The button names the next step: “Import your first post”", "For empty search results, repeat the query and suggest how to broaden it"],
+    related: [{"name": "Progress", "why": "Still loading"}, {"name": "Banner", "why": "Something failed and needs a retry"}],
     title: "Empty state",
     summary: "When there is nothing yet: say why it's empty and what to do next.",
     attributes: { "data-size": "sm | lg" },
@@ -914,6 +1028,9 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     a11y: ["The icon is decoration (aria-hidden); the title states the fact, the text gives the next step", "The next step is a button or a link, reachable by keyboard"],
   },
   Progress: {
+    use: ["Progress with a known total: uploading, exporting, item 3 of 10 (<progress>)", "Waiting without a known end: a loading bar or spinner", "A value within a range, such as quota used (.xxd-meter)"],
+    avoid: ["One task in several steps: use Steps", "Scores or gauges with zones: use Gauge", "Waits under a second: show nothing, so it doesn't flash"],
+    related: [{"name": "Steps", "why": "One task in several steps"}, {"name": "Gauge", "why": "A value with good and bad zones"}],
     title: "Progress",
     summary: "Known progress uses <progress>; unknown progress uses a load bar or a spinner.",
     markup: `<progress class="xxd-progress" value="60" max="100"></progress>
@@ -938,6 +1055,8 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     ],
   },
   Table: {
+    dos: [{"do": "Right-align number columns with tabular figures so they compare at a glance", "dont": "Left-aligned numbers, which stop lining up as soon as the digits differ"}, {"do": "In a narrow extension side panel, use List with one item per row", "dont": "A five-column table in a 360px side panel that can only scroll sideways"}],
+    related: [{"name": "List", "why": "Narrow panels, or nothing to compare"}, {"name": "Pagination", "why": "Many rows that need pages"}],
     title: "Table",
     use: ["A set of similar records people compare, sort or act on in bulk"],
     avoid: ["A narrow extension side panel: use List", "Only two or three columns and nothing to compare: use List"],
@@ -974,6 +1093,8 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     ],
   },
   Collapsible: {
+    use: ["FAQs and optional advanced settings that most people don't need to see", "Only one open at a time within a group (same name)"],
+    avoid: ["Content everyone needs: show it directly", "Switching between several blocks in one place: use Tabs", "Something that must be answered first: use Dialog"],
     title: "Collapsible",
     summary: "Native <details>: FAQs and optional advanced settings. With a shared name only one stays open.",
     attributes: { "name (details)": "Only one open per group with the same name (accordion, native to the browser)" },
@@ -987,6 +1108,9 @@ Xxd.bindCommandPalette(items)  // ⌘K / Ctrl+K`,
     ],
   },
   Code: {
+    use: ["Multi-line code, config and commands, with line numbers, highlighting and a copy button", "Docs, help pages and AI output"],
+    avoid: ["A name or command inside a sentence: use inline code (<code>)", "A one-line value to copy: use ClipboardText"],
+    related: [{"name": "ClipboardText", "why": "A one-line value to copy"}, {"name": "InlineCopy", "why": "A short piece inside a sentence"}, {"name": "Prose", "why": "Code blocks inside an article"}],
     title: "Code",
     summary: "Code blocks: light syntax highlighting, line numbers, a copy button.",
     attributes: {
@@ -1009,6 +1133,8 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     ],
   },
   Avatar: {
+    use: ["Representing a person: comments, member lists, the entry to the account menu", "Shows the initial when there is no photo"],
+    avoid: ["Representing a product or extension: use its own icon", "Pure decoration: leave it out"],
     title: "Avatar",
     attributes: { "data-size": "sm (24) | default 28 | lg (40); any other size: --avatar-size" },
     summary: "A person's picture or initial; members get a small marker.",
@@ -1021,6 +1147,7 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     ],
   },
   Card: {
+    related: [{"name": "List", "why": "A line of text without an image"}, {"name": "LayerCard", "why": "Just separating primary and secondary content"}],
     title: "Card",
     use: ["A clickable item with an image: a poster, a style, a template"],
     avoid: ["A line of text without an image: use List", "Just framing a block of content: use LayerCard or whitespace"],
@@ -1032,6 +1159,9 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     a11y: ["When the whole card is clickable it is one <a> — no links inside it", "Images have alt; purely decorative ones use alt=\"\""],
   },
   LayerCard: {
+    use: ["A block of content plus a secondary strip: a line of explanation above or a row of actions below", "A section in settings or detail pages"],
+    avoid: ["Clickable items with an image: use Card", "Cards inside cards: one layer is enough, use space and dividers inside"],
+    related: [{"name": "Card", "why": "Clickable items with an image"}],
     title: "Layer card",
     summary: "A body (paper) + a secondary strip (wash): a note or action above or below the card. Don't nest them.",
     markup: `<div class="xxd-layer" style="width:100%;max-width:300px">
@@ -1045,6 +1175,8 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     ],
   },
   Layout: {
+    use: ["Two- and three-column pages: main content plus a side area, cards side by side", "Stacks into one column by itself, even inside a side panel (it looks at the container width)"],
+    avoid: ["Content in one column from top to bottom: .xxd-stack is enough", "Rows and columns of data: use Table"],
     title: "Layout presets",
     summary: "Common two- and three-column layouts that stack into one column when the layout itself is narrower than 560px (it looks at its container, not the window, so it stacks inside a side panel too). Surfaces have three levels: base (paper), sunken (wash), raised (overlays only).",
     attributes: {
@@ -1062,6 +1194,8 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     ],
   },
   TableOfContents: {
+    use: ["Long articles and docs: sections listed on the right, the current one highlighted as you scroll", "Pages with four or more sections"],
+    avoid: ["Only two or three sections: no table of contents needed", "The site's main navigation: use Sidebar"],
     title: "Table of contents",
     summary: "A contents list for long pages: the item for the section you've scrolled to is highlighted (data-spy).",
     attributes: { "data-spy": "Highlights the current section while scrolling", "data-depth=\"3\" (li)": "Second-level indent" },
@@ -1077,6 +1211,8 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     ],
   },
   Logo: {
+    use: ["The XXD mark for every extension and the member site: top bar, about page, loading screen", "Follows the theme and inverts itself in dark mode"],
+    avoid: ["Other brands: use their own logos", "As a repeated decorative pattern: one per place"],
     title: "XXD logo",
     summary: "Four small squares fading from full to light on a near-black square — one mark for every extension. Follows the theme (inverted in dark).",
     attributes: { "data-size": "sm | (default 20px) | lg", "--logo-size": "Any size" },
@@ -1088,6 +1224,9 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     a11y: ["The square mark is decoration (aria-hidden); the name is text", "Inside a link, the link's name is the product name"],
   },
   Prose: {
+    use: ["Articles, help docs, release notes and long AI answers: headings, paragraphs, lists and quotes are all set", "Content rendered from Markdown"],
+    avoid: ["Short UI text (labels, descriptions, buttons): use Text", "Forms and settings: use their own components"],
+    related: [{"name": "Text", "why": "Short UI text"}, {"name": "TableOfContents", "why": "A table of contents for long articles"}],
     title: "Prose",
     summary: "Long-form typography: headings, paragraphs, quotes, lists, code, at reading width.",
     markup: `<article class="xxd-prose"><h2>Editorial poster</h2><p>Restrained editorial brutalism.</p><blockquote>Motion reveals hierarchy.</blockquote></article>`,
@@ -1095,6 +1234,9 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     a11y: ["Use real h2 / h3, ul / ol and blockquote so screen readers can jump by structure", "Links are underlined; accent-colored list markers are decoration only"],
   },
   Stat: {
+    use: ["A number to see at a glance (posts this month, users, revenue) with the change from last period", "A row at the top of a dashboard or report"],
+    avoid: ["Detailed trends: use Chart", "Where a value sits in a range (quota): use Gauge or a meter", "Comparing several numbers: use Bars"],
+    related: [{"name": "Chart", "why": "Detailed trends"}, {"name": "Gauge", "why": "Where a value sits in a range"}, {"name": "Bars", "why": "Comparing several numbers"}],
     title: "Stat",
     summary: "Label · number (tabular figures) · change from last period · sparkline. Change uses only two meaning colors: up (success) and down (danger).",
     markup: `<div class="xxd-stats" style="width:100%;max-width:640px">
@@ -1107,6 +1249,9 @@ Xxd.toast("Saved", { tone: "success" });</code></pre>
     a11y: ["The sparkline is aria-hidden decoration; write the change as text (↑ 12.4% vs last week), never color alone."],
   },
   Chart: {
+    use: ["Trends, distributions and relationships between series: line, bar, scatter", "Lots of data that needs axes and readouts"],
+    avoid: ["Comparing or ranking a few categories: use Bars (no ECharts, lighter)", "A single value in a range: use Gauge", "One whole split into parts: use Proportion or Waffle"],
+    related: [{"name": "Bars", "why": "Comparing or ranking a few categories"}, {"name": "Gauge", "why": "One value in a range"}, {"name": "Proportion", "why": "One whole split into parts"}],
     title: "Chart",
     rules: [
       "Series colors are fixed: accent, gray 9, accent 8, gray 10, gray 11 (from the scales, each at least 3:1 on paper, alternating dark and light so neighbors stay apart); pies, funnels and other charts colored by data take the same order slice by slice",
@@ -1151,6 +1296,9 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // redraws on theme,
     ],
   },
   Gauge: {
+    use: ["Where one value sits in a range: quota used, a test score, completion", "Ranges with good and bad zones: the color changes in the warning zone, and the status is written out"],
+    avoid: ["Trends: use a line chart (Chart)", "Comparing several numbers: use Bars, not a row of gauges", "Simple progress: use the meter in Progress"],
+    related: [{"name": "Progress", "why": "A simple progress bar"}, {"name": "Stat", "why": "A number with its change from last period"}, {"name": "Bars", "why": "Comparing several numbers"}],
     title: "Gauge",
     summary: "Where one number sits in a range: quota used, a score, progress toward a goal. Three shapes (270° arc, half circle, full ring); the track is a light gray and the fill is the accent, switching to a meaning color only inside a zone. Also target marks, ticks, segments, ranges, stacked parts, concentric rings and a thin needle.",
     attributes: {
@@ -1225,6 +1373,9 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // redraws on theme,
     ],
   },
   Bars: {
+    use: ["Comparing or ranking a few categories (≤ 12): name, bar and number on each row", "Funnels, increase/decrease breakdowns, comparison with last year"],
+    avoid: ["Change over time: use a line chart (Chart)", "One whole split into parts: use Proportion", "Many categories: use a sortable Table"],
+    related: [{"name": "Chart", "why": "Change over time"}, {"name": "Proportion", "why": "One whole split into parts"}, {"name": "Table", "why": "Many categories"}],
     title: "Bar list",
     summary: "Comparing a few categories or a ranking: name on the left, bar in the middle, number on the right, sorted by size. Mark one as the highlight (accent, the rest gray); cut bars into units; diverging bars grow both ways from a center line; a funnel says how many each step keeps; a waterfall breaks a total into changes. Add a comparison value (last year), a reference line (average), an axis and notes. Bars are proportional to the largest value, with no track.",
     attributes: {
@@ -1275,6 +1426,9 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // redraws on theme,
     ],
   },
   Proportion: {
+    use: ["One whole split into a few parts (≤ 5): storage, traffic sources", "Several bars side by side to compare composition (stacked bars)"],
+    avoid: ["More than 5 parts: fold the rest into “Other”, or use Bars", "Shares people should be able to count: use Waffle", "Values that aren't parts of one whole: use Bars"],
+    related: [{"name": "Waffle", "why": "Shares people can count"}, {"name": "Bars", "why": "Values that aren't parts of one whole"}],
     title: "Proportion bar",
     summary: "One whole split into parts (≤ 5): a bar divided by share, with a legend of names, values and percentages (adding up to exactly 100%). Several in a column make a stacked bar chart.",
     attributes: {
@@ -1299,6 +1453,9 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // redraws on theme,
     ],
   },
   Waffle: {
+    use: ["A few percentages people should be able to count: 23 out of 100 people", "Instead of a pie chart (≤ 5 categories)"],
+    avoid: ["Counts that aren't percentages: use Bars", "Many categories: use Bars or Table"],
+    related: [{"name": "Proportion", "why": "Composition in a single bar"}, {"name": "Bars", "why": "Counts that aren't percentages"}],
     title: "Waffle",
     summary: "A unit chart for shares: 10 × 10, one cell = 1%, with a legend and a note on the unit. When all you have is a few percentages, it is more honest than a pie: you can count it.",
     attributes: {
@@ -1315,6 +1472,9 @@ Xxd.watchChartTheme(chart, () => Xxd.chartOptions(option))  // redraws on theme,
 // React: <Waffle parts={[…]} label="Where new members come from" />`,
   },
   Heatmap: {
+    use: ["Which days of the year were active (calendar)", "Amounts across two dimensions: weekday × hour, channel × month (matrix)"],
+    avoid: ["Exact numbers need to be read: use Table or Bars", "Only one dimension: use Bars or a line chart"],
+    related: [{"name": "Table", "why": "Reading exact numbers"}, {"name": "Bars", "why": "Only one dimension"}],
     title: "Heatmap",
     summary: "Darker means more: a calendar (53 weeks × 7 days, which days were active) and a matrix (two dimensions × a value, such as weekday × hour, with numbers in the cells if you like). Zero plus 4 levels, gray with ink, the accent scale with an accent.",
     attributes: {
@@ -1343,6 +1503,9 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     ],
   },
   Dumbbell: {
+    use: ["How a few categories changed between two points in time (≤ 8 rows): before and after a redesign, last year and this year", "Seeing how much, and in which direction, each row moved"],
+    avoid: ["More than two points in time: use a line chart (Chart)", "Comparing sizes at one point in time: use Bars"],
+    related: [{"name": "Bars", "why": "Only one point in time"}, {"name": "Chart", "why": "More than two points in time"}],
     title: "Dumbbell",
     summary: "Before and after per category (≤ 8 rows): a thin line joins two dots, a hollow ring for before and a solid dot (accent) for after, with \"before → after\" and the change on the right. Positions follow the data's range and need not start at 0 (it compares position, not length).",
     attributes: {
@@ -1359,6 +1522,9 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
 // React: <Dumbbell rows={[…]} unit="min" fromLabel="Before" toLabel="After" />`,
   },
   Radar: {
+    use: ["Profiles where the order of the axes means something: the six Holland types, directions around a circle", "Comparing your shape with one reference overlaid"],
+    avoid: ["Scores on unrelated dimensions: use Bars (reordering the axes changes the area)", "More than two shapes overlaid: split into several charts"],
+    related: [{"name": "Bars", "why": "Unrelated dimensions"}],
     title: "Radar",
     summary: "A profile whose axis order means something (3–12 axes, typically the Holland hexagon): hairline rings, your area outlined in the accent with an 8% solid fill, the comparison dashed and hollow; names and numbers are HTML text at the end of each axis.",
     attributes: {
@@ -1376,6 +1542,9 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
 // React: <Radar axes={[…]} max={40} valueLabel="You" compareLabel="Average" />`,
   },
   Quadrant: {
+    use: ["Two dimensions that each have a meaningful cut point, so the quadrant matters: anxiety × avoidance, important × urgent", "A few points (≤ 8)"],
+    avoid: ["No meaningful cut point: use a scatter plot (Chart)", "Many points: use a scatter plot", "Only one dimension: use Bars"],
+    related: [{"name": "Chart", "why": "No cut point, or many points: a scatter plot"}],
     title: "Quadrant",
     summary: "Two dimensions, each cut once, make four cells: one outer frame, structure lines for the cuts, cell names in the outer corners and the ends' names where the cuts meet the frame; points are HTML, the highlighted one solid accent, the rest hollow.",
     attributes: {
@@ -1394,6 +1563,7 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
 // React: <Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />`,
   },
   Steps: {
+    related: [{"name": "Timeline", "why": "Events with times"}, {"name": "Progress", "why": "Only how much is done"}, {"name": "Flowchart", "why": "Branches along the way"}],
     title: "Steps",
     summary: "One job in a few steps: done steps get a check, the current step has the selected background and an accent line, steps still ahead are grey. Horizontal shows progress, vertical carries notes; when horizontal does not fit it turns vertical by itself, never scrolling sideways. Also works as the step bar of a multi-step form.",
     attributes: {
@@ -1443,6 +1613,7 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     avoid: ["Parallel items with no order: use a list", "Only how much is done: use a meter (Progress)", "Events in time (with dates): use Timeline"],
   },
   Timeline: {
+    related: [{"name": "Steps", "why": "Steps without times"}, {"name": "Table", "why": "Many records that need searching and filtering"}],
     title: "Timeline",
     summary: "What happened, in order: the time on the left, one vertical line through every entry, each with a title and a line or two. The newest entry can be emphasised; what has not happened yet is a hollow dot and a dashed line. When narrow, the time moves above the title.",
     attributes: {
@@ -1481,6 +1652,7 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     avoid: ["Steps without times: use Steps", "Many records you search or filter: use a table (Table)"],
   },
   Flowchart: {
+    related: [{"name": "Steps", "why": "No branches"}, {"name": "Tree", "why": "One thing split into parts, with no order"}],
     title: "Flowchart",
     summary: "Where the path splits: one main line from top to bottom, one decision in the middle splitting into 2–3 branches, each starting with its name, then joining again or ending on their own. Nodes are HTML, lines are borders, arrows point to the next step; when there is no room the branches stack and the trunk runs down the left.",
     attributes: {
@@ -1512,6 +1684,7 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     avoid: ["No branches: use Steps", "Free-form graphs (dependencies, architecture): not a component (DIAGRAM-PLAN phase two)"],
   },
   Tree: {
+    related: [{"name": "Sidebar", "why": "Many levels that expand, collapse and can be selected"}, {"name": "Steps", "why": "Steps in order"}],
     title: "Tree",
     summary: "One thing made of several: up to two levels on a wide enough container it is drawn top-down (an org chart) with one bar to the level below; three levels or a narrow container turn it into an indented outline with one vertical line and a short tick per item.",
     attributes: {
@@ -1536,6 +1709,7 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     avoid: ["Steps in order: use Steps", "Deep trees you expand, collapse and select: that is navigation (Sidebar), not a diagram"],
   },
   Cycle: {
+    related: [{"name": "Steps", "why": "Ends after the last step"}],
     title: "Cycle",
     summary: "Done, then back to the start: 3–6 steps in a row, arrows to the next step, and a return line under the last step back to the first. Never drawn as a circle (§14: no radial charts); when narrow, one step per row with the return line on the right.",
     attributes: {
@@ -1560,6 +1734,7 @@ Xxd.viz(el, "matrix", { rows: ["Mon", "Tue"], cols: ["9", "10"], values: [[1, 4]
     avoid: ["A flow that ends: use Steps", "Items with no order: use a list"],
   },
   Layers: {
+    related: [{"name": "Bars", "why": "A funnel with numbers"}, {"name": "Steps", "why": "Steps in order"}],
     title: "Layers",
     summary: "One layer built on another: equal-width bands stacked top to bottom, each layer using the one below (pages use components, components use tokens). Each layer has a name and one sentence; width means nothing, so it is never a pyramid.",
     attributes: {

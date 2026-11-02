@@ -427,7 +427,7 @@
     padding-inline: var(--control-pad-x, 16px);
   }
   :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none[data-kumo-component]).h-10 {
-    height: calc(var(--control-h, 2.5rem) + 8px);
+    height: var(--control-h-lg, 3rem);
     padding-inline: var(--control-pad-x-lg, 20px);
   }
   :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"], .group.w-max.shrink-0.select-none[data-kumo-component]).h-6\.5 {
@@ -443,6 +443,10 @@
     width: var(--icon-button, 2.25rem);
     height: var(--icon-button, 2.25rem);
   }
+  :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"]).size-10 {
+    width: var(--control-h-lg, 3rem);
+    height: var(--control-h-lg, 3rem);
+  }
   :is([data-kumo-component="Button"], [data-kumo-component="LinkButton"]).size-6\.5 {
     width: var(--control-h-sm, 1.625rem);
     height: var(--control-h-sm, 1.625rem);
@@ -451,6 +455,10 @@
   :is(input, [data-kumo-component="Select"], [data-kumo-component="SensitiveInput"]).h-9 {
     height: var(--control-h, 2.25rem);
     padding-inline: var(--field-pad-x, 12px);
+  }
+  :is(input, [data-kumo-component="Select"], [data-kumo-component="SensitiveInput"]).h-10 {
+    height: var(--control-h-lg, 3rem);
+    padding-inline: var(--control-pad-x-lg, 16px);
   }
   :is(input, [data-kumo-component="Select"], [data-kumo-component="SensitiveInput"]).h-6\.5 {
     height: var(--control-h-sm, 1.625rem);

@@ -180,8 +180,13 @@
     font-size: var(--text-xs);
   }
 
-  .xxd-pagination[data-simple] > :not(:first-child, :last-child) {
+  .xxd-pagination[data-simple] > :not(:first-child, :last-child, .xxd-pagination__status) {
     display: none;
+  }
+
+  /* 简单模式也要看得出在第几页（J15：以前只剩两个箭头）：没有「3 / 12」时留下当前页码（照旧带当前页的记号） */
+  .xxd-pagination[data-simple]:not(:has(> .xxd-pagination__status)) > [aria-current="page"] {
+    display: inline-flex;
   }
 
   /* ── 区间滑块：两个 range 叠在一起，中间填色 ── */
@@ -215,7 +220,7 @@
   .xxd-range-pair::after {
     content: "";
     position: absolute;
-    top: 9px;
+    top: calc(50% - 1px);
     height: 2px;
     border-radius: var(--r-pill);
   }
@@ -246,6 +251,11 @@
   /* 从右往左的页面，滑块的最小值在右边，已填的部分也从右边长 */
   .xxd-range[data-fill]:dir(rtl)::-webkit-slider-runnable-track {
     background: linear-gradient(to left, var(--action) calc(var(--fill, 0) * 1%), var(--line-strong) 0);
+  }
+
+  /* 禁用的滑块（J4）：已填的部分用禁用的字色，没填的用禁用的线 */
+  .xxd-range[data-fill]:disabled::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, var(--disabled-ink) calc(var(--fill, 0) * 1%), var(--disabled-line) 0);
   }
 
   .xxd-range[data-ticks] {
@@ -287,6 +297,7 @@
   }
 
   .xxd-code-block > .xxd-code {
+    border: 0;
     border-radius: 0;
   }
 
@@ -416,6 +427,8 @@
   /* ── 面包屑：太长时中间折叠成「…」（JS） ── */
   .xxd-breadcrumbs__more {
     padding: 0 var(--space-1);
+    /* 内边距收回去：「…」两边和别的级之间一样宽（J12） */
+    margin-inline: calc(-1 * var(--space-1));
     border: 0;
     border-radius: var(--r-xs);
     background: transparent;

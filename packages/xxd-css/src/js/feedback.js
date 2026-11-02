@@ -132,7 +132,9 @@ function regionFor(within) {
   const modal = !within ? [...(globalThis.document?.querySelectorAll("dialog:modal") ?? [])].pop() : null;
   within ??= modal ?? defaultLayerRoot();
   const doc = within?.ownerDocument || document;
-  const host = within && within !== doc.body ? within : doc.body;
+  let host = within && within !== doc.body ? within : doc.body;
+  // 自己会滚的容器（面板的正文）：toast 挂在它外面那层上，不跟着内容滚走（J32）
+  if (host !== doc.body && host.nodeType === 1 && host.parentElement && /auto|scroll/.test(getComputedStyle(host).overflowY)) host = host.parentElement;
   let region = regions.get(host);
   if (region?.isConnected) return region;
   region = doc.createElement("div");
@@ -160,11 +162,14 @@ function regionFor(within) {
 /** 叠放：最新的在最前，后面两张往上缩一点；超过 3 张的藏起来（hover 展开时都出来）。 */
 function restack(region) {
   if (!region.hasAttribute("data-stack")) return;
-  const list = [...region.querySelectorAll(":scope > .xxd-toast:not([data-leaving])")];
+  // 出错的排在最前面，不被后来的「已保存」盖住（J35）；别的照旧最新的在前（「撤销」在后面时悬停展开还点得到）
+  const pri = (t) => (t.matches('[data-tone="danger"]') ? 1 : 0);
+  const list = [...region.querySelectorAll(":scope > .xxd-toast:not([data-leaving])")].sort((a, b) => pri(a) - pri(b));
   const open = region.contains(region.getRootNode().activeElement) || region.matches(":hover");
   list.forEach((t, n) => {
     const i = list.length - 1 - n;
     t.style.setProperty("--i", String(i));
+    t.style.zIndex = String(n);
     t.toggleAttribute("data-hidden-in-stack", i >= 3);
     t.toggleAttribute("data-behind", i > 0);
     t.setAttribute("aria-hidden", String(i > 0 && !open));

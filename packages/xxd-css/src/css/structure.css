@@ -43,13 +43,14 @@
     background: transparent;
   }
 
+  /* 头、尾和中间的项对齐同一条线（J17：以前 12 / 16 / 20 三条） */
   .xxd-sidebar__head,
   .xxd-sidebar__foot {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     min-height: 56px;
-    padding: 0 var(--space-3);
+    padding: 0 var(--space-4);
   }
 
   .xxd-sidebar__head {
@@ -85,7 +86,8 @@
     align-items: center;
     gap: var(--space-3);
     width: 100%;
-    min-height: 34px;
+    /* 跟着密度（J17）：36，紧凑 28（以前写死 34） */
+    min-height: calc(var(--control-h) - 4px);
     padding: 0 var(--space-2);
     border: 0;
     border-radius: var(--r-sm);
@@ -108,6 +110,9 @@
     background: var(--selected-bg);
     color: var(--ink);
     box-shadow: inset 2px 0 0 var(--action); /* D76：导航的当前项左边一条线，和目录一样（淡底只有 1.15:1） */
+    /* 那条线是直的（J17：圆角模式下以前跟着圆角弯成「(」） */
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
   }
 
   .xxd-sidebar__item > .ui-icon {
@@ -151,7 +156,7 @@
   }
 
   .xxd-sidebar__sub .xxd-sidebar__item {
-    min-height: 30px;
+    min-height: var(--control-h-sm);
     font-size: var(--text-xs);
   }
 
@@ -165,8 +170,21 @@
   }
 
   .xxd-sidebar[data-collapsed] .xxd-sidebar__sub,
-  .xxd-sidebar[data-collapsed] .xxd-sidebar__label {
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__label,
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__item[aria-expanded]::after {
     display: none;
+  }
+
+  /* 折叠后图标都在这一列的正中（J17：以前带子菜单的那一项偏左 12，标志偏左 6——藏起来的箭头和字还占着位置） */
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__head {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .xxd-sidebar[data-collapsed] .xxd-sidebar__head [data-sidebar-hide] {
+    position: absolute;
+    width: 1px;
+    overflow: hidden;
   }
 
   .xxd-sidebar[data-collapsed] .xxd-sidebar__item {
@@ -211,13 +229,18 @@
   }
 
   /* ── 工具条（编辑器的格式工具栏）：role="toolbar"，← → 在项之间移动 ── */
+  /* 跟着控件那把尺（J19）：带框的工具条外框 = 控件高，项 = 控件高 − 8；不自己折行（以前折成两行、分隔线落到第二行开头），
+     放不下时横着滚 */
   .xxd-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
     align-items: center;
     gap: var(--space-0-5);
-    min-height: 40px;
+    max-width: 100%;
     padding: var(--space-1);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
 
   .xxd-toolbar[data-framed] {
@@ -231,8 +254,9 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-1);
-    min-width: 30px;
-    height: 30px;
+    flex: none;
+    min-width: calc(var(--control-h) - 10px);
+    height: calc(var(--control-h) - 10px);
     padding: 0 var(--space-1-5);
     border: 0;
     border-radius: var(--r-xs);
@@ -275,14 +299,28 @@
   }
 
   .xxd-toolbar[data-size="sm"] .xxd-toolbar__item {
-    min-width: 26px;
-    height: 26px;
+    min-width: calc(var(--control-h-sm) - 10px);
+    height: calc(var(--control-h-sm) - 10px);
   }
 
   .xxd-toolbar[data-size="lg"] .xxd-toolbar__item {
-    min-width: 36px;
-    height: 36px;
+    min-width: calc(var(--control-h-lg) - 10px);
+    height: calc(var(--control-h-lg) - 10px);
     font-size: var(--text-sm);
+  }
+
+  /* 只有一个图标的项（带 aria-label、里面只有图标）是方的（J19：以前 28 × 30）。:only-child 不管文字，所以靠 aria-label 认 */
+  .xxd-toolbar__item[aria-label]:has(> svg:only-child) {
+    width: calc(var(--control-h) - 10px);
+    padding: 0;
+  }
+
+  .xxd-toolbar[data-size="sm"] .xxd-toolbar__item[aria-label]:has(> svg:only-child) {
+    width: calc(var(--control-h-sm) - 10px);
+  }
+
+  .xxd-toolbar[data-size="lg"] .xxd-toolbar__item[aria-label]:has(> svg:only-child) {
+    width: calc(var(--control-h-lg) - 10px);
   }
 
   /* ── 分层卡片：主体（纸）+ 次要区（洗色），次要区可在上或在下 ── */
@@ -305,7 +343,9 @@
     font-size: var(--text-xs);
   }
 
+  /* 一排等高的分层卡片里，矮的那张由主体撑满（J21：以前底下露出一截洗色，像空着的页脚） */
   .xxd-layer__primary {
+    flex: 1 0 auto;
     padding: var(--space-4);
     border-top: 1px solid var(--line);
     background: var(--paper);
@@ -371,10 +411,13 @@
   /* ── 页面头：面包屑、标题、说明、操作、tab ── */
   /* 页面头：标题和它的说明挨着（--space-1），操作按钮在右边、和标题顶对齐、跨两行，不把说明往下推；
    * 窄的时候（容器窄于 480px）操作换到说明下面。相关的字靠得更近（原则 §6）。 */
+  /* 两列：左边标题和说明，右边操作；面包屑和 tab 横跨两列到右边（J5：它以前也在 robust.css 的「单列栅格」清单里，
+     那条后加载、把这里盖成一列，操作被挤进隐式的列，tab 的线停在操作左边，短 200 多 px） */
   .xxd-page-header {
     container-type: inline-size;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* 操作那一列最小可以是 0：窄的时候操作换到下面一整行（容器查询），这一列不再按按钮的宽撑开整个头 */
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
     align-items: start;
     column-gap: var(--space-4);
     row-gap: var(--space-1);
@@ -396,9 +439,11 @@
   /* 标题至少留 12 个字宽：放不下时操作按钮整体换到下一行，标题不会被挤成一字一行 */
   .xxd-page-header__title {
     grid-column: 1;
-    min-width: min(100%, 12em);
+    /* 至少留 240px 再让操作换行（字号从 20 改成 28 后不能再写 12em，不然窄的时候比容器还宽） */
+    min-width: min(100%, 240px);
     margin: 0;
-    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-body);
+    /* 页面标题 28 / 600（§6、J20：以前 20，和下面的节标题一样大） */
+    font: var(--weight-strong) var(--text-display) / var(--leading-display) var(--font-title);
   }
 
   .xxd-page-header__desc {
@@ -466,8 +511,10 @@
     transition-duration: 0s;
   }
 
+  /* 当前一节：2px 的主色线（§4，和侧栏、列表的当前项一样；以前只是把 1px 的线换了色） */
   .xxd-toc a[aria-current="true"] {
     border-left-color: var(--action);
+    box-shadow: inset 1px 0 0 var(--action);
     color: var(--ink);
   }
 

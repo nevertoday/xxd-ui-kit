@@ -52,7 +52,7 @@ describe("贴底的东西让出安全区（D118）、浮层滚到头不接着滚
       expect(block, sel).toMatch(/env\(safe-area-inset-bottom/);
     }
     const narrow = overlay.slice(overlay.indexOf("@media (max-width: 640px)"));
-    expect(narrow).toMatch(/\.xxd-dialog \{[^}]*env\(safe-area-inset-bottom/);
+    expect(narrow).toMatch(/\.xxd-dialog,\s*\.xxd-dialog\[data-size\] \{[^}]*env\(safe-area-inset-bottom/);
     expect(narrow).toMatch(/\.xxd-panel \{[^}]*env\(safe-area-inset-bottom/);
     expect(css("patterns.css")).toMatch(/\.xxd-viewer \{[^}]*env\(safe-area-inset-bottom/);
   });

@@ -137,11 +137,13 @@
     font-size: max(var(--text-xs), calc(1em - clamp(1px, 1em - 14px, 4px)));
   }
 
+  /* 代码块有一圈线（J21：暗色下底色和纸一样，放进卡片、面板里只剩飘着的字；亮色时对白纸只有 1.03:1） */
   .xxd-code,
   .xxd-prose pre {
     position: relative;
     margin: 0;
     padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line);
     border-radius: var(--r-md);
     background: var(--accent-bg);
     color: var(--ink);
@@ -561,5 +563,12 @@
     border-radius: var(--r-xs);
     background: var(--accent-tint-active);
     color: inherit;
+  }
+}
+
+/* 表格里的「点 + 字」「头像 + 名字」不折成两行（J21：.xxd-cluster 会折行，单元格按最窄的内容量宽，一行变成 65 高、点跑到字上面） */
+@layer xxd.components {
+  .xxd-table td:not([data-wrap]) .xxd-cluster {
+    flex-wrap: nowrap;
   }
 }

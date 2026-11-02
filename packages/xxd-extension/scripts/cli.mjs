@@ -457,12 +457,18 @@ export function docComponent(name, { react: wantReact = false, markup = false } 
   if (markup) return x.markup.trim();
   const out = [`${c.bold(isEn() ? `${x.name}${x.label !== x.name ? ` · ${x.label}` : ""}` : `${x.name} · ${x.zh}`)}${say(`（${x.categoryLabel}）`, ` (${x.categoryLabel})`)}`];
   if (x.summary) out.push("", x.summary);
+  // 什么时候用 / 别用、对和错（DOCS-NAV-PLAN G10）：先判断该不该用，再看怎么用
+  if (x.use?.length) out.push("", c.bold(say("什么时候用", "When to use")), ...x.use.map((r) => `  ✓ ${r}`));
+  if (x.avoid?.length) out.push("", c.bold(say("什么时候别用", "When not to")), ...x.avoid.map((r) => `  ✗ ${r}`));
+  if (x.dos?.length) out.push("", c.bold(say("对和错", "Do and don't")), ...x.dos.flatMap((d) => [`  ✓ ${d.do}`, `  ✗ ${d.dont}`]));
   out.push("", c.bold(say("类名", "Classes")), `  ${x.classes.join(" ")}`);
   if (x.attributes) out.push("", c.bold(say("属性", "Attributes")), ...Object.entries(x.attributes).map(([k, v]) => `  ${k}: ${v}`));
   out.push("", c.bold(say("示例", "Example")), ...x.markup.split("\n").map((l) => `  ${l}`));
   if (x.js) out.push("", c.bold("JS"), ...x.js.split("\n").map((l) => `  ${l}`));
   if (x.a11y?.length) out.push("", c.bold(say("键盘与读屏", "Keyboard and screen readers")), ...x.a11y.map((r) => `  · ${r}`));
+  if (x.writing?.length) out.push("", c.bold(say("文案", "Writing")), ...x.writing.map((r) => `  · ${r}`));
   if (x.rules?.length) out.push("", c.bold(say("规则（设计原则）", "Rules (design principles)")), ...x.rules.map((r) => `  · ${r}`));
+  if (x.related?.length) out.push("", c.bold(say("相关组件", "Related components")), ...x.related.map((r) => `  ${r.name}: ${r.why}`));
   if (x.react) out.push("", say(`React 版：${x.react}（${BIN} doc ${x.name} --react）`, `React: ${x.react} (${BIN} doc ${x.name} --react)`));
   out.push("", c.dim(`${say("展示站", "Showcase")}: ${pageUrl(x.name, { en: isEn() })}`));
   return out.join("\n");

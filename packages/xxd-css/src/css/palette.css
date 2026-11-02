@@ -95,3 +95,12 @@
     font-size: var(--text-xs);
   }
 }
+
+/* 粗指针：命令面板的搜索框也是 16px（J36：上面写的 --text-base 盖掉了 form.css 里那条，iOS 一聚焦就放大） */
+@layer xxd.components {
+  @media (pointer: coarse) {
+    .xxd-palette__search > input {
+      font-size: var(--text-lg);
+    }
+  }
+}

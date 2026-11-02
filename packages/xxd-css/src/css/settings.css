@@ -38,7 +38,7 @@
   }
 
   .xxd-group__note {
-    margin: var(--space-0-5) var(--space-0-5) 0;
+    margin: var(--space-0-5) 0 0;
     color: var(--muted);
     font-size: var(--text-xs);
     line-height: var(--leading-sm);
@@ -182,14 +182,24 @@
 
   /* 撑开的是正文：有 .xxd-list__main 就是它；没有时是第一样东西（比如一个 <span>；图标、头像、按钮、把手不算） */
   .xxd-list__main,
-  .xxd-list > .xxd-list__item:not(:has(> .xxd-list__main)) > :first-child:not(:only-child, i, svg, img, button, input, .xxd-avatar, .xxd-sort-handle) {
+  .xxd-list > .xxd-list__item:not(:has(> .xxd-list__main)) > :first-child:not(:only-child, i, svg, img, button, input, .xxd-avatar, .xxd-sort-handle, .xxd-dot, .xxd-spinner, .xxd-badge) {
     flex: 1 1 8em;
     min-width: 0;
   }
 
+  /* 第一样是复选、图标、头像时，撑开的是它后面那一样（J11：以前只看第一样，复选开头的行里按钮紧贴着标题） */
+  .xxd-list > .xxd-list__item:not(:has(> .xxd-list__main)) > :is(input, i, svg, img, .xxd-avatar, .xxd-sort-handle, .xxd-dot, .xxd-spinner):first-child + :not(:last-child, button, input, i, svg, img, .xxd-avatar) {
+    flex: 1 1 8em;
+    min-width: 0;
+  }
+
+  .xxd-list > .xxd-list__item:not(:has(> .xxd-list__main)) > :is(input, i, svg, img, .xxd-avatar, .xxd-sort-handle, .xxd-dot, .xxd-spinner):first-child + :not(:last-child, button, input, i, svg, img, .xxd-avatar) + * {
+    margin-inline-start: auto;
+  }
+
   /* 正文之后的按钮：同一行时被正文推到右边；换到下一行时也靠右 */
   .xxd-list > .xxd-list__item > .xxd-list__main + *,
-  .xxd-list > .xxd-list__item:not(:has(> .xxd-list__main)) > :first-child:not(:only-child, i, svg, img, button, input, .xxd-avatar, .xxd-sort-handle) + * {
+  .xxd-list > .xxd-list__item:not(:has(> .xxd-list__main)) > :first-child:not(:only-child, i, svg, img, button, input, .xxd-avatar, .xxd-sort-handle, .xxd-dot, .xxd-spinner, .xxd-badge) + * {
     margin-inline-start: auto;
   }
 
@@ -288,5 +298,18 @@
   .xxd-glyphs > button[aria-pressed="true"] {
     background: var(--selected-bg);
     box-shadow: inset 0 0 0 1px var(--line-control);
+  }
+
+  /* 禁用（J10）：字用禁用色，悬停不填色，指针不是手 */
+  .xxd-glyphs > button:disabled,
+  .xxd-glyphs > button:disabled:hover {
+    background: transparent;
+    color: var(--disabled-ink);
+    cursor: not-allowed;
+  }
+
+  /* 格子之间没有缝：焦点环画在格子里面，不压到邻居 */
+  .xxd-glyphs > button:focus-visible {
+    outline-offset: -2px;
   }
 }

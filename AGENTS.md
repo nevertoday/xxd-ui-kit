@@ -30,6 +30,10 @@
    2026-10-30：`DIAGRAM-PLAN.md`（图解：只做步骤、时间线、流程、树、循环、分层 6 种，参考 diagram-design（MIT）的规则；
    节点是 HTML、线是伪元素的边框（不用 grid，Skyline 不认），读屏是列表，窄屏变竖排不横向滚动；一次性的工程图交给第二阶段的 AI 技能；D140–D149）。
    三批都做完：`Steps`、`Timeline`（小程序原来的 `Steps` 改成网页版的样子）；`Flowchart`、`Tree`、Kumo `Flow` 套令牌；`Cycle`、`Layers`。audit 加 `--only=diagram`（连线逐段量两头接没接上）；AI 技能待定。
+   2026-11-02：`DOCS-NAV-PLAN.md`（展示站学 Gestalt：顶栏 6 个栏目、左栏只列当前栏目；`/components` 总览（按分类 / 按字母 / 状态表）；组件页「也叫」、样式源码、
+   对和错、文案、相关组件为什么选它、演示「换亮暗」；顶栏和页面同一套列、居中的版面框；G1–G14）。registry 的 `use` / `avoid` 每个组件都要写，`dos` / `writing` / `related` 可选，中英条数一样（测试会查）。
+   2026-11-02：`COMPONENT-JURY-PLAN.md`（评审团逐个看组件；控件只有一把尺：`data-size` xs 24 · sm 32 · 缺省 40 · lg 48，按钮、输入框、搜索、下拉、输入组、
+   自定义下拉、标签输入、分段、chip 同一档一样高，令牌 `--control-h-xs/sm/(无)/lg`，新组件也照这把尺；audit 加 `--only=sizes`；J1 起）。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
@@ -44,4 +48,4 @@
 - 不手改生成文件（`theme-kumo.css`、`ai/*`、`src/primitives/*`、`xxd-react/src/kumo-exports.ts`、`xxd-icons/src/{names.d.ts,each.js,each.d.ts}`），改源配置再 codegen / 构建。
 - 展示站有中英两版：改 `packages/xxd-css/registry.json` / `patterns.json` 时同步改旁边的 `registry.en.js` / `patterns.en.js`；加展示站页面时 `src/pages/en/` 也加一个（正文写在 `src/views/`）。测试会检查。
 - 字体只用系统无衬线（不用宋体 / 衬线），不加载网络字体。
-- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1458 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏、`--only=chart` ECharts 图表、`--only=diagram` 图解）。
+- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1458 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏、`--only=chart` ECharts 图表、`--only=diagram` 图解、`--only=sizes` 控件同一档一样高）。

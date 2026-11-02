@@ -24,7 +24,13 @@ import { describe, expect, it } from "vitest";
 // 连线是边框、窄了换排法靠容器查询，都在 CSS 里，不加 JS
 // xxd.min.css 2026-10-30 再从 28 调到 30、xxd.shadow.css.js 从 29 调到 31：图解第二、三批（流程图、树、循环、分层），约 1.7 KB。
 // 每段线、每个箭头一条规则；树的大纲和循环的一步一行各要写两遍（属性 / :has 一份，容器查询里一份：容器查询改不了容器自己，也不能和属性写在一条里）
-const BUDGET_KB = { "xxd.min.css": 30, "xxd.js": 39, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 31 };
+// xxd.min.css 2026-11-02 从 30 调到 32：控件那把尺（COMPONENT-JURY-PLAN J1）——输入组、自定义下拉、标签输入、分段、chip 补齐 xs / sm / lg，
+//   评审团的修正（J3–J21：滑块的触屏和禁用、面包屑、侧栏、工具条、chip 和代码块的边、表格里不折行……）约 0.6 KB；浮层的修正（J29–J36：长对话框只滚正文、菜单限高、dock 上沿、命令面板、toast 叠放）约 0.3 KB。
+//   这些是每页都用的基础控件，拆不出去；本地量 30.85 时 CI 会到 31 以上
+// xxd.js 2026-11-02 从 39 调到 40、xxd.shadow.css.js 从 31 调到 32：评审团（COMPONENT-JURY-PLAN）——多选下拉的列表跟着整个框（J7）、
+//   一开始选中的 tab 滚进视野（J13）、按钮里 <span> 标签的全文提示（J28）、面包屑的全文提示，约 0.2 KB；Shadow 样式和 xxd.min.css 是同一份（J1 的尺、J3–J27）。
+//   本地量 38.95 / 30.96 时 CI 已经超（CI 比本地大 0.2 左右），留出余量
+const BUDGET_KB = { "xxd.min.css": 32, "xxd.js": 40, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 32 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

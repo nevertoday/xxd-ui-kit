@@ -27,7 +27,15 @@
         "标题用真正的 h1–h3（按页面层级，不跳级），不要用加粗的 p 冒充",
         "说明文字用 --muted（≥ 4.5:1），不要更浅"
       ],
-      "block": true
+      "block": true,
+      "use": [
+        "页面和卡片里的标题、正文、说明、等宽数字：选一档 data-variant，不自己写字号",
+        "标题配一句说明时用 .xxd-text-pair，两行靠得更近"
+      ],
+      "avoid": [
+        "长文章：用 Prose（阅读列宽、段落间距都配好了）",
+        "想用颜色分层级：换字号或字重，颜色留给意义（成功、出错）"
+      ]
     },
     {
       "name": "Interaction",
@@ -52,7 +60,15 @@
         "悬停才出现的按钮在键盘聚焦时也出现（:focus-within），触屏上一直显示",
         "整行可点时行里只放一个主链接，其余按钮单独可聚焦"
       ],
-      "block": true
+      "block": true,
+      "use": [
+        "列表、表格一行里不常用的操作：悬停才出现（.xxd-reveal），触屏上常显",
+        "整行可点、按下有反馈的自定义控件"
+      ],
+      "avoid": [
+        "主要操作：一直摆出来，不要藏到悬停里",
+        "一行只有一个按钮：直接放按钮"
+      ]
     },
     {
       "name": "Button",
@@ -64,7 +80,7 @@
       ],
       "attributes": {
         "data-variant": "primary（一屏一个主操作）| secondary（缺省，大多数按钮）| ghost（工具条、低优先级）| outline（彩色或图片底上）| danger（删除这类不可逆）| danger-outline（危险但不是这一屏的主操作）",
-        "data-size": "xs | sm | md | lg",
+        "data-size": "xs | sm | md | lg：24 / 32 / 40 / 48，和同一档的输入框、下拉、分段一样高（紧凑 20 / 26 / 32 / 40，触屏 sm、md 都是 44）",
         "data-icon-only": "纯图标（必须有 aria-label）",
         "aria-pressed": "切换态",
         "aria-busy": "进行中：宽度不跳，转圈居中；Xxd.runBusy(btn, task) 完成后图标变勾",
@@ -130,6 +146,40 @@
       "avoid": [
         "只是去另一个页面：用链接（Link）",
         "outline 只用在彩色或图片底上；纸色底上它和 secondary 一样，直接用 secondary"
+      ],
+      "dos": [
+        {
+          "do": "一处只有一个实心按钮，其余用缺省的次要按钮",
+          "dont": "两个实心按钮并排，看不出哪个是主要的",
+          "doMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\">保存草稿</button><button class=\"xxd-btn\" data-variant=\"primary\">发布</button></div>",
+          "dontMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\" data-variant=\"primary\">保存草稿</button><button class=\"xxd-btn\" data-variant=\"primary\">发布</button></div>"
+        },
+        {
+          "do": "按钮写这一下会做什么，危险的把对象写出来",
+          "dont": "写「确定」，要回头读上文才知道会发生什么",
+          "doMarkup": "<button class=\"xxd-btn\" data-variant=\"danger\">删除 3 篇草稿</button>",
+          "dontMarkup": "<button class=\"xxd-btn\" data-variant=\"danger\">确定</button>"
+        }
+      ],
+      "writing": [
+        "动词开头，说这一下做什么：「发布」「写入为新文章」",
+        "两到六个字；不用「请」「点击」",
+        "危险的操作把对象写出来：「删除 3 篇草稿」",
+        "不加句号、感叹号"
+      ],
+      "related": [
+        {
+          "name": "Link",
+          "why": "去另一个页面，或句子里的次要操作"
+        },
+        {
+          "name": "ButtonGroup",
+          "why": "同一件事的几种做法拼成一条"
+        },
+        {
+          "name": "Menu",
+          "why": "一个按钮后面藏几个不常用的操作"
+        }
       ]
     },
     {
@@ -158,6 +208,24 @@
       "a11y": [
         "跳转用 <a href>，执行操作用 <button class=\"xxd-link\">——读屏据此告诉用户会发生什么",
         "下划线常在，不只靠颜色区分"
+      ],
+      "use": [
+        "句子里的次要操作：「改为新建一篇」「查看全部」",
+        "去另一个页面、打开外部网站（data-external 加箭头）"
+      ],
+      "avoid": [
+        "提交、保存这类要做一件事的：用 Button",
+        "一排并列的操作：用 ButtonGroup 或 ghost 按钮"
+      ],
+      "related": [
+        {
+          "name": "Button",
+          "why": "要做一件事：提交、保存、打开对话框"
+        },
+        {
+          "name": "Breadcrumbs",
+          "why": "回到层级里的上一级"
+        }
       ]
     },
     {
@@ -173,6 +241,24 @@
       "a11y": [
         "是一组互斥选项时改用分段控件（radiogroup），不要用按钮组",
         "需要时给外层 role=\"group\" 和 aria-label"
+      ],
+      "use": [
+        "同一件事的几种做法拼成一条：对齐方式、导出格式",
+        "主按钮带一个「更多」下拉（拆分按钮）"
+      ],
+      "avoid": [
+        "互斥地选一个值、选了要一直显示选中：用 Segmented",
+        "几个不相干的操作：分开放，中间留空"
+      ],
+      "related": [
+        {
+          "name": "Segmented",
+          "why": "选一个值，并且一直显示选中的是哪个"
+        },
+        {
+          "name": "Toolbar",
+          "why": "编辑器里的一组格式按钮"
+        }
       ]
     },
     {
@@ -231,7 +317,48 @@
           "markup": "<form class=\"xxd-stack\" data-xxd-validate style=\"width:100%;max-width:360px\" onsubmit=\"event.preventDefault(); Xxd.toast('账号已创建', { tone: 'success' })\">\n  <div class=\"xxd-field\">\n    <label class=\"xxd-label\" for=\"fv-name\">名字</label>\n    <input class=\"xxd-input\" id=\"fv-name\" required autocomplete=\"name\">\n  </div>\n  <div class=\"xxd-field\">\n    <label class=\"xxd-label\" for=\"fv-email\">邮箱</label>\n    <input class=\"xxd-input\" id=\"fv-email\" type=\"email\" required autocomplete=\"email\" aria-describedby=\"fv-email-help\">\n    <p class=\"xxd-help\" id=\"fv-email-help\">用来登录和找回密码</p>\n  </div>\n  <div class=\"xxd-field\">\n    <label class=\"xxd-label\" for=\"fv-pw\">密码</label>\n    <input class=\"xxd-input\" id=\"fv-pw\" type=\"password\" required minlength=\"8\" autocomplete=\"new-password\" aria-describedby=\"fv-pw-help\">\n    <p class=\"xxd-help\" id=\"fv-pw-help\">至少 8 位</p>\n  </div>\n  <div class=\"xxd-field\">\n    <label class=\"xxd-label\" for=\"fv-bio\" data-optional>简介</label>\n    <textarea class=\"xxd-textarea\" id=\"fv-bio\" data-max=\"60\"></textarea>\n    <p class=\"xxd-help\" data-counter>0 / 60</p>\n  </div>\n  <div class=\"xxd-field\"><label class=\"xxd-choice\"><input type=\"checkbox\" class=\"xxd-check\" required>我已阅读并同意服务条款</label></div>\n  <div><button class=\"xxd-btn\" data-variant=\"primary\">创建账号</button></div>\n</form>"
         }
       ],
-      "js": "Xxd.setFieldError(input, \"请输入有效的邮箱，比如 you@example.com\")  // 传 \"\" 清掉；服务器回来的错也用它\nXxd.validateForm(form)  // 不写 data-xxd-validate 也能直接校验，返回出错的控件"
+      "js": "Xxd.setFieldError(input, \"请输入有效的邮箱，比如 you@example.com\")  // 传 \"\" 清掉；服务器回来的错也用它\nXxd.validateForm(form)  // 不写 data-xxd-validate 也能直接校验，返回出错的控件",
+      "use": [
+        "表单的一行：标签在上、输入框、说明或错误在下",
+        "单行文字、邮箱、数字、多行（textarea，data-autosize 跟着内容长高）"
+      ],
+      "avoid": [
+        "从固定的几项里选：用 Select、Radio 或 Picker",
+        "前后缀、框里带按钮：用 InputGroup",
+        "密钥、令牌：用 SecretInput"
+      ],
+      "dos": [
+        {
+          "do": "标签一直在框外面，说明写在下面",
+          "dont": "只用占位文字当标签：一打字就看不到这一项填的是什么",
+          "doMarkup": "<div class=\"xxd-field\"><label class=\"xxd-label\" for=\"dd-title-do\">标题</label><input class=\"xxd-input\" id=\"dd-title-do\" aria-describedby=\"dd-title-do-help\"><p class=\"xxd-help\" id=\"dd-title-do-help\">最多 100 个字</p></div>",
+          "dontMarkup": "<div class=\"xxd-field\"><input class=\"xxd-input\" aria-label=\"标题\" placeholder=\"标题（最多 100 个字）\"></div>"
+        },
+        {
+          "do": "错误写在整个控件下面，说怎么改",
+          "dont": "错误写成「输入无效」，或者只把框变红"
+        }
+      ],
+      "writing": [
+        "标签是名词：「标题」「邮箱」，不写成问句",
+        "占位文字只是例子，不能代替标签和说明",
+        "说明写限制和格式：「最多 100 个字」",
+        "错误说怎么改：「邮箱少了 @」，不说「输入无效」"
+      ],
+      "related": [
+        {
+          "name": "InputGroup",
+          "why": "带前后缀，或框里有按钮"
+        },
+        {
+          "name": "SecretInput",
+          "why": "密钥、令牌，默认遮住"
+        },
+        {
+          "name": "Select",
+          "why": "从固定的几项里选一个"
+        }
+      ]
     },
     {
       "name": "Select",
@@ -267,6 +394,26 @@
       "avoid": [
         "选项要分组、带说明、带图标、多选：用 Picker",
         "要能输入搜索：用 Combobox"
+      ],
+      "dos": [
+        {
+          "do": "几个纯文字选项：原生下拉，键盘、读屏、手机都稳",
+          "dont": "两个选项也做成下拉：要点两下才看得到另一个，用单选或分段"
+        }
+      ],
+      "related": [
+        {
+          "name": "Picker",
+          "why": "要分组、说明、图标或多选"
+        },
+        {
+          "name": "Combobox",
+          "why": "选项多，要打字筛选"
+        },
+        {
+          "name": "Radio",
+          "why": "2–5 个选项，要同时看到"
+        }
       ]
     },
     {
@@ -284,7 +431,7 @@
       "attributes": {
         "data-multiple": "多选（勾选，列表不关）",
         "data-placeholder": "没选时显示的字",
-        "data-size": "sm",
+        "data-size": "xs | sm | lg：和同一档的按钮、输入框一样高",
         "aria-invalid": "出错",
         "data-disabled": "禁用"
       },
@@ -302,6 +449,16 @@
       "avoid": [
         "纯文字的几个选项：用 Select（原生）",
         "选项很多要搜：用 Combobox"
+      ],
+      "related": [
+        {
+          "name": "Select",
+          "why": "几个纯文字选项"
+        },
+        {
+          "name": "Combobox",
+          "why": "选项多，要打字筛选"
+        }
       ]
     },
     {
@@ -323,7 +480,25 @@
         "type=\"search\"，没有可见标签时写 aria-label",
         "清空按钮有 aria-label；Esc 有内容时清空、没内容时交给外层"
       ],
-      "react": "Search（@xxd/react）"
+      "react": "Search（@xxd/react）",
+      "use": [
+        "筛选眼前这一列：记录、插件、图标，边打字边出结果",
+        "页面里的主搜索框，⌘F 跳过来"
+      ],
+      "avoid": [
+        "搜命令、跳页面：用 CommandPalette",
+        "选一个值、打字只是为了缩小选项：用 Combobox"
+      ],
+      "related": [
+        {
+          "name": "CommandPalette",
+          "why": "搜命令、跳页面"
+        },
+        {
+          "name": "Combobox",
+          "why": "打字是为了选出一个值"
+        }
+      ]
     },
     {
       "name": "InputGroup",
@@ -336,7 +511,7 @@
       ],
       "summary": "前后缀、内嵌按钮。整组是一个框，聚焦时整组边框变深一次。",
       "attributes": {
-        "data-size": "sm",
+        "data-size": "xs | sm | lg：和同一档的按钮、输入框一样高",
         "aria-invalid": "出错"
       },
       "markup": "<div class=\"xxd-input-group\" style=\"width:100%;max-width:320px\">\n  <span class=\"xxd-input-group__addon\">https://</span>\n  <input aria-label=\"子域名\" value=\"today\">\n  <span class=\"xxd-input-group__suffix\">.xiaoxiaodong.ai</span>\n  <button class=\"xxd-btn\" data-variant=\"ghost\" data-size=\"sm\">检查</button>\n</div>",
@@ -347,6 +522,14 @@
       "a11y": [
         "前后缀是纯文字说明，输入框仍需要自己的 label 或 aria-label",
         "组里的按钮是独立的 Tab 停留点"
+      ],
+      "use": [
+        "输入框带单位、前缀（https://、¥）或框里的按钮（复制、生成）",
+        "整组要像一个框：聚焦时整组边框一起变深"
+      ],
+      "avoid": [
+        "只有一个输入框：用 Field",
+        "两个独立的字段并排：各用各的 Field，不要拼成一个框"
       ]
     },
     {
@@ -365,6 +548,24 @@
       ],
       "rules": [
         "默认遮住；显示后不要自动再遮住（用户自己决定）"
+      ],
+      "use": [
+        "API 密钥、访问令牌、Webhook 地址：默认遮住，用户自己点显示",
+        "设置页里粘贴一次、以后很少看的值"
+      ],
+      "avoid": [
+        "登录密码：用浏览器的密码框（type=\"password\"），让密码管理器能填",
+        "不需要保密的只读值：用 ClipboardText"
+      ],
+      "related": [
+        {
+          "name": "ClipboardText",
+          "why": "不用遮住的只读值"
+        },
+        {
+          "name": "Field",
+          "why": "普通的文字输入"
+        }
       ]
     },
     {
@@ -384,6 +585,29 @@
       "a11y": [
         "复制按钮有 aria-label；「已复制」通过 live region（role=status）读出",
         "被复制的值是可选中的文字，键盘用户也能自己复制"
+      ],
+      "use": [
+        "只读、要拿去别处用的值：安装命令、订阅地址、邀请链接",
+        "一行放得下的值，旁边一个复制按钮"
+      ],
+      "avoid": [
+        "句子里的一小段：用 InlineCopy",
+        "多行代码：用 Code（带复制按钮）",
+        "要遮住的密钥：用 SecretInput"
+      ],
+      "related": [
+        {
+          "name": "InlineCopy",
+          "why": "句子里的一小段"
+        },
+        {
+          "name": "Code",
+          "why": "多行代码"
+        },
+        {
+          "name": "SecretInput",
+          "why": "要遮住的密钥"
+        }
       ]
     },
     {
@@ -402,6 +626,24 @@
       "a11y": [
         "本身是 <button>，读屏会读出里面的文字；需要时用 data-copy-done 换成更具体的提示",
         "复制结果通过 live region 读出"
+      ],
+      "use": [
+        "句子里要复制的一小段：命令、ID",
+        "说明文字里顺手给出的值，不想另起一行"
+      ],
+      "avoid": [
+        "独占一行、比较长的值：用 ClipboardText",
+        "多行代码：用 Code"
+      ],
+      "related": [
+        {
+          "name": "ClipboardText",
+          "why": "独占一行的值"
+        },
+        {
+          "name": "Code",
+          "why": "多行代码"
+        }
       ]
     },
     {
@@ -439,6 +681,29 @@
       ],
       "avoid": [
         "要和别的字段一起提交的选项：用 Checkbox"
+      ],
+      "dos": [
+        {
+          "do": "开关一拨就生效",
+          "dont": "开关拨了还要点「保存」才算数：用复选框",
+          "doMarkup": "<label class=\"xxd-choice\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" checked>完成音效</label>",
+          "dontMarkup": "<div class=\"xxd-stack\"><label class=\"xxd-choice\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" checked>完成音效</label><button class=\"xxd-btn\" data-size=\"sm\">保存</button></div>"
+        }
+      ],
+      "writing": [
+        "标签写打开的是什么：「完成音效」，不写「开启完成音效」",
+        "不写成问句",
+        "旁边不再写「开 / 关」，开关自己就说了"
+      ],
+      "related": [
+        {
+          "name": "Checkbox",
+          "why": "要和表单一起提交"
+        },
+        {
+          "name": "Segmented",
+          "why": "两个以上的值"
+        }
       ]
     },
     {
@@ -474,6 +739,16 @@
       "avoid": [
         "马上生效的设置：用 Switch",
         "几个里只能选一个：用 Radio 或 Segmented"
+      ],
+      "related": [
+        {
+          "name": "Switch",
+          "why": "拨了马上生效"
+        },
+        {
+          "name": "Radio",
+          "why": "几个里只能选一个"
+        }
       ]
     },
     {
@@ -503,6 +778,29 @@
       "a11y": [
         "放在 <fieldset> + <legend> 里，读屏先读组名",
         "同一组同一个 name：↑ ↓ 切换并选中，Tab 只停一次"
+      ],
+      "use": [
+        "2–5 个互斥的选项，同时看到才好选：导出格式、通知方式",
+        "每个选项要带一句说明"
+      ],
+      "avoid": [
+        "选项多于 5 个：用 Select",
+        "马上生效、切换视图：用 Segmented",
+        "可以选几个：用 Checkbox"
+      ],
+      "related": [
+        {
+          "name": "Select",
+          "why": "选项多于 5 个"
+        },
+        {
+          "name": "Segmented",
+          "why": "马上切换，不用提交"
+        },
+        {
+          "name": "Checkbox",
+          "why": "可以选几个"
+        }
       ]
     },
     {
@@ -525,6 +823,24 @@
       "a11y": [
         "原生 range：← → 微调，Page Up / Down 大步，Home / End 到头",
         "当前值要另外用文字显示（aria-valuetext 或旁边的数字），不能只靠滑块位置"
+      ],
+      "use": [
+        "不需要精确的数：音量、透明度、字号预览，拖的时候能看到效果",
+        "一段区间：价格、时长（两个滑块）"
+      ],
+      "avoid": [
+        "要输入准确的数：用数字输入框（Field，type=\"number\"）",
+        "只有两三个档位：用 Segmented 或 Radio"
+      ],
+      "related": [
+        {
+          "name": "Field",
+          "why": "要输入准确的数"
+        },
+        {
+          "name": "Segmented",
+          "why": "只有两三个档位"
+        }
       ]
     },
     {
@@ -542,7 +858,24 @@
       "a11y": [
         "每个标签的删除按钮有 aria-label（data-remove-label 可改）",
         "输入框没有可见标签时写 aria-label；变化派发 xxd:change"
-      ]
+      ],
+      "use": [
+        "自由输入的几个短词：关键词、标签、收件人",
+        "值由用户自己定，不是从固定清单里选"
+      ],
+      "avoid": [
+        "从已有的清单里选几个：用 Combobox（data-multiple）",
+        "只有一个值：用 Field"
+      ],
+      "related": [
+        {
+          "name": "Combobox",
+          "why": "从已有的清单里选几个"
+        }
+      ],
+      "attributes": {
+        "data-size": "sm | lg：最小高度和同一档的输入框一样"
+      }
     },
     {
       "name": "Combobox",
@@ -567,7 +900,29 @@
         "输入框 role=combobox + aria-expanded，列表 role=listbox，高亮项用 aria-activedescendant",
         "↑ ↓ 移动，Enter 选择，Esc 收起"
       ],
-      "block": true
+      "block": true,
+      "use": [
+        "选项很多（几十上百个），要打字筛选：国家、字体、项目",
+        "多选成 chip，或者清单里没有时允许新建（data-creatable）"
+      ],
+      "avoid": [
+        "十个以内的纯文字选项：用 Select",
+        "搜索内容而不是选一个值：用 Search"
+      ],
+      "related": [
+        {
+          "name": "Select",
+          "why": "十个以内的纯文字选项"
+        },
+        {
+          "name": "TagInput",
+          "why": "自由输入几个词，不从清单里选"
+        },
+        {
+          "name": "Search",
+          "why": "搜内容，而不是选一个值"
+        }
+      ]
     },
     {
       "name": "Tabs",
@@ -600,6 +955,27 @@
       "avoid": [
         "切换一个值（视图方式、时间范围）：用 Segmented",
         "一步一步往下走：用分步，不要用标签页"
+      ],
+      "dos": [
+        {
+          "do": "切换同一个东西的几个面：写作 / 记录 / 设置",
+          "dont": "用标签页做一步一步的流程：用户可以跳过前面的步，用 Steps"
+        }
+      ],
+      "writing": [
+        "一两个词的名词：「写作」「记录」「设置」",
+        "几个标签的长度差不多",
+        "标签上除了数字不写状态；数字放在徽标里"
+      ],
+      "related": [
+        {
+          "name": "Segmented",
+          "why": "切换一个值，不是一整块内容"
+        },
+        {
+          "name": "Steps",
+          "why": "一步一步往下走"
+        }
       ]
     },
     {
@@ -626,7 +1002,20 @@
       "avoid": [
         "切换整块内容：用 Tabs",
         "选项很多：用 Select"
-      ]
+      ],
+      "related": [
+        {
+          "name": "Tabs",
+          "why": "切换整块内容"
+        },
+        {
+          "name": "Radio",
+          "why": "每个选项要带说明"
+        }
+      ],
+      "attributes": {
+        "data-size": "xs | sm | lg：托盘和同一档的按钮、输入框一样高（缺省 40）"
+      }
     },
     {
       "name": "Breadcrumbs",
@@ -650,6 +1039,25 @@
       ],
       "rules": [
         "不换行：放不下时前面的项先缩成省略号，当前页最后才缩"
+      ],
+      "use": [
+        "两层以上的层级：告诉用户在哪、一步回到上层（资源 → 分类 → 详情）",
+        "层级很深时中间几级折进「…」（data-collapse）"
+      ],
+      "avoid": [
+        "只有一层：页面标题就够了",
+        "步骤的进度：用 Steps",
+        "插件侧边栏这种窄面板：用返回按钮"
+      ],
+      "related": [
+        {
+          "name": "Steps",
+          "why": "步骤的进度"
+        },
+        {
+          "name": "PageHeader",
+          "why": "面包屑通常放在页面头里"
+        }
       ]
     },
     {
@@ -679,6 +1087,15 @@
       ],
       "rules": [
         "页码不折行；分页栏窄于 420px（或手机上）只留「‹ 3 / 12 ›」"
+      ],
+      "use": [
+        "很多条记录分页看：会员站的资源列表、后台表格",
+        "用户要知道一共几页、能跳到某一页"
+      ],
+      "avoid": [
+        "一页放得下：不要分页",
+        "一直往下刷的信息流：滚到底再加载",
+        "窄的侧边栏：加 data-simple，只留「‹ 3 / 12 ›」"
       ]
     },
     {
@@ -699,6 +1116,24 @@
       "a11y": [
         "<nav aria-label>；当前项 aria-current=\"page\"",
         "只有图标时每项都要有 aria-label 和 tooltip"
+      ],
+      "use": [
+        "插件侧边栏左边的一条图标导航：3–6 个主要去处",
+        "窄面板里要一直看得到的顶层切换"
+      ],
+      "avoid": [
+        "宽的网页后台、要分组和子菜单：用 Sidebar",
+        "只有两三个去处：用 Tabs"
+      ],
+      "related": [
+        {
+          "name": "Sidebar",
+          "why": "宽的页面，要分组和子菜单"
+        },
+        {
+          "name": "Tabs",
+          "why": "只有两三个去处"
+        }
       ]
     },
     {
@@ -735,6 +1170,24 @@
       "rules": [
         "折叠切换即时，标签淡出、图标不动（只动 opacity）",
         "激活改颜色和底色，不改线宽、不加粗"
+      ],
+      "use": [
+        "网页后台、会员站：分组、子菜单、徽标，能折叠成图标栏",
+        "页面多、要一直看得到整个结构"
+      ],
+      "avoid": [
+        "插件侧边栏这种窄面板：用 Rail",
+        "只有几个页面：用 Topbar 加 Tabs"
+      ],
+      "related": [
+        {
+          "name": "Rail",
+          "why": "窄的插件侧边栏"
+        },
+        {
+          "name": "TableOfContents",
+          "why": "一页里的各节"
+        }
       ]
     },
     {
@@ -754,7 +1207,25 @@
         "只有图标的按钮都要有 aria-label",
         "整页只有一个顶栏时可以用 <header>（banner）"
       ],
-      "block": true
+      "block": true,
+      "use": [
+        "页面或面板最上面一条：标题加两三个图标按钮（设置、帮助）",
+        "插件 popup、侧边栏的顶部"
+      ],
+      "avoid": [
+        "有面包屑、说明、多个操作的资源页：用 PageHeader",
+        "放主导航：用 Sidebar 或 Rail"
+      ],
+      "related": [
+        {
+          "name": "PageHeader",
+          "why": "有面包屑、说明、多个操作的页面"
+        },
+        {
+          "name": "Dock",
+          "why": "侧边栏底部的状态和主按钮"
+        }
+      ]
     },
     {
       "name": "Toolbar",
@@ -777,6 +1248,14 @@
       "react": "Toolbar",
       "a11y": [
         "← → Home End 在项之间移动；Tab 进出整个工具条只停一次"
+      ],
+      "use": [
+        "一组相关的小按钮：编辑器里的加粗、链接、对齐，← → 在里面移动",
+        "这些按钮都作用在同一块内容上"
+      ],
+      "avoid": [
+        "页面的主操作：用普通按钮，放在显眼的地方",
+        "只有一两个按钮：直接放按钮，不用包成工具条"
       ]
     },
     {
@@ -797,6 +1276,24 @@
       "a11y": [
         "标题是页面的 h1；面包屑和 tab 各自带语义（nav / tablist）",
         "操作按钮按重要性从左到右，主操作在最后"
+      ],
+      "use": [
+        "资源页、设置页的顶部：面包屑、标题、一句说明、右边的操作、下面的标签页",
+        "一页只有一个"
+      ],
+      "avoid": [
+        "插件 popup 的顶部：用 Topbar",
+        "页面中间的小节标题：用 Text 的 heading2 / heading3"
+      ],
+      "related": [
+        {
+          "name": "Topbar",
+          "why": "插件 popup、侧边栏的顶部"
+        },
+        {
+          "name": "Breadcrumbs",
+          "why": "放在页面头最上面"
+        }
       ]
     },
     {
@@ -828,7 +1325,25 @@
         "说明文字可以用 aria-describedby 连到控件"
       ],
       "block": true,
-      "react": "SettingsGroup + SettingsRow（@xxd/react）"
+      "react": "SettingsGroup + SettingsRow（@xxd/react）",
+      "use": [
+        "设置页：相关的设置放一组，每行标题、说明、右边一个控件",
+        "整行点进下一层时用 a.xxd-row（自动带箭头）"
+      ],
+      "avoid": [
+        "要一起提交的长表单：用 Field 一列排下来",
+        "主题、圆角、主色这一组：直接用 Appearance"
+      ],
+      "related": [
+        {
+          "name": "Appearance",
+          "why": "主题、圆角、主色这一组现成的"
+        },
+        {
+          "name": "List",
+          "why": "一列同类的东西，不是设置"
+        }
+      ]
     },
     {
       "name": "Appearance",
@@ -851,7 +1366,15 @@
         "文字跟 <html lang> 或 locale 参数走三语"
       ],
       "block": true,
-      "react": "AppearanceSettings（@xxd/react）"
+      "react": "AppearanceSettings（@xxd/react）",
+      "use": [
+        "每个插件、会员站的「外观」设置：主题、圆角、主色、密度一次给齐",
+        "一行挂上：Xxd.mountAppearance(container)"
+      ],
+      "avoid": [
+        "自己再写一套主题开关：用户换一个产品就要重新学一遍",
+        "只想跟随系统亮暗：不用放设置，boot.js 缺省就跟随"
+      ]
     },
     {
       "name": "List",
@@ -887,6 +1410,20 @@
       "avoid": [
         "要按列对比、排序：用 Table",
         "一组设置：用 SettingsGroup"
+      ],
+      "related": [
+        {
+          "name": "Table",
+          "why": "要按列对比、排序"
+        },
+        {
+          "name": "SettingsGroup",
+          "why": "一组设置"
+        },
+        {
+          "name": "Card",
+          "why": "有图、整张能点"
+        }
       ]
     },
     {
@@ -905,7 +1442,15 @@
         "每个按钮的 aria-label 写符号的名字（「带圈数字一」），不要只放字符",
         "当前选中的符号写 aria-pressed=\"true\""
       ],
-      "block": true
+      "block": true,
+      "use": [
+        "从一小组符号里挑一个：编号样式、分隔符、表情",
+        "符号本身就是选项，看到就知道是什么"
+      ],
+      "avoid": [
+        "要文字说明才看得懂的选项：用 Radio 或 Picker",
+        "几百个图标里找：用搜索加网格（像图标页那样）"
+      ]
     },
     {
       "name": "Dialog",
@@ -946,6 +1491,42 @@
         "只是告诉一声：用 Toast",
         "长表单、要来回看的内容：用 Panel 或新页面",
         "插件侧边栏里的大多数浮层：用 Sheet"
+      ],
+      "dos": [
+        {
+          "do": "取消在前，主操作在最后、最右",
+          "dont": "主操作在前，用户按习惯去点右边，点到的是取消",
+          "doMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\">取消</button><button class=\"xxd-btn\" data-variant=\"danger\">删除</button></div>",
+          "dontMarkup": "<div class=\"xxd-cluster\"><button class=\"xxd-btn\" data-variant=\"danger\">删除</button><button class=\"xxd-btn\">取消</button></div>"
+        },
+        {
+          "do": "标题直接问：「删除这 3 篇草稿？」，正文写后果",
+          "dont": "标题写「提示」「警告」，真正的问题藏在正文里"
+        }
+      ],
+      "writing": [
+        "标题是一个问题或一件事：「删除这 3 篇草稿？」",
+        "正文一两句，写后果，不重复标题",
+        "主按钮用标题里的动词：问「删除？」就写「删除」，不写「确定」",
+        "取消就写「取消」"
+      ],
+      "related": [
+        {
+          "name": "Sheet",
+          "why": "插件侧边栏里的二级内容"
+        },
+        {
+          "name": "Panel",
+          "why": "看详情、改几个字段，主内容还在旁边"
+        },
+        {
+          "name": "Toast",
+          "why": "只是告诉一声"
+        },
+        {
+          "name": "Popover",
+          "why": "一段轻的说明"
+        }
       ]
     },
     {
@@ -970,7 +1551,15 @@
         "主按钮只有一个，写清楚做什么（「写入 X」）"
       ],
       "block": true,
-      "react": "Dock（@xxd/react）"
+      "react": "Dock（@xxd/react）",
+      "use": [
+        "插件侧边栏底部常驻的一条：左边状态、中间工具、右边这一屏的主按钮",
+        "内容可以滚动，主操作要一直够得着"
+      ],
+      "avoid": [
+        "放导航：用 Rail",
+        "宽的网页：主按钮放在表单末尾或 PageHeader 里"
+      ]
     },
     {
       "name": "Sheet",
@@ -1004,7 +1593,17 @@
         "要用户先回答的确认：用 Dialog",
         "桌面网页的详情：用 Panel"
       ],
-      "react": "Sheet + SheetHost（@xxd/react）"
+      "react": "Sheet + SheetHost（@xxd/react）",
+      "related": [
+        {
+          "name": "Dialog",
+          "why": "要用户先回答的确认"
+        },
+        {
+          "name": "Panel",
+          "why": "桌面网页上的详情"
+        }
+      ]
     },
     {
       "name": "Panel",
@@ -1039,7 +1638,17 @@
       ],
       "attributes": {
         ".xxd-panel-room": "放在面板旁边的内容上：面板打开时让出位置，不被盖住（窄屏上面板是底部抽屉，不让位）"
-      }
+      },
+      "related": [
+        {
+          "name": "Dialog",
+          "why": "要用户先回答的问题"
+        },
+        {
+          "name": "Sheet",
+          "why": "窄的插件侧边栏"
+        }
+      ]
     },
     {
       "name": "Menu",
@@ -1072,6 +1681,31 @@
       "avoid": [
         "选一个值：用 Select 或 Picker",
         "只有一两个操作：直接摆按钮"
+      ],
+      "dos": [
+        {
+          "do": "危险的项放最后，用分隔线隔开",
+          "dont": "删除夹在重命名和导出中间，手一滑就点到了"
+        },
+        {
+          "do": "只有一两个操作：直接摆按钮",
+          "dont": "唯一的操作也藏进「更多」菜单，要多点一下才找得到"
+        }
+      ],
+      "writing": [
+        "每项动词开头：「重命名」「导出为」",
+        "点了会再问一次的项（打开对话框）末尾加「…」",
+        "同一个菜单里用同一种说法"
+      ],
+      "related": [
+        {
+          "name": "Select",
+          "why": "选一个值"
+        },
+        {
+          "name": "CommandPalette",
+          "why": "用键盘搜全部命令"
+        }
       ]
     },
     {
@@ -1102,6 +1736,16 @@
       "avoid": [
         "鼠标放上去就该看到的一句话：用 Tooltip",
         "要用户先回答的：用 Dialog"
+      ],
+      "related": [
+        {
+          "name": "Tooltip",
+          "why": "悬停看一句话"
+        },
+        {
+          "name": "Dialog",
+          "why": "要用户先回答的"
+        }
       ]
     },
     {
@@ -1132,6 +1776,12 @@
       ],
       "avoid": [
         "重要的信息、要点的东西：触屏上没有悬停，放进界面或用 Popover"
+      ],
+      "related": [
+        {
+          "name": "Popover",
+          "why": "要点开看、里面能放链接"
+        }
       ]
     },
     {
@@ -1164,6 +1814,32 @@
       "avoid": [
         "必须读完、必须选的：用 Dialog",
         "一直要看到的状态：用 Banner 或状态行"
+      ],
+      "dos": [
+        {
+          "do": "一句话说结果，能撤销就给撤销",
+          "dont": "用轻提示说必须读完、必须选的事：几秒后它就消失了"
+        },
+        {
+          "do": "在面板里做的操作，轻提示出现在面板里（within）",
+          "dont": "总是弹在整页右下角，离刚才点的地方很远"
+        }
+      ],
+      "writing": [
+        "说结果：「已保存」「已复制」",
+        "一句话、十几个字以内；长了还没读完就消失了",
+        "出错时写怎么办，并带「重试」",
+        "不写「操作成功」这类空话"
+      ],
+      "related": [
+        {
+          "name": "Banner",
+          "why": "一直要看到的状态"
+        },
+        {
+          "name": "Dialog",
+          "why": "必须读完、必须选的"
+        }
       ]
     },
     {
@@ -1188,6 +1864,14 @@
       "a11y": [
         "输入框 role=combobox，列表 role=listbox，高亮项 aria-activedescendant",
         "↑ ↓ 移动，Enter 运行，Esc 关闭并把焦点还回去"
+      ],
+      "use": [
+        "命令和页面很多，熟手想用键盘直接跳：⌘K",
+        "可搜索、分组、带最近使用的命令列表"
+      ],
+      "avoid": [
+        "当成唯一的入口：新手不知道 ⌘K，常用操作还要摆在界面上",
+        "筛选一列内容：用 Search"
       ]
     },
     {
@@ -1215,6 +1899,29 @@
       "avoid": [
         "能点的筛选：用 Chip",
         "一句话的提示：用 Banner 或文字"
+      ],
+      "dos": [
+        {
+          "do": "一两个字的状态，颜色只给有意义的",
+          "dont": "每个徽标一种颜色，颜色没有意思，反而看不出哪个要紧",
+          "doMarkup": "<div class=\"xxd-cluster\"><span class=\"xxd-badge\">草稿</span><span class=\"xxd-badge\">草稿</span><span class=\"xxd-badge\" data-tone=\"warning\">待更新</span></div>",
+          "dontMarkup": "<div class=\"xxd-cluster\"><span class=\"xxd-badge\" data-tone=\"action\">草稿</span><span class=\"xxd-badge\" data-tone=\"success\">草稿</span><span class=\"xxd-badge\" data-tone=\"warning\">草稿</span></div>"
+        }
+      ],
+      "writing": [
+        "一两个字或一个数：「新」「Beta」「12」",
+        "状态用形容词或「已……」：「草稿」「已写入」",
+        "不写成句子"
+      ],
+      "related": [
+        {
+          "name": "Chip",
+          "why": "能点的筛选、能删的标签"
+        },
+        {
+          "name": "Dot",
+          "why": "旁边已经有字的状态"
+        }
       ]
     },
     {
@@ -1246,8 +1953,14 @@
       "react": "Chip（@xxd/react）",
       "attributes": {
         "aria-pressed": "选中",
-        "data-size": "sm：和小号输入框、按钮放在同一行时（32px，一样高）"
-      }
+        "data-size": "xs | sm | md | lg：放进控件行时写和旁边一样的一档，一样高；不写是 28 的标签"
+      },
+      "related": [
+        {
+          "name": "Badge",
+          "why": "只是显示状态，不能点"
+        }
+      ]
     },
     {
       "name": "Dot",
@@ -1264,6 +1977,20 @@
       "a11y": [
         "点只是装饰（aria-hidden 或旁边有文字）；状态必须同时写成文字",
         "不要只用颜色区分两种状态"
+      ],
+      "use": [
+        "一个状态，旁边已经有字：运行中、已停止、出错",
+        "列表、表格里要一眼扫出哪几行不正常"
+      ],
+      "avoid": [
+        "单独一个点、没有字：只靠颜色说不清，旁边写出状态",
+        "要强调的状态标签：用 Badge"
+      ],
+      "related": [
+        {
+          "name": "Badge",
+          "why": "要强调的状态标签"
+        }
       ]
     },
     {
@@ -1301,6 +2028,30 @@
       "avoid": [
         "一次操作的结果：用 Toast",
         "表单某一项的错误：写在那一项下面（Field）"
+      ],
+      "dos": [
+        {
+          "do": "写清楚怎么了、怎么办，带一个下一步",
+          "dont": "只写「出错了」，不说原因，也没有下一步",
+          "doMarkup": "<div class=\"xxd-banner\" data-tone=\"warning\"><i data-xxd-icon=\"TriangleAlert\"></i><div><p class=\"xxd-banner__title\">今天还能写入 1 篇</p><p class=\"xxd-banner__text\">明天 0 点恢复；会员不限。</p></div><div class=\"xxd-banner__actions\"><button class=\"xxd-btn\" data-size=\"sm\">开通会员</button></div></div>",
+          "dontMarkup": "<div class=\"xxd-banner\" data-tone=\"danger\"><i data-xxd-icon=\"CircleAlert\"></i><div><p class=\"xxd-banner__title\">出错了</p></div></div>"
+        }
+      ],
+      "writing": [
+        "标题说状态，正文说原因和怎么办",
+        "操作写下一步：「开通会员」「重新连接」",
+        "不用「注意」「提示」当标题",
+        "能关掉的提醒，关掉后别马上又出现"
+      ],
+      "related": [
+        {
+          "name": "Toast",
+          "why": "一次操作的结果"
+        },
+        {
+          "name": "Empty",
+          "why": "还没有内容的时候"
+        }
       ]
     },
     {
@@ -1336,6 +2087,30 @@
       "avoid": [
         "加载中：用 Progress 或 Loading",
         "出错：用 Banner 写清楚错在哪、怎么重试"
+      ],
+      "dos": [
+        {
+          "do": "说为什么空，给一个下一步",
+          "dont": "只有一个大插图和「暂无数据」",
+          "doMarkup": "<div class=\"xxd-empty\" data-size=\"sm\"><i data-xxd-icon=\"FileText\"></i><p class=\"xxd-empty__title\">还没有记录</p><p class=\"xxd-empty__text\">写入一篇文章后，会排在这里。</p><button class=\"xxd-btn\" data-size=\"sm\">写第一篇</button></div>",
+          "dontMarkup": "<div class=\"xxd-empty\" data-size=\"sm\"><i data-xxd-icon=\"Inbox\"></i><p class=\"xxd-empty__title\">暂无数据</p></div>"
+        }
+      ],
+      "writing": [
+        "标题说状态：「还没有记录」",
+        "说明写原因或做法，一句话",
+        "按钮说下一步：「导入第一篇」",
+        "搜索没有结果时写出搜了什么，再给一个放宽的办法"
+      ],
+      "related": [
+        {
+          "name": "Progress",
+          "why": "还在加载"
+        },
+        {
+          "name": "Banner",
+          "why": "出错了，要写清楚怎么重试"
+        }
       ]
     },
     {
@@ -1374,6 +2149,26 @@
         {
           "title": "计量条：目标、超限、分格",
           "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-5);width:100%;max-width:320px\">\n  <div class=\"xxd-meter\" style=\"--value:.72\" role=\"meter\" aria-label=\"空间\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"72\" aria-valuetext=\"72%，目标 80%\"><div class=\"xxd-meter__head\"><span>空间</span><span>72% · 目标 80%</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div><span class=\"xxd-meter__target\" style=\"--target:.8\"></span></div>\n  <div class=\"xxd-meter\" data-tone=\"danger\" style=\"--value:.94\" role=\"meter\" aria-label=\"本月额度\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"94\" aria-valuetext=\"94%，超限\"><div class=\"xxd-meter__head\"><span>本月额度</span><span>94% · 超限</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div></div>\n  <div class=\"xxd-meter\" data-segments style=\"--segments:5;--value:.6\" role=\"meter\" aria-label=\"设置进度\" aria-valuemin=\"0\" aria-valuemax=\"5\" aria-valuenow=\"3\" aria-valuetext=\"第 3 步，共 5 步\"><div class=\"xxd-meter__head\"><span>设置进度</span><span>3 / 5 步</span></div><div class=\"xxd-meter__track\"><div class=\"xxd-meter__fill\"></div></div></div>\n</div>"
+        }
+      ],
+      "use": [
+        "知道总量的进度：上传、导出、第 3 / 10 篇（<progress>）",
+        "不知道要多久的等待：加载条、转圈",
+        "一个数在范围里：额度用了多少（.xxd-meter）"
+      ],
+      "avoid": [
+        "一件事分几步：用 Steps",
+        "好坏打分、带区段的仪表：用 Gauge",
+        "不到 1 秒的等待：什么都不放，免得一闪"
+      ],
+      "related": [
+        {
+          "name": "Steps",
+          "why": "一件事分几步"
+        },
+        {
+          "name": "Gauge",
+          "why": "带好坏区段的数"
         }
       ]
     },
@@ -1414,6 +2209,26 @@
       "avoid": [
         "窄的插件侧边栏：用 List",
         "只有两三列、没有对比的需要：用 List"
+      ],
+      "dos": [
+        {
+          "do": "数字列右对齐，用等宽数字，好比大小",
+          "dont": "数字左对齐，位数一多就对不齐"
+        },
+        {
+          "do": "窄的插件侧边栏里用 List，一行一条",
+          "dont": "在 360px 宽的侧边栏里放五列的表格，只能横着滚"
+        }
+      ],
+      "related": [
+        {
+          "name": "List",
+          "why": "窄的侧边栏，或没有对比的需要"
+        },
+        {
+          "name": "Pagination",
+          "why": "很多行要分页"
+        }
       ]
     },
     {
@@ -1436,6 +2251,15 @@
       "a11y": [
         "<summary> 本身就是按钮：Enter / 空格展开，读屏读出展开状态",
         "不要把必须看到的信息藏在折叠里"
+      ],
+      "use": [
+        "常见问题、可选的高级设置：大多数人不用看",
+        "同一组里一次只开一个（同一个 name）"
+      ],
+      "avoid": [
+        "每个人都要看到的内容：直接摆出来",
+        "切换同一处的几块内容：用 Tabs",
+        "要回答才能继续的：用 Dialog"
       ]
     },
     {
@@ -1466,6 +2290,28 @@
       "a11y": [
         "能横向滚动的代码块可以用键盘聚焦（JS 自动补 tabindex=\"0\"），方向键滚动",
         "复制按钮有 aria-label；高亮颜色在亮暗两种外观下都 ≥ 4.5:1"
+      ],
+      "use": [
+        "多行代码、配置、命令：带行号、高亮、复制按钮",
+        "文档、帮助页、AI 的输出"
+      ],
+      "avoid": [
+        "句子里的一个名字或命令：用行内代码（<code>）",
+        "要复制的一行值：用 ClipboardText"
+      ],
+      "related": [
+        {
+          "name": "ClipboardText",
+          "why": "一行要复制的值"
+        },
+        {
+          "name": "InlineCopy",
+          "why": "句子里的一小段"
+        },
+        {
+          "name": "Prose",
+          "why": "文章里的代码块"
+        }
       ]
     },
     {
@@ -1483,7 +2329,15 @@
       ],
       "attributes": {
         "data-size": "sm（24）| 缺省 28 | lg（40）；要别的尺寸写 --avatar-size"
-      }
+      },
+      "use": [
+        "代表一个人：评论、成员列表、账号菜单的入口",
+        "没有照片时显示首字"
+      ],
+      "avoid": [
+        "代表一个产品或插件：用它自己的图标",
+        "只是装饰：不放"
+      ]
     },
     {
       "name": "Card",
@@ -1519,6 +2373,16 @@
       "avoid": [
         "没有图的一行字：用 List",
         "只是给一块内容加个框：用 LayerCard 或直接留白"
+      ],
+      "related": [
+        {
+          "name": "List",
+          "why": "没有图的一行字"
+        },
+        {
+          "name": "LayerCard",
+          "why": "只是给一块内容分出主次"
+        }
       ]
     },
     {
@@ -1539,6 +2403,20 @@
       "a11y": [
         "次要区里的操作按钮有文字或 aria-label",
         "层级靠底色和分隔线，读屏按 DOM 顺序读：主体在前"
+      ],
+      "use": [
+        "一块内容加一条次要信息：上面一行说明，或下面一排操作",
+        "设置页、详情页里的一个分区"
+      ],
+      "avoid": [
+        "有图、整张能点进去的：用 Card",
+        "卡片里再套卡片：一层就够，里面用留白和分隔线"
+      ],
+      "related": [
+        {
+          "name": "Card",
+          "why": "有图、整张能点进去"
+        }
       ]
     },
     {
@@ -1561,6 +2439,14 @@
       "a11y": [
         "布局只是 div，不带语义；页面的 main / nav / aside 由你自己的外层决定",
         "窄屏叠成一栏时 DOM 顺序就是阅读顺序"
+      ],
+      "use": [
+        "两栏、三栏的页面：主内容加侧边、并排的几张卡",
+        "放进侧边栏也会自己叠成一栏（看容器宽度）"
+      ],
+      "avoid": [
+        "一列从上往下的内容：用 .xxd-stack 就够",
+        "数据的行和列：用 Table"
       ]
     },
     {
@@ -1581,6 +2467,14 @@
       "a11y": [
         "外层 <nav aria-label=\"本文目录\">；当前节 aria-current=\"true\"",
         "链接指向标题的 id；标题本身用真正的 h2 / h3"
+      ],
+      "use": [
+        "长文、文档页：右边列出各节，滚到哪一节高亮哪一项",
+        "一页有四节以上"
+      ],
+      "avoid": [
+        "只有两三节：不用目录",
+        "网站的主导航：用 Sidebar"
       ]
     },
     {
@@ -1600,6 +2494,14 @@
       "a11y": [
         "方块标是装饰（aria-hidden），名字是文字",
         "放在链接里时，链接的名字就是产品名"
+      ],
+      "use": [
+        "小小东各插件、会员站的标志：顶栏、关于页、加载页",
+        "跟着主题，暗色时自己反过来"
+      ],
+      "avoid": [
+        "别的品牌：用它们自己的标志",
+        "当装饰图案铺满：一处只放一个"
       ]
     },
     {
@@ -1620,7 +2522,25 @@
         "用真正的 h2 / h3、ul / ol、blockquote，读屏才能按结构跳",
         "链接有下划线；列表符号用主色只是装饰"
       ],
-      "react": "Prose（@xxd/react）"
+      "react": "Prose（@xxd/react）",
+      "use": [
+        "文章、帮助文档、更新说明、AI 生成的长回答：标题、段落、列表、引用都排好了",
+        "Markdown 渲染出来的内容"
+      ],
+      "avoid": [
+        "界面里的短文字（标签、说明、按钮）：用 Text",
+        "表单、设置：用各自的组件"
+      ],
+      "related": [
+        {
+          "name": "Text",
+          "why": "界面里的短文字"
+        },
+        {
+          "name": "TableOfContents",
+          "why": "长文的目录"
+        }
+      ]
     },
     {
       "name": "Stat",
@@ -1640,7 +2560,30 @@
       "a11y": [
         "迷你折线是 aria-hidden 的装饰；变化要写成文字（↑ 12.4% 比上周），不能只靠颜色。"
       ],
-      "js": "el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // 或者 data-spark=\"3,5,4,8\" 再 Xxd.init()\n// 迷你柱（每天一个数）：Xxd.sparkline(values, { type: \"bar\" }) 或 data-spark-type=\"bar\""
+      "js": "el.innerHTML = Xxd.sparkline([3, 5, 4, 8])  // 或者 data-spark=\"3,5,4,8\" 再 Xxd.init()\n// 迷你柱（每天一个数）：Xxd.sparkline(values, { type: \"bar\" }) 或 data-spark-type=\"bar\"",
+      "use": [
+        "一个要一眼看到的数：本月写入、用户数、收入，带和上期比的变化",
+        "后台首页、报表顶部的一排"
+      ],
+      "avoid": [
+        "看趋势的细节：用 Chart",
+        "数在范围里的位置（额度）：用 Gauge 或计量条",
+        "几个数比大小：用 Bars"
+      ],
+      "related": [
+        {
+          "name": "Chart",
+          "why": "看趋势的细节"
+        },
+        {
+          "name": "Gauge",
+          "why": "数在范围里的位置"
+        },
+        {
+          "name": "Bars",
+          "why": "几个数比大小"
+        }
+      ]
     },
     {
       "name": "Chart",
@@ -1676,6 +2619,29 @@
         "柱状图的类目一个不藏，放不下在自己那一格里折行；横向条形从上往下是给的顺序；刻度数写全了超过 5 个字符就缩写（60亿），提示和读屏里是全数",
         "高对比模式下换成系统色，柱子和饼加花纹；没有进场动画（要动画写 animation: true，减少动效时仍然不放）",
         "图表旁边写一句结论或附数据表，读屏和不看图的人也拿得到信息"
+      ],
+      "use": [
+        "趋势、分布、几组数的关系：折线、柱状、散点",
+        "数据多，要坐标轴和读数"
+      ],
+      "avoid": [
+        "几个类目比大小、排名：用 Bars（不用 ECharts，更轻）",
+        "一个数在范围里：用 Gauge",
+        "一个整体分几份：用 Proportion 或 Waffle"
+      ],
+      "related": [
+        {
+          "name": "Bars",
+          "why": "少类目比大小、排名"
+        },
+        {
+          "name": "Gauge",
+          "why": "一个数在范围里"
+        },
+        {
+          "name": "Proportion",
+          "why": "一个整体分几份"
+        }
       ]
     },
     {
@@ -1778,6 +2744,29 @@
           "title": "从原点往两边长",
           "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <div class=\"xxd-gauges\">\n    <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-50\" data-max=\"50\" data-origin=\"0\" data-value=\"-12\" data-unit=\"%\" data-label=\"比预算\"></div>\n    <div class=\"xxd-gauge\" data-gauge data-shape=\"half\" data-min=\"-50\" data-max=\"50\" data-origin=\"0\" data-value=\"18\" data-unit=\"%\" data-label=\"比上月\"></div>\n  </div>\n</div>"
         }
+      ],
+      "use": [
+        "一个数在一个范围里的哪儿：配额用了多少、测试得分、完成度",
+        "有好坏区段：进了警告区段换颜色，还写出状态"
+      ],
+      "avoid": [
+        "看趋势：用折线（Chart）",
+        "几个数比大小：用 Bars，不要一排量表",
+        "简单的进度：用 Progress 的计量条"
+      ],
+      "related": [
+        {
+          "name": "Progress",
+          "why": "简单的进度条"
+        },
+        {
+          "name": "Stat",
+          "why": "一个数加上和上期比"
+        },
+        {
+          "name": "Bars",
+          "why": "几个数比大小"
+        }
       ]
     },
     {
@@ -1854,6 +2843,29 @@
           "title": "瀑布",
           "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <ol class=\"xxd-bars\" data-viz=\"bars\" data-variant=\"waterfall\" data-unit=\"万元\" data-total=\"毛收入,净收入\" data-items=\"毛收入:120;退款:-14;渠道分成:-22;补贴:6;净收入:90\"></ol>\n</div>"
         }
+      ],
+      "use": [
+        "少类目（≤ 12）比大小、排名：名字、条、数字一行一个",
+        "漏斗、增减分解、和去年比"
+      ],
+      "avoid": [
+        "随时间的变化：用折线（Chart）",
+        "一个整体分几份：用 Proportion",
+        "类目很多：用能排序的 Table"
+      ],
+      "related": [
+        {
+          "name": "Chart",
+          "why": "随时间的变化"
+        },
+        {
+          "name": "Proportion",
+          "why": "一个整体分几份"
+        },
+        {
+          "name": "Table",
+          "why": "类目很多"
+        }
       ]
     },
     {
@@ -1892,6 +2904,25 @@
           "title": "几根并排",
           "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:480px\">\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-legend=\"false\" data-label=\"华东\" data-unit=\"万元\" data-parts=\"会员:62;单篇:21;广告:9\"></div>\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-legend=\"false\" data-label=\"华南\" data-unit=\"万元\" data-parts=\"会员:41;单篇:30;广告:14\"></div>\n  <div class=\"xxd-proportion\" data-viz=\"proportion\" data-max=\"92\" data-label=\"华北\" data-unit=\"万元\" data-parts=\"会员:35;单篇:12;广告:18\"></div>\n</div>"
         }
+      ],
+      "use": [
+        "一个整体分成几部分（≤ 5 段）：存储空间、流量来源",
+        "几根并排比较构成（堆叠条）"
+      ],
+      "avoid": [
+        "超过 5 段：其余合并成「其他」，或者用 Bars",
+        "要数得清的占比：用 Waffle",
+        "不是同一个整体的几部分：用 Bars"
+      ],
+      "related": [
+        {
+          "name": "Waffle",
+          "why": "要数得清的占比"
+        },
+        {
+          "name": "Bars",
+          "why": "不是同一个整体的几部分"
+        }
       ]
     },
     {
@@ -1922,7 +2953,25 @@
       "a11y": [
         "role=group + aria-label 是整句；格子 aria-hidden，图例写出百分比"
       ],
-      "js": "Xxd.viz(el, \"waffle\", [{ label: \"朋友推荐\", value: 46 }, { label: \"搜索\", value: 27 }], { label: \"新会员从哪来\" })\n// React：<Waffle parts={[…]} label=\"新会员从哪来\" />"
+      "js": "Xxd.viz(el, \"waffle\", [{ label: \"朋友推荐\", value: 46 }, { label: \"搜索\", value: 27 }], { label: \"新会员从哪来\" })\n// React：<Waffle parts={[…]} label=\"新会员从哪来\" />",
+      "use": [
+        "几个百分比，想让人能数：100 个人里有 23 个",
+        "替代饼图（≤ 5 类）"
+      ],
+      "avoid": [
+        "不是百分比的数量：用 Bars",
+        "类目很多：用 Bars 或 Table"
+      ],
+      "related": [
+        {
+          "name": "Proportion",
+          "why": "一根横条看构成"
+        },
+        {
+          "name": "Bars",
+          "why": "不是百分比的数量"
+        }
+      ]
     },
     {
       "name": "Heatmap",
@@ -1970,6 +3019,24 @@
           "title": "矩阵",
           "markup": "<div class=\"xxd-stack\" style=\"--stack-gap:var(--space-6);width:100%;max-width:560px\">\n  <div class=\"xxd-heatmap\" data-viz=\"heatmap\" data-variant=\"matrix\" data-numbers data-label=\"哪个时段写得多\" data-rows=\"一,二,三,四,五,六,日\" data-cols=\"8,10,12,14,16,18,20,22\" data-values=\"2,6,4,5,7,3,9,4;1,5,6,4,6,4,8,5;2,7,5,6,8,3,10,6;1,6,4,5,7,4,9,5;3,8,6,7,9,5,6,2;0,1,2,3,2,4,5,3;0,1,1,2,3,5,7,4\"></div>\n</div>"
         }
+      ],
+      "use": [
+        "一年里哪几天活跃（日历）",
+        "两个维度的多少：星期 × 小时、渠道 × 月份（矩阵）"
+      ],
+      "avoid": [
+        "要读准确的数：用 Table 或 Bars",
+        "只有一个维度：用 Bars 或折线"
+      ],
+      "related": [
+        {
+          "name": "Table",
+          "why": "要读准确的数"
+        },
+        {
+          "name": "Bars",
+          "why": "只有一个维度"
+        }
       ]
     },
     {
@@ -2006,7 +3073,25 @@
         "是一个有序列表：每行写「名字 之前 → 之后 变化」，读屏照念；点和线 aria-hidden",
         "之前 / 之后不只靠颜色：一个空心、一个实心，上面有图例"
       ],
-      "js": "Xxd.viz(el, \"dumbbell\", [{ label: \"写第一篇\", from: 14, to: 6 }], { unit: \"分钟\", fromLabel: \"改版前\", toLabel: \"改版后\" })\n// React：<Dumbbell rows={[…]} unit=\"分钟\" fromLabel=\"改版前\" toLabel=\"改版后\" />"
+      "js": "Xxd.viz(el, \"dumbbell\", [{ label: \"写第一篇\", from: 14, to: 6 }], { unit: \"分钟\", fromLabel: \"改版前\", toLabel: \"改版后\" })\n// React：<Dumbbell rows={[…]} unit=\"分钟\" fromLabel=\"改版前\" toLabel=\"改版后\" />",
+      "use": [
+        "几个类目在两个时点之间的变化（≤ 8 行）：改版前后、去年和今年",
+        "看每一行变了多少、往哪个方向"
+      ],
+      "avoid": [
+        "多于两个时点：用折线（Chart）",
+        "只有一个时点、比大小：用 Bars"
+      ],
+      "related": [
+        {
+          "name": "Bars",
+          "why": "只有一个时点"
+        },
+        {
+          "name": "Chart",
+          "why": "多于两个时点"
+        }
+      ]
     },
     {
       "name": "Radar",
@@ -2049,7 +3134,21 @@
         "图是 role=img，aria-label 是一句话：每根轴的名字和数",
         "自己和对照不只靠颜色：一个实线实心、一个虚线空心，上面有图例"
       ],
-      "js": "Xxd.viz(el, \"radar\", [{ label: \"现实型\", value: 18, compare: 22 }, …], { max: 40, valueLabel: \"你\", compareLabel: \"平均\" })\n// React：<Radar axes={[…]} max={40} valueLabel=\"你\" compareLabel=\"平均\" />"
+      "js": "Xxd.viz(el, \"radar\", [{ label: \"现实型\", value: 18, compare: 22 }, …], { max: 40, valueLabel: \"你\", compareLabel: \"平均\" })\n// React：<Radar axes={[…]} max={40} valueLabel=\"你\" compareLabel=\"平均\" />",
+      "use": [
+        "轴的顺序本身有意义的轮廓：霍兰德六型、一圈的方向",
+        "自己和一个对照叠在一起比形状"
+      ],
+      "avoid": [
+        "几个互不相干的维度打分：用 Bars（换个轴的顺序，面积就变）",
+        "超过两组叠在一起：拆成几张"
+      ],
+      "related": [
+        {
+          "name": "Bars",
+          "why": "互不相干的几个维度"
+        }
+      ]
     },
     {
       "name": "Quadrant",
@@ -2088,7 +3187,22 @@
         "图是 role=img，aria-label 写出每个点的两个数和它在哪一格",
         "当前格不只靠底色：还有一圈主色线；重点的点实心、其余空心"
       ],
-      "js": "Xxd.viz(el, \"quadrant\", [{ label: \"你\", x: 4.6, y: 2.4, highlight: true }], { x: { label: \"依恋焦虑\", min: 1, max: 7, cut: 4 }, y: { label: \"依恋回避\", min: 1, max: 7, cut: 4 }, names: { \"low-low\": \"安全型\", … } })\n// React：<Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />"
+      "js": "Xxd.viz(el, \"quadrant\", [{ label: \"你\", x: 4.6, y: 2.4, highlight: true }], { x: { label: \"依恋焦虑\", min: 1, max: 7, cut: 4 }, y: { label: \"依恋回避\", min: 1, max: 7, cut: 4 }, names: { \"low-low\": \"安全型\", … } })\n// React：<Quadrant points={[…]} x={{…}} y={{…}} names={{…}} />",
+      "use": [
+        "两个维度各有一个有依据的切分点，落在哪一格有意义：焦虑 × 回避、重要 × 紧急",
+        "点不多（≤ 8 个）"
+      ],
+      "avoid": [
+        "没有切分点：用散点图（Chart）",
+        "点很多：用散点图",
+        "只有一个维度：用 Bars"
+      ],
+      "related": [
+        {
+          "name": "Chart",
+          "why": "没有切分点，或者点很多：散点图"
+        }
+      ]
     },
     {
       "name": "Steps",
@@ -2144,7 +3258,21 @@
         "只想表示做了多少：用计量条（Progress）",
         "先后发生的事件（带时间）：用时间线（Timeline）"
       ],
-      "block": true
+      "block": true,
+      "related": [
+        {
+          "name": "Timeline",
+          "why": "带时间的事件"
+        },
+        {
+          "name": "Progress",
+          "why": "只表示做了多少"
+        },
+        {
+          "name": "Flowchart",
+          "why": "中间有分支"
+        }
+      ]
     },
     {
       "name": "Timeline",
@@ -2192,7 +3320,17 @@
         "没有时间的步骤：用步骤（Steps）",
         "很多条、要搜索筛选的记录：用表格（Table）"
       ],
-      "block": true
+      "block": true,
+      "related": [
+        {
+          "name": "Steps",
+          "why": "没有时间的几步"
+        },
+        {
+          "name": "Table",
+          "why": "很多条、要搜索筛选"
+        }
+      ]
     },
     {
       "name": "Flowchart",
@@ -2241,7 +3379,17 @@
         "没有分支：用步骤（Steps）",
         "任意连线的网状图（依赖、架构）：不做成组件（DIAGRAM-PLAN 第二阶段）"
       ],
-      "block": true
+      "block": true,
+      "related": [
+        {
+          "name": "Steps",
+          "why": "没有分支"
+        },
+        {
+          "name": "Tree",
+          "why": "一个分成几个，没有先后"
+        }
+      ]
     },
     {
       "name": "Tree",
@@ -2286,7 +3434,17 @@
         "有先后的几步：用步骤（Steps）",
         "很多层、要展开收起、能选中的树：做成导航（Sidebar），不是图"
       ],
-      "block": true
+      "block": true,
+      "related": [
+        {
+          "name": "Sidebar",
+          "why": "很多层、要展开收起、能选中"
+        },
+        {
+          "name": "Steps",
+          "why": "有先后的几步"
+        }
+      ]
     },
     {
       "name": "Cycle",
@@ -2324,7 +3482,13 @@
         "走完就结束：用步骤（Steps）",
         "不分先后的几件事：用列表"
       ],
-      "block": true
+      "block": true,
+      "related": [
+        {
+          "name": "Steps",
+          "why": "走完就结束"
+        }
+      ]
     },
     {
       "name": "Layers",
@@ -2362,7 +3526,17 @@
         "有数量的漏斗：用条形榜（Bars）的漏斗",
         "有先后的几步：用步骤（Steps）"
       ],
-      "block": true
+      "block": true,
+      "related": [
+        {
+          "name": "Bars",
+          "why": "有数量的漏斗"
+        },
+        {
+          "name": "Steps",
+          "why": "有先后的几步"
+        }
+      ]
     }
   ]
 }

@@ -639,7 +639,9 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 // 两个组件只用 flex 和定位画（Skyline 不认 grid），线是伪元素的边框；网页版窄了换排法的容器查询小程序里本来就去掉了。
 // 2026-10-30 从 97 KB 调到 108 KB：图解第二、三批（DIAGRAM-PLAN）——流程图 4.6 KB、树 4.1 KB、循环 4.1 KB、分层 1.5 KB（没压缩）。
 // 线全是伪元素的边框，每段线、每个箭头都要一条规则；网页版窄了换排法的容器查询小程序里已经去掉。四个组件各自一个文件，用到哪个才打进哪个。
-export const SIZE_BUDGET = 108 * 1024;
+// 2026-11-02 从 108 KB 调到 110 KB：控件那把尺（COMPONENT-JURY-PLAN J1）——分段、chip、输入组、标签输入补齐 xs / sm / lg 的高度，
+// 令牌多了 --control-h-lg；评审团的修正（滑块禁用、chip 和代码块的边、对话框只滚正文、禁用的箭头和输入组）约 1.1 KB。
+export const SIZE_BUDGET = 110 * 1024;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tokensJson = join(tokensDir, "dist/tokens.json");

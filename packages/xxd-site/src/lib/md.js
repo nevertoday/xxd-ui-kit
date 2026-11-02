@@ -9,7 +9,7 @@ import { mdHref, stripLang, t } from "../i18n/index.js";
 const fence = (s, lang = "html") => "```" + lang + "\n" + s.trim() + "\n```";
 
 const W = {
-  zh: { category: "分类", examples: "示例", props: "属性与类名", classes: "类名", a11y: "键盘与读屏", rules: "规则", good: "好", bad: "不好", colon: "：", sep: "、",
+  zh: { category: "分类", use: "什么时候用", avoid: "什么时候别用", dos: "对和错", writing: "文案", related: "相关组件", examples: "示例", props: "属性与类名", classes: "类名", a11y: "键盘与读屏", rules: "规则", good: "好", bad: "不好", colon: "：", sep: "、",
     index: "# 小小东 UI Kit\n\n中文优先、不依赖框架的界面组件：一个 CSS 加一个 JS 就能用，专门照顾 Chrome 插件（MV3）；React 版基于 Cloudflare Kumo。上手见 /md/start.md，全站目录见 /llms.txt。",
     icons: (n) => `# 图标\n\n${n} 个，按分类列出，每个后面是中文关键词。用法：\`<i data-xxd-icon="Check"></i>\`、\`XxdIcons.iconSVG("Check", { size: 16 })\` 或 React \`<Icon name="Check" />\`。命令行查找：\`pnpm xxd icon 关键词\`。\n\n` +
       ICON_GROUPS.map((g) => `## ${g.zh}\n\n` + Object.entries(g.icons).map(([k, v]) => `- ${k} — ${v}`).join("\n")).join("\n\n"),
@@ -18,7 +18,7 @@ const W = {
     llmsTitle: "# 小小东 UI Kit",
     llmsLead: "> 中文优先、不依赖框架的界面组件，专门照顾 Chrome 插件（MV3）。黑白灰、默认直角、强调靠墨色；原生 HTML（@xxd/css）与 React（@xxd/react）两种实现。上手：/md/start.md；命令行：/md/tools.md。",
     pages: "## 页面", comps: "## 组件（原生类名）", registry: "注册表：/api/registry.json", alt: "English: /en/llms.txt" },
-  en: { category: "Category", examples: "Examples", props: "Attributes and classes", classes: "Classes", a11y: "Keyboard and screen readers", rules: "Rules", good: "Do", bad: "Don't", colon: ": ", sep: ", ",
+  en: { category: "Category", use: "When to use", avoid: "When not to", dos: "Do and don't", writing: "Writing", related: "Related components", examples: "Examples", props: "Attributes and classes", classes: "Classes", a11y: "Keyboard and screen readers", rules: "Rules", good: "Do", bad: "Don't", colon: ": ", sep: ", ",
     index: "# XXD UI Kit\n\nA Chinese-first, framework-free UI kit: one CSS file and one JS file, with first-class support for Chrome extensions (MV3); the React version is built on Cloudflare Kumo. Getting started: /en/md/start.md; site index: /en/llms.txt.",
     icons: (n) => `# Icons\n\n${n} icons by category. Usage: \`<i data-xxd-icon="Check"></i>\`, \`XxdIcons.iconSVG("Check", { size: 16 })\` or React \`<Icon name="Check" />\`. Find one from the CLI: \`pnpm xxd icon <keyword>\`.\n\n` +
       ICON_GROUPS.map((g) => `## ${g.en}\n\n` + Object.keys(g.icons).join(", ")).join("\n\n"),
@@ -35,6 +35,9 @@ function componentMd(c, lang) {
     "",
     `${w.category}${w.colon}${c.categoryLabel}${c.react ? ` · React${w.colon}${c.react}` : ""}`,
     c.summary ? `\n${c.summary}` : "",
+    ...(c.use?.length ? ["", `## ${w.use}`, ...c.use.map((r) => `- ${r}`)] : []),
+    ...(c.avoid?.length ? ["", `## ${w.avoid}`, ...c.avoid.map((r) => `- ${r}`)] : []),
+    ...(c.dos?.length ? ["", `## ${w.dos}`, ...c.dos.flatMap((d) => [`- ${w.good}${w.colon}${d.do}`, ...(d.doMarkup ? [fence(d.doMarkup)] : []), `- ${w.bad}${w.colon}${d.dont}`, ...(d.dontMarkup ? [fence(d.dontMarkup)] : [])])] : []),
     "",
     `## ${w.examples}`,
     fence(c.markup),
@@ -45,7 +48,9 @@ function componentMd(c, lang) {
     `- ${w.classes}${w.colon}${c.classes.map((x) => `\`${x}\``).join(" ")}`,
     ...(c.js ? ["", "## JS", fence(c.js, "js")] : []),
     ...(c.a11y ? ["", `## ${w.a11y}`, ...c.a11y.map((r) => `- ${r}`)] : []),
+    ...(c.writing?.length ? ["", `## ${w.writing}`, ...c.writing.map((r) => `- ${r}`)] : []),
     ...(c.rules?.length ? ["", `## ${w.rules}`, ...c.rules.map((r) => `- ${r}`)] : []),
+    ...(c.related?.length ? ["", `## ${w.related}`, ...c.related.map((r) => `- ${r.name}${w.colon}${r.why}`)] : []),
   ].join("\n");
 }
 

@@ -1,7 +1,8 @@
 ---
 interface Props {
-  doMarkup: string;
-  dontMarkup: string;
+  /** 没有演示时只有一句话（组件页的对错对照，DOCS-NAV-PLAN G10） */
+  doMarkup?: string;
+  dontMarkup?: string;
   doText: string;
   dontText: string;
 }
@@ -12,11 +13,11 @@ const L = t(langOf(Astro.url.pathname));
 
 <div class="site-dodont">
   <figure data-kind="do">
-    <div class="site-dodont__stage" set:html={doMarkup} />
+    {doMarkup && <div class="site-dodont__stage" set:html={doMarkup} />}
     <figcaption><b>{L.do}</b>{doText}</figcaption>
   </figure>
   <figure data-kind="dont">
-    <div class="site-dodont__stage" set:html={dontMarkup} />
+    {dontMarkup && <div class="site-dodont__stage" set:html={dontMarkup} />}
     <figcaption><b>{L.dont}</b>{dontText}</figcaption>
   </figure>
 </div>
