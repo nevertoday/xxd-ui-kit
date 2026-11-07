@@ -52,8 +52,8 @@ const STRINGS = {
     reloadAction: "Reload page",
   },
 };
-const s = (key, vars) => {
-  const text = (STRINGS[uiLocale()] ?? STRINGS.en)[key];
+const s = (key, vars, locale = uiLocale()) => {
+  const text = (STRINGS[locale] ?? STRINGS.en)[key];
   return vars ? text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? "")) : text;
 };
 const chromeApi = () => globalThis.chrome;
@@ -251,6 +251,8 @@ export const contextAlive = () => {
  */
 export function guardContext(root, { onDead } = {}) {
   let shown = false;
+  // 语言现在就定下来：插件失效以后 chrome.i18n 也问不到了（以前在这里再抛一次，横幅出不来）
+  const locale = uiLocale();
   const showBanner = () => {
     if (shown) return;
     shown = true;
@@ -263,14 +265,14 @@ export function guardContext(root, { onDead } = {}) {
     const body = doc.createElement("div");
     const text = doc.createElement("p");
     text.className = "xxd-banner__text";
-    text.textContent = s("reloadText");
+    text.textContent = s("reloadText", null, locale);
     body.append(text);
     const btn = doc.createElement("button");
     btn.className = "xxd-btn";
     btn.dataset.size = "sm";
     btn.dataset.variant = "primary";
     btn.type = "button";
-    btn.textContent = s("reloadAction");
+    btn.textContent = s("reloadAction", null, locale);
     btn.addEventListener("click", () => globalThis.location?.reload());
     const actions = doc.createElement("div");
     actions.className = "xxd-banner__actions";

@@ -36,7 +36,7 @@ xxd-ui sync --all                      # 全部更新
 xxd-ui doctor ./today                  # 体检，有错误时退出码是 1
 ```
 
-`doctor` 查：引用的文件在不在、manifest 和 `_locales` 对不对得上、**MV3 规则**（内联脚本、`on*=`、远程脚本、`eval`、商店字数、覆盖所有网站的权限、图标尺寸、内容脚本的依赖顺序）、**写死的中文**（有 `_locales` 时，`aria-label`、页面文字、JS 字符串里的中文）、图标名和类名拼写、写死的颜色 / 阴影 / 字重 / 圆角 / 动效 / 字体。某一行是有意的例外就在那一行写 `xxd-ignore`。
+`doctor` 查：引用的文件在不在、manifest 和 `_locales` 对不对得上（包括让 Chrome 整个装不上的两种：有 `_locales` 却没写 `default_locale`、某个语言目录里没有 `messages.json`）、**MV3 规则**（内联脚本、`on*=`、远程脚本、`eval`、商店字数、覆盖所有网站的权限、图标尺寸、内容脚本的依赖顺序）、**写死的中文**（有 `_locales` 时，`aria-label`、页面文字、JS 字符串里的中文）、图标名和类名拼写、写死的颜色 / 阴影 / 字重 / 圆角 / 动效 / 字体。某一行是有意的例外就在那一行写 `xxd-ignore`。
 
 `vendor/xxd/` 不要手改。打包插件时，只要打包工具按引用带上用到的文件就行，`vendor/xxd/LICENSE` 让许可检查通过。
 
@@ -102,7 +102,7 @@ xxd-ui doctor ./today                  # 体检，有错误时退出码是 1
 
 ## 外观设置
 
-真正的来源是 `chrome.storage.sync`，localStorage 镜像只为首帧不闪；侧边栏、设置页、popup 之间实时同步。
+真正的来源是 `chrome.storage.sync`，localStorage 镜像只为首帧不闪；侧边栏、设置页、popup 之间实时同步。只存用户自己选过的几项：`defaults` 是这个页面自己的缺省（侧边栏写 `{ density: "compact" }`），不会存进去，所以设置页还是标准密度；设置被删掉（比如导入后撤销）时回到这个页面的缺省。
 
 ```js
 const { createAppearanceStore, uiLocale } = window.XxdExtension;

@@ -45,7 +45,10 @@ export async function mountXxdUI(host, { cssHref, cssText = cssHref ? undefined 
   // 宿主页面的字号、行高不该影响我们。all:initial 放最前面，调用方写在 host 上的定位、z-index 等接在后面，不会被清掉。
   const own = host.getAttribute("style") || "";
   host.setAttribute("style", `all: initial; ${own}`);
-  if (!/(^|;)\s*display\s*:/.test(own)) host.style.setProperty("display", host.dataset.display || "contents");
+  // 宿主写了 * { font: 30px/3 serif !important } 这类规则时，普通的 all:initial 挡不住，host 自己的行盒被撑到 90px 高，
+  // 按钮被顶离右下角。行内的 !important 比宿主的 !important 优先：host 的字体和 display 这样写（Shadow 里面的字由 xxd.shadow.css 重置）。
+  host.style.setProperty("font", "initial", "important");
+  if (!/(^|;)\s*display\s*:/.test(own)) host.style.setProperty("display", host.dataset.display || "contents", "important");
   host.setAttribute("lang", locale);
   let current = settings;
   const update = (next) => {

@@ -75,5 +75,16 @@
         "content": "$1"
       }
     }
+  },
+  "searchEmpty": {
+    "message": "No settings match “$QUERY$”",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchEmptyHint": {
+    "message": "Try a shorter word, or clear the search."
   }
 }

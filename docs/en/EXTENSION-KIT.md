@@ -36,7 +36,7 @@ xxd-ui sync --all                      # update all of them
 xxd-ui doctor ./today                  # check it; exits with 1 on errors
 ```
 
-`doctor` checks: referenced files exist; the manifest and `_locales` agree; **MV3 rules** (inline scripts, `on*=`, remote scripts, `eval`, store length limits, permissions covering every site, icon sizes, content-script dependency order); **hard-coded Chinese** (with `_locales`: Chinese in `aria-label`, page text or JS strings); misspelt icon and class names; hard-coded colors / shadows / weights / radii / motion / fonts. A line that's meant to be different gets `xxd-ignore`.
+`doctor` checks: referenced files exist; the manifest and `_locales` agree (including the two cases where Chrome refuses to load the extension at all: a `_locales` folder without `default_locale`, and a language folder with no `messages.json`); **MV3 rules** (inline scripts, `on*=`, remote scripts, `eval`, store length limits, permissions covering every site, icon sizes, content-script dependency order); **hard-coded Chinese** (with `_locales`: Chinese in `aria-label`, page text or JS strings); misspelt icon and class names; hard-coded colors / shadows / weights / radii / motion / fonts. A line that's meant to be different gets `xxd-ignore`.
 
 Don't edit `vendor/xxd/` by hand. When you package the extension, a packer that follows references picks up the files in use, and `vendor/xxd/LICENSE` satisfies license checks.
 
@@ -102,7 +102,7 @@ Every `messages.json` has an `xxdLocale` entry (`en` / `zh-CN` / `zh-Hant`). Whi
 
 ## Appearance settings
 
-`chrome.storage.sync` is the source of truth; a localStorage mirror exists only so the first frame doesn't flash. The side panel, options page and popup stay in sync live.
+`chrome.storage.sync` is the source of truth; a localStorage mirror exists only so the first frame doesn't flash. The side panel, options page and popup stay in sync live. Only what the user actually chose is stored: `defaults` are this page's own defaults (the side panel passes `{ density: "compact" }`) and aren't saved, so the options page stays at standard density; when the settings are deleted (say, undoing an import) the page goes back to its own defaults.
 
 ```js
 const { createAppearanceStore, uiLocale } = window.XxdExtension;

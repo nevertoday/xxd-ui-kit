@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { createAppearanceStore } from "../src/settings.js";
 import { mountXxdUI } from "../src/shadow.js";
 import { applyI18n, t, uiLocale } from "../src/i18n.js";
+import { guardContext } from "../src/patterns.js";
 import { adoptTokens, applyBlocks, buildExtension, create, docComponent, listComponents, dropDeclarations, findFallbackConflicts, status, sync, upsertRegion } from "../scripts/cli.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -82,6 +83,31 @@ describe("createAppearanceStore", () => {
     expect(document.documentElement.getAttribute("data-corners")).toBeNull();
   });
 
+  it("页面自己的缺省（侧边栏紧凑）不存进共享设置：设置页不会跟着变紧凑", async () => {
+    const { data } = mockChrome();
+    const panel = createAppearanceStore({ key: "d-ui", defaults: { density: "compact" } });
+    await panel.load();
+    await panel.set({ theme: "dark" });
+    expect(data["d-ui"]).toEqual({ theme: "dark" });
+    expect(JSON.parse(localStorage.getItem("d-ui"))).toEqual({ theme: "dark" });
+    expect(panel.get().density).toBe("compact");
+    const options = createAppearanceStore({ key: "d-ui" });
+    await options.load();
+    expect(options.get()).toMatchObject({ theme: "dark", density: "comfortable" });
+  });
+
+  it("别的页面把设置删了（导入后撤销）：回到这个页面的缺省，镜像也清掉", async () => {
+    const { data, emit } = mockChrome();
+    data["d-ui"] = { theme: "dark" };
+    const store = createAppearanceStore({ key: "d-ui", defaults: { density: "compact" } });
+    await store.load();
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    emit({ "d-ui": { oldValue: { theme: "dark" }, newValue: undefined } });
+    expect(store.get()).toMatchObject({ theme: "light", density: "compact" });
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(localStorage.getItem("d-ui")).toBeNull();
+  });
+
   it("没有 chrome 时退回 localStorage", async () => {
     const store = createAppearanceStore({ key: "plain-ui" });
     await store.load();
@@ -129,6 +155,30 @@ describe("mountXxdUI", () => {
     ui.destroy();
     expect(calls.at(-1)).toBeNull();
     delete globalThis.Xxd;
+  });
+});
+
+describe("guardContext", () => {
+  it("插件失效后（chrome.i18n 也会抛错）照样放出「请刷新」横幅，不把错误抛给调用方", async () => {
+    let dead = false;
+    const invalid = () => {
+      throw new Error("Extension context invalidated.");
+    };
+    // 真浏览器里核对过：重新加载插件后 runtime.id 还在，chrome.storage / chrome.i18n 一调用就抛
+    globalThis.chrome = { runtime: { id: "abc" }, i18n: { getMessage: (k) => (dead ? invalid() : k === "xxdLocale" ? "en" : "") } };
+    const root = document.createElement("div");
+    document.body.append(root);
+    const safe = guardContext(root);
+    expect(await safe(() => 1)).toBe(1);
+    await expect(safe(() => Promise.reject(new Error("boom")))).rejects.toThrow("boom");
+    dead = true;
+    expect(await safe(invalid)).toBeUndefined();
+    const banner = root.querySelector(".xxd-banner");
+    expect(banner?.getAttribute("role")).toBe("alert");
+    expect(banner?.textContent).toMatch(/Reload page/);
+    expect(t("anything", undefined, { anything: "fallback" })).toBe("fallback");
+    expect(uiLocale()).toMatch(/^(en|zh-CN|zh-Hant)$/);
+    root.remove();
   });
 });
 
@@ -266,6 +316,11 @@ describe("老项目保护", () => {
       writeFileSync(join(base, "public/styles.css"), ":root{--bg:#fff}.a{color:var(--danger,#b91c1c)}.b{outline-color:var(--focus-ring, red)}.c{color:var(--bg)}");
       const found = findFallbackConflicts(base, ["--bg", "--danger", "--focus-ring", "--r-sm"]);
       expect(found.sort()).toEqual(["--danger", "--focus-ring"]);
+      // 我们自己写进项目的文件（组件目录不叫 vendor、tokensTargets）声明了全部令牌，不能算项目自己的声明
+      mkdirSync(join(base, "lib/xxd"), { recursive: true });
+      writeFileSync(join(base, "lib/xxd/xxd.css"), ":root{--danger:#b42318;--focus-ring:#000}");
+      writeFileSync(join(base, "theme.css"), ":root{--danger:#b42318;--focus-ring:#000}");
+      expect(findFallbackConflicts(base, ["--danger", "--focus-ring"], { skip: ["lib/xxd", "theme.css"] }).sort()).toEqual(["--danger", "--focus-ring"]);
       const css = ":root {\n  --danger: #b42318;\n  --danger-rgb: 1, 2, 3;\n  --r-sm: 0px;\n}";
       expect(dropDeclarations(css, found)).toBe(":root {\n  --danger-rgb: 1, 2, 3;\n  --r-sm: 0px;\n}");
     } finally {

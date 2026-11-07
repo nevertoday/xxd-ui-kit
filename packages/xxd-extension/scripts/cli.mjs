@@ -13,7 +13,7 @@ import { parseBlocks } from "../../xxd-tokens/scripts/build.mjs";
 import { COMMANDS, GROUPS } from "./commands.mjs";
 import { c, columns, copy, openUrl, suggest } from "./lib/term.mjs";
 import { forgetProject, isProject, listProjects, rememberProject } from "./lib/projects.mjs";
-import { catalog, findComponent, iconAs, iconName, listTokens, pageUrl, searchIcons } from "./lib/find.mjs";
+import { catalog, findComponent, iconAs, iconName, iconSuggestions, listTokens, pageUrl, searchIcons } from "./lib/find.mjs";
 import { RULES, doctor } from "./lib/doctor.mjs";
 import { createMini } from "./lib/mini.mjs";
 import { isEn, say, setLang } from "./lib/lang.mjs";
@@ -140,13 +140,16 @@ export function upsertRegion(text, body) {
  * 老项目里「用了但自己没声明」的变量（靠 var(--x, 后备值) 或干脆无效）：我们一声明，它们的样子就会变。
  * layered 令牌默认跳过这些名字，并打印出来，统一它们是另一件需要人决定的事。
  */
-export function findFallbackConflicts(dir, tokenNames) {
+export function findFallbackConflicts(dir, tokenNames, { skip = [] } = {}) {
   const declared = new Set();
   const used = new Set();
+  // 我们自己写进项目的文件（组件目录、tokensTargets、iconNodesTargets）不算项目的声明：它们本来就声明了全部令牌
+  const ours = new Set(skip.filter(Boolean).map((rel) => resolve(dir, rel)));
   const visit = (d) => {
     for (const name of readdirSync(d)) {
       if (/^(node_modules|\.git|dist|vendor)$/.test(name)) continue;
       const p = join(d, name);
+      if (ours.has(p)) continue;
       const st = statSync(p);
       if (st.isDirectory()) visit(p);
       else if (/\.(css|js|mjs|html)$/.test(name) && !/\.[a-f0-9]{10}\.(css|js)$/.test(name) && st.size < 4_000_000) {
@@ -218,7 +221,12 @@ export function adoptTokens(css, { tokensCss, parseBlocks, aliases = {}, darkSel
 
 function readConfig(dir) {
   const file = join(dir, "xxd.config.json");
-  return existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null;
+  if (!existsSync(file)) return null;
+  try {
+    return JSON.parse(readFileSync(file, "utf8"));
+  } catch (err) {
+    throw new Error(say(`${file} 不是合法的 JSON：${err.message}`, `${file} isn't valid JSON: ${err.message}`));
+  }
 }
 
 export function sync(target, { quiet = false } = {}) {
@@ -249,8 +257,11 @@ export function sync(target, { quiet = false } = {}) {
   }
   if (config.layeredTokensRegions?.length) {
     const names = Object.keys(JSON.parse(readFileSync(join(tokensDir, "dist/tokens.json"), "utf8")).base);
-    const skip = [...new Set([...findFallbackConflicts(dir, names), ...(config.layeredTokensExclude ?? [])])].sort((a, b) => a.localeCompare(b));
-    if (skip.length && !quiet) console.log(say(`  跳过 ${skip.length} 个令牌（项目里用了但没声明，声明了会改变现在的样子）：${skip.join(" ")}`, `  Skipped ${skip.length} tokens (the project uses them without declaring them; declaring them would change how it looks): ${skip.join(" ")}`));
+    const found = findFallbackConflicts(dir, names, { skip: [vendorRel, ...(config.tokensTargets ?? []), ...(config.iconNodesTargets ?? [])] });
+    const excluded = (config.layeredTokensExclude ?? []).filter((n) => !found.includes(n));
+    const skip = [...new Set([...found, ...excluded])].sort((a, b) => a.localeCompare(b));
+    if (found.length && !quiet) console.log(say(`  跳过 ${found.length} 个令牌（项目里用了但没声明，声明了会改变现在的样子）：${found.join(" ")}`, `  Skipped ${found.length} tokens (the project uses them without declaring them; declaring them would change how it looks): ${found.join(" ")}`));
+    if (excluded.length && !quiet) console.log(say(`  跳过 ${excluded.length} 个令牌（xxd.config.json 的 layeredTokensExclude）：${excluded.join(" ")}`, `  Skipped ${excluded.length} tokens (layeredTokensExclude in xxd.config.json): ${excluded.join(" ")}`));
     const layered = dropDeclarations(readFileSync(join(tokensDir, "dist/tokens.layered.css"), "utf8"), skip);
     for (const rel of config.layeredTokensRegions) {
       const out = join(dir, rel);
@@ -589,7 +600,11 @@ export function storeIcons(target, { glyph, bg, fg } = {}) {
   const dir = resolve(target);
   const manifestFile = join(dir, "manifest.json");
   if (!existsSync(manifestFile)) throw new Error(say(`${dir} 里没有 manifest.json`, `${dir} has no manifest.json`));
-  if (!glyph || !iconName(glyph)) throw new Error(say(`需要 --glyph 图标名（找图标：${BIN} icon 关键词）`, `--glyph IconName is required (find one: ${BIN} icon <keyword>)`));
+  if (!glyph || glyph === true) throw new Error(say(`需要 --glyph 图标名（找图标：${BIN} icon 关键词）`, `--glyph IconName is required (find one: ${BIN} icon <keyword>)`));
+  if (!iconName(glyph)) {
+    const near = iconSuggestions(String(glyph));
+    throw new Error(say(`没有叫 ${glyph} 的图标${near.length ? `，是不是 ${near.join(" / ")}？` : ""}（找图标：${BIN} icon 关键词）`, `There's no icon called ${glyph}${near.length ? ` — did you mean ${near.join(" / ")}?` : ""} (find one: ${BIN} icon <keyword>)`));
+  }
   const chrome = chromePath();
   if (!chrome) throw new Error(say("没找到 Chrome：设置 CHROME_EXE=<Chrome 可执行文件的路径>", "Chrome not found: set CHROME_EXE=<path to the Chrome binary>"));
   const tmp = mkdtempSync(join(tmpdir(), "xxd-icons-"));
@@ -673,7 +688,8 @@ function help(name) {
 }
 
 function unknown(name) {
-  const near = suggest(name, COMMANDS.map((x) => x.name));
+  // 别名也猜（chek → check）
+  const near = suggest(name, [...COMMANDS.map((x) => x.name), ...Object.keys(ALIASES).filter((a) => !a.startsWith("-"))]);
   return say(
     `没有 ${name} 这个命令${near.length ? `，是不是 ${near.map((n) => c.bold(n)).join(" / ")}？` : "。"}${BIN} help 看全部`,
     `There's no ${name} command${near.length ? ` — did you mean ${near.map((n) => c.bold(n)).join(" / ")}?` : "."} ${BIN} help lists everything`,
@@ -751,6 +767,8 @@ export const HANDLERS = {
     await buildAll({ quiet: true });
     const dir = await create(targets[0], args);
     rememberProject(dir);
+    // 插件的缺省语言是英文（default_locale en）：日、德、法等用户看到的是英文名，没给就是中文名
+    if (!args.nameEn && /[^ -~]/.test(String(args.name))) console.log(c.yellow(say(`没给 --name-en：英文界面（以及日、德、法等用户）看到的名字也是「${args.name}」。改 _locales/en/messages.json 的 appName`, `No --name-en: the English UI (and users in Japanese, German, French…) will see “${args.name}”. Change appName in _locales/en/messages.json`)));
     console.log(c.dim(say(`下一步：chrome://extensions →「加载已解压的扩展程序」→ 选 ${dir}；改完跑 ${BIN} doctor ${dir}`, `Next: chrome://extensions → Load unpacked → pick ${dir}; after changes run ${BIN} doctor ${dir}`)));
   },
   "new-mini": async ({ args, targets }) => {
@@ -913,12 +931,21 @@ export const HANDLERS = {
     const out = targets[0] || resolve(cwd, "packs");
     // 每个包的 prepack 会先构建（@xxd/react 要求 Kumo 已经构建过：pnpm --filter @cloudflare/kumo build）
     const files = pack(out);
-    console.log(say(`✓ 打好了 ${files.length} 个包 → ${out}\n  ${files.join("\n  ")}\n\n在你的项目里：npm install ${relative(cwd, out) || "."}/*.tgz`, `✓ Packed ${files.length} packages → ${out}\n  ${files.join("\n  ")}\n\nIn your project: npm install ${relative(cwd, out) || "."}/*.tgz`));
+    // 输出目录在当前目录下面时写相对路径，否则写绝对路径（以前会写出一长串 ../../../）
+    const rel = relative(cwd, out);
+    const where = !rel ? "." : rel.startsWith("..") ? out : rel;
+    console.log(say(`✓ 打好了 ${files.length} 个包 → ${out}\n  ${files.join("\n  ")}\n\n在你的项目里：npm install ${where}/*.tgz`, `✓ Packed ${files.length} packages → ${out}\n  ${files.join("\n  ")}\n\nIn your project: npm install ${where}/*.tgz`));
   },
-  add: async ({ cmd, rest, cwd }) => {
+  add: async ({ cmd, args, rest, cwd }) => {
     const kumoCli = join(repo, "packages/kumo/dist/command-line/cli.js");
     if (!existsSync(kumoCli)) throw new Error(say("先构建 React 组件库：pnpm --filter @cloudflare/kumo build", "Build the React library first: pnpm --filter @cloudflare/kumo build"));
-    execFileSync("node", [kumoCli, cmd, ...rest], { stdio: "inherit", cwd });
+    // 列出区块是 Kumo 的 blocks 命令（它的 add 没有 --list，没有 kumo.json 时还会报错）：add --list 和 blocks 都转给它
+    const list = cmd === "blocks" || args.list;
+    // Kumo 的 add 装进当前目录、不认 --cwd：在这里换目录，再把 --cwd 和它的值去掉
+    const dir = typeof args.cwd === "string" ? resolve(cwd, args.cwd.replace(/^~(?=\/|$)/, homedir())) : cwd;
+    if (!existsSync(dir)) throw new Error(say(`${dir} 不存在`, `${dir} doesn't exist`));
+    const pass = rest.filter((a, i) => !(list && a === "--list") && a !== "--cwd" && rest[i - 1] !== "--cwd" && !a.startsWith("--cwd="));
+    execFileSync("node", [kumoCli, list ? "blocks" : cmd, ...pass], { stdio: "inherit", cwd: dir });
   },
   build: async () => {
     await buildAll();

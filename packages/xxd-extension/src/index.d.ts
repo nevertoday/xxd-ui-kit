@@ -58,8 +58,21 @@ export declare function bindPermission(
   button: HTMLButtonElement,
   options?: { permissions?: string[]; origins?: string[]; status?: HTMLElement; onChange?: (granted: boolean) => void },
 ): Promise<void>;
-export declare function mountShortcuts(container: HTMLElement, options?: { names?: Record<string, string> }): Promise<HTMLElement>;
-export declare function exportSettings(options?: { keys?: string[] | null; area?: "sync" | "local"; filename?: string }): Promise<File>;
+/** manifest 里的 commands（chrome.commands.getAll 的结果） */
+export interface ExtensionCommand {
+  name?: string;
+  shortcut?: string;
+  description?: string;
+}
+export declare function mountShortcuts(container: HTMLElement, options?: { names?: Record<string, string> }): Promise<ExtensionCommand[]>;
+/** 导出的文件内容（同时下载成 JSON 文件） */
+export interface ExportedSettings {
+  format: "xxd-settings";
+  version: 1;
+  exportedAt: string;
+  data: Record<string, unknown>;
+}
+export declare function exportSettings(options?: { keys?: string[] | null; area?: "sync" | "local"; filename?: string }): Promise<ExportedSettings>;
 export declare function importSettings(file: Blob, options?: { keys?: string[] | null; area?: "sync" | "local" }): Promise<number>;
 export declare function showWhatsNew(
   container: HTMLElement,
@@ -67,6 +80,6 @@ export declare function showWhatsNew(
 ): Promise<HTMLElement | null>;
 export declare function contextAlive(): boolean;
 /** 包一层 chrome.* 调用：插件已失效时在 root 里放「请刷新」横幅，而不是抛错 */
-export declare function guardContext(root: ParentNode, options?: { onDead?: () => void }): <T>(fn: () => T | Promise<T>) => Promise<T | HTMLElement | undefined>;
+export declare function guardContext(root: ParentNode, options?: { onDead?: () => void }): <T>(fn: () => T | Promise<T>) => Promise<T | undefined>;
 /** 用哪份 @xxd/css：ESM 项目 useXxd(await import("@xxd/css"))；经典脚本自动用 window.Xxd */
 export declare function useXxd(xxd: unknown): void;

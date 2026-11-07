@@ -94,6 +94,14 @@ async function setupAccount() {
 }
 // /xxd:account
 
+// 搜不到时说搜了什么、怎么放宽（filterSettings 派发 xxd:filter）
+function bindSearchEmpty(container, empty, title) {
+  container.addEventListener("xxd:filter", (e) => {
+    empty.hidden = !e.detail.query || e.detail.hits > 0;
+    if (!empty.hidden) title.textContent = t("searchEmpty", [e.detail.query]);
+  });
+}
+
 async function main() {
   applyI18n(document);
   await store.load();
@@ -130,7 +138,8 @@ async function main() {
   });
   renderHistory();
 
-  // 设置：搜索
+  // 设置：搜索（搜不到时说一句）
+  bindSearchEmpty($("settings"), $("settings-empty"), $("settings-empty-title"));
   Xxd.bindSettingsSearch($("settings-search"), $("settings"));
   $("primary").addEventListener("click", () => Xxd.toast(t("doneToast"), { tone: "success" }));
 }

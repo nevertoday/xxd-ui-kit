@@ -75,5 +75,16 @@
         "content": "$1"
       }
     }
+  },
+  "searchEmpty": {
+    "message": "沒有和「$QUERY$」相關的設定",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchEmptyHint": {
+    "message": "換個短一點的詞，或者清除搜尋。"
   }
 }

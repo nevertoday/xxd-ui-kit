@@ -3,8 +3,17 @@
 //   <input data-i18n-attr="placeholder:searchPlaceholder,aria-label:searchLabel">
 import { xxd } from "./xxd.js";
 
+// 插件被更新 / 重新加载以后，内容脚本里的 chrome.i18n 一调用就抛「Extension context invalidated」：当作没有翻译
+const message = (key, substitutions) => {
+  try {
+    return globalThis.chrome?.i18n?.getMessage?.(key, substitutions) || "";
+  } catch {
+    return "";
+  }
+};
+
 export function t(key, substitutions, fallback = {}) {
-  const fromChrome = globalThis.chrome?.i18n?.getMessage?.(key, substitutions);
+  const fromChrome = message(key, substitutions);
   if (fromChrome) return fromChrome;
   const raw = fallback[key] ?? key;
   const subs = Array.isArray(substitutions) ? substitutions : substitutions == null ? [] : [substitutions];
@@ -43,11 +52,17 @@ const normalize = (lang) => {
  */
 export function uiLocale(lang) {
   if (lang) return normalize(lang);
-  const fromMessages = globalThis.chrome?.i18n?.getMessage?.("xxdLocale");
+  const fromMessages = message("xxdLocale");
   if (fromMessages) return normalize(fromMessages);
   // 不在插件里（普通网页、展示站）：跟页面的 <html lang>，再退回浏览器语言
   const pageLang = !globalThis.chrome?.i18n && globalThis.document?.documentElement?.lang;
-  return normalize(pageLang || globalThis.chrome?.i18n?.getUILanguage?.() || globalThis.navigator?.language || "zh-CN");
+  let chromeLang = "";
+  try {
+    chromeLang = globalThis.chrome?.i18n?.getUILanguage?.() || "";
+  } catch {
+    /* 插件已失效 */
+  }
+  return normalize(pageLang || chromeLang || globalThis.navigator?.language || "zh-CN");
 }
 
 /** 这个脚本是不是跑在别人的网页里（内容脚本）。 */

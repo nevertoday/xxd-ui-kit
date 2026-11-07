@@ -133,6 +133,20 @@ describe("体检：MV3、写死的文字、没接入", () => {
     expect(checkI18n(`// 注释\nconst a = "确认删除"; const url = "https://x.cn"; /* 块 */`).map((f) => f.message)).toEqual([expect.stringMatching(/确认删除/)]);
   });
 
+  it("Chrome 装不上的多语言目录（真浏览器里核对过）：空的语言目录、有 _locales 却没写 default_locale", () => {
+    const dir = join(base, "locale-ext");
+    mkdirSync(join(dir, "_locales/en"), { recursive: true });
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify({ manifest_version: 3, name: "X", version: "1.0" }));
+    let msgs = doctor(dir).findings.filter((f) => f.rule === "locale" && f.level === "error").map((f) => f.message).join("\n");
+    expect(msgs).toMatch(/_locales\/en\/ 里没有 messages\.json/);
+    expect(msgs).toMatch(/default_locale/);
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify({ manifest_version: 3, name: "X", version: "1.0", default_locale: "en" }));
+    writeFileSync(join(dir, "_locales/en/messages.json"), "{}");
+    mkdirSync(join(dir, "_locales/fr"));
+    msgs = doctor(dir).findings.filter((f) => f.rule === "locale").map((f) => f.message);
+    expect(msgs).toEqual([expect.stringMatching(/_locales\/fr\//)]);
+  });
+
   it("没接入的目录说清楚「先 init」，而不是没问题", () => {
     const dir = join(base, "empty");
     mkdirSync(dir, { recursive: true });

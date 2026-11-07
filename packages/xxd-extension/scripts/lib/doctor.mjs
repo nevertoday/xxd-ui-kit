@@ -267,9 +267,14 @@ function checkManifest(dir, { skipVendor = false, bin }) {
     if (real && (real[0] !== Number(size) || real[1] !== Number(size))) add("mv3", "warn", say(`icons.${size} 是 ${real[0]}×${real[1]} 的图 —— 应当是 ${size}×${size}`, `icons.${size} is ${real[0]}×${real[1]} — it should be ${size}×${size}`));
   }
   // 多语言
-  const locales = existsSync(join(dir, "_locales")) ? readdirSync(join(dir, "_locales")).filter((l) => existsSync(join(dir, "_locales", l, "messages.json"))) : [];
+  // Chrome 的规则（真浏览器里核对过）：有 _locales 目录就必须写 default_locale；_locales 下每个语言目录都要有 messages.json，
+  // 哪怕是空目录也会让整个插件装不上
+  const hasLocales = existsSync(join(dir, "_locales")) && statSync(join(dir, "_locales")).isDirectory();
+  const localeDirs = hasLocales ? readdirSync(join(dir, "_locales")).filter((l) => !l.startsWith(".") && statSync(join(dir, "_locales", l)).isDirectory()) : [];
+  const locales = localeDirs.filter((l) => existsSync(join(dir, "_locales", l, "messages.json")));
+  for (const l of localeDirs.filter((x) => !locales.includes(x))) add("locale", "error", say(`_locales/${l}/ 里没有 messages.json —— Chrome 会拒绝加载整个插件（不用这种语言就删掉这个目录）`, `_locales/${l}/ has no messages.json — Chrome refuses to load the whole extension (delete the folder if you don't use this language)`));
   if (m.default_locale && !locales.includes(m.default_locale)) add("locale", "error", say(`default_locale 是 ${m.default_locale}，但 _locales/${m.default_locale}/messages.json 不存在`, `default_locale is ${m.default_locale}, but _locales/${m.default_locale}/messages.json doesn't exist`));
-  if (!m.default_locale && locales.length) add("locale", "error", say("有 _locales 但 manifest 没写 default_locale —— Chrome 会拒绝加载", "There's a _locales folder but no default_locale in the manifest — Chrome will refuse to load it"));
+  if (!m.default_locale && hasLocales) add("locale", "error", say("有 _locales 但 manifest 没写 default_locale —— Chrome 会拒绝加载", "There's a _locales folder but no default_locale in the manifest — Chrome will refuse to load it"));
   const messages = {};
   for (const l of locales) {
     try {
