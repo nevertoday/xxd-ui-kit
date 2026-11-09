@@ -49,29 +49,55 @@ function renderHistory() {
 // 账号与会员（样板：登录、支付都是假的，换成你自己的接口）
 const ACCOUNT_KEY = "__SLUG__-account";
 const local = globalThis.chrome?.storage?.local;
+// 账号只有一个状态：signed-out（没登录）→ signed-in（登录了，试用中）→ member（会员），退出回到 signed-out。
+// 登录、开通、退出都只改它，界面全从它画出来；chrome.storage.local 是真正的来源，localStorage 镜像只给 account-boot.js 首帧用。
+// （以前「登录了没有」存着、「是不是会员」只写在界面上：退出再登录还是会员，刷新又变回试用，另一个窗口退出了这里还登录着）
+const ACCOUNT_STATES = ["signed-out", "signed-in", "member"];
+let account = "signed-out";
 
-async function setAccount(state) {
-  document.documentElement.dataset.account = state;
+function mirrorAccount() {
   try {
-    localStorage.setItem(ACCOUNT_KEY, state);
+    localStorage.setItem(ACCOUNT_KEY, account);
   } catch {}
-  await local?.set({ [ACCOUNT_KEY]: state });
 }
 
-function renderPlan(member) {
+function renderAccount() {
+  document.documentElement.dataset.account = account === "signed-out" ? "signed-out" : "signed-in";
+  const member = account === "member";
   const line = $("plan-line");
   const until = new Intl.DateTimeFormat(uiLocale(), { dateStyle: "long" }).format(Date.now() + 365 * 864e5);
   const text = member ? t("memberUntil", [until]) : t("trialLeft", ["7"]);
-  if (line.textContent) Xxd.rollText(line, text);
+  if (line.textContent && line.textContent !== text) Xxd.rollText(line, text);
   else line.textContent = text;
   line.dataset.tone = member ? "member" : "";
   $("avatar").toggleAttribute("data-member", member);
   $("upgrade").textContent = member ? t("manage") : t("upgrade");
+  if (account === "signed-out") $("purchase").hidden = true;
+}
+
+async function setAccount(next) {
+  if (!ACCOUNT_STATES.includes(next) || next === account) return;
+  account = next;
+  mirrorAccount();
+  renderAccount();
+  await local?.set({ [ACCOUNT_KEY]: next });
 }
 
 async function setupAccount() {
-  const saved = await local?.get(ACCOUNT_KEY);
-  if (saved?.[ACCOUNT_KEY]) await setAccount(saved[ACCOUNT_KEY]);
+  // 以存储为准：镜像说登录了、存储里没有（被清掉了）就是没登录
+  const saved = (await local?.get(ACCOUNT_KEY))?.[ACCOUNT_KEY];
+  account = ACCOUNT_STATES.includes(saved) ? saved : local ? "signed-out" : localStorage.getItem(ACCOUNT_KEY) || "signed-out";
+  if (!ACCOUNT_STATES.includes(account)) account = "signed-out";
+  mirrorAccount();
+  renderAccount();
+  // 别的窗口登录、退出、开通了：这里跟着变
+  globalThis.chrome?.storage?.onChanged?.addListener((changes, area) => {
+    if (area !== "local" || !(ACCOUNT_KEY in changes)) return;
+    const next = changes[ACCOUNT_KEY].newValue;
+    account = ACCOUNT_STATES.includes(next) ? next : "signed-out";
+    mirrorAccount();
+    renderAccount();
+  });
   // 样板：任何邮箱都能进
   $("signin-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -79,14 +105,14 @@ async function setupAccount() {
   });
   $("signin-google").addEventListener("click", () => setAccount("signed-in"));
   $("signout").addEventListener("xxd:confirm", () => setAccount("signed-out"));
-  renderPlan(false);
   $("upgrade").addEventListener("click", () => ($("purchase").hidden = !$("purchase").hidden));
   $("pay").addEventListener("click", () => Xxd.toast(t("payOpened")));
-  // 样板：「我已支付」直接开通
+  // 样板：「我已支付」直接开通。进行中再点，runBusy 返回同一个 promise：只有还在试用时才开通、庆祝一次
   $("paid").addEventListener("click", (e) =>
     Xxd.runBusy(e.currentTarget, () => new Promise((r) => setTimeout(r, 800))).then(() => {
+      if (account !== "signed-in") return; // 已经开通了（双击），或者等的时候退出了
       $("purchase").hidden = true;
-      renderPlan(true);
+      setAccount("member");
       Xxd.celebrate($("avatar"));
       Xxd.toast(t("memberDone"), { tone: "success" });
     }),

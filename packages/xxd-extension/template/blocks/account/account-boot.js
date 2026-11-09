@@ -2,7 +2,9 @@
 (function () {
   let state = "signed-out";
   try {
-    state = localStorage.getItem("__SLUG__-account") === "signed-in" ? "signed-in" : "signed-out";
+    // signed-in（试用中）和 member（会员）都是登录了
+    const saved = localStorage.getItem("__SLUG__-account");
+    state = saved === "signed-in" || saved === "member" ? "signed-in" : "signed-out";
   } catch {
     /* 存储被禁用：先当没登录 */
   }

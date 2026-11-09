@@ -131,6 +131,16 @@ test("输入框：打字时不把值写回原生输入框（不打断中文输�
   assert.equal(input().props.value, "一二三四五");
   const counter = v.byClass("is-counter")[0];
   assert.ok(cls(counter).includes("is-over"), "字数标红");
+  // 已经到上限再打一个字：截完和原来一样，原生输入框里多出来的那个字也要被写回去
+  await act(async () => input().props.onInput({ detail: { value: "一二三四五七" } }));
+  await tick(10);
+  assert.equal(input().props.value, "一二三四五", "原生输入框里不留多出来的字");
+  const writes = [];
+  act(() => input().props.onInput({ detail: { value: "一二三四五八" } }));
+  writes.push(input().props.value);
+  await tick(10);
+  writes.push(input().props.value);
+  assert.deepEqual(writes, ["一二三四五八", "一二三四五"], "先对上原生里的字、再写截好的值，Taro 才会真的写过去");
   v.unmount();
 });
 

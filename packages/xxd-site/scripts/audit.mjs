@@ -1994,6 +1994,13 @@ async function sizesAudit() {
 }
 
 const sections = { sizes: sizesAudit, axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };
+// --only 拼错了：以前一项都不跑，照样打印「全部通过」、退出码 0
+if (only && !Object.hasOwn(sections, only)) {
+  console.error(`没有叫 ${only} 的检查。可以用：${Object.keys(sections).join(" ")}`);
+  await browser.close();
+  server.close();
+  process.exit(1);
+}
 for (const [name, run] of Object.entries(sections)) if (!only || only === name) await run();
 await browser.close();
 server.close();

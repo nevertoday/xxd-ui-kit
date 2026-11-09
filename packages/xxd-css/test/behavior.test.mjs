@@ -1140,3 +1140,162 @@ describe("暗黑模式（DARK-REVIEW-PLAN）", () => {
     applySettings({ theme: "light" });
   });
 });
+
+describe("隐式状态机（定时器、共用的东西、半路结束）", () => {
+  const ptr = (el, type, init = {}) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, composed: true, pointerType: "mouse", ...init }));
+
+  it("toast：两次「已删除 · 撤销」不合并，各撤各的", () => {
+    const undo1 = vi.fn();
+    const undo2 = vi.fn();
+    const a = Xxd.toast("已删除", { duration: 0, action: { label: "撤销", onClick: undo1 } });
+    const b = Xxd.toast("已删除", { duration: 0, action: { label: "撤销", onClick: undo2 } });
+    expect(b.element).not.toBe(a.element);
+    b.element.querySelector("button").click();
+    expect(undo2).toHaveBeenCalledTimes(1);
+    expect(undo1).not.toHaveBeenCalled();
+    a.dismiss();
+  });
+
+  it("toast：焦点还在里面时，鼠标移开不开始倒数", () => {
+    vi.useFakeTimers();
+    try {
+      const { element } = Xxd.toast("已删除", { action: { label: "撤销" } });
+      ptr(element, "pointerenter", { bubbles: false });
+      element.querySelector("button").dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+      ptr(element, "pointerleave", { bubbles: false });
+      vi.advanceTimersByTime(15000);
+      expect(element.hasAttribute("data-leaving")).toBe(false);
+      element.querySelector("button").dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: document.body }));
+      vi.advanceTimersByTime(1300);
+      expect(element.hasAttribute("data-leaving")).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("tooltip：从一个按钮移到相邻按钮，新提示不被离开上一个时的定时器关掉；上一个不再指着它", () => {
+    vi.useFakeTimers();
+    try {
+      html(`<button id="ta" data-tooltip="加粗">B</button><button id="tb" data-tooltip="斜体">I</button>`);
+      const [a, b] = [document.getElementById("ta"), document.getElementById("tb")];
+      ptr(a, "pointerover");
+      vi.advanceTimersByTime(450);
+      const tip = document.querySelector(".xxd-tooltip");
+      expect(tip.hasAttribute("data-open")).toBe(true);
+      ptr(a, "pointerout", { relatedTarget: b });
+      ptr(b, "pointerover", { relatedTarget: a });
+      vi.advanceTimersByTime(300);
+      expect(tip.hasAttribute("data-open")).toBe(true);
+      expect(tip.textContent).toBe("斜体");
+      expect(a.hasAttribute("aria-describedby")).toBe(false);
+      Xxd.hideTooltip();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("复制：1 秒内点两次，最后还是复制图标（不卡在勾上）", async () => {
+    vi.useFakeTimers();
+    try {
+      Object.defineProperty(navigator, "clipboard", { value: { writeText: vi.fn().mockResolvedValue(undefined) }, configurable: true });
+      html(`<button data-copy="hi">${Xxd.ICON.copy(16)}</button>`);
+      const btn = document.querySelector("[data-copy]");
+      const copyIcon = btn.innerHTML;
+      btn.click();
+      await vi.advanceTimersByTimeAsync(500);
+      btn.click();
+      await vi.advanceTimersByTimeAsync(500);
+      expect(btn.hasAttribute("data-done")).toBe(true);
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(btn.hasAttribute("data-done")).toBe(false);
+      expect(btn.innerHTML).toBe(copyIcon);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("runBusy：完成的勾还没收起就再跑一次，最后还是原来的图标", async () => {
+    vi.useFakeTimers();
+    try {
+      html(`<button class="xxd-btn" id="rb2">${Xxd.ICON.copy(16)}保存</button>`);
+      const btn = document.getElementById("rb2");
+      const original = btn.innerHTML;
+      await Xxd.runBusy(btn, async () => 1);
+      const p = Xxd.runBusy(btn, async () => 2);
+      expect(btn.hasAttribute("data-done")).toBe(false);
+      await p;
+      await vi.advanceTimersByTimeAsync(1100);
+      expect(btn.innerHTML).toBe(original);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("拖动排序：触屏长按途中被浏览器判成滚动（pointercancel），350ms 后不进入拖动", () => {
+    vi.useFakeTimers();
+    try {
+      html(`<ul data-xxd-sortable><li data-sort-item data-id="a"><button class="xxd-sort-handle" id="lp">a</button></li><li data-sort-item data-id="b"><button class="xxd-sort-handle">b</button></li></ul>`);
+      const handle = document.getElementById("lp");
+      ptr(handle, "pointerdown", { pointerType: "touch", pointerId: 7, clientY: 10 });
+      ptr(handle, "pointercancel", { pointerType: "touch", pointerId: 7 });
+      vi.advanceTimersByTime(400);
+      expect(handle.closest("[data-sort-item]").hasAttribute("data-dragging")).toBe(false);
+      // 手指移动了也不算长按
+      ptr(handle, "pointerdown", { pointerType: "touch", pointerId: 8, clientX: 0, clientY: 10 });
+      ptr(handle, "pointermove", { pointerType: "touch", pointerId: 8, clientX: 0, clientY: 40 });
+      vi.advanceTimersByTime(400);
+      expect(handle.closest("[data-sort-item]").hasAttribute("data-dragging")).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("一个 host 里两张 sheet：关上面那张，遮罩留着；点遮罩关的是最上面那张", () => {
+    html(`<div class="xxd-sheet-host" id="h2"><div class="xxd-scrim"></div>
+      <section class="xxd-sheet" id="sa"><button>a</button></section>
+      <section class="xxd-sheet" id="sb"><button>b</button></section></div>`);
+    const [host, sa, sb] = ["h2", "sa", "sb"].map((id) => document.getElementById(id));
+    const scrim = host.querySelector(".xxd-scrim");
+    Xxd.openSheet(sa);
+    Xxd.openSheet(sb);
+    Xxd.closeSheet(sb);
+    expect(scrim.hasAttribute("data-open")).toBe(true);
+    expect(host.hasAttribute("data-sheet-open")).toBe(true);
+    Xxd.openSheet(sb);
+    scrim.click();
+    expect(sb.hasAttribute("data-open")).toBe(false);
+    expect(sa.hasAttribute("data-open")).toBe(true);
+    scrim.click();
+    expect(sa.hasAttribute("data-open")).toBe(false);
+    expect(scrim.hasAttribute("data-open")).toBe(false);
+    expect(host.hasAttribute("data-sheet-open")).toBe(false);
+  });
+
+  it("uninstall 再 install：tab 下划线的尺寸观察重新挂上", () => {
+    const RO = globalThis.ResizeObserver;
+    const observed = [];
+    globalThis.ResizeObserver = class {
+      constructor(cb) { this.cb = cb; this.on = true; }
+      observe(el) { observed.push({ el, ro: this }); }
+      unobserve() {}
+      disconnect() { this.on = false; }
+    };
+    try {
+      const host = document.createElement("div");
+      document.body.append(host);
+      const root = host.attachShadow({ mode: "open" });
+      root.innerHTML = `<div class="xxd-tabs" data-xxd-tabs id="tl"><button role="tab" aria-selected="true">一</button><button role="tab">二</button></div>`;
+      const list = root.getElementById("tl");
+      const live = () => observed.filter((o) => o.el === list && o.ro.on).length;
+      Xxd.install(root);
+      expect(live()).toBeGreaterThan(0);
+      Xxd.uninstall(root);
+      expect(live()).toBe(0);
+      Xxd.install(root);
+      expect(live()).toBeGreaterThan(0);
+      Xxd.uninstall(root);
+    } finally {
+      globalThis.ResizeObserver = RO;
+    }
+  });
+});

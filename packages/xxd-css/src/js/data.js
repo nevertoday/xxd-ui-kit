@@ -1,5 +1,6 @@
 // 数据类组件的行为：表格（全选 / 排序 / 拖列宽 / 固定列阴影）、分页渲染、区间滑块、代码高亮。
 import { emit } from "./dom.js";
+import { firstTime } from "./lifecycle.js";
 import { t } from "./i18n.js";
 
 /* ── 表格 ──
@@ -62,10 +63,9 @@ export function initData(root) {
   }
 }
 
-const stickyWatched = new WeakSet();
+const stickyWatched = new WeakMap();
 function watchStickyEdges(wrap) {
-  if (stickyWatched.has(wrap)) return;
-  stickyWatched.add(wrap);
+  if (!firstTime(stickyWatched, wrap)) return;
   const update = () => {
     wrap.toggleAttribute("data-scrolled-x", wrap.scrollLeft > 0);
     wrap.toggleAttribute("data-scrollable-end", wrap.scrollWidth - wrap.clientWidth - wrap.scrollLeft > 1);

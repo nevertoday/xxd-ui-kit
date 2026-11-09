@@ -11,7 +11,24 @@ function ownerOf(obj) {
   return null;
 }
 
+// 正在跑的那次 install 的 signal（firstTime 用）
+let current = null;
+const FOREVER = { aborted: false };
+
+/**
+ * 每个元素「在这次 install 里」只做一次。只记 WeakSet 的话，uninstall 撤掉了监听和观察者、记号却还在，
+ * 再 install 时以为做过了：tab 下划线不跟尺寸、表格边缘不渐隐、热力格读数没了。记下当时的 signal，它 abort 了就重新做。
+ */
+export function firstTime(map, obj) {
+  const done = map.get(obj);
+  if (done && !done.aborted) return false;
+  map.set(obj, current ?? FOREVER);
+  return true;
+}
+
 export function collect(signal, fn, root) {
+  const outer = current;
+  current = signal;
   const owners = [...new Set([root, root?.ownerDocument, globalThis.document, globalThis].map(ownerOf).filter(Boolean))];
   const adds = owners.map((p) => p.addEventListener);
   const kinds = OBSERVERS.map((n) => globalThis[n]?.prototype).filter(Boolean);
@@ -40,6 +57,7 @@ export function collect(signal, fn, root) {
   try {
     return fn();
   } finally {
+    current = outer;
     owners.forEach((p, i) => (p.addEventListener = adds[i]));
     kinds.forEach((p, i) => (p.observe = observe[i]));
     signal.addEventListener("abort", () => observers.forEach((o) => o.disconnect()), { once: true });

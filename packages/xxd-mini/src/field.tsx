@@ -126,21 +126,30 @@ export const charCount = (v: string) => Array.from(v).length;
 export function useNativeValue(current: string) {
   const typed = useRef(current);
   const [shown, setShown] = useState(current);
-  useEffect(() => {
-    if (current === typed.current) return;
-    const prev = typed.current;
-    typed.current = current;
-    if (shown !== current) {
-      setShown(current);
-      return;
-    }
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(timer.current), []);
+  /** 让原生输入框显示 next。prev 是它现在实际显示的字 */
+  const write = (prev: string, next: string) => {
+    clearTimeout(timer.current);
+    typed.current = next;
+    if (shown !== next) return setShown(next);
     // 交给原生的值没变过（比如从空打了几个字又被清空）：先对上输入框里实际的字，再写新值，Taro 才会真的写过去
     setShown(prev);
-    const t = setTimeout(() => setShown(current), 0);
-    return () => clearTimeout(t);
+    timer.current = setTimeout(() => setShown(next), 0);
+  };
+  useEffect(() => {
+    if (current !== typed.current) write(typed.current, current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
-  return [shown, (v: string) => (typed.current = v)] as const;
+  /**
+   * 原生输入框报上来 raw，最后留下 kept（超过字数被截掉时两者不同）。
+   * 不同就得写回去：以前已经到上限再打一个字，截完的值和原来一样，React 不重画，输入框里多出来的那个字一直显示着
+   */
+  const mark = (raw: string, kept = raw) => {
+    typed.current = raw;
+    if (kept !== raw) write(raw, kept);
+  };
+  return [shown, mark] as const;
 }
 
 /**
@@ -193,8 +202,9 @@ export function Input({ value, defaultValue, onValueChange, placeholder, disable
         adjustPosition={adjustPosition}
         cursorSpacing={cursorSpacing}
         onInput={(e) => {
-          mark(e.detail.value);
-          set(limit(e.detail.value));
+          const kept = limit(e.detail.value);
+          mark(e.detail.value, kept);
+          set(kept);
         }}
         onConfirm={(e) => onConfirm?.(e.detail.value)}
         onBlur={(e) => onBlur?.(e.detail.value)}
@@ -234,8 +244,9 @@ export function Textarea({ value, defaultValue, onValueChange, placeholder, disa
         adjustPosition={adjustPosition}
         cursorSpacing={cursorSpacing}
         onInput={(e) => {
-          mark(e.detail.value);
-          set(limit(e.detail.value));
+          const kept = limit(e.detail.value);
+          mark(e.detail.value, kept);
+          set(kept);
         }}
         onConfirm={(e) => onConfirm?.(e.detail.value)}
         onBlur={(e) => onBlur?.(e.detail.value)}

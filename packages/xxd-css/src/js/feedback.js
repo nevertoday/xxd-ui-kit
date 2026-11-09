@@ -45,6 +45,8 @@ export function showTooltip(anchor) {
   el.toggleAttribute("data-arrow", anchor.hasAttribute("data-tooltip-arrow"));
   // 锚点在页面里一块局部的亮 / 暗里：提示跟着那一块（提示挂在 body 上，不然用的是整页的外观，ACCEPTANCE-REVIEW）
   matchTheme(el, anchor);
+  // 换到另一个按钮：上一个不再指着这个提示（它的字已经是别人的了）
+  if (tipAnchor && tipAnchor !== anchor) tipAnchor.removeAttribute("aria-describedby");
   tipAnchor = anchor;
   // 被截断的字的全文提示（D93）：读屏念的本来就是全文，不再连一次
   if (!anchor.hasAttribute(AUTO_TIP)) anchor.setAttribute("aria-describedby", el.id);
@@ -84,16 +86,19 @@ export function installTooltips(root, closestFrom) {
   // 手指点按不弹提示（TOUCH-REVIEW-PLAN D120）：点完提示留在那儿盖住内容，直到下一次点别处；提示给鼠标悬停和键盘聚焦
   let touchedAt = 0;
   root.addEventListener("pointerdown", (event) => event.pointerType === "touch" && (touchedAt = Date.now()), true);
+  // 鼠标能移到提示上去读（放大镜用户要用，WCAG 1.4.13）：离开按钮后留 120ms，移进提示就不关，离开提示再关
+  let leaveTimer = 0;
   root.addEventListener("pointerover", (event) => {
     if (event.pointerType === "touch") return;
     const anchor = closestFrom(event, "[data-tooltip]");
-    if (!anchor || anchor === tipAnchor) return;
+    if (!anchor) return;
+    // 移到了（另一个或同一个）按钮上：离开上一个时排的「120ms 后关」作废，不然刚换上的提示马上被它关掉
+    clearTimeout(leaveTimer);
+    if (anchor === tipAnchor) return;
     clearTimeout(tipTimer);
     const grouped = tip?.hasAttribute("data-open") || Date.now() - tipHiddenAt < GROUP_WINDOW;
     tipTimer = setTimeout(() => showTooltip(anchor), grouped ? 0 : 400);
   });
-  // 鼠标能移到提示上去读（放大镜用户要用，WCAG 1.4.13）：离开按钮后留 120ms，移进提示就不关，离开提示再关
-  let leaveTimer = 0;
   root.addEventListener("pointerout", (event) => {
     const anchor = closestFrom(event, "[data-tooltip]");
     const to = event.relatedTarget;
@@ -110,7 +115,9 @@ export function installTooltips(root, closestFrom) {
   });
   root.addEventListener("focusin", (event) => {
     const anchor = closestFrom(event, "[data-tooltip]");
-    if (anchor && Date.now() - touchedAt > 800) showTooltip(anchor);
+    if (!anchor || Date.now() - touchedAt <= 800) return;
+    clearTimeout(leaveTimer);
+    showTooltip(anchor);
   });
   root.addEventListener("focusout", hideTooltip);
   root.addEventListener("pointerdown", hideTooltip);
@@ -191,7 +198,8 @@ export function toast(message, { tone = "neutral", within, duration, action, sta
   const region = regionFor(within);
   region.toggleAttribute("data-stack", stack);
   const key = `${tone}\u0000${message}`;
-  const existing = [...region.querySelectorAll(":scope > .xxd-toast:not([data-leaving])")].find((t) => t.dataset.key === key);
+  // 带操作（撤销、重试）的不合并：两次「已删除 · 撤销」各撤各的，合并了第二个撤销就丢了
+  const existing = action?.label ? null : [...region.querySelectorAll(":scope > .xxd-toast:not([data-leaving])")].find((t) => t.dataset.key === key);
   if (existing) {
     existing.removeAttribute("data-bump");
     void existing.offsetWidth;
@@ -230,27 +238,38 @@ export function toast(message, { tone = "neutral", within, duration, action, sta
   const prefix = tone === "danger" ? t("errorPrefix", null, region) : tone === "warning" ? t("warningPrefix", null, region) : "";
   announce(`${prefix}${message}${action?.label ? t("toastActionHint", { label: action.label }, region) : ""}`, { assertive: tone === "danger", within: region });
 
+  // 计时暂停的理由可以同时有几个（鼠标在上面、焦点在里面、页面在后台）：全都没了才重新计时。
+  // 以前各管各的：焦点还在撤销按钮上，鼠标一移开就开始倒数，提示在键盘用户眼前关掉
   let timer = 0;
+  const held = new Set();
   const restart = (ms = duration) => {
     clearTimeout(timer);
-    if (ms > 0) timer = setTimeout(dismiss, ms);
+    if (!held.size && ms > 0) timer = setTimeout(dismiss, ms);
   };
-  restart();
+  const hold = (why) => {
+    held.add(why);
+    clearTimeout(timer);
+  };
+  const release = (why, ms) => {
+    if (!held.delete(why)) return;
+    restart(ms);
+  };
   // 页面在后台（切到别的标签页）时暂停，回来以后重新计时：以前切回来提示已经没了
   const doc = region.ownerDocument;
   const onVisible = () => {
     if (!el.isConnected) return doc.removeEventListener("visibilitychange", onVisible);
-    if (doc.hidden) clearTimeout(timer);
-    else restart();
+    if (doc.hidden) hold("hidden");
+    else release("hidden");
   };
   doc.addEventListener("visibilitychange", onVisible);
-  if (doc.hidden) clearTimeout(timer);
+  if (doc.hidden) held.add("hidden");
+  restart();
   // 鼠标放上去、或键盘聚焦到 toast 里的按钮时暂停计时（WCAG 2.2.1）
-  el.addEventListener("pointerenter", () => clearTimeout(timer));
-  el.addEventListener("pointerleave", () => restart(1200));
-  el.addEventListener("focusin", () => clearTimeout(timer));
+  el.addEventListener("pointerenter", () => hold("pointer"));
+  el.addEventListener("pointerleave", () => release("pointer", 1200));
+  el.addEventListener("focusin", () => hold("focus"));
   el.addEventListener("focusout", (event) => {
-    if (!el.contains(event.relatedTarget)) restart(1200);
+    if (!el.contains(event.relatedTarget)) release("focus", 1200);
   });
 
   // 横向滑动关闭
@@ -363,18 +382,36 @@ export function installCopy(root, closestFrom) {
     const text = targetSel ? btn.getRootNode().querySelector(targetSel)?.textContent ?? "" : btn.getAttribute("data-copy");
     const ok = await copyText(text);
     if (!ok) return toast(btn.getAttribute("data-copy-failed") || t("copyFailed", null, btn), { tone: "danger" });
-    const icon = btn.querySelector(".ui-icon");
-    const original = icon?.outerHTML;
-    if (icon) icon.outerHTML = ICON.check(Number(icon.getAttribute("width")) || 16);
-    btn.setAttribute("data-done", "");
+    flashDone(btn, ".ui-icon", 1200);
     showBubble(btn, btn.getAttribute("data-copy-done") || t("copied", null, btn));
     if (btn.hasAttribute("data-copy-toast")) toast(btn.getAttribute("data-copy-toast") || t("copied", null, btn), { tone: "success" });
-    setTimeout(() => {
-      btn.removeAttribute("data-done");
-      const now = btn.querySelector(".ui-icon");
-      if (now && original) now.outerHTML = original;
-    }, 1200);
   });
+}
+
+/* 「完成了」的一下：第一个图标换成勾、data-done，过一会儿还原。同一个元素再来一次只把时间往后推：
+   以前每次都把「当前的图标」存成原图标，1 秒内点两次，存下的是勾，按钮从此一直是勾 */
+const doneState = new WeakMap();
+function flashDone(el, selector, ms) {
+  const prev = doneState.get(el);
+  clearTimeout(prev?.timer);
+  let original = prev?.original;
+  if (!prev) {
+    const icon = el.querySelector(selector);
+    original = icon?.outerHTML;
+    if (icon) icon.outerHTML = ICON.check(Number(icon.getAttribute("width")) || 16);
+  }
+  el.setAttribute("data-done", "");
+  const timer = setTimeout(() => endDone(el, selector), ms);
+  doneState.set(el, { original, timer, selector });
+}
+function endDone(el, selector) {
+  const state = doneState.get(el);
+  if (!state) return;
+  clearTimeout(state.timer);
+  doneState.delete(el);
+  el.removeAttribute("data-done");
+  const now = el.querySelector(selector ?? state.selector);
+  if (now && state.original) now.outerHTML = state.original;
 }
 
 /* ── 小气泡（复制成功等）：在元素上方淡入 1.2s（I7） ── */
@@ -404,21 +441,15 @@ const running = new WeakMap();
 export async function runBusy(button, task, { doneFor = 1000 } = {}) {
   // 进行中再点：返回正在跑的那一个（以前返回 undefined，调用方 .then 会以为已经好了，ACCEPTANCE-REVIEW）
   if (button.getAttribute("aria-busy") === "true") return running.get(button);
+  // 上一次的「完成」还没收起就又开始：先收起，免得进行中和完成同时出现
+  endDone(button);
   button.setAttribute("aria-busy", "true");
   const job = (async () => {
     try {
       const result = await task();
       button.removeAttribute("aria-busy");
       // 完成：有图标的把图标换成勾；没图标的靠 data-done 在中间画一个勾（MOTION-REVIEW-PLAN D86）
-      const icon = button.querySelector(":scope > .ui-icon");
-      const original = icon?.outerHTML;
-      if (icon) icon.outerHTML = ICON.check(Number(icon.getAttribute("width")) || 16);
-      button.setAttribute("data-done", "");
-      setTimeout(() => {
-        button.removeAttribute("data-done");
-        const now = button.querySelector(":scope > .ui-icon");
-        if (now && original) now.outerHTML = original;
-      }, doneFor);
+      flashDone(button, ":scope > .ui-icon", doneFor);
       return result;
     } catch (error) {
       button.removeAttribute("aria-busy");

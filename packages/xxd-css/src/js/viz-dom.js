@@ -4,6 +4,7 @@
 //   ESM：     useViz(await import("@xxd/css/viz"))
 // 声明式：<ol class="xxd-bars" data-viz="bars" data-items="长文发布:2410;排序链接:830"></ol>，Xxd.init() 画出来；data-* 改了再调 Xxd.initViz()。
 import { getLocale } from "./i18n.js";
+import { firstTime } from "./lifecycle.js";
 
 let vizImpl = null;
 /** 图的换算用哪份：ESM 项目 useViz(await import("@xxd/css/viz"))；经典脚本自动用 window.XxdViz。 */
@@ -33,7 +34,7 @@ function modelOf(lib, kind, data, o) {
 const ROOT = { bars: "xxd-bars", proportion: "xxd-proportion", waffle: "xxd-waffle", calendar: "xxd-heatmap", matrix: "xxd-heatmap", dumbbell: "xxd-dumbbell", radar: "xxd-radar", quadrant: "xxd-quadrant" };
 
 /** 热力格：指到 / 点到一格，色阶那一行写出这一格（D50）。整页一个监听 */
-let listening = false;
+const listening = new WeakMap();
 function readout(e) {
   const cell = e.target.closest?.(".xxd-heatmap [data-tip]");
   const root = (cell || e.target).closest?.(".xxd-heatmap");
@@ -45,8 +46,7 @@ function readout(e) {
   cell?.setAttribute("data-active", "");
 }
 function listen() {
-  if (listening || typeof document === "undefined") return;
-  listening = true;
+  if (typeof document === "undefined" || !firstTime(listening, document)) return;
   document.addEventListener("pointerover", readout);
   document.addEventListener("click", readout);
   // 指针离开整张图：清掉

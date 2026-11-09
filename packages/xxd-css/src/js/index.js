@@ -74,7 +74,7 @@ export function install(root = document, { signal, icons } = {}) {
     else signal?.addEventListener("abort", () => uninstall(root), { once: true });
     collect(controller.signal, () => installAll(root), root);
   }
-  collect(installed.get(root).signal, () => init(root), root);
+  collect(installed.get(root).signal, () => initAll(root), root);
   return root;
 }
 
@@ -112,8 +112,16 @@ function installAll(root) {
   installLayers(root, byId, closestFrom);
 }
 
-/** 新插入的内容里有 tabs / 分段 / combobox 时调用（事件委托不需要重新绑）。 */
+/**
+ * 新插入的内容里有 tabs / 分段 / combobox 时调用（事件委托不需要重新绑）。
+ * 建的观察者、监听记在所在的 install 上，uninstall 时一起撤掉（以前单独调 init 建的不归谁管，一直留着）。
+ */
 export function init(root = document) {
+  const owner = installed.get(root) ?? installed.get(root.getRootNode?.());
+  return owner ? collect(owner.signal, () => initAll(root), root) : initAll(root);
+}
+
+function initAll(root) {
   initChoices(root);
   initComboboxes(root);
   initPickers(root);

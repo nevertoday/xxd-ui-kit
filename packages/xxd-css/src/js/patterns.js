@@ -220,11 +220,32 @@ export function installSortable(root, closestFrom) {
     const start = () => {
       drag = { item, handle, list, y: event.clientY, y0: event.clientY, moved: false, startOrder: order(list) };
       item.setAttribute("data-dragging", "");
-      handle.setPointerCapture?.(event.pointerId);
+      try {
+        handle.setPointerCapture?.(event.pointerId);
+      } catch {
+        // 这根手指已经不在了
+      }
     };
     if (event.pointerType === "touch") {
-      const timer = setTimeout(start, 350);
-      handle.addEventListener("pointerup", () => clearTimeout(timer), { once: true });
+      // 长按 350ms 才拿起。这期间手指抬起、被浏览器判成滚动（pointercancel）、或者移动了：都不算长按。
+      // 以前只认 pointerup：滚动时计时照走，350ms 后这一项进入拖动，下一次碰屏幕就被拖走
+      const doc = handle.ownerDocument;
+      const x0 = event.clientX;
+      const y0 = event.clientY;
+      const moved = (e) => e.pointerId === event.pointerId && Math.hypot(e.clientX - x0, e.clientY - y0) > 8 && cancel();
+      const cancel = () => {
+        clearTimeout(timer);
+        doc.removeEventListener("pointerup", cancel, true);
+        doc.removeEventListener("pointercancel", cancel, true);
+        doc.removeEventListener("pointermove", moved, true);
+      };
+      const timer = setTimeout(() => {
+        cancel();
+        start();
+      }, 350);
+      doc.addEventListener("pointerup", cancel, true);
+      doc.addEventListener("pointercancel", cancel, true);
+      doc.addEventListener("pointermove", moved, true);
     } else {
       event.preventDefault();
       start();

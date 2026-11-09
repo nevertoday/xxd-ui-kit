@@ -1,5 +1,8 @@
 // Tabs 与分段控件：点击 / 方向键选择，roving tabindex，派发 xxd:change。
 import { byId, emit } from "./dom.js";
+import { firstTime } from "./lifecycle.js";
+
+const inkWatched = new WeakMap();
 
 function selectTab(list, tab, { focus = false } = {}) {
   const tabs = [...list.querySelectorAll(':scope > [role="tab"]')];
@@ -72,10 +75,7 @@ export function initChoices(root) {
       list.append(ink);
     }
     moveInk(list);
-    if (!list.__xxdResize && typeof ResizeObserver === "function") {
-      list.__xxdResize = new ResizeObserver(() => moveInk(list));
-      list.__xxdResize.observe(list);
-    }
+    if (typeof ResizeObserver === "function" && firstTime(inkWatched, list)) new ResizeObserver(() => moveInk(list)).observe(list);
   }
   for (const group of root.querySelectorAll("[data-xxd-segmented]")) {
     group.setAttribute("role", "radiogroup");

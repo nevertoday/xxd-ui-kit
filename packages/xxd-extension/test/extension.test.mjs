@@ -108,6 +108,62 @@ describe("createAppearanceStore", () => {
     expect(localStorage.getItem("d-ui")).toBeNull();
   });
 
+  it("快速连改两项：自己写入的回声晚到，不把第二项短暂改回去，也不多通知", async () => {
+    const { data } = mockChrome();
+    const late = [];
+    const real = globalThis.chrome.storage.onChanged;
+    // 回声延后到两次写入之后才到（真的 Chrome 里 onChanged 是异步的）
+    const hold = new Set();
+    globalThis.chrome.storage.onChanged = { addListener: (fn) => hold.add(fn), removeListener: (fn) => hold.delete(fn) };
+    globalThis.chrome.storage.sync.set = vi.fn(async (obj) => {
+      for (const [k, v] of Object.entries(obj)) {
+        late.push({ [k]: { oldValue: data[k], newValue: v } });
+        data[k] = v;
+      }
+    });
+    const store = createAppearanceStore({ key: "q-ui" });
+    await store.load();
+    const seen = [];
+    store.subscribe((s) => seen.push(`${s.theme}/${s.corners}`));
+    await store.set({ theme: "dark" });
+    await store.set({ corners: "rounded" });
+    for (const c of late) hold.forEach((fn) => fn(c, "sync"));
+    expect(seen).toEqual(["dark/square", "dark/rounded"]);
+    expect(store.get()).toMatchObject({ theme: "dark", corners: "rounded" });
+    globalThis.chrome.storage.onChanged = real;
+  });
+
+  it("两个页面：这一页还没收到另一页刚改的那一项，set 也不会把它冲掉", async () => {
+    const { data } = mockChrome();
+    const a = createAppearanceStore({ key: "two-ui" });
+    await a.load();
+    data["two-ui"] = { accent: "#3b74b8" }; // 另一页写的，这一页还没收到 onChanged
+    await a.set({ theme: "dark" });
+    expect(data["two-ui"]).toEqual({ theme: "dark", accent: "#3b74b8" });
+  });
+
+  it("内容脚本里 load 之前就 set：不把存着的其余几项清掉", async () => {
+    const { data } = mockChrome();
+    globalThis.chrome.runtime = { id: "abc" };
+    data["cs2-ui"] = { theme: "dark", accent: "#3b74b8" };
+    const store = createAppearanceStore({ key: "cs2-ui", apply: false });
+    await store.set({ corners: "rounded" });
+    expect(data["cs2-ui"]).toEqual({ theme: "dark", corners: "rounded", accent: "#3b74b8" });
+  });
+
+  it("写入失败（超出配额）：界面回到存储里真实的样子", async () => {
+    const { data } = mockChrome();
+    data["f-ui"] = { theme: "light" };
+    const store = createAppearanceStore({ key: "f-ui" });
+    await store.load();
+    globalThis.chrome.storage.sync.set = vi.fn(async () => {
+      throw new Error("QUOTA_BYTES_PER_ITEM quota exceeded");
+    });
+    await expect(store.set({ theme: "dark" })).rejects.toThrow(/quota/);
+    expect(store.get().theme).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
   it("没有 chrome 时退回 localStorage", async () => {
     const store = createAppearanceStore({ key: "plain-ui" });
     await store.load();

@@ -44,6 +44,35 @@ export function SheetHost({ className, ...rest }: HTMLAttributes<HTMLDivElement>
 
 const FOCUSABLE = "input, select, textarea, button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])";
 
+/** 宿主上开着几张 sheet：最后一张关了才去掉 data-sheet-open */
+const openSheets = new WeakMap<Element, number>();
+function holdHost(host: Element | null, d: number) {
+  if (!host) return;
+  const n = Math.max(0, (openSheets.get(host) ?? 0) + d);
+  openSheets.set(host, n);
+  host.toggleAttribute("data-sheet-open", n > 0);
+}
+/** 谁让这个元素 inert 的：页面本来就 inert 的不动；都撤了才还原 */
+const inertBy = new WeakMap<Element, Set<Element>>();
+function holdInert(el: Element, sheet: Element, on: boolean) {
+  let owners = inertBy.get(el);
+  if (on) {
+    if (!owners) {
+      if (el.hasAttribute("inert")) return; // 页面自己写的 inert，不归我们管
+      owners = new Set();
+      inertBy.set(el, owners);
+    }
+    owners.add(sheet);
+    el.setAttribute("inert", "");
+    return;
+  }
+  if (!owners?.delete(sheet)) return;
+  if (!owners.size) {
+    inertBy.delete(el);
+    el.removeAttribute("inert");
+  }
+}
+
 /**
  * 打开时是一个模态对话框：role=dialog + aria-modal，背景（同一个 SheetHost 里的其他东西）inert，Tab 在里面循环，Esc 关；
  * 关掉后焦点回到打开它的按钮。宿主上写 data-sheet-open（dock 主按钮跟着藏起来）。
@@ -55,28 +84,29 @@ export function Sheet({ open, onOpenChange, title, children, className }: { open
   const back = useRef<Element | null>(null);
   useEffect(() => {
     const sheet = ref.current;
-    const host = sheet?.closest(".xxd-sheet-host");
-    if (!sheet) return;
-    if (open) {
-      back.current = document.activeElement;
-      host?.setAttribute("data-sheet-open", "");
-      // 背景不能点、读屏也读不到
-      const others = host ? [...host.children].filter((el) => el !== sheet && !el.classList.contains("xxd-scrim")) : [];
-      for (const el of others) el.setAttribute("inert", "");
-      const items = [...sheet.querySelectorAll<HTMLElement>(FOCUSABLE)];
-      const first = items.find((el) => !el.hasAttribute("data-sheet-close")) ?? items[0] ?? sheet;
-      // 减少动效时 visibility 的过渡是 0.01ms：这一帧可能还聚焦不上，下一帧再试
-      first.focus();
-      const raf = requestAnimationFrame(() => document.activeElement !== first && first.focus());
-      return () => {
-        cancelAnimationFrame(raf);
-        for (const el of others) el.removeAttribute("inert");
-        host?.removeAttribute("data-sheet-open");
-      };
-    }
-    if (back.current instanceof HTMLElement && sheet.contains(document.activeElement)) back.current.focus();
-    else if (back.current instanceof HTMLElement && document.activeElement === document.body) back.current.focus();
-    return undefined;
+    const host = sheet?.closest(".xxd-sheet-host") ?? null;
+    if (!sheet || !open) return undefined;
+    back.current = document.activeElement;
+    holdHost(host, +1);
+    // 背景不能点、读屏也读不到。一个 SheetHost 里可能开着几张：每个元素记下是哪几张让它 inert 的，最后一张关了才还原
+    const others = host ? [...host.children].filter((el) => el !== sheet && !el.classList.contains("xxd-scrim")) : [];
+    for (const el of others) holdInert(el, sheet, true);
+    // 自己是最上面的：别的 sheet 先开时把它也 inert 了，这里放开
+    sheet.removeAttribute("inert");
+    const items = [...sheet.querySelectorAll<HTMLElement>(FOCUSABLE)];
+    const first = items.find((el) => !el.hasAttribute("data-sheet-close")) ?? items[0] ?? sheet;
+    // 减少动效时 visibility 的过渡是 0.01ms：这一帧可能还聚焦不上，下一帧再试
+    first.focus();
+    const raf = requestAnimationFrame(() => document.activeElement !== first && first.focus());
+    return () => {
+      cancelAnimationFrame(raf);
+      for (const el of others) holdInert(el, sheet, false);
+      if (inertBy.get(sheet)?.size) sheet.setAttribute("inert", "");
+      holdHost(host, -1);
+      // 关掉或者开着时被卸载：焦点回到打开它的按钮（以前卸载时不回，焦点掉到 body 上）
+      const active = document.activeElement;
+      if (back.current instanceof HTMLElement && back.current.isConnected && (sheet.contains(active) || active === document.body || !active)) back.current.focus();
+    };
   }, [open]);
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Escape") {

@@ -154,6 +154,27 @@ describe("O5 小小东组件", () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
+  it("同一个 SheetHost 里两张 Sheet：关上面那张，下面那张开着时背景仍 inert、宿主仍 data-sheet-open", () => {
+    const view = (a: boolean, b: boolean) => (
+      <SheetHost>
+        <main id="bg2"><button>背景</button></main>
+        <Sheet open={a} title="一" onOpenChange={() => {}}><button>a</button></Sheet>
+        <Sheet open={b} title="二" onOpenChange={() => {}}><button>b</button></Sheet>
+      </SheetHost>
+    );
+    const { container, rerender } = render(view(true, false));
+    rerender(view(true, true));
+    const [first, second] = [...container.querySelectorAll(".xxd-sheet")];
+    expect(second.hasAttribute("inert")).toBe(false);
+    rerender(view(true, false));
+    expect(container.querySelector("#bg2")!.hasAttribute("inert")).toBe(true);
+    expect(first.hasAttribute("inert")).toBe(false);
+    expect(container.querySelector(".xxd-sheet-host")!.hasAttribute("data-sheet-open")).toBe(true);
+    rerender(view(false, false));
+    expect(container.querySelector("#bg2")!.hasAttribute("inert")).toBe(false);
+    expect(container.querySelector(".xxd-sheet-host")!.hasAttribute("data-sheet-open")).toBe(false);
+  });
+
   it("Sheet 是模态：role=dialog + aria-modal，背景 inert，焦点进去、Tab 在里面循环，宿主写 data-sheet-open", () => {
     const { container, rerender } = render(
       <SheetHost>

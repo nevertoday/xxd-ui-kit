@@ -51,6 +51,11 @@ const targets = pages
   .map((p) => (p === "/" ? "/" : p.replace(/\/?$/, "/")))
   .filter((p) => !p.startsWith("/md/") && (!only || p.includes(only)))
   .sort();
+if (!targets.length) {
+  // 一页都没对上（--only 拼错）：不算通过
+  console.error(only ? `没有地址包含 ${only} 的页面` : "dist 里没有页面：先构建");
+  process.exit(1);
+}
 
 const MODES = [
   { id: "light-square", theme: "light", corners: "square" },

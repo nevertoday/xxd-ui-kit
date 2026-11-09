@@ -1,5 +1,6 @@
 // 结构类组件的行为：侧栏（折叠 / 子菜单 / 拖宽）、工具条键盘、文章目录高亮、面包屑折叠、横幅关闭、tab 溢出。
 import { emit } from "./dom.js";
+import { firstTime } from "./lifecycle.js";
 import { t } from "./i18n.js";
 
 /* ── 侧栏 ── */
@@ -69,7 +70,7 @@ export function initStructure(root) {
 }
 
 /* ── tab 溢出：两端渐隐，选中项滚进视野 ── */
-const watched = new WeakSet();
+const watched = new WeakMap();
 export function watchTabsOverflow(list) {
   const update = () => {
     const max = list.scrollWidth - list.clientWidth;
@@ -77,8 +78,7 @@ export function watchTabsOverflow(list) {
     list.toggleAttribute("data-overflow-end", max - list.scrollLeft > 2);
   };
   update();
-  if (watched.has(list)) return;
-  watched.add(list);
+  if (!firstTime(watched, list)) return;
   // 一开始选中的那个也滚进视野（J13）；只动这一条的 scrollLeft，不用 scrollIntoView（它会连页面一起滚）
   const sel = list.querySelector('[aria-selected="true"]');
   if (sel && sel.offsetLeft + sel.offsetWidth > list.clientWidth) list.scrollLeft = sel.offsetLeft - 32;

@@ -74,8 +74,12 @@ export function closeLayer(layer) {
   layer.setAttribute("aria-hidden", "true");
   layer.removeAttribute("aria-modal");
   setOutsideInert(layer, false);
-  scrimFor(layer)?.removeAttribute("data-open");
-  layer.closest(".xxd-sheet-host")?.removeAttribute("data-sheet-open");
+  // 一个 host 里的几张 sheet 共用一块遮罩：还有别的开着就留着遮罩和 data-sheet-open（以前关一张全撤了，另一张露在没有遮罩的页面上）
+  const host = layer.closest(".xxd-sheet-host");
+  if (!layer.classList.contains("xxd-sheet") || !openSheetsIn(host).length) {
+    scrimFor(layer)?.removeAttribute("data-open");
+    host?.removeAttribute("data-sheet-open");
+  }
   const i = stack.lastIndexOf(layer);
   if (i >= 0) stack.splice(i, 1);
   // 先关下面那层时，上面那层背后要重新变成 inert（它记的是当时还没 inert 的兄弟）
@@ -93,6 +97,12 @@ export function closeLayer(layer) {
     focusSoon(back === prev ? prev : focusables(back)[0] || back, () => !layer.hasAttribute("data-open"));
   }
   emit(layer, "xxd:close");
+}
+
+/** 这个 host 自己的、开着的 sheet（不算嵌在里面的另一个 host 的） */
+function openSheetsIn(host) {
+  if (!host) return [];
+  return [...host.querySelectorAll(".xxd-sheet[data-open]")].filter((s) => s.closest(".xxd-sheet-host") === host);
 }
 
 export const openSheet = openLayer;
@@ -113,9 +123,12 @@ export function installLayers(root, byId, closestFrom) {
     if (closer) return closeLayer(closer.closest(".xxd-sheet, .xxd-panel"));
     const scrim = closestFrom(event, ".xxd-scrim[data-open], .xxd-panel-scrim[data-open]");
     if (scrim) {
+      // 点遮罩关最上面那张（后开的），不是按文档顺序的第一张
+      const host = scrim.closest(".xxd-sheet-host");
+      const open = openSheetsIn(host);
       const layer = scrim.classList.contains("xxd-panel-scrim")
         ? scrim.nextElementSibling
-        : scrim.closest(".xxd-sheet-host")?.querySelector(".xxd-sheet[data-open]");
+        : stack.findLast((l) => open.includes(l)) ?? open[0];
       closeLayer(layer);
     }
   });

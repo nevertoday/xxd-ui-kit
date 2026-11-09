@@ -36,6 +36,18 @@ describe("@xxd/react", () => {
     expect(document.documentElement.getAttribute("data-corners")).toBe("rounded");
   });
 
+  it("外观 Provider 只存用户选过的：页面自己的 initial（密度）不写进共享的设置", async () => {
+    localStorage.removeItem("test-ui-defaults");
+    render(
+      <XxdAppearanceProvider storageKey="test-ui-defaults" initial={{ density: "compact" }}>
+        <Toggle />
+      </XxdAppearanceProvider>,
+    );
+    await act(async () => screen.getByRole("button").click());
+    expect(JSON.parse(localStorage.getItem("test-ui-defaults") || "{}")).toEqual({ corners: "rounded" });
+    expect(document.documentElement.getAttribute("data-density")).toBe("compact");
+  });
+
   it("Icon 渲染 1.5 线宽", () => {
     const { container } = render(<Icon name="Check" />);
     expect(container.querySelector("svg")?.getAttribute("stroke-width")).toBe("1.5");
