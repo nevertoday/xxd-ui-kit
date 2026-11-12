@@ -910,4 +910,13 @@
   svg.overflow-visible.text-kumo-placeholder:has(> defs > marker) path[stroke="currentColor"] {
     stroke-width: 1.5px;
   }
+
+  /* ── 分页：按钮组对齐「Showing 1-10 of 90」的第一行（D171；窄屏这句折成两行时以前对着两行的中间，低 10px）。
+     按钮组是 Kumo 的输入组 h-9（2.25rem，这一层没改它的高）：字往下让 (2.25rem − 行高) / 2，只有一行时和居中一样 ── */
+  [data-slot="pagination"].items-center {
+    align-items: flex-start;
+  }
+  [data-slot="pagination"] > [data-slot="pagination-info"] {
+    margin-top: max(0px, (2.25rem - var(--leading-sm, 20px)) / 2);
+  }
 }

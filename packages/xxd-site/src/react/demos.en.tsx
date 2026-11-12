@@ -503,7 +503,7 @@ export function DockDemo() {
     <Dock
       style={{ position: "static", width: 380 }}
       status="30 characters · Saved"
-      tools={<Button variant="ghost" shape="square" aria-label="Cover" icon={<Icon name="Image" />} />}
+      tools={<Button variant="ghost" shape="square" size="sm" aria-label="Cover" icon={<Icon name="Image" />} />}
       primary={<Button variant="primary" size="sm">Post to X</Button>}
     />
   );

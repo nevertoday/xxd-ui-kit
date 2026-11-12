@@ -169,6 +169,22 @@
     backdrop-filter: blur(10px);
   }
 
+  /* 按钮对齐状态的第一行（D171）：按第一行的基线排（状态和按钮的字都是 12 号），状态折成两行时按钮不再对着两行的中间。
+     只有一行时和以前一样居中；窄了按钮换到下一行，状态不会被推下去 */
+  .xxd-dock:has(:is(.xxd-btn, [data-kumo-component="Button"])) {
+    align-items: baseline;
+    align-content: center;
+  }
+
+  /* 工具多半是图标按钮，没有字、没有基线：开头放一个和状态同字号的零宽字，和按钮一起居中，工具这一组的基线就是它的 */
+  .xxd-dock__tools::before {
+    content: "\200b";
+    width: 0;
+    margin-inline-end: calc(-1 * var(--space-1));
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
   .xxd-dock__status {
     flex: 1 1 8em;
     min-width: 0;

@@ -879,8 +879,9 @@
     margin-bottom: var(--space-4);
   }
 
+  /* 复制按钮（小号）的中线对齐代码第一行（D171）：代码上内边距 + (行高 − 按钮高) / 2 */
   .site-code__copy {
-    margin: var(--space-2) var(--space-2) 0 0;
+    margin: calc(var(--space-3) + (var(--leading-sm) - var(--control-h-sm)) / 2) var(--space-2) 0 0;
   }
 
   .site-code__more {
@@ -1254,6 +1255,11 @@
   }
 
   /* 颜色页：一个主色变出的颜色（亮 / 暗两块预览，主色只作用在这一块上） */
+  /* 「主色 #4386ba」只有一行：字对着取色块（原生 27px 高）居中，和旁边分段控件的字在一条线上（D171） */
+  .site-derive .xxd-choice {
+    align-items: center;
+  }
+
   .site-derive {
     display: grid;
     gap: var(--space-4);

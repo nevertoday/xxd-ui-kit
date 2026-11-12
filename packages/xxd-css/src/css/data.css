@@ -16,6 +16,13 @@
     padding-right: 0;
   }
 
+  /* 格子里只有一个复选框：当一行字那么高的块（上下各让出 (行高 − 框) / 2），格子居中时和旁边的字在一条线上，
+     顶端对齐的行（有折行的格子）里也对着第一行（D173；以前按基线排，比字高 1.5px） */
+  .xxd-table :is(td, th) > :is(.xxd-check, .xxd-radio):only-child {
+    display: block;
+    margin-block: calc((var(--leading-sm) - var(--choice-size)) / 2);
+  }
+
   .xxd-table :is(th, td)[data-sticky="start"] {
     position: sticky;
     left: 0;

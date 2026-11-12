@@ -53,6 +53,19 @@
     padding: var(--row-pad-y, 12px) var(--row-pad-x, 16px);
   }
 
+  /* 控件对齐标题那一行（D171；以前整块居中，说明一长控件就比标题低 10px）：按第一行的基线排。
+   * 比一行高的控件（分段、小按钮、下拉）都有字，字和标题差不到 1px（12 和 13 号），基线对上中线也就对上，字往下让、控件贴着内边距；
+   * 没有字的开关、复选不比一行高，放在一行高的槽里居中。基线是一行一行算的：窄了控件换到下一行，字不会被推下去。
+   * 只有一行字时和整块居中一样（align-content 让这一排在 min-height 里居中）。右边只是一个值、一段说明的行照旧整块居中 */
+  .xxd-row:not([data-stack]):has(> .xxd-row__control :is(button, input, select, textarea)) {
+    align-items: baseline;
+    align-content: center;
+  }
+
+  .xxd-row > .xxd-row__control:has(> :is(.xxd-switch, .xxd-check, .xxd-radio, [role="switch"], [data-icon-only])) {
+    align-self: flex-start;
+  }
+
   .xxd-row + .xxd-row {
     border-top: 1px solid var(--line);
   }
@@ -92,6 +105,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    min-height: var(--leading-sm);
     /* 换到下一行以后也不比这一行宽：分段、密钥输入框长了在里面收缩（以前伸出分组、被圆角裁掉，TRUNCATION-REVIEW-PLAN） */
     max-width: 100%;
     min-width: 0;
@@ -158,6 +172,22 @@
 
   .xxd-list > .xxd-list__item + .xxd-list__item {
     border-top: 1px solid var(--line);
+  }
+
+  /* 行里有带字的按钮时，按钮对齐标题那一行（D171；以前整块居中，标题 + 说明两行时按钮比标题低 10px）：按第一行的基线排，
+   * 标题和按钮的字差不到 1px（13 和 12 号）；缩略图、头像、图标、徽标、把手照旧对着整块居中，图标按钮跟着带字的按钮贴在这一行顶上。
+   * 只有一行字时和整块居中一样；窄了按钮换到下一行，字不会被推下去 */
+  .xxd-list > .xxd-list__item:has(> .xxd-btn:not([data-icon-only])) {
+    align-items: baseline;
+    align-content: center;
+  }
+
+  .xxd-list > .xxd-list__item:has(> .xxd-btn:not([data-icon-only])) > :is(i, svg, img, .xxd-avatar, .xxd-thumbs, .xxd-sort-handle, .xxd-dot, .xxd-spinner, .xxd-badge) {
+    align-self: center;
+  }
+
+  .xxd-list > .xxd-list__item:has(> .xxd-btn:not([data-icon-only])) > .xxd-btn[data-icon-only] {
+    align-self: flex-start;
   }
 
   .xxd-list[data-interactive] > .xxd-list__item {

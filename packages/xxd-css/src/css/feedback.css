@@ -164,8 +164,12 @@
 
   /* 横幅 */
   /* 横幅：图标 · 文字 · 操作 · 关闭 各占一栏。横幅窄（< 440px）时操作移到文字下面，
-     不会被挤得没有内边距；关闭按钮始终在右上角 */
+     不会被挤得没有内边距；关闭按钮始终在右上角。
+     第一行是一条带子（D171）：高 = 标题的行高和同一行里的操作按钮（小号）取大的；图标、标题、按钮、关闭都在带子里居中，
+     说明、列表往下排。所以按钮的字和标题在一条线上，说明折几行都一样；只有一行字时和整块居中一样 */
   .xxd-banner {
+    --banner-line: var(--leading-sm);
+    --banner-strip: var(--banner-line);
     container-type: inline-size;
     /* container-type 让宽度不再由内容决定：在 flex / 居中的父元素里也要占满一行 */
     width: 100%;
@@ -182,8 +186,13 @@
     line-height: var(--leading-sm);
   }
 
+  .xxd-banner:has(> .xxd-banner__actions) {
+    --banner-strip: max(var(--banner-line), var(--control-h-sm));
+  }
+
+  /* 图标比一行矮 2px（D171 之前就这样对齐第一行），跟着字一起往下让 */
   .xxd-banner > .ui-icon {
-    margin-top: var(--space-0-5);
+    margin-top: calc((var(--banner-strip) - var(--banner-line)) / 2 + var(--space-0-5));
     color: var(--muted);
   }
 
@@ -218,15 +227,22 @@
     grid-column: 1;
   }
 
+  .xxd-banner > :not(.ui-icon, [data-xxd-icon], .xxd-banner__actions, .xxd-banner__close) {
+    margin-top: calc((var(--banner-strip) - var(--banner-line)) / 2);
+  }
+
   .xxd-banner > .xxd-banner__actions {
     grid-column: 3;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
+    margin-top: calc((var(--banner-strip) - var(--control-h-sm)) / 2);
   }
 
+  /* 关闭按钮（超小号）比一行高 4px：带子只有一行高时上下各伸出去 2px，落在内边距里 */
   .xxd-banner > .xxd-banner__close {
     grid-column: 4;
+    margin-top: calc((var(--banner-strip) - var(--control-h-xs)) / 2);
   }
 
   /* 没有图标：少一栏 */
@@ -250,10 +266,16 @@
     grid-column: 1;
   }
 
+  /* 操作换到第二行：第一行的带子只剩标题那么高 */
   @container (max-width: 440px) {
+    .xxd-banner > * {
+      --banner-strip: var(--banner-line);
+    }
+
     .xxd-banner > .xxd-banner__actions {
       grid-row: 2;
       grid-column: 2 / -1;
+      margin-top: 0;
     }
 
     .xxd-banner:not(:has(> .ui-icon, > [data-xxd-icon])) > .xxd-banner__actions {

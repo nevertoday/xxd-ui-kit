@@ -347,6 +347,17 @@
     min-width: 0;
   }
 
+  /* 按钮对齐名字那一行（D171；以前对着名字 + 计划两行的中间，比名字低 10px）：按第一行的基线排，名字和按钮的字差不到 1px；
+     头像照旧对着整块居中。窄了按钮换到下一行，名字不会被推下去 */
+  .xxd-account:has(> .xxd-btn) {
+    align-items: baseline;
+    align-content: center;
+  }
+
+  .xxd-account:has(> .xxd-btn) > .xxd-avatar {
+    align-self: center;
+  }
+
   .xxd-account__name {
     overflow: hidden;
     font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);
@@ -378,9 +389,10 @@
     overflow: hidden;
   }
 
+  /* 单选、名字、价格都在名字那一行上（D171）；说明往下排 */
   .xxd-plan {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
     cursor: pointer;
@@ -412,6 +424,7 @@
   .xxd-plan__price {
     /* 能收缩，但不比数字本身窄（数字里没有能断开的地方） */
     flex: 0 1 auto;
+    margin-top: calc((var(--leading-sm) - var(--text-base)) / 2);
     overflow-wrap: break-word;
     font: var(--weight-strong) var(--text-base) / 1 var(--font-body);
     font-variant-numeric: tabular-nums;
