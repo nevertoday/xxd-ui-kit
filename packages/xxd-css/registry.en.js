@@ -284,7 +284,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     </div>
     <div class="xxd-option-group" role="group" aria-label="Other">
       <div class="xxd-option" data-value="auto">Follow my plan</div>
-      <div class="xxd-option" data-value="x" aria-disabled="true">4K (coming soon)</div>
+      <div class="xxd-option" data-value="x" aria-disabled="true" aria-describedby="picker-4k-why"><span>4K<small id="picker-4k-why">Coming soon; can’t be picked yet</small></span></div>
     </div>
   </div>
 </div>

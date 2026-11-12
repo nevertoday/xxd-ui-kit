@@ -1,5 +1,5 @@
 // React 版演示（@xxd/react）。函数名 = 原生组件名 + "Demo"；组件页会自动并排展示，源码也从这里抽取。
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
@@ -704,13 +704,15 @@ export function DumbbellDemo() {
 
 export function StepsDemo() {
   const [step, setStep] = useState(1);
+  const whyId = useId();
   const items = [{ title: "填资料" }, { title: "选套餐", description: "按月或按年" }, { title: "付款" }];
   return (
     <div style={{ display: "grid", gap: 24, width: "100%", maxWidth: 520 }}>
       <Steps label="开通会员" current={step} items={items} onStepClick={setStep} />
       <div className="xxd-cluster">
-        <button className="xxd-btn" data-size="sm" disabled={step === 0} onClick={() => setStep(step - 1)}>上一步</button>
-        <button className="xxd-btn" data-size="sm" data-variant="primary" disabled={step >= items.length} onClick={() => setStep(step + 1)}>{step >= items.length - 1 ? "完成" : "下一步"}</button>
+        <button className="xxd-btn" data-size="sm" disabled={step === 0} aria-describedby={step === 0 ? whyId : undefined} onClick={() => setStep(step - 1)}>上一步</button>
+        <button className="xxd-btn" data-size="sm" data-variant="primary" disabled={step >= items.length} aria-describedby={step >= items.length ? whyId : undefined} onClick={() => setStep(step + 1)}>{step >= items.length - 1 ? "完成" : "下一步"}</button>
+        <span id={whyId} className="xxd-help">{step >= items.length ? "三步都完成了" : `第 ${step + 1} 步，共 ${items.length} 步`}</span>
       </div>
     </div>
   );

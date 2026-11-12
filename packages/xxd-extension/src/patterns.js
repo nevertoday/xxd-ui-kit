@@ -99,9 +99,13 @@ export async function bindPermission(button, { permissions = [], origins = [], s
   const api = chromeApi()?.permissions;
   const want = { permissions, origins };
   // 允许了不写 disabled：焦点留在按钮上（以前掉到 body，F8），aria-disabled 让读屏知道不用再点
+  // 不能再点的原因就是「已允许」：连到 status 上（D181）
+  if (status && !status.id) status.id = `xxd-perm-${Math.random().toString(36).slice(2, 8)}`;
   const show = (granted, denied = false) => {
     if (granted) button.setAttribute("aria-disabled", "true");
     else button.removeAttribute("aria-disabled");
+    if (granted && status) button.setAttribute("aria-describedby", status.id);
+    else if (status && button.getAttribute("aria-describedby") === status.id) button.removeAttribute("aria-describedby");
     button.setAttribute("aria-pressed", String(granted));
     if (status) status.textContent = granted ? s("granted") : denied ? s("denied") : "";
     onChange?.(granted);

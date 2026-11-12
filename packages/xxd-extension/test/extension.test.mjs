@@ -225,16 +225,19 @@ describe("操作之后焦点不掉、结果说实话（FEEDBACK-ALIGN-PLAN D178�
     document.body.replaceChildren();
   });
 
-  it("允许了权限：焦点还在按钮上，按钮说已允许、不能再点", async () => {
+  it("允许了权限：焦点还在按钮上，按钮说已允许、不能再点，原因连在按钮上（D181）", async () => {
     const button = Object.assign(document.createElement("button"), { textContent: "允许读取" });
-    document.body.append(button);
-    await bindPermission(button, { permissions: ["tabs"] });
+    const status = document.createElement("p");
+    document.body.append(button, status);
+    await bindPermission(button, { permissions: ["tabs"], status });
     button.focus();
     button.click();
     await new Promise((r) => setTimeout(r, 0));
     expect(document.activeElement).toBe(button);
     expect(button.getAttribute("aria-pressed")).toBe("true");
     expect(button.getAttribute("aria-disabled")).toBe("true");
+    expect(document.getElementById(button.getAttribute("aria-describedby"))?.textContent).toBe(status.textContent);
+    expect(status.textContent).not.toBe("");
   });
 
   it("更新说明点「知道了」：横幅没了，焦点交给后面的东西，不掉到 body", async () => {

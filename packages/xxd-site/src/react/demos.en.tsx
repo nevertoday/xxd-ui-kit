@@ -1,5 +1,5 @@
 // demos.tsx 的英文版（/en/ 组件页用）：函数名、结构和中文版一一对应，只换文字。
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
@@ -704,13 +704,15 @@ export function DumbbellDemo() {
 
 export function StepsDemo() {
   const [step, setStep] = useState(1);
+  const whyId = useId();
   const items = [{ title: "Details" }, { title: "Plan", description: "Monthly or yearly" }, { title: "Pay" }];
   return (
     <div style={{ display: "grid", gap: 24, width: "100%", maxWidth: 520 }}>
       <Steps label="Join" current={step} items={items} onStepClick={setStep} />
       <div className="xxd-cluster">
-        <button className="xxd-btn" data-size="sm" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</button>
-        <button className="xxd-btn" data-size="sm" data-variant="primary" disabled={step >= items.length} onClick={() => setStep(step + 1)}>{step >= items.length - 1 ? "Finish" : "Next"}</button>
+        <button className="xxd-btn" data-size="sm" disabled={step === 0} aria-describedby={step === 0 ? whyId : undefined} onClick={() => setStep(step - 1)}>Back</button>
+        <button className="xxd-btn" data-size="sm" data-variant="primary" disabled={step >= items.length} aria-describedby={step >= items.length ? whyId : undefined} onClick={() => setStep(step + 1)}>{step >= items.length - 1 ? "Finish" : "Next"}</button>
+        <span id={whyId} className="xxd-help">{step >= items.length ? "All three steps done" : `Step ${step + 1} of ${items.length}`}</span>
       </div>
     </div>
   );
