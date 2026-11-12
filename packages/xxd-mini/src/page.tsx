@@ -45,6 +45,13 @@ export function XxdPage({ children, className, style, safeArea = true, customNav
   const [active, setActive] = useState(true);
   useDidShow(() => setActive(true));
   useDidHide(() => setActive(false));
+  // 轻提示的计时跟着「有没有页面看得见」走：所有页面都藏起来时暂停
+  const { pageVisible } = x;
+  useEffect(() => {
+    if (!active) return;
+    pageVisible(true);
+    return () => pageVisible(false);
+  }, [active, pageVisible]);
   // 图标表：子组件渲染时登记，登记了新的就在 layout effect 里再画一次页面根（和第一次渲染一起发出去，不会先空一帧）
   const iconMap = useRef(new Map<string, string>());
   const [iconCount, setIconCount] = useState(0);

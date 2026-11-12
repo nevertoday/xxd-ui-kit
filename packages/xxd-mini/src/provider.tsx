@@ -6,6 +6,7 @@ import type { XxdSettings } from "@xxd/tokens";
 import { DEFAULT_SETTINGS, DEFAULT_STORAGE_KEY, readSettings, resolveAppearance, systemTheme, watchSystemTheme, writeSettings, type Resolved, type Theme } from "./appearance";
 import { LABELS, type Labels, type Lang } from "./labels";
 import "./aria";
+import { toastDuration } from "./timing-core";
 
 export interface ToastOptions {
   tone?: "success" | "danger" | "warning" | "info";
@@ -26,6 +27,8 @@ export interface XxdContext extends Resolved {
   update: (patch: XxdSettings) => void;
   toast: (message: string, options?: ToastOptions) => void;
   dismissToast: (id: number) => void;
+  /** XxdPage 用：这一页看得见 / 看不见了。所有页面都看不见（小程序切到后台）时轻提示暂停计时，回来重新计时 */
+  pageVisible: (visible: boolean) => void;
 }
 
 const Ctx = createContext<XxdContext | null>(null);
@@ -57,6 +60,10 @@ export function XxdProvider({ children, lang = "zh", storageKey = DEFAULT_STORAG
   const [system, setSystem] = useState<Theme>(systemTheme);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  // 每条提示该留多久：暂停后回来按它重新计时（和网页版一样，FEEDBACK-ALIGN-PLAN D174；以前切到后台照样走，回来提示已经没了）
+  const durations = useRef(new Map<number, number>());
+  // 看得见的 XxdPage 有几页；null = 没用 XxdPage（自己放 ToastRegion），当作一直看得见
+  const visiblePages = useRef<number | null>(null);
 
   useEffect(() => watchSystemTheme(setSystem), []);
   // 自定义标签栏（TabBarHost）不在这棵树下面：设置改了发个事件告诉它
@@ -85,6 +92,7 @@ export function XxdProvider({ children, lang = "zh", storageKey = DEFAULT_STORAG
     const auto = timers.current.get(id);
     if (auto) clearTimeout(auto);
     timers.current.delete(id);
+    durations.current.delete(id);
     if (timers.current.has(-id)) return;
     setToasts((list) => list.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
     const later = setTimeout(() => {
@@ -99,10 +107,26 @@ export function XxdProvider({ children, lang = "zh", storageKey = DEFAULT_STORAG
       const id = (toastId += 1);
       // 最多同时三条：多了把最早的收掉
       setToasts((list) => [...list.filter((t) => !t.leaving).slice(-2), { id, message, ...options }]);
-      // 和网页版同一条规则（MOTION-REVIEW-PLAN D87）：带操作 10 秒；只是告知 2.6 秒起、每个字 0.1 秒、最多 8 秒；出错至少 6 秒
-      const read = Math.min(8000, Math.max(2600, 1200 + [...message].length * 100));
-      const duration = options.duration ?? (options.action ? 10000 : Math.max(options.tone === "danger" ? 6000 : 0, read));
-      timers.current.set(id, setTimeout(() => dismissToast(id), duration));
+      // 和网页版同一条规则（MOTION-REVIEW-PLAN D87，@xxd/css/timing）：带操作 10 秒；只是告知 2.6 秒起、每个字 0.1 秒、最多 8 秒；出错至少 6 秒
+      const duration = options.duration ?? toastDuration(message, { tone: options.tone, action: Boolean(options.action) });
+      durations.current.set(id, duration);
+      if (visiblePages.current !== 0) timers.current.set(id, setTimeout(() => dismissToast(id), duration));
+    },
+    [dismissToast],
+  );
+
+  const pageVisible = useCallback(
+    (visible: boolean) => {
+      const before = visiblePages.current ?? (visible ? 0 : 1);
+      visiblePages.current = Math.max(0, before + (visible ? 1 : -1));
+      if (before > 0 && visiblePages.current === 0) {
+        for (const id of durations.current.keys()) clearTimeout(timers.current.get(id));
+      } else if (before === 0 && visiblePages.current > 0) {
+        for (const [id, ms] of durations.current) {
+          clearTimeout(timers.current.get(id));
+          timers.current.set(id, setTimeout(() => dismissToast(id), ms));
+        }
+      }
     },
     [dismissToast],
   );
@@ -110,9 +134,9 @@ export function XxdProvider({ children, lang = "zh", storageKey = DEFAULT_STORAG
   const lockKey = JSON.stringify(lock ?? {});
   const value = useMemo<XxdContext>(() => {
     const resolved = resolveAppearance(settings, system, lock);
-    return { ...resolved, lang, t: LABELS[lang], system, update, toast, dismissToast };
+    return { ...resolved, lang, t: LABELS[lang], system, update, toast, dismissToast, pageVisible };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, system, lockKey, lang, update, toast, dismissToast]);
+  }, [settings, system, lockKey, lang, update, toast, dismissToast, pageVisible]);
 
   return (
     <Ctx.Provider value={value}>
@@ -134,6 +158,7 @@ export function useXxd(): XxdContext {
     update: () => console.warn("[@xxd/mini] 改外观要先在 app.tsx 里包一层 <XxdProvider>"),
     toast: (message: string) => console.warn(`[@xxd/mini] 轻提示要先在 app.tsx 里包一层 <XxdProvider>：${message}`),
     dismissToast: () => {},
+    pageVisible: () => {},
   });
 }
 

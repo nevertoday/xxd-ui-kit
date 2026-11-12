@@ -44,6 +44,14 @@ test("浮层栈：面板里再开对话框，一页只有一个 page-container�
   v.unmount();
 });
 
+test("按钮刚做完：中间一个勾（is-done），进行中时不打勾", async () => {
+  const v = render(app(h(mini.Button, { done: true }, "保存"), h(mini.Button, { done: true, loading: true }, "导出")));
+  const [saved, busy] = v.byClass("xxd-btn");
+  assert.match(cls(saved), /\bis-done\b/);
+  assert.doesNotMatch(cls(busy), /\bis-done\b/);
+  v.unmount();
+});
+
 test("轻提示：弹一条提示，用外观的组件不重画；最多三条；只在看得见的页面画；手动关掉不留定时器", async () => {
   let renders = 0;
   let toast;
@@ -63,8 +71,9 @@ test("轻提示：弹一条提示，用外观的组件不重画；最多三条�
   assert.equal(v.byClass("xxd-toast").length, 3, "最多同时三条");
   await act(async () => fake.hide());
   assert.equal(v.byClass("xxd-toast").length, 0, "页面被盖住时不画");
+  await tick(3000);
   await act(async () => fake.show());
-  assert.equal(v.byClass("xxd-toast").length, 3);
+  assert.equal(v.byClass("xxd-toast").length, 3, "藏起来的时候不计时：回来提示还在（FEEDBACK-ALIGN-PLAN D174）");
   await tick(2900);
   assert.equal(v.byClass("xxd-toast").length, 0, "2.6 秒后自动收起（短提示的下限，MOTION-REVIEW-PLAN D87）");
   v.unmount();

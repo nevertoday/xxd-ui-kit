@@ -47,6 +47,7 @@ export { DatePicker, type DatePickerProps } from "./datepicker";
 export { Result, type ResultProps } from "./result";
 export { Chart, Sparkline, chartPalette, chartSvg, type ChartProps, type ChartSeries } from "./chart";
 export { Gauge, Gauges, type GaugeProps } from "./gauge";
+export { BUSY_DELAY, DONE_FOR, toastDuration } from "./timing-core";
 export { gaugeModel, gaugeColors, GAUGE_PAINT, barsModel, proportionModel, waffleModel, calendarModel, matrixModel, dumbbellModel, radarModel, quadrantModel, type XxdGaugeOptions, type XxdGaugeModel } from "./viz-core";
 export { Legend } from "./legend";
 export { Bars, type BarsProps } from "./bars";

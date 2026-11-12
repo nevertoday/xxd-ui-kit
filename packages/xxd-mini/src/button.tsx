@@ -14,7 +14,10 @@ export interface ButtonProps {
   size?: "xs" | "sm" | "md" | "lg";
   /** 占满一行（手机上的主操作常用） */
   block?: boolean;
+  /** 进行中：转圈，点了不触发 */
   loading?: boolean;
+  /** 刚做完：中间一个勾（和网页版 Xxd.runBusy 一样，1 秒后自己把它关掉，FEEDBACK-ALIGN-PLAN D174） */
+  done?: boolean;
   disabled?: boolean;
   /** 开关按钮：按下 / 没按下 */
   pressed?: boolean;
@@ -32,14 +35,14 @@ export interface ButtonProps {
   [key: `on${string}`]: unknown;
 }
 
-export function Button({ children, variant, size, block, loading, disabled, pressed, icon, label, shape, className, style, openType, formType, onClick, ...rest }: ButtonProps) {
+export function Button({ children, variant, size, block, loading, done, disabled, pressed, icon, label, shape, className, style, openType, formType, onClick, ...rest }: ButtonProps) {
   const iconOnly = !children && Boolean(icon);
   if (iconOnly && !label && process.env.NODE_ENV !== "production") console.warn("[@xxd/mini] 只有图标的按钮要给 label（读屏要念出来）");
   const off = disabled || loading;
   return (
     <TaroButton
       {...(rest as Record<string, unknown>)}
-      className={cx("xxd-btn", mods({ variant: variant === "secondary" ? undefined : variant, size: size === "md" ? undefined : size, block, "icon-only": iconOnly, busy: loading, pressed, disabled: off, shape }), className)}
+      className={cx("xxd-btn", mods({ variant: variant === "secondary" ? undefined : variant, size: size === "md" ? undefined : size, block, "icon-only": iconOnly, busy: loading, done: done && !loading, pressed, disabled: off, shape }), className)}
       style={style}
       hoverClass={off ? "none" : "is-hover is-active"}
       hoverStayTime={60}
