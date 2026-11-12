@@ -10,16 +10,112 @@ export const patterns = {
     <p class="xxd-dropzone__title">Drag images here</p>
     <p class="xxd-help">Or <button class="xxd-link" type="button">choose image files</button>, or paste links with ⌘V</p>
   </div>
-  <p class="xxd-help" id="drop-out" style="margin-top:var(--space-3)"></p>
+  <p class="xxd-help" id="drop-out" style="margin-top:var(--space-3)" hidden></p>
+  <ul class="xxd-list" id="drop-files" style="margin-top:var(--space-3)" aria-label="Added images"></ul>
 </div>
 <script>
   {
-    // Choose image files opens the picker; anything that isn't an image is named (D180)
+    // One row per image: reading (no idea how long, so a thin bar sweeps; it only shows after 150ms) → uploading (progress is known: a bar and a percentage) → uploaded; a failure says so and offers Retry (D176),
+    // Remove works at any time and stops an upload in flight (same as the mini-program Uploader). Anything that isn't an image is named (D180). Demo: an upload takes 0.9s and the third image fails the first time
     const out = document.getElementById("drop-out");
+    const list = document.getElementById("drop-files");
+    const T = { reading: "Reading", uploading: "Uploading", done: "Uploaded", failed: "Didn’t upload. You can retry.", retry: "Retry", remove: "Remove" };
+    let added = 0;
+    const kb = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB");
+    const el = (tag, cls, text) => Object.assign(document.createElement(tag), { className: cls, textContent: text || "" });
+    const add = (file) => {
+      let failOnce = ++added % 3 === 0;
+      const li = el("li", "xxd-list__item");
+      const main = el("div", "xxd-list__main");
+      const meta = el("span", "xxd-list__meta", kb(file.size));
+      main.append(el("span", "xxd-list__title", file.name), meta);
+      const remove = el("button", "xxd-btn");
+      Object.assign(remove, { type: "button", innerHTML: Xxd.ICON.close(16) });
+      Object.assign(remove.dataset, { variant: "ghost", size: "sm", iconOnly: "" });
+      remove.setAttribute("aria-label", T.remove + " " + file.name);
+      li.append(main, remove);
+      list.append(li);
+      let timer = 0;
+      let reader = null;
+      let bar = null;
+      let retry = null;
+      const show = (state, pct) => {
+        bar?.remove();
+        retry?.remove();
+        main.querySelector(".xxd-error")?.remove();
+        bar = retry = null;
+        meta.textContent = kb(file.size) + (state === "failed" ? "" : " · " + T[state] + (state === "uploading" ? " " + pct + "%" : ""));
+        if (state === "reading") bar = Object.assign(el("div", "xxd-loadbar"), { role: "progressbar" });
+        if (state === "uploading") bar = Object.assign(el("progress", "xxd-progress"), { max: 100, value: pct });
+        if (bar) {
+          bar.setAttribute("aria-label", file.name);
+          bar.style.marginTop = "var(--space-1-5)";
+          main.append(bar);
+        }
+        if (state === "failed") {
+          main.append(Object.assign(el("span", "xxd-error", T.failed), { style: "display:block" }));
+          retry = Object.assign(el("button", "xxd-btn", T.retry), { type: "button" });
+          retry.dataset.size = "sm";
+          retry.addEventListener("click", () => {
+            remove.focus();
+            start();
+          });
+          li.insertBefore(retry, remove);
+          Xxd.announce(file.name + " " + T.failed, { assertive: true });
+        }
+        if (state === "done") Xxd.announce(file.name + " " + T.done);
+      };
+      const upload = () => {
+        let pct = 0;
+        show("uploading", pct);
+        timer = setInterval(() => {
+          pct += 10;
+          if (failOnce && pct >= 60) {
+            failOnce = false;
+            clearInterval(timer);
+            return show("failed");
+          }
+          if (pct >= 100) {
+            clearInterval(timer);
+            return show("done");
+          }
+          bar.value = pct;
+          meta.textContent = kb(file.size) + " · " + T.uploading + " " + pct + "%";
+        }, 90);
+      };
+      const start = () => {
+        clearTimeout(timer);
+        clearInterval(timer);
+        meta.textContent = kb(file.size);
+        timer = setTimeout(() => show("reading"), 150);
+        reader = new FileReader();
+        reader.onload = () => {
+          clearTimeout(timer);
+          upload();
+        };
+        reader.onerror = () => {
+          clearTimeout(timer);
+          show("failed");
+        };
+        reader.readAsArrayBuffer(file);
+      };
+      remove.addEventListener("click", () => {
+        clearTimeout(timer);
+        clearInterval(timer);
+        reader?.abort();
+        const next = li.nextElementSibling || li.previousElementSibling;
+        (next ? next.querySelector("button:last-child") : document.getElementById("drop-zone").querySelector(".xxd-link")).focus();
+        li.remove();
+      });
+      start();
+    };
     const take = (files) => {
       const bad = files.filter((f) => !f.type.startsWith("image/"));
-      out.className = bad.length ? "xxd-error" : "xxd-help";
-      out.textContent = bad.length ? \`Images only: \${bad.map((f) => f.name).join(", ")} \${bad.length > 1 ? "aren't images" : "isn't an image"}\` : \`Got \${files.length} images\`;
+      out.className = "xxd-error";
+      out.hidden = !bad.length;
+      out.textContent = bad.length ? "Images only: " + bad.map((f) => f.name).join(", ") + (bad.length > 1 ? " aren’t images" : " isn’t an image") : "";
+      if (bad.length) Xxd.announce(out.textContent, { assertive: true });
+      files.filter((f) => f.type.startsWith("image/")).forEach(add);
     };
     const pick = Object.assign(document.createElement("input"), { type: "file", accept: "image/*", multiple: true });
     pick.addEventListener("change", () => take([...pick.files]));
@@ -29,14 +125,18 @@ export const patterns = {
   Xxd.bindDrop(document.getElementById("drop-demo"), {
     zone: document.getElementById("drop-zone"),
     onFiles: (files) => window.__dropTake(files),
-    onText: (text) => (document.getElementById("drop-out").textContent = \`Got text: \${text.slice(0, 40)}\`),
+    onText: (text) => {
+      const out = document.getElementById("drop-out");
+      Object.assign(out, { className: "xxd-help", hidden: false, textContent: "Got text: " + text.slice(0, 40) });
+    },
   });
 </script>`,
     anatomy: [
       "Dashed area: icon · one sentence · other ways in (pick files / paste)",
       "Veil: covers the whole panel with one sentence and disappears when you drag out",
+      "File row: name · size and status · progress bar; on failure an error line and Retry; Remove at the end",
     ],
-    rules: ["Every way in says what it will bring before you click", "Doesn't take over when pasting into an input"],
+    rules: ["Every way in says what it will bring before you click", "Doesn't take over when pasting into an input", "One row per added file: reading (thin bar) → uploading (bar and percentage) → uploaded; a failure says so and offers Retry, and Remove works at any time (an upload in flight stops)"],
     js: `const off = Xxd.bindDrop(panel, { zone, onFiles(files) {…}, onText(text) {…}, veil: "Drop to add to this set" })`,
   },
   Viewer: {
