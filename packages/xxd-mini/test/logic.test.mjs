@@ -483,3 +483,23 @@ test("图解第二、三批：流程图的分支和合拢、树三层自己变�
   assert.ok(cls(v.byClass("xxd-layers__item")[1]).includes("is-highlight"));
   v.unmount();
 });
+
+test("列表行的控件对齐标题那一行（FEEDBACK-ALIGN-PLAN D171）：有控件的行按基线排，没有字的控件放进一行高的槽里", async () => {
+  const { Cell, Switch, Stepper, Button } = mini;
+  const v = render(
+    app(
+      h(Cell, { title: "圆角", description: "缺省是直角", control: h(Switch, { label: "圆角", checked: false, onCheckedChange() {} }) }),
+      h(Cell, { title: "杯数", description: "最多 9 杯", control: h(Stepper, { label: "杯数", value: 1, onValueChange() {} }) }),
+      h(Cell, { title: "分享", description: "发给朋友", control: h(Button, { icon: [], label: "分享" }) }),
+      h(Cell, { title: "导出", description: "存成一个文件", control: h(Button, { size: "sm" }, "导出") }),
+      h(Cell, { title: "主题", value: "亮" }),
+      h(Cell, { title: "主色", stack: true, control: h(Button, null, "换") }),
+    ),
+  );
+  await tick(10);
+  const rows = v.byClass("xxd-row");
+  const slots = v.byClass("xxd-row__control");
+  assert.deepEqual(rows.map((r) => cls(r).includes("is-with-control")), [true, true, true, true, false, false], "放了控件、又不是上下排的行");
+  assert.deepEqual(slots.map((s) => cls(s).includes("is-toggle")), [true, false, true, false, false, false], "开关、只有图标的按钮没有字可以对基线");
+  v.unmount();
+});

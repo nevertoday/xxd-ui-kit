@@ -19,6 +19,11 @@
   min-height: 0;
 }
 
+/* 有控件的行按第一行的基线排（D171）：行首的图标、头像照旧对着整块居中，和网页版的列表行一样 */
+.xxd-row.is-with-control > .xxd-cell__leading {
+  align-self: center;
+}
+
 .is-link.xxd-row:not(.is-chevron):after {
   display: none;
 }

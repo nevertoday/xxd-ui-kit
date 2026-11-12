@@ -111,6 +111,10 @@ test("真的 @xxd/css：改写后每个文件 WebView、Skyline 两列都是 0�
   }
   assert.ok(total <= SIZE_BUDGET, `压缩后 ${total} 字节`);
   assert.equal(files.size, manifest.components.length);
+  // 网页版用 :has() 写的「控件对齐标题那一行」（D171）要带到小程序：mini.json 的 has 换成 Cell 加的类名
+  const cell = files.get("Cell");
+  assert.match(cell, /\.xxd-row:not\(\.is-stack\)\.is-with-control \{\s*align-items: baseline;/);
+  assert.match(cell, /\.xxd-row > \.xxd-row__control\.is-toggle \{\s*align-self: flex-start;/);
 });
 
 test("令牌小程序版：page 上是亮色、媒体查询里是暗色，都已经算成具体的值", () => {

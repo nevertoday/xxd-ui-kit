@@ -1,7 +1,7 @@
 // 列表行：手机上最常用的一行——标题、说明，右边是值、控件或箭头。网页版的设置组（.xxd-group / .xxd-row）。
 //   <CellGroup title="通知"><Cell title="完成音效" control={<Switch …/>} /></CellGroup>
 import { View, Text } from "@tarojs/components";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { isValidElement, useMemo, useRef, useState, type ReactNode } from "react";
 import "../styles/cell.mini.css";
 import { a11y } from "./aria";
 import { RowCtx, type RowControl } from "./row";
@@ -67,9 +67,13 @@ export function Cell({ title, description, value, control, leading, arrow, dange
   const toggleRow = state != null && !state.disabled && !disabled;
   const tappable = (Boolean(onClick) && !control && !disabled) || toggleRow;
   const label = typeof title === "string" ? title : undefined;
+  // 控件对齐标题那一行（D171）：网页版用 :has() 认出来的两种情况，小程序里由这里加类名（mini.json 的 has）。
+  // 有控件的行按第一行的基线排；没有字的控件（开关、复选、单选、只有图标的按钮）放进一行高的槽里居中。
+  // 只有图标的按钮按属性认（有 icon、没有 children），不 import Button：只用 Cell 的页面不用带上按钮的样式
+  const iconOnly = isValidElement<{ icon?: unknown; children?: ReactNode }>(control) && control.props.icon != null && control.props.children == null;
   return (
     <View
-      className={cx("xxd-row", "xxd-cell", tappable && "is-link", mods({ chevron: arrow, tone: danger ? "danger" : undefined, stack, disabled: disabled || state?.disabled }), className)}
+      className={cx("xxd-row", "xxd-cell", tappable && "is-link", control != null && !stack && "is-with-control", mods({ chevron: arrow, tone: danger ? "danger" : undefined, stack, disabled: disabled || state?.disabled }), className)}
       hoverClass={tappable ? "is-hover" : "none"}
       hoverStayTime={60}
       onClick={toggleRow ? () => ctl.current?.toggle() : tappable ? onClick : undefined}
@@ -81,7 +85,7 @@ export function Cell({ title, description, value, control, leading, arrow, dange
         {description != null && <View className="xxd-row__desc">{description}</View>}
       </View>
       {(value != null || control != null) && (
-        <View className="xxd-row__control">
+        <View className={cx("xxd-row__control", (state != null || iconOnly) && "is-toggle")}>
           {value != null && <Text className="xxd-cell__value">{value}</Text>}
           <RowCtx.Provider value={rowApi}>{control}</RowCtx.Provider>
         </View>

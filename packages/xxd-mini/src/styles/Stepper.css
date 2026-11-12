@@ -16,11 +16,15 @@
 
 .xxd-stepper__value {
   min-width: var(--control-h-sm);
-  padding: 0 var(--space-1);
+  /* 上下撑满框高（框高减去上下两条边），数字在正中 */
+  padding: calc((var(--control-h-sm) - var(--text-sm)) / 2 - 1px) var(--space-1);
   color: var(--ink);
   font: var(--weight-medium) var(--text-sm) / 1 var(--font-body);
   font-variant-numeric: tabular-nums;
   text-align: center;
+  /* 整个加减的基线是数字的基线（列表行里按第一行的基线排，D171）：数字撑满框高。
+     不这样写基线落在 − 按钮的底边（没有字的按钮），放进行里数字比标题高 4.5px */
+  align-self: baseline;
 }
 
 .xxd-stepper.is-disabled .xxd-stepper__value {
