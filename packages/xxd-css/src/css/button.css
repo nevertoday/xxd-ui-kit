@@ -307,6 +307,25 @@
     cursor: not-allowed;
   }
 
+  /* 文字链接上的 Xxd.runBusy（「我已支付，立即查询」，FEEDBACK-ALIGN-PLAN D180）：进行中 150ms 后变灰，完成时字后面一个勾 1 秒（以前 900ms 里什么都不变） */
+  .xxd-link[aria-busy="true"] {
+    color: var(--muted);
+    cursor: progress;
+    transition: color 0s linear 150ms;
+  }
+
+  .xxd-link[data-done]::after {
+    content: "";
+    display: inline-block;
+    width: var(--icon-md);
+    height: var(--icon-md);
+    margin-inline-start: var(--space-1);
+    vertical-align: -0.125em;
+    background: var(--success);
+    -webkit-mask: var(--xxd-check) center / contain no-repeat;
+    mask: var(--xxd-check) center / contain no-repeat;
+  }
+
   /* 危险的文字链接（「清空全部记录」）：用危险色，别写 style="color:…" */
   .xxd-link[data-tone="danger"] {
     color: var(--danger);

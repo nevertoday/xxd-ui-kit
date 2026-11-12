@@ -87,7 +87,7 @@
         "data-block": "撑满一行",
         "data-shape": "round：圆形图标按钮（跟随圆角开关）"
       },
-      "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-btn\" data-variant=\"primary\">写入 X</button>\n  <button class=\"xxd-btn\">保存草稿</button>\n  <button class=\"xxd-btn\" data-variant=\"ghost\">稍后</button>\n  <button class=\"xxd-btn\" data-variant=\"danger\">删除</button>\n  <button class=\"xxd-btn\" data-size=\"xs\">xs</button>\n</div>",
+      "markup": "<div class=\"xxd-cluster\">\n  <button class=\"xxd-btn\" data-variant=\"primary\" onclick=\"Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: '已写入 X' })\">写入 X</button>\n  <button class=\"xxd-btn\">保存草稿</button>\n  <button class=\"xxd-btn\" data-variant=\"ghost\">稍后</button>\n  <button class=\"xxd-btn\" data-variant=\"danger\" onclick=\"Xxd.toast('已删除草稿', { action: { label: '撤销', onClick: () => Xxd.toast('已恢复草稿', { tone: 'success' }) } })\">删除</button>\n  <button class=\"xxd-btn\" data-size=\"xs\">xs</button>\n</div>",
       "react": "Button",
       "rules": [
         "按钮文字描述下一次点击会做什么",
@@ -131,6 +131,16 @@
           "title": "进行中与完成",
           "markup": "<button class=\"xxd-btn\" data-variant=\"primary\" onclick=\"Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 1200)))\"><i data-xxd-icon=\"Save\" data-size=\"16\"></i>保存</button>",
           "text": "点一下：宽度不跳，转圈居中；完成后图标变勾 1 秒。"
+        },
+        {
+          "title": "失败可以重试",
+          "markup": "<button class=\"xxd-btn\" onclick=\"Xxd.runBusy(this, () => new Promise((_, no) => setTimeout(() => no(new Error('offline')), 600)), { failed: '没有导出：网络断了' }).catch(() => {})\"><i data-xxd-icon=\"Download\" data-size=\"16\"></i>导出</button>",
+          "text": "点一下：失败时按钮复原，弹一张出错的 toast（至少 6 秒），带「重试」——再跑一次同一个任务；焦点一直在按钮上，读屏立刻念出来。"
+        },
+        {
+          "title": "禁用要说为什么",
+          "markup": "<div class=\"xxd-stack\" style=\"justify-items:start\"><button class=\"xxd-btn\" data-variant=\"primary\" disabled aria-describedby=\"post-why\">写入 X</button><p class=\"xxd-help\" id=\"post-why\">先登录才能写入</p></div>",
+          "text": "能不禁用就不禁用：让人点了再说缺什么。必须禁用时，旁边一行字说原因，用 aria-describedby 连到按钮上，读屏聚焦时一起念。"
         }
       ],
       "a11y": [
@@ -1271,7 +1281,7 @@
       ],
       "summary": "面包屑、标题、说明、操作、tab —— 资源页、设置页的顶部。",
       "block": true,
-      "markup": "<header class=\"xxd-page-header\">\n  <ol class=\"xxd-breadcrumbs\"><li><a href=\"#\">插件</a></li><li aria-current=\"page\">长文发布</li></ol>\n  <div class=\"xxd-page-header__row\">\n    <h1 class=\"xxd-page-header__title\">长文发布</h1>\n    <div class=\"xxd-page-header__actions\"><button class=\"xxd-btn\">打开商店页</button><button class=\"xxd-btn\" data-variant=\"primary\">发布新版本</button></div>\n  </div>\n  <p class=\"xxd-page-header__desc\">把 Markdown 写进 X 文章。v1.8.2 · 2,410 位用户</p>\n  <div class=\"xxd-tabs\" role=\"tablist\" aria-label=\"插件\" data-xxd-tabs><button role=\"tab\" aria-selected=\"true\">概览</button><button role=\"tab\">版本</button><button role=\"tab\">设置</button></div>\n</header>",
+      "markup": "<header class=\"xxd-page-header\">\n  <ol class=\"xxd-breadcrumbs\"><li><a href=\"#\">插件</a></li><li aria-current=\"page\">长文发布</li></ol>\n  <div class=\"xxd-page-header__row\">\n    <h1 class=\"xxd-page-header__title\">长文发布</h1>\n    <div class=\"xxd-page-header__actions\"><button class=\"xxd-btn\">打开商店页</button><button class=\"xxd-btn\" data-variant=\"primary\" onclick=\"Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: '已发布 1.8.3' })\">发布新版本</button></div>\n  </div>\n  <p class=\"xxd-page-header__desc\">把 Markdown 写进 X 文章。v1.8.2 · 2,410 位用户</p>\n  <div class=\"xxd-tabs\" role=\"tablist\" aria-label=\"插件\" data-xxd-tabs><button role=\"tab\" aria-selected=\"true\">概览</button><button role=\"tab\">版本</button><button role=\"tab\">设置</button></div>\n</header>",
       "react": "PageHeader（区块）",
       "a11y": [
         "标题是页面的 h1；面包屑和 tab 各自带语义（nav / tablist）",
@@ -1312,7 +1322,7 @@
         "xxd-row__desc",
         "xxd-row__control"
       ],
-      "markup": "<section class=\"xxd-group\">\n  <h2 class=\"xxd-group__title\">写入</h2>\n  <div class=\"xxd-group__body\">\n    <div class=\"xxd-row\">\n      <div class=\"xxd-row__text\"><div class=\"xxd-row__title\">写入标题</div><div class=\"xxd-row__desc\">第一行 # 标题作为文章标题</div></div>\n      <div class=\"xxd-row__control\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" aria-label=\"写入标题\"></div>\n    </div>\n  </div>\n</section>",
+      "markup": "<section class=\"xxd-group\">\n  <h2 class=\"xxd-group__title\">写入</h2>\n  <p class=\"xxd-group__note\">改动自动保存</p>\n  <div class=\"xxd-group__body\">\n    <div class=\"xxd-row\">\n      <div class=\"xxd-row__text\"><div class=\"xxd-row__title\">写入标题</div><div class=\"xxd-row__desc\">第一行 # 标题作为文章标题</div></div>\n      <div class=\"xxd-row__control\"><input type=\"checkbox\" role=\"switch\" class=\"xxd-switch\" aria-label=\"写入标题\" onchange=\"Xxd.saveSetting(() => new Promise((r) => setTimeout(r, 400)), { status: this.closest('.xxd-group').querySelector('[data-save-status]'), undo: () => (this.checked = !this.checked), redo: () => (this.checked = !this.checked) })\"></div>\n    </div>\n  </div>\n  <p class=\"xxd-help\" data-save-status hidden></p>\n</section>",
       "rules": [
         "灰色小标题 + 一个带框的主体，行之间细线",
         "整个 tab 外面不画框",
@@ -1540,7 +1550,7 @@
         "xxd-dock__primary",
         "xxd-dock__danger"
       ],
-      "markup": "<footer class=\"xxd-dock\">\n  <div class=\"xxd-dock__status\">30 字符 · 已保存</div>\n  <div class=\"xxd-dock__tools\"><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" aria-label=\"封面\"><i data-xxd-icon=\"Image\"></i></button></div>\n  <div class=\"xxd-dock__primary\"><button class=\"xxd-btn\" data-variant=\"primary\" data-size=\"sm\">写入 X</button></div>\n</footer>",
+      "markup": "<footer class=\"xxd-dock\">\n  <div class=\"xxd-dock__status\">30 字符 · 已保存</div>\n  <div class=\"xxd-dock__tools\"><button class=\"xxd-btn\" data-variant=\"ghost\" data-icon-only data-size=\"sm\" aria-label=\"封面\"><i data-xxd-icon=\"Image\"></i></button></div>\n  <div class=\"xxd-dock__primary\"><button class=\"xxd-btn\" data-variant=\"primary\" data-size=\"sm\" onclick=\"Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: '已写入 X' })\">写入 X</button></div>\n</footer>",
       "rules": [
         "状态在开头 · 可撤销的工具一组 · 后果最大的下一步在末尾",
         "不是第二条导航"

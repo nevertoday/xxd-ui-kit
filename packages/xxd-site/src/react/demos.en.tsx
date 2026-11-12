@@ -1,5 +1,5 @@
 // demos.tsx 的英文版（/en/ 组件页用）：函数名、结构和中文版一一对应，只换文字。
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
@@ -72,6 +72,8 @@ import {
   Tooltip,
   TooltipProvider,
   useKumoToastManager,
+  useBusy,
+  useSettingSave,
 } from "@xxd/react";
 
 export function TextDemo() {
@@ -83,16 +85,31 @@ export function TextDemo() {
   );
 }
 
-export function ButtonDemo() {
+// Every click gives a result (D180): Post shows busy (only after 150ms) then a check; Export fails once and the error toast offers Retry; Delete offers Undo
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+function ButtonRow() {
+  const toasts = useKumoToastManager();
+  const post = useBusy({ done: "Posted to X" });
+  const save = useBusy();
+  const exportOnce = useBusy({ failed: "Not exported: the network is down" });
+  const tries = useRef(0);
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button variant="primary">Post to X</Button>
-      <Button>Save draft</Button>
+      <Button variant="primary" {...post.buttonProps} onClick={() => void post.run(() => wait(900))}>Post to X</Button>
+      <Button {...save.buttonProps} onClick={() => void save.run(() => wait(100))}>Save draft</Button>
       <Button variant="ghost">Later</Button>
-      <Button variant="outline">Export</Button>
-      <Button variant="destructive">Delete</Button>
-      <Button loading>Generating…</Button>
+      <Button variant="outline" {...exportOnce.buttonProps} onClick={() => void exportOnce.run(async () => { tries.current += 1; await wait(600); if (tries.current === 1) throw new Error("offline"); }).catch(() => {})}>Export</Button>
+      <Button variant="destructive" onClick={() => toasts.add({ title: "Draft deleted", actions: [{ children: "Undo", onClick: () => toasts.add({ title: "Draft restored", variant: "success" }) }] })}>Delete</Button>
+      <Button variant="primary" disabled aria-describedby="react-post-why">Post to X</Button>
+      <span id="react-post-why" className="text-xs text-kumo-subtle">Sign in to post</span>
     </div>
+  );
+}
+export function ButtonDemo() {
+  return (
+    <Toasty>
+      <ButtonRow />
+    </Toasty>
   );
 }
 
@@ -271,7 +288,13 @@ export function TooltipDemo() {
 
 function ToastButton() {
   const toasts = useKumoToastManager();
-  return <Button onClick={() => toasts.add({ title: "Draft saved" })}>Show a toast</Button>;
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button onClick={() => toasts.add({ title: "Draft saved" })}>Show a toast</Button>
+      <Button onClick={() => toasts.add({ title: "Couldn't post: the network is down", variant: "error" })}>An error</Button>
+      <Button onClick={() => toasts.add({ title: "Draft deleted", actions: [{ children: "Undo", onClick: () => toasts.add({ title: "Draft restored", variant: "success" }) }] })}>With undo</Button>
+    </div>
+  );
 }
 export function ToastDemo() {
   return (
@@ -499,12 +522,13 @@ export function RailDemo() {
 }
 
 export function DockDemo() {
+  const post = useBusy({ done: "Posted to X" });
   return (
     <Dock
       style={{ position: "static", width: 380 }}
       status="30 characters · Saved"
       tools={<Button variant="ghost" shape="square" size="sm" aria-label="Cover" icon={<Icon name="Image" />} />}
-      primary={<Button variant="primary" size="sm">Post to X</Button>}
+      primary={<Button variant="primary" size="sm" {...post.buttonProps} onClick={() => void post.run(() => wait(900))}>Post to X</Button>}
     />
   );
 }
@@ -524,12 +548,18 @@ export function SheetDemo() {
 
 export function SettingsGroupDemo() {
   const [on, setOn] = useState(true);
+  const saving = useSettingSave();
   return (
     <Settings style={{ maxWidth: 420 }}>
-      <SettingsGroup title="Writing">
-        <SettingsRow title="Write the title" description="Use the first # heading as the post title" control={<input type="checkbox" role="switch" className="xxd-switch" aria-label="Write the title" checked={on} onChange={(e) => setOn(e.target.checked)} />} />
+      <SettingsGroup title="Writing" note="Changes save automatically">
+        <SettingsRow title="Write the title" description="Use the first # heading as the post title" control={<input type="checkbox" role="switch" className="xxd-switch" aria-label="Write the title" checked={on} onChange={(e) => {
+          const v = e.target.checked;
+          setOn(v);
+          void saving.save(() => wait(400), { undo: () => setOn(!v), redo: () => setOn(v) });
+        }} />} />
         <SettingsRow title="Local image folder" description="Not connected" href="#" />
       </SettingsGroup>
+      {saving.line}
     </Settings>
   );
 }

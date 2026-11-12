@@ -73,10 +73,10 @@ export const components = {
       "data-shape": "round: circular icon button (follows the corners switch)",
     },
     markup: `<div class="xxd-cluster">
-  <button class="xxd-btn" data-variant="primary">Post to X</button>
+  <button class="xxd-btn" data-variant="primary" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: 'Posted to X' })">Post to X</button>
   <button class="xxd-btn">Save draft</button>
   <button class="xxd-btn" data-variant="ghost">Later</button>
-  <button class="xxd-btn" data-variant="danger">Delete</button>
+  <button class="xxd-btn" data-variant="danger" onclick="Xxd.toast('Draft deleted', { action: { label: 'Undo', onClick: () => Xxd.toast('Draft restored', { tone: 'success' }) } })">Delete</button>
   <button class="xxd-btn" data-size="xs">xs</button>
 </div>`,
     sample: `<button class="xxd-btn" data-variant="primary">Post to X</button>`,
@@ -120,6 +120,16 @@ export const components = {
         title: "Busy and done",
         markup: `<button class="xxd-btn" data-variant="primary" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 1200)))"><i data-xxd-icon="Save" data-size="16"></i>Save</button>`,
         text: "Click it: the width doesn't jump and the spinner stays centered; when done, the icon turns into a check for one second.",
+      },
+      {
+        title: "Failures can be retried",
+        markup: `<button class="xxd-btn" onclick="Xxd.runBusy(this, () => new Promise((_, no) => setTimeout(() => no(new Error('offline')), 600)), { failed: 'Not exported: the network is down' }).catch(() => {})"><i data-xxd-icon="Download" data-size="16"></i>Export</button>`,
+        text: "Click it: on failure the button comes back and an error toast (at least 6 seconds) offers Retry, which runs the same task again. Focus stays on the button and screen readers hear it right away.",
+      },
+      {
+        title: "Say why it's disabled",
+        markup: `<div class="xxd-stack" style="justify-items:start"><button class="xxd-btn" data-variant="primary" disabled aria-describedby="post-why">Post to X</button><p class="xxd-help" id="post-why">Sign in to post</p></div>`,
+        text: "Avoid disabling when you can: let people click and then say what's missing. When it must be disabled, a line next to it says why, linked with aria-describedby so screen readers read it on focus.",
       },
     ],
     a11y: [
@@ -651,7 +661,7 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
   <ol class="xxd-breadcrumbs"><li><a href="#">Extensions</a></li><li aria-current="page">Long-form publisher</li></ol>
   <div class="xxd-page-header__row">
     <h1 class="xxd-page-header__title">Long-form publisher</h1>
-    <div class="xxd-page-header__actions"><button class="xxd-btn">Open store page</button><button class="xxd-btn" data-variant="primary">Publish new version</button></div>
+    <div class="xxd-page-header__actions"><button class="xxd-btn">Open store page</button><button class="xxd-btn" data-variant="primary" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: 'Published 1.8.3' })">Publish new version</button></div>
   </div>
   <p class="xxd-page-header__desc">Writes Markdown into X Articles. v1.8.2 · 2,410 users</p>
   <div class="xxd-tabs" role="tablist" aria-label="Extension" data-xxd-tabs><button role="tab" aria-selected="true">Overview</button><button role="tab">Versions</button><button role="tab">Settings</button></div>
@@ -669,12 +679,14 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     summary: "One group on a settings page: a group name + rows (title, description, control).",
     markup: `<section class="xxd-group">
   <h2 class="xxd-group__title">Writing</h2>
+  <p class="xxd-group__note">Changes save automatically</p>
   <div class="xxd-group__body">
     <div class="xxd-row">
       <div class="xxd-row__text"><div class="xxd-row__title">Write the title</div><div class="xxd-row__desc">Use the first # heading as the post title</div></div>
-      <div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" aria-label="Write the title"></div>
+      <div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" aria-label="Write the title" onchange="Xxd.saveSetting(() => new Promise((r) => setTimeout(r, 400)), { status: this.closest('.xxd-group').querySelector('[data-save-status]'), undo: () => (this.checked = !this.checked), redo: () => (this.checked = !this.checked) })"></div>
     </div>
   </div>
+  <p class="xxd-help" data-save-status hidden></p>
 </section>`,
     rules: [
       "A small gray title + one framed body, thin lines between rows",
@@ -779,7 +791,7 @@ await Xxd.confirmDelete({ name: "Long-form publisher", what: "all records of thi
     markup: `<footer class="xxd-dock">
   <div class="xxd-dock__status">30 characters · Saved</div>
   <div class="xxd-dock__tools"><button class="xxd-btn" data-variant="ghost" data-icon-only data-size="sm" aria-label="Cover"><i data-xxd-icon="Image"></i></button></div>
-  <div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" data-size="sm">Post to X</button></div>
+  <div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" data-size="sm" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: 'Posted to X' })">Post to X</button></div>
 </footer>`,
     rules: [
       "Status first · undoable tools in one group · the step with the biggest consequence last",

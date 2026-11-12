@@ -1,5 +1,5 @@
 // React 版演示（@xxd/react）。函数名 = 原生组件名 + "Demo"；组件页会自动并排展示，源码也从这里抽取。
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { chartOptions, sparkline } from "@xxd/css";
 import {
   Chart,
@@ -72,6 +72,8 @@ import {
   Tooltip,
   TooltipProvider,
   useKumoToastManager,
+  useBusy,
+  useSettingSave,
 } from "@xxd/react";
 
 export function TextDemo() {
@@ -83,16 +85,31 @@ export function TextDemo() {
   );
 }
 
-export function ButtonDemo() {
+// 点了要有结果（D180）：写入 → 进行中（150ms 后才露出来）再打勾；导出第一次失败 → 出错的 toast 带「重试」；删除 → 删掉并给撤销
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+function ButtonRow() {
+  const toasts = useKumoToastManager();
+  const post = useBusy({ done: "已写入 X" });
+  const save = useBusy();
+  const exportOnce = useBusy({ failed: "没有导出：网络断了" });
+  const tries = useRef(0);
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button variant="primary">写入 X</Button>
-      <Button>保存草稿</Button>
+      <Button variant="primary" {...post.buttonProps} onClick={() => void post.run(() => wait(900))}>写入 X</Button>
+      <Button {...save.buttonProps} onClick={() => void save.run(() => wait(100))}>保存草稿</Button>
       <Button variant="ghost">稍后</Button>
-      <Button variant="outline">导出</Button>
-      <Button variant="destructive">删除</Button>
-      <Button loading>正在生成…</Button>
+      <Button variant="outline" {...exportOnce.buttonProps} onClick={() => void exportOnce.run(async () => { tries.current += 1; await wait(600); if (tries.current === 1) throw new Error("offline"); }).catch(() => {})}>导出</Button>
+      <Button variant="destructive" onClick={() => toasts.add({ title: "已删除草稿", actions: [{ children: "撤销", onClick: () => toasts.add({ title: "已恢复草稿", variant: "success" }) }] })}>删除</Button>
+      <Button variant="primary" disabled aria-describedby="react-post-why">写入 X</Button>
+      <span id="react-post-why" className="text-xs text-kumo-subtle">先登录才能写入</span>
     </div>
+  );
+}
+export function ButtonDemo() {
+  return (
+    <Toasty>
+      <ButtonRow />
+    </Toasty>
   );
 }
 
@@ -271,7 +288,13 @@ export function TooltipDemo() {
 
 function ToastButton() {
   const toasts = useKumoToastManager();
-  return <Button onClick={() => toasts.add({ title: "已保存草稿" })}>弹个 toast</Button>;
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button onClick={() => toasts.add({ title: "已保存草稿" })}>弹个 toast</Button>
+      <Button onClick={() => toasts.add({ title: "写入失败：网络断开了", variant: "error" })}>出错的</Button>
+      <Button onClick={() => toasts.add({ title: "已删除草稿", actions: [{ children: "撤销", onClick: () => toasts.add({ title: "已恢复草稿", variant: "success" }) }] })}>带撤销的</Button>
+    </div>
+  );
 }
 export function ToastDemo() {
   return (
@@ -499,12 +522,13 @@ export function RailDemo() {
 }
 
 export function DockDemo() {
+  const post = useBusy({ done: "已写入 X" });
   return (
     <Dock
       style={{ position: "static", width: 380 }}
       status="30 字符 · 已保存"
       tools={<Button variant="ghost" shape="square" size="sm" aria-label="封面" icon={<Icon name="Image" />} />}
-      primary={<Button variant="primary" size="sm">写入 X</Button>}
+      primary={<Button variant="primary" size="sm" {...post.buttonProps} onClick={() => void post.run(() => wait(900))}>写入 X</Button>}
     />
   );
 }
@@ -524,12 +548,18 @@ export function SheetDemo() {
 
 export function SettingsGroupDemo() {
   const [on, setOn] = useState(true);
+  const saving = useSettingSave();
   return (
     <Settings style={{ maxWidth: 420 }}>
-      <SettingsGroup title="写入">
-        <SettingsRow title="写入标题" description="第一行 # 标题作为文章标题" control={<input type="checkbox" role="switch" className="xxd-switch" aria-label="写入标题" checked={on} onChange={(e) => setOn(e.target.checked)} />} />
+      <SettingsGroup title="写入" note="改动自动保存">
+        <SettingsRow title="写入标题" description="第一行 # 标题作为文章标题" control={<input type="checkbox" role="switch" className="xxd-switch" aria-label="写入标题" checked={on} onChange={(e) => {
+          const v = e.target.checked;
+          setOn(v);
+          void saving.save(() => wait(400), { undo: () => setOn(!v), redo: () => setOn(v) });
+        }} />} />
         <SettingsRow title="本地图片文件夹" description="未连接" href="#" />
       </SettingsGroup>
+      {saving.line}
     </Settings>
   );
 }

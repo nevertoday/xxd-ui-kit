@@ -13,9 +13,22 @@ export const patterns = {
   <p class="xxd-help" id="drop-out" style="margin-top:var(--space-3)"></p>
 </div>
 <script>
+  {
+    // Choose image files opens the picker; anything that isn't an image is named (D180)
+    const out = document.getElementById("drop-out");
+    const take = (files) => {
+      const bad = files.filter((f) => !f.type.startsWith("image/"));
+      out.className = bad.length ? "xxd-error" : "xxd-help";
+      out.textContent = bad.length ? \`Images only: \${bad.map((f) => f.name).join(", ")} \${bad.length > 1 ? "aren't images" : "isn't an image"}\` : \`Got \${files.length} images\`;
+    };
+    const pick = Object.assign(document.createElement("input"), { type: "file", accept: "image/*", multiple: true });
+    pick.addEventListener("change", () => take([...pick.files]));
+    document.querySelector("#drop-zone .xxd-link").addEventListener("click", () => pick.click());
+    window.__dropTake = take;
+  }
   Xxd.bindDrop(document.getElementById("drop-demo"), {
     zone: document.getElementById("drop-zone"),
-    onFiles: (files) => (document.getElementById("drop-out").textContent = \`Got \${files.length} files\`),
+    onFiles: (files) => window.__dropTake(files),
     onText: (text) => (document.getElementById("drop-out").textContent = \`Got text: \${text.slice(0, 40)}\`),
   });
 </script>`,
@@ -65,15 +78,41 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
     markup: `<div class="xxd-history" style="max-width:420px">
   <section><h3 class="xxd-history__day">Today</h3>
     <ul class="xxd-list xxd-group__body" data-interactive>
-      <li class="xxd-list__item"><span class="xxd-thumbs"><img src="/demo/poster-1.svg" alt=""><img src="/demo/poster-2.svg" alt=""><img src="/demo/poster-3.svg" alt=""></span><div class="xxd-list__main"><div class="xxd-list__title">24 images</div><div class="xxd-list__meta">Gradient · 14:02</div></div><button class="xxd-btn xxd-reveal" data-variant="ghost" data-size="xs" data-confirm-twice="Confirm delete">Delete</button><button class="xxd-btn" data-size="xs">Open</button></li>
-      <li class="xxd-list__item"><span class="xxd-thumbs"><img src="/demo/poster-4.svg" alt=""><img src="/demo/poster-5.svg" alt=""></span><div class="xxd-list__main"><div class="xxd-list__title">8 images</div><div class="xxd-list__meta">As is · 09:40</div></div><button class="xxd-btn xxd-reveal" data-variant="ghost" data-size="xs" data-confirm-twice="Confirm delete">Delete</button><button class="xxd-btn" data-size="xs">Open</button></li>
+      <li class="xxd-list__item"><span class="xxd-thumbs"><img src="/demo/poster-1.svg" alt=""><img src="/demo/poster-2.svg" alt=""><img src="/demo/poster-3.svg" alt=""></span><div class="xxd-list__main"><div class="xxd-list__title">24 images</div><div class="xxd-list__meta">Gradient · 14:02</div></div><button class="xxd-btn xxd-reveal" data-variant="ghost" data-size="xs" data-history-delete>Delete</button><button class="xxd-btn" data-size="xs" data-history-open>Open</button></li>
+      <li class="xxd-list__item"><span class="xxd-thumbs"><img src="/demo/poster-4.svg" alt=""><img src="/demo/poster-5.svg" alt=""></span><div class="xxd-list__main"><div class="xxd-list__title">8 images</div><div class="xxd-list__meta">As is · 09:40</div></div><button class="xxd-btn xxd-reveal" data-variant="ghost" data-size="xs" data-history-delete>Delete</button><button class="xxd-btn" data-size="xs" data-history-open>Open</button></li>
     </ul></section>
   <section><h3 class="xxd-history__day">Yesterday</h3>
     <ul class="xxd-list xxd-group__body" data-interactive>
-      <li class="xxd-list__item"><span class="xxd-thumbs"><img src="/demo/poster-6.svg" alt=""></span><div class="xxd-list__main"><div class="xxd-list__title">A long post about design systems</div><div class="xxd-list__meta">Posted to X · 21:15</div></div><button class="xxd-btn xxd-reveal" data-variant="ghost" data-size="xs" data-confirm-twice="Confirm delete">Delete</button><button class="xxd-btn" data-size="xs">Open</button></li>
+      <li class="xxd-list__item"><span class="xxd-thumbs"><img src="/demo/poster-6.svg" alt=""></span><div class="xxd-list__main"><div class="xxd-list__title">A long post about design systems</div><div class="xxd-list__meta">Posted to X · 21:15</div></div><button class="xxd-btn xxd-reveal" data-variant="ghost" data-size="xs" data-history-delete>Delete</button><button class="xxd-btn" data-size="xs" data-history-open>Open</button></li>
     </ul></section>
   <button class="xxd-link" data-confirm-twice="Confirm clearing all history" data-tone="danger">Clear all history</button>
-</div>`,
+</div>
+<script>
+  {
+    // Delete removes the row and offers Undo (undoable things skip the double confirm, §9); focus moves to the next row. Open shows the set. Clearing everything can't be undone: confirm twice
+    const box = document.currentScript.previousElementSibling;
+    const focusNext = (li) => (li.nextElementSibling || li.previousElementSibling)?.querySelector("[data-history-delete]") || box;
+    box.addEventListener("click", (e) => {
+      const del = e.target.closest("[data-history-delete]");
+      const open = e.target.closest("[data-history-open]");
+      const li = (del || open)?.closest("li");
+      if (open) Xxd.openViewer([...li.querySelectorAll(".xxd-thumbs img")].map((img) => ({ src: img.src })));
+      if (!del) return;
+      const parent = li.parentElement, next = li.nextSibling, name = li.querySelector(".xxd-list__title").textContent;
+      const to = focusNext(li);
+      if (to === box) box.tabIndex = -1;
+      to.focus();
+      li.remove();
+      Xxd.toast(\`Deleted “\${name}”\`, { within: box, action: { label: "Undo", onClick: () => { parent.insertBefore(li, next); li.querySelector("[data-history-delete]").focus(); } } });
+    });
+    box.addEventListener("xxd:confirm", () => {
+      box.tabIndex = -1;
+      box.focus();
+      box.querySelectorAll("section").forEach((s) => s.remove());
+      box.querySelector("[data-confirm-twice]").replaceWith(Object.assign(document.createElement("p"), { className: "xxd-help", textContent: "History cleared" }));
+    });
+  }
+</script>`,
     rules: ["At most 50 rows; doing the same set again only updates that row", "Delete takes two clicks (no dialog)"],
   },
   ConfirmTwice: {
@@ -94,7 +133,7 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
   <p class="xxd-auth__line">Writes Markdown into X Articles, with formatting and images.</p>
   <span class="xxd-auth__gift">New accounts get 7 days of full access</span>
   <form>
-    <button class="xxd-btn" data-block type="button"><svg class="ui-icon" width="16" height="16" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continue with Google</button>
+    <button class="xxd-btn" data-block type="button" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: false }).then(() => Xxd.toast('Signed in with Google as dong@gmail.com', { tone: 'success' }))"><svg class="ui-icon" width="16" height="16" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continue with Google</button>
     <div class="xxd-auth__or">or use email</div>
     <div data-step="email" data-active>
       <input class="xxd-input" type="email" placeholder="you@example.com" aria-label="Email" required>
@@ -120,7 +159,7 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
     from: "Long-form publisher, image sorter",
     summary: "One plan line on the account card; “Become a member / Renew” opens the purchase panel in place: pick a plan · pick a payment method · QR code · “I've paid, check now”. Every outcome gets its own sentence.",
     markup: `<div class="xxd-stack" style="max-width:380px">
-  <div class="xxd-group__body"><div class="xxd-account"><span class="xxd-avatar" data-member style="--avatar-size:36px">D</span><div class="xxd-account__main"><div class="xxd-account__name">Dong</div><div class="xxd-plan-line" data-tone="member" id="plan-line">Full access · 6 days left</div></div><button class="xxd-btn" data-size="sm" data-variant="primary" id="buy">Become a member</button></div></div>
+  <div class="xxd-group__body"><div class="xxd-account"><span class="xxd-avatar" data-member style="--avatar-size:36px">D</span><div class="xxd-account__main"><div class="xxd-account__name">Dong</div><div class="xxd-plan-line" data-tone="member" id="plan-line">Full access · 6 days left</div></div><button class="xxd-btn" data-size="sm" data-variant="primary" id="buy" onclick="Xxd.toast('Scan the code below to pay, then check the payment below it', { tone: 'info' }); document.getElementById('paid').focus()">Become a member</button></div></div>
   <div class="xxd-plans" role="radiogroup" aria-label="Plan">
     <label class="xxd-plan"><input type="radio" class="xxd-radio" name="plan" checked><span class="xxd-plan__name">Monthly<small>A renewal reminder every month</small></span><span class="xxd-plan__price">¥29</span></label>
     <label class="xxd-plan"><input type="radio" class="xxd-radio" name="plan"><span class="xxd-plan__name">Yearly<small>Works out to ¥19 a month</small></span><span class="xxd-plan__price">¥228</span></label>
@@ -130,7 +169,7 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
   <div class="xxd-qr"><svg class="xxd-qr__code" viewBox="-2 -2 37 37" role="img" aria-label="Payment QR code" shape-rendering="crispEdges"><path fill="#111" d="M0 0h7v1h-7zM9 0h1v1h-1zM12 0h3v1h-3zM16 0h5v1h-5zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM11 1h1v1h-1zM13 1h5v1h-5zM20 1h2v1h-2zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM12 2h2v1h-2zM15 2h1v1h-1zM17 2h6v1h-6zM24 2h1v1h-1zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM14 3h3v1h-3zM19 3h2v1h-2zM22 3h3v1h-3zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h3v1h-3zM15 4h1v1h-1zM17 4h2v1h-2zM21 4h3v1h-3zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM12 5h1v1h-1zM14 5h4v1h-4zM20 5h2v1h-2zM24 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h2v1h-2zM11 7h2v1h-2zM15 7h1v1h-1zM18 7h1v1h-1zM21 7h2v1h-2zM24 7h1v1h-1zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h7v1h-7zM17 8h1v1h-1zM22 8h3v1h-3zM26 8h5v1h-5zM0 9h1v1h-1zM4 9h2v1h-2zM7 9h2v1h-2zM14 9h1v1h-1zM16 9h1v1h-1zM18 9h4v1h-4zM23 9h1v1h-1zM26 9h2v1h-2zM29 9h2v1h-2zM32 9h1v1h-1zM0 10h1v1h-1zM3 10h2v1h-2zM6 10h2v1h-2zM9 10h2v1h-2zM12 10h1v1h-1zM15 10h1v1h-1zM18 10h1v1h-1zM21 10h1v1h-1zM24 10h3v1h-3zM28 10h1v1h-1zM30 10h2v1h-2zM1 11h2v1h-2zM4 11h1v1h-1zM7 11h2v1h-2zM10 11h1v1h-1zM12 11h1v1h-1zM14 11h2v1h-2zM20 11h2v1h-2zM24 11h2v1h-2zM28 11h3v1h-3zM32 11h1v1h-1zM1 12h1v1h-1zM3 12h2v1h-2zM6 12h2v1h-2zM10 12h1v1h-1zM12 12h1v1h-1zM15 12h1v1h-1zM18 12h1v1h-1zM21 12h1v1h-1zM23 12h3v1h-3zM27 12h3v1h-3zM0 13h1v1h-1zM7 13h1v1h-1zM10 13h1v1h-1zM13 13h4v1h-4zM20 13h1v1h-1zM23 13h1v1h-1zM26 13h1v1h-1zM29 13h1v1h-1zM31 13h2v1h-2zM0 14h3v1h-3zM4 14h3v1h-3zM11 14h2v1h-2zM17 14h1v1h-1zM19 14h1v1h-1zM22 14h1v1h-1zM25 14h2v1h-2zM31 14h1v1h-1zM0 15h1v1h-1zM2 15h3v1h-3zM8 15h1v1h-1zM10 15h1v1h-1zM16 15h1v1h-1zM19 15h8v1h-8zM29 15h2v1h-2zM0 16h1v1h-1zM2 16h3v1h-3zM6 16h1v1h-1zM8 16h1v1h-1zM12 16h3v1h-3zM16 16h4v1h-4zM22 16h1v1h-1zM25 16h1v1h-1zM27 16h3v1h-3zM32 16h1v1h-1zM2 17h4v1h-4zM10 17h2v1h-2zM13 17h2v1h-2zM16 17h5v1h-5zM22 17h2v1h-2zM25 17h3v1h-3zM29 17h4v1h-4zM2 18h2v1h-2zM6 18h1v1h-1zM9 18h2v1h-2zM12 18h2v1h-2zM15 18h3v1h-3zM20 18h1v1h-1zM22 18h1v1h-1zM24 18h1v1h-1zM27 18h2v1h-2zM30 18h2v1h-2zM0 19h1v1h-1zM3 19h2v1h-2zM7 19h1v1h-1zM11 19h1v1h-1zM16 19h5v1h-5zM23 19h1v1h-1zM26 19h6v1h-6zM2 20h1v1h-1zM4 20h3v1h-3zM8 20h1v1h-1zM10 20h1v1h-1zM16 20h1v1h-1zM19 20h5v1h-5zM25 20h1v1h-1zM27 20h3v1h-3zM31 20h1v1h-1zM0 21h3v1h-3zM8 21h1v1h-1zM12 21h4v1h-4zM17 21h2v1h-2zM23 21h1v1h-1zM26 21h1v1h-1zM30 21h1v1h-1zM32 21h1v1h-1zM0 22h1v1h-1zM3 22h1v1h-1zM5 22h2v1h-2zM10 22h1v1h-1zM12 22h2v1h-2zM15 22h3v1h-3zM20 22h2v1h-2zM24 22h2v1h-2zM29 22h1v1h-1zM31 22h1v1h-1zM0 23h1v1h-1zM7 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM14 23h2v1h-2zM18 23h1v1h-1zM21 23h1v1h-1zM23 23h3v1h-3zM28 23h1v1h-1zM30 23h1v1h-1zM32 23h1v1h-1zM0 24h1v1h-1zM3 24h4v1h-4zM9 24h1v1h-1zM11 24h1v1h-1zM15 24h1v1h-1zM17 24h1v1h-1zM22 24h1v1h-1zM24 24h5v1h-5zM31 24h2v1h-2zM8 25h1v1h-1zM10 25h1v1h-1zM14 25h1v1h-1zM18 25h4v1h-4zM24 25h1v1h-1zM28 25h1v1h-1zM30 25h1v1h-1zM32 25h1v1h-1zM0 26h7v1h-7zM10 26h1v1h-1zM12 26h1v1h-1zM15 26h2v1h-2zM18 26h1v1h-1zM20 26h2v1h-2zM23 26h2v1h-2zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h2v1h-2zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h2v1h-2zM11 27h1v1h-1zM13 27h3v1h-3zM21 27h2v1h-2zM24 27h1v1h-1zM28 27h3v1h-3zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h3v1h-3zM12 28h3v1h-3zM18 28h1v1h-1zM21 28h1v1h-1zM24 28h6v1h-6zM31 28h1v1h-1zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM8 29h3v1h-3zM12 29h1v1h-1zM15 29h2v1h-2zM20 29h1v1h-1zM22 29h4v1h-4zM28 29h2v1h-2zM32 29h1v1h-1zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM8 30h6v1h-6zM18 30h2v1h-2zM21 30h1v1h-1zM26 30h2v1h-2zM29 30h1v1h-1zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h3v1h-3zM13 31h2v1h-2zM16 31h1v1h-1zM19 31h5v1h-5zM25 31h1v1h-1zM28 31h3v1h-3zM0 32h7v1h-7zM8 32h1v1h-1zM10 32h1v1h-1zM17 32h1v1h-1zM19 32h1v1h-1zM22 32h4v1h-4zM27 32h1v1h-1zM31 32h1v1h-1z"/></svg>Scan with WeChat to pay · the code is valid for 2 hours<button class="xxd-link" type="button" id="paid">I've paid, check now</button></div>
 </div>
 <script>
-  document.getElementById("paid").addEventListener("click", (e) => Xxd.runBusy(e.target, () => new Promise((r) => setTimeout(r, 900))).then(() => { Xxd.rollText(document.getElementById("plan-line"), "Member · until Nov 8, 2027"); Xxd.celebrate(document.getElementById("buy")); Xxd.toast("Membership is active", { tone: "success" }); }));
+  document.getElementById("paid").addEventListener("click", (e) => Xxd.runBusy(e.target, () => new Promise((r) => setTimeout(r, 900)), { done: false }).then(() => { const buy = document.getElementById("buy"); Xxd.rollText(document.getElementById("plan-line"), "Member · until Nov 8, 2027"); Xxd.celebrate(buy); buy.textContent = "Renew"; buy.removeAttribute("data-variant"); Xxd.toast("Membership is active", { tone: "success" }); }));
 </script>`,
     rules: [
       "Never say “quota / allowance / trial”: say “Full access”, “N posts left today”, “Become a member”",
@@ -145,7 +184,7 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
     summary: "A line above the dock that stays empty unless there is something to say — one sentence, at most one action.",
     markup: `<div class="xxd-frame" style="max-width:420px">
   <div class="xxd-statusline" id="status-demo" hidden></div>
-  <footer class="xxd-dock" style="position:static"><div class="xxd-dock__status">24 images · from mp.weixin.qq.com</div><div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" data-size="sm">Copy 24 links</button></div></footer>
+  <footer class="xxd-dock" style="position:static"><div class="xxd-dock__status">24 images · from mp.weixin.qq.com</div><div class="xxd-dock__primary"><button class="xxd-btn" data-variant="primary" data-size="sm" data-copy="https://mp.weixin.qq.com/s/1&#10;https://mp.weixin.qq.com/s/2" data-copy-done="Copied 24 links">Copy 24 links</button></div></footer>
 </div>
 <div class="xxd-cluster" style="margin-top:var(--space-3)">
   <button class="xxd-btn" data-size="sm" onclick="Xxd.setStatus(document.getElementById('status-demo'), 'Reading colors 12 / 40', { action: { label: 'Stop' } })">In progress</button>
@@ -196,8 +235,8 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
     title: "Account card",
     from: "All extensions",
     summary: "Avatar (members get an accent ring) · name · plan line · one action.",
-    markup: `<div class="xxd-group__body" style="max-width:380px"><div class="xxd-account"><span class="xxd-avatar" style="--avatar-size:36px">D</span><div class="xxd-account__main"><div class="xxd-account__name">Dong</div><div class="xxd-plan-line">Free · 3 posts left today</div></div><button class="xxd-btn" data-size="sm">Become a member</button></div>
-<div class="xxd-account"><span class="xxd-avatar" data-member style="--avatar-size:36px">D</span><div class="xxd-account__main"><div class="xxd-account__name">Dong</div><div class="xxd-plan-line" data-tone="warning">Member · ends in 3 days</div></div><button class="xxd-btn" data-size="sm">Renew</button></div></div>`,
+    markup: `<div class="xxd-group__body" style="max-width:380px"><div class="xxd-account"><span class="xxd-avatar" style="--avatar-size:36px">D</span><div class="xxd-account__main"><div class="xxd-account__name">Dong</div><div class="xxd-plan-line">Free · 3 posts left today</div></div><button class="xxd-btn" data-size="sm" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: false }).then(() => { Xxd.rollText(this.previousElementSibling.querySelector('.xxd-plan-line'), 'Member · until Nov 8, 2027'); this.textContent = 'Renew'; Xxd.toast('Membership is active', { tone: 'success' }); })">Become a member</button></div>
+<div class="xxd-account"><span class="xxd-avatar" data-member style="--avatar-size:36px">D</span><div class="xxd-account__main"><div class="xxd-account__name">Dong</div><div class="xxd-plan-line" data-tone="warning">Member · ends in 3 days</div></div><button class="xxd-btn" data-size="sm" onclick="Xxd.runBusy(this, () => new Promise((r) => setTimeout(r, 900)), { done: false }).then(() => { const line = this.previousElementSibling.querySelector('.xxd-plan-line'); line.removeAttribute('data-tone'); Xxd.rollText(line, 'Member · until Feb 8, 2028'); Xxd.toast('Renewed for 3 months', { tone: 'success' }); })">Renew</button></div></div>`,
     rules: ["Numbers appear only when they help: members never see counts", "The last week uses the warning color"],
   },
   RollText: {
