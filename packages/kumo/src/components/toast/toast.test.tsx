@@ -1,5 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { useEffect } from "react";
 import { Toasty, createKumoToastManager, useKumoToastManager } from "./toast";
 
@@ -118,5 +118,63 @@ describe("Toasty", () => {
       inTreeAdd?.({ title: "in-tree" });
     });
     expect(await screen.findByText("in-tree")).toBeTruthy();
+  });
+
+  describe("how long a toast stays (same rule as @xxd/css, D87)", () => {
+    afterEach(() => {
+      Object.defineProperty(document, "hidden", { configurable: true, value: false });
+    });
+
+    function mount() {
+      const seen: { current: ReturnType<typeof useKumoToastManager> | null } = { current: null };
+      function Capture() {
+        seen.current = useKumoToastManager();
+        return null;
+      }
+      const mgr = createKumoToastManager();
+      render(
+        <Toasty toastManager={mgr}>
+          <Capture />
+        </Toasty>,
+      );
+      const toast = (title: string) => seen.current!.toasts.find((t) => t.title === title)!;
+      return { mgr, toast };
+    }
+
+    it("by content: a short notice 2.6s, a long one 0.1s per character up to 8s, an error at least 6s and assertive, an action 10s", () => {
+      const { mgr, toast } = mount();
+      const long = "已经把 24 张图片按颜色重新排好，原来的顺序可以在历史记录里找回来";
+      act(() => {
+        mgr.add({ title: "已保存" });
+        mgr.add({ title: long });
+        mgr.add({ title: "写入失败", variant: "error" });
+        mgr.add({ title: "已删除 1 条", actions: [{ children: "撤销" }] });
+        mgr.add({ title: "自己定的", timeout: 1234 });
+      });
+      expect(toast("已保存").timeout).toBe(2600);
+      expect(toast(long).timeout).toBe(1200 + Array.from(long).length * 100);
+      expect(toast("写入失败").timeout).toBe(6000);
+      expect(toast("写入失败").priority).toBe("high");
+      expect(document.querySelector("[role=alertdialog]")).toBeTruthy();
+      expect(toast("已删除 1 条").timeout).toBe(10000);
+      expect(toast("自己定的").timeout).toBe(1234);
+    });
+
+    it("holds every timer while the page is hidden and gives the full time back on return", () => {
+      const { mgr, toast } = mount();
+      act(() => {
+        mgr.add({ title: "已保存" });
+      });
+      Object.defineProperty(document, "hidden", { configurable: true, value: true });
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      expect(toast("已保存").timeout).toBe(0);
+      Object.defineProperty(document, "hidden", { configurable: true, value: false });
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      expect(toast("已保存").timeout).toBe(2600);
+    });
   });
 });

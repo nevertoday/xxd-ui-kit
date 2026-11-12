@@ -1,4 +1,4 @@
-import { CheckIcon, CopySimpleIcon } from "@xxd/icons/phosphor";
+import { CheckIcon, CopySimpleIcon, WarningCircleIcon } from "@xxd/icons/phosphor";
 import {
   forwardRef,
   useCallback,
@@ -156,6 +156,8 @@ export const InlineCopyText = forwardRef<
     const copyAction = copyActionProp ?? common.copyToClipboard;
     const copiedLabel = copiedLabelProp ?? common.copied;
     const [copied, setCopied] = useState(false);
+    // Copy failed (permission denied, insecure context): say so where the user is looking, never stay silent
+    const [failed, setFailed] = useState(false);
     const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const valueToCopy = resolveCopyValue(children, value);
 
@@ -172,17 +174,23 @@ export const InlineCopyText = forwardRef<
         clearTimeout(resetTimeoutRef.current);
       }
 
-      try {
-        await navigator.clipboard.writeText(valueToCopy);
-        setCopied(true);
+      const settle = () => {
         resetTimeoutRef.current = setTimeout(() => {
           setCopied(false);
+          setFailed(false);
           resetTimeoutRef.current = null;
         }, COPIED_FEEDBACK_MS);
+      };
+      try {
+        await navigator.clipboard.writeText(valueToCopy);
+        setFailed(false);
+        setCopied(true);
+        settle();
         onCopy?.();
-      } catch (error) {
+      } catch {
         setCopied(false);
-        console.warn("Clipboard copy failed", error);
+        setFailed(true);
+        settle();
       }
     }, [onCopy, valueToCopy]);
 
@@ -227,10 +235,18 @@ export const InlineCopyText = forwardRef<
             void copyToClipboard();
           }
         }}
-        aria-label={copied ? copiedLabel : copyAction}
+        aria-label={copied ? copiedLabel : failed ? common.copyFailed : copyAction}
+        data-failed={failed || undefined}
       >
         {renderedText}
-        {copied ? (
+        {failed ? (
+          <>
+            <WarningCircleIcon aria-hidden size={14} className="shrink-0 text-kumo-danger" />
+            <span aria-hidden className="shrink-0 text-xs text-kumo-danger">
+              {common.copyFailed}
+            </span>
+          </>
+        ) : copied ? (
           <CheckIcon aria-hidden size={14} className="shrink-0" />
         ) : (
           <CopySimpleIcon
@@ -245,6 +261,9 @@ export const InlineCopyText = forwardRef<
         )}
         <span className="sr-only" aria-live="polite">
           {copied ? copiedLabel : ""}
+        </span>
+        <span className="sr-only" aria-live="assertive">
+          {failed ? common.copyFailed : ""}
         </span>
       </button>
     );

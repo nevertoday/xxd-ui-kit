@@ -1,6 +1,6 @@
 import React from "react";
-import { describe, expect, it } from "vite-plus/test";
-import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Plus } from "@phosphor-icons/react";
 import { Button, RefreshButton, LinkButton, buttonVariants } from "./button";
 
@@ -25,32 +25,54 @@ describe("Button", () => {
   describe("loading state transitions", () => {
     it("transitions from non-loading to loading and back", () => {
       const { rerender } = render(<Button loading={false}>Submit</Button>);
+      const button = screen.getByRole("button", { name: "Submit" });
+      expect(button.getAttribute("aria-busy")).toBeNull();
 
-      // Non-loading: children visible, no spinner
-      expect(screen.getByText("Submit")).toBeTruthy();
-      expect(screen.queryByRole("status")).toBeNull();
-
-      // Loading: spinner present
       rerender(<Button loading={true}>Submit</Button>);
-      expect(screen.getByRole("status")).toBeTruthy();
+      expect(button.getAttribute("aria-busy")).toBe("true");
+      expect(screen.getByRole("button", { name: "Submit" })).toBe(button);
 
-      // Back to non-loading: spinner gone, children still visible
       rerender(<Button loading={false}>Submit</Button>);
-      expect(screen.queryByRole("status")).toBeNull();
-      expect(screen.getByText("Submit")).toBeTruthy();
+      expect(button.getAttribute("aria-busy")).toBeNull();
     });
   });
-
   it("type defaults to 'button'", () => {
     render(<Button>Click</Button>);
     const button = screen.getByRole("button");
     expect(button.getAttribute("type")).toBe("button");
   });
 
-  it("loading={true} sets disabled on the <button>", () => {
-    render(<Button loading>Save</Button>);
-    const button = screen.getByRole("button");
-    expect(button.hasAttribute("disabled")).toBe(true);
+  it("loading keeps the button enabled and focused, and ignores clicks", () => {
+    const onClick = vi.fn();
+    const { rerender } = render(<Button onClick={onClick}>Save</Button>);
+    const button = screen.getByRole("button", { name: "Save" });
+    button.focus();
+    rerender(
+      <Button onClick={onClick} loading>
+        Save
+      </Button>,
+    );
+    expect(button.hasAttribute("disabled")).toBe(false);
+    expect(document.activeElement).toBe(button);
+    fireEvent.click(button);
+    expect(onClick).not.toHaveBeenCalled();
+
+    rerender(<Button onClick={onClick}>Save</Button>);
+    fireEvent.click(button);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("a loading submit button does not submit its form twice", () => {
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button type="submit" loading>
+          Send
+        </Button>
+      </form>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it("disabled prop sets disabled attribute", () => {
@@ -87,22 +109,16 @@ describe("Button", () => {
       expect(svg!.getAttribute("role")).not.toBe("status");
     });
 
-    it("renders loader instead of icon in loading state", () => {
+    it("keeps the icon and the label while loading, so the width does not jump", () => {
       render(
         <Button icon={Plus} loading={true}>
           Add item
         </Button>,
       );
-      // When loading, the Loader's aria-label contributes to the button's accessible name
-      const button = screen.getByRole("button");
-      // Loader should be present
-      const loader = screen.getByRole("status");
-      expect(loader).toBeTruthy();
-      expect(loader.getAttribute("aria-label")).toBe("Loading");
-      // The Plus icon should NOT be rendered — only the loader SVG with role="status"
-      const svgs = button.querySelectorAll("svg");
-      expect(svgs).toHaveLength(1);
-      expect(svgs[0].getAttribute("role")).toBe("status");
+      const button = screen.getByRole("button", { name: "Add item" });
+      expect(button.querySelector("span.contents")?.textContent).toBe("Add item");
+      expect(button.querySelectorAll("svg")).toHaveLength(1);
+      expect(button.querySelector("[data-kumo-part=spinner]")?.getAttribute("aria-hidden")).toBe("true");
     });
 
     it("accepts a React element via icon prop", () => {
@@ -162,20 +178,17 @@ describe("Button", () => {
     expect(trigger?.hasAttribute("disabled")).toBe(false);
   });
 
-  it("uses an enabled tooltip trigger around a loading button", () => {
+  it("a loading button is its own tooltip trigger and stays enabled", () => {
     render(
       <Button title="Saving changes" loading>
         Save
       </Button>,
     );
 
-    const button = screen.getByRole("button");
-    const trigger = button.parentElement;
-
-    expect(button.hasAttribute("disabled")).toBe(true);
-    expect(trigger?.tagName).toBe("SPAN");
-    expect(trigger?.hasAttribute("data-base-ui-tooltip-trigger")).toBe(true);
-    expect(trigger?.hasAttribute("disabled")).toBe(false);
+    const button = screen.getByRole("button", { name: "Save" });
+    expect(button.hasAttribute("disabled")).toBe(false);
+    expect(button.getAttribute("aria-busy")).toBe("true");
+    expect(button.hasAttribute("data-base-ui-tooltip-trigger")).toBe(true);
   });
 
   it("keeps emphasized variant rings color-matched when pressed or focused", () => {

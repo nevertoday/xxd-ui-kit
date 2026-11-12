@@ -477,6 +477,7 @@
     "@base-ui/react": "^1.8.0",
     "@shikijs/langs": "^4.0.0",
     "@shikijs/themes": "^4.0.0",
+    "@xxd/css": "workspace:*",
     "@xxd/icons": "workspace:*",
     "cn": "0.4.0",
     "d3-geo": "^3.1.1",

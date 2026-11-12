@@ -1,4 +1,4 @@
-import { CheckIcon, CopyIcon } from "@xxd/icons/phosphor";
+import { CheckIcon, CopyIcon, WarningCircleIcon } from "@xxd/icons/phosphor";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { Toast } from "@base-ui/react/toast";
 import { Tooltip } from "@base-ui/react/tooltip";
@@ -191,6 +191,8 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
     const { common } = useKumoLocale();
     const copyAction = copyActionProp ?? common.copyToClipboard;
     const [copied, setCopied] = useState(false);
+    // Copy failed: shown on the button (and as the anchored toast in tooltip mode), announced assertively
+    const [failed, setFailed] = useState(false);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const toastIdRef = useRef<string | null>(null);
@@ -221,6 +223,7 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
       }
       resetTimeoutRef.current = setTimeout(() => {
         setCopied(false);
+        setFailed(false);
         resetTimeoutRef.current = null;
       }, COPIED_FEEDBACK_MS);
     }, []);
@@ -245,18 +248,27 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
           const previousRange = selection?.rangeCount
             ? selection.getRangeAt(0)
             : null;
+          // select() moves focus into the textarea: give it back to the button afterwards
+          const previousFocus = document.activeElement as HTMLElement | null;
           textarea.select();
+          let ok = false;
           try {
-            document.execCommand("copy");
+            ok = document.execCommand("copy");
           } finally {
             document.body.removeChild(textarea);
             if (previousRange) {
               selection?.removeAllRanges();
               selection?.addRange(previousRange);
             }
+            previousFocus?.focus?.({ preventScroll: true });
           }
+          // execCommand returns false when the browser refused: that is a failure, not "Copied"
+          if (!ok) throw new Error("execCommand('copy') was refused");
+        } else {
+          throw new Error("No clipboard available");
         }
 
+        setFailed(false);
         setCopied(true);
 
         // Show anchored toast if tooltip mode is enabled
@@ -281,10 +293,30 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
         }
 
         onCopy?.();
-      } catch (error) {
-        console.warn("Clipboard copy failed", error);
+      } catch {
+        setCopied(false);
+        setFailed(true);
+        if (tooltip) {
+          toastIdRef.current = clipboardToastManager.add({
+            id: toastIdRef.current ?? undefined,
+            description: common.copyFailed,
+            positionerProps: {
+              anchor: buttonRef.current,
+              side: tooltipSide,
+              sideOffset: 8,
+            },
+            timeout: COPIED_FEEDBACK_MS,
+            onClose() {
+              toastIdRef.current = null;
+              setFailed(false);
+            },
+          });
+        } else {
+          scheduleCopiedReset();
+        }
       }
     }, [
+      common.copyFailed,
       text,
       textToCopy,
       onCopy,
@@ -305,7 +337,8 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
           "focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:ring-inset",
         )}
         onClick={copyToClipboard}
-        aria-label={copyAction}
+        aria-label={failed ? common.copyFailed : copyAction}
+        data-failed={failed || undefined}
       >
         <span
           className={cn(
@@ -325,7 +358,11 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
               : clipboardTextAnimations.slide.animate,
           )}
         >
-          <CopyIcon />
+          {failed ? (
+            <WarningCircleIcon className="text-kumo-danger" />
+          ) : (
+            <CopyIcon />
+          )}
         </span>
       </Button>
     );
@@ -371,6 +408,9 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
         )}
         <span className="sr-only" aria-live="polite">
           {copied ? copiedText : ""}
+        </span>
+        <span className="sr-only" aria-live="assertive">
+          {failed ? common.copyFailed : ""}
         </span>
       </div>
     );

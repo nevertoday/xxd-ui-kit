@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -312,5 +313,23 @@ describe("Pagination", () => {
       expect(screen.getByLabelText("Page number")).toBeTruthy();
       expect(screen.getByLabelText("Last page")).toBeTruthy();
     });
+  });
+
+  it("keeps focus inside the controls when the button you pressed becomes disabled", () => {
+    function Stateful() {
+      const [page, setPage] = React.useState(1);
+      return (
+        <Pagination page={page} setPage={setPage} perPage={10} totalCount={30}>
+          <Pagination.Controls controls="full" />
+        </Pagination>
+      );
+    }
+    render(<Stateful />);
+    const last = screen.getByRole("button", { name: "Last page" });
+    last.focus();
+    fireEvent.click(last);
+    expect(last.hasAttribute("disabled")).toBe(true);
+    expect(document.activeElement).not.toBe(document.body);
+    expect(screen.getByRole("navigation").contains(document.activeElement)).toBe(true);
   });
 });

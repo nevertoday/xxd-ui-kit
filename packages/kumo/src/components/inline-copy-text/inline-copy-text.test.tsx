@@ -129,22 +129,6 @@ describe("InlineCopyText", () => {
     expect(writeText).not.toHaveBeenCalled();
   });
 
-  it("keeps the copy label when writing to the clipboard fails", async () => {
-    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
-    writeText.mockRejectedValue(new Error("Copy failed"));
-    render(<InlineCopyText>namespace-id</InlineCopyText>);
-
-    await clickCopyButton();
-
-    expect(
-      screen.getByRole("button", { name: "Copy to clipboard" }),
-    ).toBeTruthy();
-    expect(warning).toHaveBeenCalledWith(
-      "Clipboard copy failed",
-      expect.any(Error),
-    );
-  });
-
   it("resets copied feedback after the last click", async () => {
     vi.useFakeTimers();
     render(<InlineCopyText>namespace-id</InlineCopyText>);
@@ -176,5 +160,20 @@ describe("InlineCopyText", () => {
     expect(ref.current?.tagName).toBe("BUTTON");
     expect(ref.current?.classList.contains("custom-class")).toBe(true);
     expect(ref.current?.dataset.kumoComponent).toBe("InlineCopyText");
+  });
+
+  it("shows “Couldn’t copy” on the text and announces it when the clipboard refuses", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new DOMException("denied", "NotAllowedError")) },
+    });
+    render(<InlineCopyText>pnpm xxd ls</InlineCopyText>);
+
+    fireEvent.click(screen.getByRole("button"));
+    await act(() => Promise.resolve());
+
+    const button = screen.getByRole("button", { name: "Couldn’t copy" });
+    expect(button.textContent).toContain("Couldn’t copy");
+    expect(button.querySelector("[aria-live=assertive]")?.textContent).toBe("Couldn’t copy");
   });
 });

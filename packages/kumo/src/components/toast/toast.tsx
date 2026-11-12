@@ -5,6 +5,8 @@ import {
   ToastObject,
 } from "@base-ui/react/toast";
 import type React from "react";
+import { useEffect, useRef } from "react";
+import { toastDuration } from "@xxd/css/timing";
 import { cn } from "../../utils/cn";
 import { resolveVariant } from "../../utils/resolve-variant";
 import { Button, ButtonProps } from "../../components/button";
@@ -209,6 +211,32 @@ export type KumoToastManagerAddOptions<Data extends object> =
 export type KumoToastManagerUpdateOptions<Data extends object> =
   ToastManagerUpdateOptions<Data> & KumoToastOptionsBase;
 
+/**
+ * How long a toast stays and how it is announced, by content (same rule as @xxd/css, D87):
+ * with an action (undo, retry) 10s; plain notices 2.6s plus 0.1s per character, at most 8s;
+ * errors at least 6s and announced assertively (priority "high").
+ * An explicit `timeout` / `priority` still wins.
+ */
+function withFeedbackDefaults<T extends KumoToastManagerAddOptions<any>>(
+  options: T,
+): T {
+  if (options.type === "loading") return options;
+  const text = [options.title, options.description]
+    .filter((part) => typeof part === "string" || typeof part === "number")
+    .join("");
+  const error = options.variant === "error";
+  return {
+    ...options,
+    timeout:
+      options.timeout ??
+      toastDuration(text, {
+        tone: error ? "danger" : undefined,
+        action: Boolean(options.actions?.length),
+      }),
+    priority: options.priority ?? (error ? "high" : undefined),
+  };
+}
+
 function wrapManagerMethods<
   T extends { add: Function; update: Function; promise: Function },
 >(manager: T) {
@@ -245,9 +273,7 @@ function wrapManagerMethods<
         }
       }
 
-      return manager.add({
-        ...options,
-      });
+      return manager.add(withFeedbackDefaults(options));
     },
 
     update: (
@@ -282,24 +308,27 @@ function wrapManagerMethods<
         loading: { ...options.loading },
         success:
           typeof options.success === "function"
-            ? (data: T) => ({
-                ...(
-                  options.success as (
-                    data: T,
-                  ) => KumoToastManagerAddOptions<any>
-                )(data),
-              })
-            : { ...options.success },
+            ? (data: T) =>
+                withFeedbackDefaults(
+                  (
+                    options.success as (
+                      data: T,
+                    ) => KumoToastManagerAddOptions<any>
+                  )(data),
+                )
+            : withFeedbackDefaults({ ...options.success }),
         error:
           typeof options.error === "function"
-            ? (error: Error) => ({
-                ...(
-                  options.error as (
-                    error: Error,
-                  ) => KumoToastManagerAddOptions<any>
-                )(error),
-              })
-            : { ...options.error },
+            ? (error: Error) =>
+                withFeedbackDefaults({
+                  variant: "error" as const,
+                  ...(
+                    options.error as (
+                      error: Error,
+                    ) => KumoToastManagerAddOptions<any>
+                  )(error),
+                })
+            : withFeedbackDefaults({ variant: "error" as const, ...options.error }),
       });
     },
   };
@@ -343,6 +372,7 @@ export function Toasty({
   return (
     <Toast.Provider toastManager={toastManager}>
       {children}
+      <PauseWhileHidden />
       <Toast.Portal container={container}>
         <Toast.Viewport className="fixed top-auto right-4 bottom-4 z-1 mx-auto flex w-[calc(100%-2rem)] sm:right-8 sm:bottom-8 sm:w-[340px]">
           <ToastList />
@@ -354,6 +384,36 @@ export function Toasty({
 
 /** Alias for Toasty — provided for discoverability when migrating from other libraries */
 export const ToastProvider = Toasty;
+
+/**
+ * Base UI pauses on hover, focus and window blur, but not when the page is hidden
+ * (switched tab, minimized panel): the toast was gone on return. Hold every timer while hidden
+ * and give each toast its full time again when the page comes back, like @xxd/css.
+ */
+function PauseWhileHidden() {
+  const manager = Toast.useToastManager();
+  const latest = useRef(manager);
+  latest.current = manager;
+  useEffect(() => {
+    const held = new Map<string, number>();
+    const onChange = () => {
+      const { toasts, update } = latest.current;
+      if (document.hidden) {
+        for (const toast of toasts) {
+          if (toast.transitionStatus === "ending" || toast.type === "loading" || !toast.timeout) continue;
+          held.set(toast.id, toast.timeout);
+          update(toast.id, { timeout: 0 });
+        }
+        return;
+      }
+      for (const [id, timeout] of held) update(id, { timeout });
+      held.clear();
+    };
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, []);
+  return null;
+}
 
 function ToastList() {
   const { common } = useKumoLocale();

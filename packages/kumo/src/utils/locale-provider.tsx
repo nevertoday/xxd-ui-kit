@@ -14,6 +14,8 @@ export interface KumoTranslations {
   common?: {
     copy: string;
     copied: string;
+    /** Shown and announced when copying to the clipboard failed. */
+    copyFailed: string;
     copyToClipboard: string;
     copiedToClipboard: string;
     clickToCopy: string;
@@ -66,6 +68,7 @@ const defaultTranslations: ResolvedKumoTranslations = {
   common: {
     copy: "Copy",
     copied: "Copied",
+    copyFailed: "Couldn’t copy",
     copyToClipboard: "Copy to clipboard",
     copiedToClipboard: "Copied to clipboard",
     clickToCopy: "Click to copy",

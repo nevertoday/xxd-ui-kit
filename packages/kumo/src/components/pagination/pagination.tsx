@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type KeyboardEvent,
   type ReactNode,
@@ -266,12 +267,29 @@ function PaginationControls({
     ? page === maxPage
     : hasNextPage !== true;
 
+  // The button you pressed can become disabled (last page, first page): the browser drops focus to <body>
+  // without a blur event. Put it on the page number (or the first button still enabled) instead.
+  const navRef = useRef<HTMLElement>(null);
+  const focusWasInside = useRef(false);
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || !focusWasInside.current) return;
+    const active = nav.ownerDocument.activeElement;
+    if (active && active !== nav.ownerDocument.body) return;
+    const target =
+      nav.querySelector<HTMLElement>("input, [role=combobox]") ??
+      nav.querySelector<HTMLElement>("button:not(:disabled)");
+    target?.focus({ preventScroll: true });
+  }, [page]);
+
   return (
     <div
       data-slot="pagination-controls"
       className={cn("flex grow flex-col items-end", className)}
     >
-      <nav aria-label={labels.navigation}>
+      <nav aria-label={labels.navigation} ref={navRef} onFocus={() => (focusWasInside.current = true)} onBlur={(e) => {
+        if (!navRef.current?.contains(e.relatedTarget as Node | null)) focusWasInside.current = false;
+      }}>
         <InputGroup>
           {showFullControls && (
             <InputGroup.Button

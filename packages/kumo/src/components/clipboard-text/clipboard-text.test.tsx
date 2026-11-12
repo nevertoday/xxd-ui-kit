@@ -153,4 +153,32 @@ describe("ClipboardText", () => {
 
     expect(onCopy).toHaveBeenCalledTimes(1);
   });
+
+  it("shows and announces a failed copy instead of staying silent", async () => {
+    writeText.mockRejectedValue(new DOMException("denied", "NotAllowedError"));
+    render(<ClipboardText text="token-value" />);
+
+    await clickCopyButton();
+
+    const button = screen.getByRole("button", { name: "Couldn’t copy" });
+    expect(button.getAttribute("data-failed")).toBe("true");
+    expect(document.querySelector("[aria-live=assertive]")?.textContent).toBe("Couldn’t copy");
+    expect(document.querySelector("[aria-live=polite]")?.textContent).toBe("");
+  });
+
+  it("the fallback path does not claim success when the browser refuses, and keeps focus on the button", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    const execCommand = vi.fn(() => false);
+    Object.defineProperty(document, "execCommand", { configurable: true, value: execCommand });
+    render(<ClipboardText text="token-value" />);
+    const button = screen.getByRole("button", { name: "Copy to clipboard" });
+    button.focus();
+
+    await clickCopyButton(button);
+
+    expect(execCommand).toHaveBeenCalledWith("copy");
+    expect(screen.queryByText("Copied")).toBeNull();
+    expect(button.getAttribute("aria-label")).toBe("Couldn’t copy");
+    expect(document.activeElement).toBe(button);
+  });
 });

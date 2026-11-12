@@ -1,6 +1,5 @@
 import React from "react";
 import { ArrowsClockwise, type Icon } from "@xxd/icons/phosphor";
-import { Loader } from "../loader/loader";
 import { Tooltip } from "../tooltip/tooltip";
 import { cn } from "../../utils/cn";
 import { resolveVariant } from "../../utils/resolve-variant";
@@ -271,7 +270,11 @@ type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   className?: string;
   /** Icon from `@xxd/icons/react` or a React element. Rendered before children. */
   icon?: Icon | React.ReactNode;
-  /** Shows a loading spinner and disables interaction. */
+  /**
+   * In progress: `aria-busy`, clicks are ignored, focus stays on the button.
+   * The label stays (transparent, so the width does not jump) and a spinner shows in the middle after 150ms,
+   * so a quick action never flashes.
+   */
   loading?: boolean;
   /** When set, wraps the button in a Tooltip with this content. */
   title?: React.ReactNode;
@@ -375,11 +378,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         !restProps["aria-labelledby"] &&
         titleLabel && { "aria-label": titleLabel }),
     };
-    const iconNode = loading ? (
-      <Loader size={size === "lg" ? 16 : 14} />
-    ) : (
-      renderIconNode(IconComponent)
-    );
+    const iconNode = renderIconNode(IconComponent);
+    const { onClick } = buttonProps;
 
     const button = (
       <button
@@ -390,16 +390,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           disabled && "cursor-not-allowed opacity-50",
           className,
         )}
-        disabled={loading || disabled}
+        disabled={disabled}
         style={emphasisStyle ? { ...emphasisStyle, ...style } : style}
         type={type ?? "button"}
         {...buttonProps}
+        aria-busy={loading || undefined}
+        onClick={
+          loading
+            ? (event: React.MouseEvent<HTMLButtonElement>) => event.preventDefault()
+            : onClick
+        }
       >
         {renderButtonContent(variant, iconNode, children)}
+        {loading && <span data-kumo-part="spinner" aria-hidden="true" />}
       </button>
     );
 
-    if (title && (disabled || loading)) {
+    if (title && disabled) {
       return (
         <Tooltip content={title} render={<span className="inline-flex" />}>
           {button}
