@@ -748,6 +748,14 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* ── 卡片层的上面一条（对着 .xxd-layer__secondary）：36 高、上下 6px。上游用 p-4 加 -my-2 凑出这个高，
+     框比看到的大 8px，压在下面一层底下（audit「重叠」）；看起来的位置不变 ── */
+  .-my-2.bg-kumo-elevated.p-4 {
+    min-height: 36px;
+    margin-block: 0;
+    padding-block: var(--space-1-5, 6px);
+  }
+
   /* ── 表格：表头 36px、12px / 500、灰；单元格 44px、13px；数字等宽；行之间一条线 ── */
   table:has(> thead.group\/header) {
     font-size: var(--text-sm, 13px);

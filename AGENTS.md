@@ -35,7 +35,7 @@
    2026-11-02：`COMPONENT-JURY-PLAN.md`（评审团逐个看组件；控件只有一把尺：`data-size` xs 24 · sm 32 · 缺省 40 · lg 48，按钮、输入框、搜索、下拉、输入组、
    自定义下拉、标签输入、分段、chip 同一档一样高，令牌 `--control-h-xs/sm/(无)/lg`，新组件也照这把尺；audit 加 `--only=sizes`；J1 起）。
    2026-11-11：`LEADING-REVIEW-PLAN.md`（行高：字号和行高按用途成对，一张表（§6）；改字号的规则同时写配对的行高；只一行的 12 / 16、行高 = 字号不许折行，
-   会折行的说明 12 / 20；「细节」按算出来的值查表、数折了几行，也查顶栏和 React（Kumo）演示；D162–D168）。
+   会折行的说明 12 / 20；「细节」按算出来的值查表、数折了几行，也查顶栏和 React（Kumo）演示；D162–D170）。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
