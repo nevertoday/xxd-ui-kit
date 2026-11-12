@@ -403,34 +403,6 @@ export function StatusLine({ children, tone, action }: { children?: ReactNode; t
   );
 }
 
-/** 两次确认的按钮：第一次变成确认文字（危险色），3 秒内再点才执行 onConfirm。 */
-export function ConfirmTwiceButton({ children, confirmLabel, onConfirm, size, variant, timeout = 3000 }: { children: ReactNode; confirmLabel?: ReactNode; onConfirm: () => void; size?: "xs" | "sm" | "lg"; variant?: "ghost" | "outline"; timeout?: number }) {
-  const { t } = useXxdLocale();
-  const [armed, setArmed] = useState(false);
-  useEffect(() => {
-    if (!armed) return;
-    const id = setTimeout(() => setArmed(false), timeout);
-    return () => clearTimeout(id);
-  }, [armed, timeout]);
-  return (
-    <button
-      type="button"
-      className="xxd-btn"
-      data-size={size}
-      data-variant={variant}
-      data-confirming={flag(armed)}
-      onClick={() => {
-        if (armed) {
-          setArmed(false);
-          onConfirm();
-        } else setArmed(true);
-      }}
-    >
-      {armed ? confirmLabel ?? t.confirmDelete : children}
-    </button>
-  );
-}
-
 /** 拖放区 + 拖入遮罩：拖到 DropTarget 任何地方都出现遮罩；松手交给 onFiles / onText。 */
 export function DropTarget({ onFiles, onText, veil, children, className, style }: { onFiles?: (files: File[]) => void; onText?: (text: string) => void; veil?: ReactNode; children: ReactNode; className?: string; style?: CSSProperties }) {
   const { t } = useXxdLocale();
@@ -1186,10 +1158,21 @@ export function Steps({
   className?: string;
 }) {
   const { t } = useXxdLocale();
+  // 点「回到这一步」后那个按钮变成了当前步的文字：焦点跟过去，不掉到 body（FEEDBACK-ALIGN-PLAN D178）
+  const list = useRef<HTMLOListElement>(null);
+  const followFocus = useRef(false);
+  useEffect(() => {
+    if (!followFocus.current) return;
+    followFocus.current = false;
+    const title = list.current?.querySelector<HTMLElement>("[aria-current=step] .xxd-steps__title");
+    if (!title) return;
+    title.tabIndex = -1;
+    title.focus({ preventScroll: true });
+  }, [current]);
   if (items.length > 9) warnOnce("steps", "Steps 超过 9 步：分组，或者拆成几段（DIAGRAM-PLAN D145）");
   const progress = t.stepOf.replace("{n}", String(Math.min(current + 1, items.length))).replace("{total}", String(items.length));
   return (
-    <ol className={cx("xxd-steps", className)} data-vertical={flag(vertical)} aria-label={label ? `${label}${t.stepOf.startsWith("Step") ? ": " : "："}${progress}` : progress}>
+    <ol ref={list} className={cx("xxd-steps", className)} data-vertical={flag(vertical)} aria-label={label ? `${label}${t.stepOf.startsWith("Step") ? ": " : "："}${progress}` : progress}>
       {items.map((item, i) => {
         const state = i < current ? "done" : i === current ? "current" : undefined;
         const back = state === "done" && onStepClick;
@@ -1200,7 +1183,10 @@ export function Steps({
             </span>
             <span className="xxd-steps__text">
               {back ? (
-                <button type="button" className="xxd-steps__title xxd-steps__link" onClick={() => onStepClick(i)}>
+                <button type="button" className="xxd-steps__title xxd-steps__link" onClick={() => {
+                    followFocus.current = true;
+                    onStepClick(i);
+                  }}>
                   {item.title}
                   <span className="xxd-sr-only">{t.stepBack}</span>
                 </button>

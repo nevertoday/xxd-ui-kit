@@ -44,6 +44,10 @@ import {
   XxdAppearanceProvider,
   XxdLocaleProvider,
   resolveLocale,
+  useBusy,
+  useSettingSave,
+  Button,
+  Toasty,
 } from "../src/index";
 afterEach(cleanup);
 
@@ -741,5 +745,135 @@ describe("图解第二、三批（DIAGRAM-PLAN）：React 和注册表里的 HTM
     render(<Flowchart steps={[{ title: "a", branches: [{ label: "x", steps: [{ title: "b" }] }, { label: "y", steps: [{ title: "c" }] }] }, { title: "d" }]} />);
     expect(warn.mock.calls.filter((c) => String(c[0]).includes("接不上"))).toHaveLength(1);
     warn.mockRestore();
+  });
+});
+
+describe("操作反馈（FEEDBACK-ALIGN-PLAN D174–D179）：和网页版一样", () => {
+  const live = (kind: "polite" | "assertive") => document.querySelector(`.xxd-announcer[aria-live=${kind}]`)?.textContent ?? "";
+  const until = async (fn: () => boolean, ms = 2000) => {
+    const t0 = Date.now();
+    while (!fn() && Date.now() - t0 < ms) await act(() => new Promise((r) => setTimeout(r, 10)));
+  };
+
+  it("ConfirmTwiceButton：双击不算确认、Esc 退回、进入确认时 assertive 地念「再按一次」", async () => {
+    const onConfirm = vi.fn();
+    render(<ConfirmTwiceButton onConfirm={onConfirm}>删除</ConfirmTwiceButton>);
+    const b = screen.getByRole("button");
+    fireEvent.click(b, { detail: 1 });
+    fireEvent.click(b, { detail: 2 });
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(b.textContent).toBe("确认删除");
+    await until(() => live("assertive") === "再按一次确认删除");
+    expect(live("assertive")).toBe("再按一次确认删除");
+    fireEvent.keyDown(b, { key: "Escape" });
+    expect(b.textContent).toBe("删除");
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it("ConfirmTwiceButton：焦点还在按钮上时 5 秒也不复原", () => {
+    vi.useFakeTimers();
+    try {
+      render(<ConfirmTwiceButton onConfirm={() => {}}>删除</ConfirmTwiceButton>);
+      const b = screen.getByRole("button");
+      b.focus();
+      fireEvent.click(b);
+      act(() => void vi.advanceTimersByTime(8000));
+      expect(b.textContent).toBe("确认删除");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  function BusyDemo({ task }: { task: () => Promise<unknown> }) {
+    const busy = useBusy();
+    return (
+      <Button {...busy.buttonProps} onClick={() => void busy.run(task).catch(() => {})}>
+        保存
+      </Button>
+    );
+  }
+
+  it("useBusy 成功：进行中 aria-busy（不禁用、焦点还在），完成打勾，polite 地念「已完成」", async () => {
+    let resolve!: () => void;
+    render(
+      <Toasty>
+        <BusyDemo task={() => new Promise<void>((r) => (resolve = r))} />
+      </Toasty>,
+    );
+    const b = screen.getByRole("button", { name: "保存" });
+    b.focus();
+    fireEvent.click(b);
+    expect(b.getAttribute("aria-busy")).toBe("true");
+    expect(b.hasAttribute("disabled")).toBe(false);
+    expect(document.activeElement).toBe(b);
+    await act(async () => resolve());
+    expect(b.hasAttribute("data-done")).toBe(true);
+    await until(() => live("polite") === "已完成");
+    expect(live("polite")).toBe("已完成");
+  });
+
+  it("useBusy 失败：出错的 toast 带「重试」，重试就是再跑一次同一个任务", async () => {
+    let calls = 0;
+    const task = vi.fn(async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("network");
+    });
+    render(
+      <Toasty>
+        <BusyDemo task={task} />
+      </Toasty>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+    // 出错的 toast 是 priority high：读屏从 role=alert 那份听到，toast 本身聚焦前是 aria-hidden
+    const retry = (await screen.findByText("重试")).closest("button")!;
+    expect(screen.getAllByText("没有完成，可以重试").length).toBeGreaterThan(0);
+    expect(document.querySelector("[role=alertdialog]")).toBeTruthy();
+    fireEvent.click(retry);
+    await until(() => task.mock.calls.length === 2);
+    expect(task).toHaveBeenCalledTimes(2);
+  });
+
+  it("useSettingSave：存不进去把开关退回去，说「没有保存」并给「重试」；重试存上了说「已保存」", async () => {
+    let fail = true;
+    const write = vi.fn(async () => {
+      if (fail) throw new Error("QUOTA_BYTES quota exceeded");
+    });
+    function Row() {
+      const [on, setOn] = useState(false);
+      const saving = useSettingSave();
+      return (
+        <>
+          <input type="checkbox" role="switch" aria-label="完成音效" checked={on} onChange={(e) => {
+            const v = e.target.checked;
+            setOn(v);
+            void saving.save(write, { undo: () => setOn(!v), redo: () => setOn(v) });
+          }} />
+          {saving.line}
+        </>
+      );
+    }
+    render(<Row />);
+    const sw = screen.getByRole("switch") as HTMLInputElement;
+    fireEvent.click(sw);
+    await screen.findByText("没有保存，已退回原来的设置");
+    expect(sw.checked).toBe(false);
+    fail = false;
+    fireEvent.click(screen.getByRole("button", { name: "重试" }));
+    await screen.findByText("已保存");
+    expect(sw.checked).toBe(true);
+    expect(write).toHaveBeenCalledTimes(2);
+  });
+
+  it("Steps：点「回到这一步」后焦点跟到那一步上，不掉到 body", () => {
+    function Demo() {
+      const [current, setCurrent] = useState(2);
+      return <Steps items={[{ title: "填资料" }, { title: "选套餐" }, { title: "付款" }]} current={current} onStepClick={setCurrent} />;
+    }
+    render(<Demo />);
+    const back = screen.getByRole("button", { name: /填资料/ });
+    back.focus();
+    fireEvent.click(back);
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement?.closest("[aria-current=step]")?.textContent).toContain("填资料");
   });
 });

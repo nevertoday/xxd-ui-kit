@@ -1,11 +1,11 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { KumoLocaleProvider, type KumoTranslationsPartial } from "@cloudflare/kumo";
-import { APPEARANCE_LABELS } from "@xxd/css/labels";
+import { APPEARANCE_LABELS, FEEDBACK_LABELS, type FeedbackLabels } from "@xxd/css/labels";
 
 export type XxdLocale = "zh-CN" | "zh-Hant" | "en";
 
-/** 小小东组件自己的文案（Kumo 组件的文案走 KumoLocaleProvider）。 */
-export interface XxdStrings {
+/** 小小东组件自己的文案（Kumo 组件的文案走 KumoLocaleProvider）；操作反馈的几句和网页版共用（@xxd/css/labels）。 */
+export interface XxdStrings extends FeedbackLabels {
   clear: string;
   close: string;
   confirm: string;
@@ -51,18 +51,21 @@ const XXD: Record<XxdLocale, XxdStrings> = {
   "zh-CN": {
     clear: "清空", close: "关闭", confirm: "确定", cancel: "取消", confirmDelete: "确认删除", search: "搜索",
     ...appearance("zh-CN"),
+    ...FEEDBACK_LABELS["zh-CN"],
     dropVeil: "松手，放进来", mainNav: "主导航",
     stepOf: "第 {n} 步，共 {total} 步", stepDone: "（已完成）", stepBack: "（已完成，回到这一步）", cycleBack: "（然后回到第 1 步）",
   },
   "zh-Hant": {
     clear: "清除", close: "關閉", confirm: "確定", cancel: "取消", confirmDelete: "確認刪除", search: "搜尋",
     ...appearance("zh-Hant"),
+    ...FEEDBACK_LABELS["zh-Hant"],
     dropVeil: "放開，放進來", mainNav: "主導覽",
     stepOf: "第 {n} 步，共 {total} 步", stepDone: "（已完成）", stepBack: "（已完成，回到這一步）", cycleBack: "（然後回到第 1 步）",
   },
   en: {
     clear: "Clear", close: "Close", confirm: "OK", cancel: "Cancel", confirmDelete: "Confirm delete", search: "Search",
     ...appearance("en"),
+    ...FEEDBACK_LABELS["en"],
     dropVeil: "Drop to add", mainNav: "Main navigation",
     stepOf: "Step {n} of {total}", stepDone: " (done)", stepBack: " (done, go back)", cycleBack: " (then back to step 1)",
   },
@@ -74,7 +77,7 @@ export const KUMO_TRANSLATIONS: Record<Exclude<XxdLocale, "en">, KumoTranslation
     label: { optional: "（可选）", tooltip: "更多说明" },
     layerDialog: { close: "关闭", cancel: "取消", moreActions: "更多操作" },
     common: {
-      copy: "复制", copied: "已复制", copyToClipboard: "复制到剪贴板", copiedToClipboard: "已复制到剪贴板", clickToCopy: "点击复制", copyCommand: "复制命令",
+      copy: "复制", copied: "已复制", copyFailed: FEEDBACK_LABELS["zh-CN"].copyFailed, copyToClipboard: "复制到剪贴板", copiedToClipboard: "已复制到剪贴板", clickToCopy: "点击复制", copyCommand: "复制命令",
       close: "关闭", loading: "加载中", loadingChart: "图表加载中", noResults: "没有找到", clearSelection: "清空选择", showOptions: "显示选项", remove: "移除",
       breadcrumb: "面包屑", resizeColumn: "调整列宽", hideValue: "隐藏", revealValue: "显示", valueHidden: "已隐藏", previousMonth: "上个月", nextMonth: "下个月", editMonthYear: "选择年月",
     },
@@ -84,7 +87,7 @@ export const KUMO_TRANSLATIONS: Record<Exclude<XxdLocale, "en">, KumoTranslation
     label: { optional: "（選填）", tooltip: "更多說明" },
     layerDialog: { close: "關閉", cancel: "取消", moreActions: "更多操作" },
     common: {
-      copy: "複製", copied: "已複製", copyToClipboard: "複製到剪貼簿", copiedToClipboard: "已複製到剪貼簿", clickToCopy: "點擊複製", copyCommand: "複製指令",
+      copy: "複製", copied: "已複製", copyFailed: FEEDBACK_LABELS["zh-Hant"].copyFailed, copyToClipboard: "複製到剪貼簿", copiedToClipboard: "已複製到剪貼簿", clickToCopy: "點擊複製", copyCommand: "複製指令",
       close: "關閉", loading: "載入中", loadingChart: "圖表載入中", noResults: "沒有找到", clearSelection: "清除選擇", showOptions: "顯示選項", remove: "移除",
       breadcrumb: "麵包屑", resizeColumn: "調整欄寬", hideValue: "隱藏", revealValue: "顯示", valueHidden: "已隱藏", previousMonth: "上個月", nextMonth: "下個月", editMonthYear: "選擇年月",
     },

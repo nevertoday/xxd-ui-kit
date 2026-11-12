@@ -41,6 +41,10 @@
       "types": "./src/js/gauge.d.ts",
       "import": "./src/js/gauge.js"
     },
+    "./announce": {
+      "types": "./src/js/announce.d.ts",
+      "import": "./src/js/announce.js"
+    },
     "./timing": {
       "types": "./src/js/timing.d.ts",
       "import": "./src/js/timing.js"

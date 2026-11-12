@@ -8,6 +8,7 @@
 // Kumo 的导出逐个列在 kumo-exports.ts（生成的；不含 Cloudflare 的品牌组件）
 export * from "./kumo-exports";
 export { DialogActions } from "./dialog-actions";
+export { useBusy, useSettingSave, ConfirmTwiceButton } from "./feedback";
 export { XxdAppearanceProvider, useXxdAppearance } from "./appearance";
 export { XxdLocaleProvider, useXxdLocale, resolveLocale, KUMO_TRANSLATIONS, type XxdLocale, type XxdStrings } from "./locale";
 export {
@@ -27,7 +28,6 @@ export {
   Card,
   Prose,
   StatusLine,
-  ConfirmTwiceButton,
   DropTarget,
   DropZone,
   AccountCard,
