@@ -2043,6 +2043,25 @@ const FEEDBACK_STATIC = [
   ["[data-finish-preview] *", "按钮质感的样品：只给看平面 / 立体两种材质，上面的主演示有结果"],
   ["#export-btn", "导出设置在网页里打开系统的存储框（F14），结果在页面外面；无头浏览器里存储框直接当取消，取消本来就什么都不说（单测查了存好、取消、失败三种）"],
 ];
+/* 禁用没说为什么（D181）：演示里禁用的控件（:disabled、aria-disabled）要用 aria-describedby 连到一句说原因的字。
+ * 只为给人看禁用长什么样的样品写进 DISABLED_SPECIMEN：[选择器, 为什么]（样品旁边要写明它是禁用的样子）。 */
+const DISABLED_SPECIMEN = [
+  ["nav > [data-slot=input-group] > [data-kumo-component=Button]:disabled, .xxd-pagination > button[data-role]:disabled", "分页走到头（第一页的上一页、最后一页的下一页）：位置就是原因，当前页就写在旁边的框里；按惯例禁用"],
+];
+const DISABLED_CONTROLS = "button, input:not([type=hidden]), select, textarea, [role=button], [role=switch], [role=checkbox], [role=radio], [role=tab], [role=option], [role=menuitem], [role=slider], [role=combobox]";
+function disabledWithoutReason({ id, sel, specimens }) {
+  const stage = document.getElementById(id);
+  if (!stage) return [];
+  const out = [];
+  for (const el of stage.querySelectorAll(sel)) {
+    if (!el.matches(":disabled, [aria-disabled=true]") || el.closest("[inert], [hidden], .site-demo__preview, [aria-hidden=true], [data-kind=dont]") || !el.checkVisibility()) continue;
+    if (specimens.some((x) => el.matches(x))) continue;
+    const reason = (el.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean).map((x) => document.getElementById(x)?.textContent.trim() || "").join("");
+    if (reason) continue;
+    out.push((el.getAttribute("aria-label") || el.textContent || el.value || el.closest("label")?.textContent || el.tagName.toLowerCase()).replace(/\s+/g, " ").trim().slice(0, 24));
+  }
+  return [...new Set(out)];
+}
 const FEEDBACK_INIT = `(() => {
   window.alert = () => (window.__fbDialogs = (window.__fbDialogs || 0) + 1);
   window.confirm = () => ((window.__fbDialogs = (window.__fbDialogs || 0) + 1), true);
@@ -2169,6 +2188,16 @@ async function feedbackAudit() {
     for (const d of demos) if (d.react && d.tab) stages.push({ impl: "React", id: d.react, tab: d.tab });
     for (const st of stages) {
       if (st.tab) await showReact(tab, st);
+      // 一开始就禁用的，和点了以后才变成禁用的（允许了权限、走到最后一步）都查
+      const unexplained = new Set();
+      const checkDisabled = async (after) => {
+        for (const label of await tab.evaluate(disabledWithoutReason, { id: st.id, sel: DISABLED_CONTROLS, specimens: DISABLED_SPECIMEN.filter(([, why]) => why).map(([x]) => x) })) {
+          if (unexplained.has(label)) continue;
+          unexplained.add(label);
+          fail("反馈", `${page} ${st.impl}「${label}」${after ? `点了「${after}」以后` : ""}禁用没说为什么（D181：能不禁用就不禁用；要禁用就用 aria-describedby 连上一句原因）`);
+        }
+      };
+      await checkDisabled("");
       const labels = await tag(tab, st);
       for (let i = 0; i < labels.length; i++) {
         const { label, main } = labels[i];
@@ -2196,6 +2225,7 @@ async function feedbackAudit() {
           rows.push({ t, ...(await tab.evaluate(() => window.__fb.snap())) });
         }
         const where = `${page} ${st.impl}「${label}」`;
+        if (tab.url() === before) await checkDisabled(label);
         if (process.env.FEEDBACK_DEBUG) console.log(where, events.join(","), JSON.stringify(rows));
         const navigated = tab.url().split("#")[0] !== before.split("#")[0];
         if (!navigated) {
