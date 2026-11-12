@@ -267,15 +267,16 @@ function PaginationControls({
     ? page === maxPage
     : hasNextPage !== true;
 
-  // The button you pressed can become disabled (last page, first page): the browser drops focus to <body>
-  // without a blur event. Put it on the page number (or the first button still enabled) instead.
+  // The button you pressed can become disabled (last page, first page): the browser drops focus to <body>. Put it on the page number (or the first button still enabled) instead.
   const navRef = useRef<HTMLElement>(null);
   const focusWasInside = useRef(false);
   useEffect(() => {
     const nav = navRef.current;
     if (!nav || !focusWasInside.current) return;
+    // Chrome keeps the disabled button as activeElement until its focus fixup moves it to <body> a moment later
     const active = nav.ownerDocument.activeElement;
-    if (active && active !== nav.ownerDocument.body) return;
+    const lost = !active || active === nav.ownerDocument.body || (nav.contains(active) && (active as HTMLButtonElement).disabled);
+    if (!lost) return;
     const target =
       nav.querySelector<HTMLElement>("input, [role=combobox]") ??
       nav.querySelector<HTMLElement>("button:not(:disabled)");
