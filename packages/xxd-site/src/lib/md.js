@@ -3,6 +3,7 @@ import { componentsFor, ICON_NAMES, ICON_GROUPS } from "./data.js";
 import { principlesFor } from "../data/principles.js";
 import { patternsFor } from "../data/patterns.js";
 import { templatesFor } from "../data/templates.js";
+import { REF_GROUPS, REFERENCES, STYLE_REFS } from "../data/references.js";
 import { flatPagesFor } from "../data/nav.js";
 import { mdHref, stripLang, t } from "../i18n/index.js";
 
@@ -65,6 +66,7 @@ export function mdPages(lang = "zh") {
     ...componentsFor(lang).map((c) => ({ path: `components/${c.slug}`, body: componentMd(c, lang) })),
     ...patternsFor(lang).map((p) => ({ path: `patterns/${p.slug}`, body: [`# ${p.label}`, "", p.summary, "", fence(p.markup), ...(p.rules ?? []).map((r) => `- ${r}`), ...(p.js ? ["", fence(p.js, "js")] : [])].join("\n") })),
     ...templatesFor(lang).map((x) => ({ path: `templates/${x.slug}`, body: [`# ${x.label}`, "", x.summary, "", fence(x.markup)].join("\n") })),
+    { path: "references", body: referencesMd(lang, L) },
   ];
   // 其余静态页：给出标题和 HTML 地址，保证每页的「本页的 Markdown」都有东西
   const have = new Set(pages.map((p) => p.path));
@@ -76,6 +78,21 @@ export function mdPages(lang = "zh") {
     }
   }
   return pages;
+}
+
+// 别家的设计系统：从数据直接写，一家一行（HTML 转出来的会把名字、公司、说明粘成一串）
+function referencesMd(lang, L) {
+  const en = lang === "en";
+  const docs = (r) => (!en && r.docsZh) || r.docs;
+  const row = (r) => (en ? `- [${r.name}](${docs(r)}) (${r.org.en}): ${r.learn.en}${r.repo ? ` Source: ${r.repo}` : ""}` : `- [${r.name}](${docs(r)})（${r.org.zh}）：${r.learn.zh}${r.repo ? ` 源码：${r.repo}` : ""}`);
+  return [
+    `# ${L.pageReferences}`,
+    "",
+    ...REF_GROUPS.flatMap((g) => [`## ${g.label[lang]}`, "", ...REFERENCES.filter((r) => r.group === g.key).map(row), ""]),
+    en ? "## Brand styles for AI" : "## 给 AI 用的品牌风格",
+    "",
+    ...STYLE_REFS.map((s) => `- [${s.name}](${s.href})${en ? ": " : "："}${s.desc[lang]}`),
+  ].join("\n");
 }
 
 export function llmsTxt(lang = "zh") {

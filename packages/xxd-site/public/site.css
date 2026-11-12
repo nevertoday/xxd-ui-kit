@@ -2023,4 +2023,99 @@
     padding-top: var(--space-4);
     border-top: 1px solid var(--line);
   }
+
+  /* 别家的设计系统：一家一张卡片。顶上一条色块取自那家公开的令牌（白色块靠条下的线和卡片的边圈住）；
+   * 名字是到官方文档的链接，源码和英文文档在底下。卡片按分组排成等宽的格子，高度跟内容走。 */
+  .site-refs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: var(--gap-items);
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-ref {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    color: var(--ink);
+    transition: border-color var(--motion-quick) ease;
+  }
+
+  .site-ref:hover {
+    border-color: var(--line-strong);
+  }
+
+  .site-ref__swatches {
+    display: flex;
+    height: var(--control-h-sm);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .site-ref__swatches > span {
+    flex: 1;
+    background: var(--swatch);
+  }
+
+  .site-ref__swatches > span:first-child {
+    flex: 2;
+  }
+
+  .site-ref__body {
+    display: grid;
+    align-content: start;
+    gap: var(--gap-tight);
+    padding: var(--inset-md-y) var(--inset-md) 0;
+  }
+
+  .site-ref__name {
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: var(--leading-md);
+    font-weight: var(--weight-medium);
+  }
+
+  .site-ref__org,
+  .site-ref__learn {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .site-ref__org {
+    color: var(--muted);
+  }
+
+  .site-ref__learn {
+    margin-top: var(--gap-tight);
+  }
+
+  .site-ref__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    align-content: center;
+    gap: var(--gap-items) var(--inset-sm);
+    padding: var(--inset-sm-y) var(--inset-md) var(--inset-md-y);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
+
+  .site-ref__body:last-child {
+    padding-bottom: var(--inset-md-y);
+  }
+
+  .site-ref-note {
+    margin-top: var(--space-8);
+    padding-top: var(--inset-md-y);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-sm);
+  }
 }

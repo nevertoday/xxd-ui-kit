@@ -1,0 +1,79 @@
+---
+// 别家的设计系统：各家官方公开的设计系统，一家一张卡片，写一句值得学什么，色块取自各家公开的令牌。
+// 不放 logo 和截图（商标，也不加载外部图片）。数据在 src/data/references.js。中文 / 英文共用，语言看路径。
+import Site from "../layouts/Site.astro";
+import { langOf } from "../i18n/index.js";
+import { REF_GROUPS, REFERENCES, STYLE_REFS } from "../data/references.js";
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const T = en
+  ? {
+      title: "Other design systems", caption: "Get started",
+      lead: "Public design systems from other teams that we learn from. Each card says what is worth studying there; the swatches come from that system's own published tokens, and every link goes to its official docs.",
+      docs: "Docs", docsZh: "Chinese docs", repo: "Source", mini: "Mini program",
+      colors: "Colors",
+      style: "Brand styles for AI",
+      styleLead: "Want an AI coding tool to build a page in a particular brand's look? These collections describe brand websites as DESIGN.md files. They are third-party write-ups of public sites, not the companies' own design systems.",
+      note: "Names and trademarks belong to their owners. Linking here does not mean they endorse XXD UI.",
+    }
+  : {
+      title: "别家的设计系统", caption: "开始",
+      lead: "我们学过的别家公开的设计系统。每张卡片写了那里最值得学的一点；色块取自各家公开的令牌，链接都到官方文档。",
+      docs: "文档", docsZh: "中文文档", repo: "源码", mini: "有小程序版",
+      colors: "颜色",
+      style: "给 AI 用的品牌风格",
+      styleLead: "想让 AI 编程工具照某个品牌的样子做页面，可以看下面这些合集：它们把各家官网写成 DESIGN.md。这是第三方对公开网站的分析，不是那家公司自己的设计系统。",
+      note: "名字和商标归各家所有；这里只是链接，不代表他们认可小小东 UI。",
+    };
+const tr = (v: { zh: string; en: string } | string) => (typeof v === "string" ? v : v[lang]);
+const groups = REF_GROUPS.map((g) => ({ ...g, items: REFERENCES.filter((r) => r.group === g.key) })).filter((g) => g.items.length);
+const headings = [...groups.map((g) => ({ slug: g.key, text: tr(g.label) })), { slug: "style", text: T.style }];
+---
+
+<Site title={T.title} headings={headings}>
+  <header class="site-head">
+    <p class="xxd-text" data-variant="caption">{T.caption}</p>
+    <h1 class="xxd-text" data-variant="display">{T.title}</h1>
+    <p class="site-lead">{T.lead}</p>
+  </header>
+
+  {groups.map((g) => (
+    <section aria-labelledby={g.key}>
+      <h2 class="site-h2" id={g.key}>{tr(g.label)}</h2>
+      <ul class="site-refs">
+        {g.items.map((r) => {
+          const main = !en && r.docsZh ? r.docsZh : r.docs;
+          return (
+            <li class="site-ref">
+              <div class="site-ref__swatches" role="img" aria-label={`${T.colors}: ${r.colors.map((c) => `${tr(c.role)} ${c.hex}`).join(en ? ", " : "、")}`}>
+                {r.colors.map((c) => <span style={`--swatch:${c.hex}`}></span>)}
+              </div>
+              <div class="site-ref__body">
+                <h3 class="site-ref__name"><a class="xxd-link" href={main} rel="noopener" data-external>{r.name}</a></h3>
+                <p class="site-ref__org">{tr(r.org)}</p>
+                <p class="site-ref__learn">{tr(r.learn)}</p>
+              </div>
+              {(r.repo || r.mini || (!en && r.docsZh)) && (
+                <div class="site-ref__foot">
+                  {r.repo && <a class="xxd-link" href={r.repo} rel="noopener" data-external>{T.repo}</a>}
+                  {!en && r.docsZh && <a class="xxd-link" href={r.docs} rel="noopener" data-external>English</a>}
+                  {r.mini && <span class="xxd-badge">{T.mini}</span>}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))}
+
+  <h2 class="site-h2" id="style">{T.style}</h2>
+  <p>{T.styleLead}</p>
+  <div class="xxd-group__body">
+    {STYLE_REFS.map((s) => (
+      <a class="xxd-row" href={s.href} rel="noopener"><div class="xxd-row__text"><div class="xxd-row__title">{s.name}</div><div class="xxd-row__desc">{tr(s.desc)}</div></div></a>
+    ))}
+  </div>
+
+  <p class="site-ref-note">{T.note}</p>
+</Site>

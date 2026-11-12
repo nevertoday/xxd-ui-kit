@@ -74,6 +74,7 @@ export const PAGE_KEYWORDS = {
   "/foundations/finish": "finish flat material button style 质感 平面 立体 纯平 按钮质感",
   "/foundations/icons": "icon icons svg 图标",
   "/designers": "designer design figma handoff spec tokens widths breakpoints 设计师 设计稿 出稿 交接 标注 规格 令牌 断点",
+  "/references": "design systems references inspiration material carbon polaris primer fluent ant arco tdesign semi gestalt 设计系统 参考 推荐 别家 灵感 组件库",
   "/start": "install setup getting-started quick-start cdn 安装 开始 上手 快速开始",
   "/tools": "cli command doctor sync init 命令行 工具 体检 同步",
   "/tools/parity": "parity react html compare same 对照 一致 两种实现 react 版",
