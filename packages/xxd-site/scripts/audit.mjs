@@ -2033,6 +2033,7 @@ async function sizesAudit() {
  * 组件页、模式页每个演示（原生和 React）里能点的东西都真的点一下，在 0 / 100 / 1100ms 取样（1.1 秒时还在进行中的再看 3000ms）：
  *   · 1.1 秒内看不到任何变化：看得见的 DOM 变了、勾选 / 按下 / 展开变了、焦点进了新出现的东西、toast、下载、选文件、弹窗、跳转都算；
  *   · 焦点掉到 body（D178）；
+ *   · 没有图标的按钮完成时，勾不在正中（D86）；
  *   · 进行中在 150ms 前就露出来（转圈、字变透明，D85）；进行中写成 disabled；
  *   · toast 留的时间短于 D87（按字数、出错至少 6 秒、带操作 10 秒），或者不自己消失；出错的 React toast 不是 assertive。
  * 模式页是一段流程，每个操作都要有结果；组件页的演示是样品（尺寸、变体、位置），只要求主操作和危险操作
@@ -2123,7 +2124,19 @@ const FEEDBACK_INIT = `(() => {
       busy: live && b.getAttribute("aria-busy") === "true",
       loading: live && b.disabled && !!b.querySelector("svg[role=status]"),
       shown: fb.busyShown(b),
+      doneOff: live ? fb.doneOff(b) : 0,
     };
+  };
+  // 没有图标的按钮完成时，勾画在 ::after 上（D86）；点击热区也是 ::after，它的 translate 会被勾继承过去，勾就偏到左上（量了 8px）
+  fb.doneOff = (b) => {
+    if (!b.hasAttribute("data-done") || !b.matches(".xxd-btn:not(:has(> .ui-icon))")) return 0;
+    const a = getComputedStyle(b, "::after");
+    if (/^(none|normal)$/.test(a.content)) return 0;
+    const w = parseFloat(a.width), h = parseFloat(a.height);
+    const [tx, ty] = a.translate === "none" ? [0, 0] : (a.translate.split(" ").concat("0px")).slice(0, 2).map((v, i) => (v.endsWith("%") ? (parseFloat(v) / 100) * (i ? h : w) : parseFloat(v)));
+    const dx = parseFloat(a.left) + parseFloat(a.marginLeft) + w / 2 + tx - b.clientWidth / 2;
+    const dy = parseFloat(a.top) + parseFloat(a.marginTop) + h / 2 + ty - b.clientHeight / 2;
+    return Math.hypot(dx, dy);
   };
   fb.toastReport = () => fb.toasts.map((t) => {
     const el = t.el;
@@ -2235,6 +2248,8 @@ async function feedbackAudit() {
           const early = rows.find((r) => r.t > 0 && r.t < BUSY_DELAY && (r.busy || r.loading) && r.shown);
           if (early) fail("反馈", `${where} 进行中在 ${BUSY_DELAY}ms 前就露出来了（${early.t}ms 时已经转圈 / 字变透明）`);
           if (rows.some((r) => r.loading && !r.busy)) fail("反馈", `${where} 进行中写成了 disabled（没有 aria-busy）`);
+          const offDone = rows.find((r) => r.doneOff > 1);
+          if (offDone) fail("反馈", `${where} 完成的勾不在按钮正中（偏了 ${offDone.doneOff.toFixed(1)}px）`);
         }
         await tab.evaluate(() => (window.__fb.target = null));
         if (navigated) {
