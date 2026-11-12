@@ -4,7 +4,8 @@
   top: 0;
   z-index: var(--z-dock);
   box-sizing: border-box;
-  padding-left: var(--space-2);
+  /* 左边距用顶栏自己的 16（--inset-md）：返回键按图标对齐页边（D58，往外伸 (按钮 − 图标) / 2），图标落在 16、和页面内容一条线。
+     以前写 8：伸出去以后按钮框到了屏幕外 6px，图标离屏幕边只有 8px */
   border-bottom: 0;
 }
 
