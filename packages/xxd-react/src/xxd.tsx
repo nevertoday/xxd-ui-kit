@@ -326,7 +326,7 @@ export function Swatches({ value, onValueChange, presets = ACCENT_PRESETS, label
 
 /* ── AppearanceSettings：完整的「外观」设置组（读写 XxdAppearanceProvider） ── */
 /** note：组下面一行字，true 是「改动自动保存」（三语）。改了马上存，存好说「已保存」，存不进去退回原来的值并给重试（D177）。 */
-export function AppearanceSettings({ showDensity = true, showFinish = false, lockCorners = false, note }: { showDensity?: boolean; showFinish?: boolean; lockCorners?: boolean; note?: ReactNode | boolean }) {
+export function AppearanceSettings({ showDensity = true, showFinish = false, lockCorners = false, note }: { showDensity?: boolean; showFinish?: boolean; lockCorners?: boolean; note?: ReactNode }) {
   const { settings, update: store } = useXxdAppearance();
   const { t } = useXxdLocale();
   const saving = useSettingSave();
