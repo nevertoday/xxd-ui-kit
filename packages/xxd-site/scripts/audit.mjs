@@ -940,6 +940,32 @@ async function motionAudit() {
       return bad;
     });
     for (const x of r) fail("动效", `${page} 减少动效：${x}`);
+    // React（Kumo）的按钮进行中（F2）：上面只拿原生按钮试过。点一下真的进入进行中，隔 300ms 取两次：不能转、不能定住
+    if (page === "/components/button/") {
+      const tabId = await tab.evaluate(() => document.querySelector("main .site-demo__bar [role=tab][aria-controls*='-react']")?.id);
+      const sel = "main .site-demo > [id$='-react']:not([hidden]) [data-kumo-component=Button]:not([disabled], [aria-disabled=true])";
+      const spin = () => tab.evaluate((sel) => {
+        const sp = document.querySelector(sel)?.querySelector("[data-kumo-part=spinner]");
+        if (!sp) return null;
+        const cs = getComputedStyle(sp);
+        return { names: sp.getAnimations().filter((a) => a.playState === "running").map((a) => a.animationName), opacity: +cs.opacity, transform: cs.transform, visible: cs.visibility === "visible" };
+      }, sel);
+      if (tabId) {
+        await tab.click(`#${tabId}`);
+        await tab.waitForSelector(sel, { timeout: 8000 }).catch(() => {});
+        await tab.waitForTimeout(300);
+        await tab.click(sel).catch(() => {});
+        await tab.waitForTimeout(300);
+        const a = await spin();
+        await tab.waitForTimeout(300);
+        const z = await spin();
+        if (!a || !z) fail("动效", `${page} 减少动效：React 按钮点了以后没有进入进行中（没有转圈的那一块）`);
+        else {
+          if (a.names.some((n) => /spin/.test(n)) || a.transform !== "none" || z.transform !== "none") fail("动效", `${page} 减少动效：React 按钮进行中还在转（${a.names.join(", ")}）`);
+          if (!a.visible || Math.abs(a.opacity - z.opacity) < 0.03) fail("动效", `${page} 减少动效：React 按钮进行中定住了（300ms 里不透明度 ${a.opacity.toFixed(2)} → ${z.opacity.toFixed(2)}，应慢淡入淡出）`);
+        }
+      } else fail("动效", `${page} 减少动效：找不到 React 演示，进行中的 React 按钮没查`);
+    }
     await tab.close();
   }
   await rm.close();
