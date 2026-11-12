@@ -391,8 +391,7 @@ async function polishAudit() {
         const n = await tab.evaluate(() => [...document.querySelectorAll('.site-demo > [id$="-react"][hidden]')].map((r) => (r.hidden = false)).length);
         if (n) {
           await tab.waitForTimeout(150);
-          // 这里只看行高：React 版别的毛病归对照（parity）和长内容（trunc）那两项
-          for (const x of await tab.evaluate(() => [...document.querySelectorAll('.site-demo > [id$="-react"]')].flatMap((r) => xxdPolish(r)).filter((x) => x.kind.includes("行高")))) report(`[${w}] ${page} React`, x);
+          for (const x of await tab.evaluate(() => [...document.querySelectorAll('.site-demo > [id$="-react"]')].flatMap((r) => xxdPolish(r)))) report(`[${w}] ${page} React`, x);
         }
       }
       // 模板预览框 overflow:hidden：里面的东西超出左右边会被悄悄裁掉（不算「溢出」，上面查不到）

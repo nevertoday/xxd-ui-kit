@@ -16,7 +16,7 @@
 //   字号不在阶梯上 / 字重越界 / 中文斜体 / 中文小于 12px（TYPE-REVIEW-PLAN D69–D71） 都按算出来的值查，浏览器默认的粗体、斜体也算
 globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true } = {}) {
   const out = [];
-  const HIDE = "[hidden], template, [popover]:not(:popover-open), dialog:not([open]), .xxd-sr-only, .xxd-sheet:not([data-open]), .xxd-panel:not([data-open]), [inert], details:not([open]) > :not(summary), script, style, svg *";
+  const HIDE = "[hidden], template, [popover]:not(:popover-open), dialog:not([open]), .xxd-sr-only, .sr-only, .xxd-sheet:not([data-open]), .xxd-panel:not([data-open]), [inert], details:not([open]) > :not(summary), script, style, svg *";
   const shown = (el) => {
     if (el.closest(HIDE)) return false;
     const r = el.getBoundingClientRect();
@@ -33,11 +33,11 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
     const tag = owner?.dataset?.name || owner?.dataset?.demo || owner?.querySelector?.(".site-wall__name")?.textContent?.trim() || "";
     return `${tag ? tag + " › " : ""}${el.tagName.toLowerCase()}${cls ? "." + cls : ""}「${(el.textContent || el.getAttribute("aria-label") || "").trim().replace(/\s+/g, " ").slice(0, 18)}」`;
   };
-  const textRects = (el) => {
+  const textRects = (el, skip = () => false) => {
     const rects = [];
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-      if (!n.nodeValue.trim() || n.parentElement.closest("svg, .xxd-sr-only, [hidden]")) continue;
+      if (!n.nodeValue.trim() || n.parentElement.closest("svg, .xxd-sr-only, .sr-only, [hidden]") || skip(n)) continue;
       const range = document.createRange();
       range.selectNodeContents(n);
       for (const r of range.getClientRects()) if (r.width > 0.5) rects.push(r);
@@ -187,7 +187,7 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
     return tops.length;
   };
   for (const el of root.querySelectorAll("*")) {
-    if (el.matches("input, textarea, select, option, svg, svg *") || el.closest("pre, code, .xxd-code, .xxd-kbd, svg, .xxd-sr-only")) continue;
+    if (el.matches("input, textarea, select, option, svg, svg *") || el.closest("pre, code, .xxd-code, .xxd-kbd, svg, .xxd-sr-only, .sr-only")) continue;
     if (![...el.childNodes].some((n) => n.nodeType === 3 && n.nodeValue.trim())) continue;
     const owner = el.closest("[class]");
     const cls = owner && typeof owner.className === "string" ? owner.className : "";
@@ -215,7 +215,7 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
       const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
       let first = null;
       // 按钮、chip、徽标（实心的）是居中的盒子，不按字的基线比；像字一样的（排序表头、带点的状态）照样比
-      for (let n = walker.nextNode(); n; n = walker.nextNode()) if (n.nodeValue.trim() && !n.parentElement.closest("svg, .xxd-sr-only, [hidden], .xxd-btn, .xxd-chip, .xxd-badge:not([data-appearance='dot']), input, select, textarea")) { first = n; break; }
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) if (n.nodeValue.trim() && !n.parentElement.closest("svg, .xxd-sr-only, .sr-only, [hidden], .xxd-btn, .xxd-chip, .xxd-badge:not([data-appearance='dot']), input, select, textarea")) { first = n; break; }
       if (!first) continue;
       // 先用一个临时 span 包住这段字再放探针：字在 flex 容器里时，直接插进去的探针会自己变成一个居中的 flex 项
       const wrap = document.createElement("span");
@@ -252,11 +252,15 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
 
   // 8. 差一点没对齐（D57：只有外线和内线两条）：一摞竖排的东西，各项的左边差 0.75–3px。
   //    框（自己画了左边框或底色）按框的边算；没有框的按第一处字 / 图标 / 控件算。居中的不算。
+  const endAligned = (el) => { const cs = getComputedStyle(el); return cs.textAlign === "right" || (cs.textAlign === "end" && cs.direction === "ltr"); };
   const LEAF = "svg, img, iframe, input, select, textarea, button, canvas, video, [role=switch], [role=checkbox], [role=radio]";
   const visibleBox = (el) => {
     let l = Infinity, r = -Infinity;
     const add = (x) => { l = Math.min(l, x.left); r = Math.max(r, x.right); };
-    for (const x of textRects(el)) add(x);
+    // 里面靠右对齐的一栏（时间线的时间）：字的左边随字宽参差，这一栏看得见的左线是它自己的框
+    const endCols = [...el.querySelectorAll("*")].filter((c) => shown(c) && !getComputedStyle(c).display.startsWith("inline") && endAligned(c) && !endAligned(c.parentElement));
+    for (const c of endCols) add(c.getBoundingClientRect());
+    for (const x of textRects(el, (n) => endCols.some((c) => c.contains(n)))) add(x);
     for (const c of el.querySelectorAll(LEAF)) if (shown(c) && !c.parentElement.closest("svg")) add(c.getBoundingClientRect());
     if (el.matches(LEAF)) add(el.getBoundingClientRect());
     // 里面画了左边框的东西（手机框、卡片），看得见的边是那条框线
@@ -290,7 +294,7 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
       if ((cs.display.includes("flex") && cs.flexDirection.startsWith("column") && cs.alignItems === "center") || (cs.display.includes("grid") && cs.justifyItems === "center")) continue; // 竖排居中（侧栏图标 + 字）
       const v = visibleBox(k);
       // 靠右对齐的字（雷达图左边的名字和数）：比的是右边，左边参差是本来就该有的
-      const end = !boxed(k, cs) && (cs.textAlign === "right" || (cs.textAlign === "end" && cs.direction === "ltr"));
+      const end = !boxed(k, cs) && endAligned(k);
       const l = boxed(k, cs) ? b.left : end ? v.r : v.l;
       if (!Number.isFinite(l)) continue;
       // 内容在自己的框里居中（演示区、按钮组、图例居中）：左边离多远是凑出来的，不算
@@ -342,7 +346,7 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
   const STEPS = new Set([11, 12, 13, 14, 16, 20, 24, 28]);
   const CJK = /[\u3400-\u9fff]/;
   for (const el of root.querySelectorAll("*")) {
-    if (el.closest('[data-kind="dont"], svg, .xxd-sr-only') || el.matches("input, textarea, select, option")) continue;
+    if (el.closest('[data-kind="dont"], svg, .xxd-sr-only, .sr-only') || el.matches("input, textarea, select, option")) continue;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3 && n.nodeValue.trim()).map((n) => n.nodeValue).join("");
     if (!text.trim() || !shown(el)) continue;
     const cs = getComputedStyle(el);
