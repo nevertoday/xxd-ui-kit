@@ -14,7 +14,8 @@
 //   直角模式下的圆（SHAPE-LINE-PLAN D61） 直角时还画出圆角的东西（单选、转圈除外）
 //   同一行控件边框不一（D62） 一排里有边的按钮、输入框、下拉、选择器，边框颜色不一样
 //   字号不在阶梯上 / 字重越界 / 中文斜体 / 中文小于 12px（TYPE-REVIEW-PLAN D69–D71） 都按算出来的值查，浏览器默认的粗体、斜体也算
-globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true } = {}) {
+//   控件和标题不在一条线（FEEDBACK-ALIGN-PLAN D171、D172） 和一段字同排的控件，它的字（没有字就是控件本身）的中线和那段字第一行的中线差 1.5px 以上
+globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true, alignTolerance = 1.5 } = {}) {
   const out = [];
   const HIDE = "[hidden], template, [popover]:not(:popover-open), dialog:not([open]), .xxd-sr-only, .sr-only, .xxd-sheet:not([data-open]), .xxd-panel:not([data-open]), [inert], details:not([open]) > :not(summary), script, style, svg *";
   const shown = (el) => {
@@ -355,6 +356,97 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
     if (!["400", "500", "600"].includes(cs.fontWeight)) out.push({ kind: "字重越界", where: name(el), detail: `字重 ${cs.fontWeight}` });
     if (cs.fontStyle !== "normal" && CJK.test(text)) out.push({ kind: "中文斜体", where: name(el), detail: cs.fontStyle });
     if (fs < 12 && CJK.test(text)) out.push({ kind: "中文小于 12px", where: name(el), detail: cs.fontSize });
+  }
+
+  // 12. 控件和标题不在一条线（D171、D172）：一排（flex、grid、表格的一行）里控件旁边有一段字，控件的字（没有字的量控件的框）的中线
+  //     要对齐那段字第一行的中线，差 1.5px 以上报出来。
+  //     中线按墨迹算，不截图：基线是量出来的（和第 6 条一样的 0 × 0 探针），墨迹的上下由 canvas 按算出来的字体量这段字得到；
+  //     西文去掉 g、p、y 这种下伸的字母再量（眼睛对的是基线以上那部分）。行框的中线在大小字（28 的标题、13 的按钮）之间差 1–2px，不能用。
+  //     不算的：段落里的行内按钮（那是一行字里的东西）；「…」这种贴着基线画的字；控件那一项里自己还有字的、和那段字是同样的项的（几步流程里的一步）；
+  //     整行可点的正文（.xxd-list__main）不是控件，它里面的字照样是「旁边那段字」
+  const ALIGN_CTL = "button, [role=button], a.xxd-btn, [role=switch], [role=checkbox], [role=radio], [role=combobox], select, .xxd-chip, input:not([type=hidden], [type=range], [type=color], [type=file], [type=submit], [type=button])";
+  const WHOLE_ROW = ":is(a, button).xxd-list__main, button.xxd-row, label.xxd-row";
+  const NOT_TEXT = ".xxd-badge, .xxd-kbd, kbd, .xxd-tooltip, [role=tooltip], [class*=badge]";
+  const BASELINE_GLYPHS = /^[\s.…⋯·•]+$/;
+  const isControl = (el) => el.matches(ALIGN_CTL) && !el.matches(WHOLE_ROW);
+  const inControl = (n) => { const c = n.parentElement.closest(ALIGN_CTL); return !!c && !c.matches(WHOLE_ROW); };
+  const visibleText = (n) => n.nodeValue.trim() && !n.parentElement.closest(`${NOT_TEXT}, svg, .xxd-sr-only, .sr-only, [hidden]`) && shown(n.parentElement) &&
+    n.parentElement.getBoundingClientRect().width >= 2 && n.parentElement.getBoundingClientRect().height >= 2; // 只给读屏的字（1 × 1、clip-path 裁掉）看不见
+  const textNodesIn = (el, skip) => {
+    const out2 = [];
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) if (visibleText(n) && !skip(n)) out2.push(n);
+    return out2;
+  };
+  const rectsOf = (n) => { const range = document.createRange(); range.selectNodeContents(n); return [...range.getClientRects()].filter((x) => x.width > 0.5); };
+  const baselineOf = (n) => {
+    const wrap = document.createElement("span");
+    const probe = document.createElement("span");
+    probe.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline;margin:0;padding:0;border:0";
+    n.parentNode.insertBefore(wrap, n);
+    wrap.append(probe, n);
+    const y = probe.getBoundingClientRect().bottom;
+    wrap.parentNode.insertBefore(n, wrap);
+    wrap.remove();
+    return y;
+  };
+  const pen = document.createElement("canvas").getContext("2d");
+  // 第一行字墨迹的中线：取最早的一段字（它在第一行）的基线，往上半个墨迹高
+  const inkMidline = (nodes) => {
+    const top = Math.min(...nodes.flatMap(rectsOf).map((x) => x.top));
+    const n = nodes.find((x) => rectsOf(x).some((r) => r.top < top + Math.max(4, (r.bottom - r.top) / 2)));
+    const cs = getComputedStyle(n.parentElement);
+    pen.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = pen.measureText(n.nodeValue.trim().replace(/[gjpqyQ,;_()[\]{}|/]/g, "") || "x");
+    return baselineOf(n) - (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  };
+  const layoutBox = (el) => { let p = el; while (p && getComputedStyle(p).display === "contents") p = p.parentElement; return p; };
+  const inRow = (el) => {
+    const cs = getComputedStyle(layoutBox(el));
+    return (cs.display.includes("flex") && !cs.flexDirection.startsWith("column")) || cs.display.includes("grid") || cs.display === "table-row";
+  };
+  // 光秃秃的输入框借外面那层有边框的壳（输入组、带图标的输入框）当它看得见的框
+  const frameOf = (c) => {
+    if (!c.matches("input, select, textarea")) return c;
+    for (let p = c, i = 0; p && i < 3; p = p.parentElement, i++) {
+      const cs = getComputedStyle(p);
+      if (p.getBoundingClientRect().height > 64) break;
+      const edged = parseFloat(cs.borderTopWidth) >= 1 && cs.borderTopStyle !== "none" && !/rgba\(0, 0, 0, 0\)|transparent/.test(cs.borderTopColor);
+      if (edged || cs.backgroundColor !== "rgba(0, 0, 0, 0)") return p;
+    }
+    return c;
+  };
+  for (const c of root.querySelectorAll(ALIGN_CTL)) {
+    if (!isControl(c) || [...c.querySelectorAll(ALIGN_CTL)].some(isControl) || !shown(c) || c.closest('[data-kind="dont"], svg')) continue;
+    if (c.textContent.trim() && BASELINE_GLYPHS.test(c.textContent)) continue;
+    const frame = frameOf(c);
+    const fr = frame.getBoundingClientRect();
+    if (fr.height < 12 || fr.height > 64) continue;
+    let near = null;
+    for (let a = c.parentElement, depth = 0; a && depth < 5 && !near; a = a.parentElement, depth++) {
+      if (a === document.body || a.matches("main, .site-demo__stage, .site-demo") || a.getBoundingClientRect().height > 240) break;
+      for (const n of textNodesIn(a, (x) => frame.contains(x) || inControl(x))) {
+        const r = rectsOf(n)[0];
+        if (!r || Math.min(r.bottom, fr.bottom) - Math.max(r.top, fr.top) < 4) continue;
+        const gap = r.left >= fr.right - 1 ? r.left - fr.right : r.right <= fr.left + 1 ? fr.left - r.right : -1;
+        if (gap < 0 || gap > 480) continue;
+        if (!near || r.top < near.top - 2 || (Math.abs(r.top - near.top) <= 2 && gap < near.gap)) near = { n, top: r.top, gap };
+      }
+    }
+    if (!near) continue;
+    let row = near.n.parentElement;
+    while (!row.contains(c)) row = row.parentElement;
+    const item = [...row.children].find((k) => k.contains(c));
+    if (!inRow(row) || item.getBoundingClientRect().height > 64 || textNodesIn(item, inControl).length) continue;
+    // 字直接写在这一排里（<label><input> 文字</label>）时，那段字就是它自己
+    const column = [...row.children].find((k) => k.contains(near.n));
+    if (column && item.className && item.className === column.className) continue; // 一排同样的项（几步流程）各管各的
+    const text = column ? textNodesIn(column, (x) => inControl(x)) : [near.n];
+    const words = text.map((x) => x.nodeValue).join("").trim().replace(/\s+/g, " ");
+    if (!text.length || BASELINE_GLYPHS.test(words)) continue;
+    const label = c.matches("input, select, textarea") ? [] : textNodesIn(c, () => false);
+    const diff = (label.length ? inkMidline(label) : fr.top + fr.height / 2) - inkMidline(text);
+    if (Math.abs(diff) > alignTolerance) out.push({ kind: "控件和标题不在一条线", where: name(c), detail: `${label.length ? "控件的字" : "控件"}中线比「${words.slice(0, 12)}」第一行${diff > 0 ? "低" : "高"} ${Math.abs(diff).toFixed(1)}px`, diff });
   }
   return out;
 };
