@@ -36,6 +36,8 @@
    自定义下拉、标签输入、分段、chip 同一档一样高，令牌 `--control-h-xs/sm/(无)/lg`，新组件也照这把尺；audit 加 `--only=sizes`；J1 起）。
    2026-11-11：`LEADING-REVIEW-PLAN.md`（行高：字号和行高按用途成对，一张表（§6）；改字号的规则同时写配对的行高；只一行的 12 / 16、行高 = 字号不许折行，
    会折行的说明 12 / 20；「细节」按算出来的值查表、数折了几行，也查顶栏和 React（Kumo）演示；D162–D170）。
+   2026-11-12：`FEEDBACK-ALIGN-PLAN.md`（操作反馈和按钮对齐：控件中线对齐旁边那段字第一行的中线（取代 D59）；三层读同一份 `@xxd/css/timing`，React 进行中写 `aria-busy`；
+   失败能重试、读屏听得到，设置说存没存上，焦点不掉到 body，禁用说为什么；audit 加 `--only=feedback`（真的点一遍），「细节」加「控件和标题不在一条线」；D171–D182）。
 2. `docs/DESIGN-PRINCIPLES.md` —— 审美宪法。任何视觉决定都要能对应到其中一条；对应不上就先问。
 3. 改 Kumo 组件前读 `docs/upstream/KUMO-AGENTS.md` 和 `packages/kumo/AGENTS.md`（上游的工程约定仍然有效）。
 
@@ -50,4 +52,4 @@
 - 不手改生成文件（`theme-kumo.css`、`ai/*`、`src/primitives/*`、`xxd-react/src/kumo-exports.ts`、`xxd-icons/src/{names.d.ts,each.js,each.d.ts}`），改源配置再 codegen / 构建。
 - 展示站有中英两版：改 `packages/xxd-css/registry.json` / `patterns.json` 时同步改旁边的 `registry.en.js` / `patterns.en.js`；加展示站页面时 `src/pages/en/` 也加一个（正文写在 `src/views/`）。测试会检查。
 - 字体只用系统无衬线（不用宋体 / 衬线），不加载网络字体。
-- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1458 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏、`--only=chart` ECharts 图表、`--only=diagram` 图解、`--only=sizes` 控件同一档一样高）。
+- 修改后跑 `pnpm --filter @cloudflare/kumo test`；基线是 65 文件 / 1464 测试全绿。改了组件样式还要跑展示站的 audit（`--only=parity` 两种实现对照、`--only=polish` 细节、`--only=spec` 规格、`--only=inset` 看得见的内边距、`--only=contrast` 真实对比度和选中记号、`--only=focus / motion / states` 焦点不被裁、按下立即变、状态叠加、`--only=trunc` 长文字和截断、`--only=form` 表单和出错、`--only=dark` 暗黑模式、`--only=touch` 手机和触屏、`--only=chart` ECharts 图表、`--only=diagram` 图解、`--only=sizes` 控件同一档一样高、`--only=feedback` 点了有没有结果）。

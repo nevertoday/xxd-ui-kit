@@ -23,7 +23,7 @@ export const patterns = {
     };
     const pick = Object.assign(document.createElement("input"), { type: "file", accept: "image/*", multiple: true });
     pick.addEventListener("change", () => take([...pick.files]));
-    document.querySelector("#drop-zone .xxd-link").addEventListener("click", () => pick.click());
+    document.getElementById("drop-zone").querySelector(".xxd-link").addEventListener("click", () => pick.click());
     window.__dropTake = take;
   }
   Xxd.bindDrop(document.getElementById("drop-demo"), {
