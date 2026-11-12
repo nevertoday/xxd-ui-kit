@@ -2012,8 +2012,8 @@ async function sizesAudit() {
  * 模式页是一段流程，每个操作都要有结果；组件页的演示是样品（尺寸、变体、位置），只要求主操作和危险操作
  * （实心的 primary / danger，React 是 Kumo 的实心按钮）有结果，其余的照样查焦点、进行中和 toast。
  * 已经选中 / 当前的那一项再点一下不变是对的，不点；链接不点（跳转就是它的结果）。
- * 本来就不该有结果的写进 FEEDBACK_STATIC：[正则（「页 实现 字」）, 为什么]。 */
-const FEEDBACK_STATIC = [];
+ * 本来就不该有结果的写进 FEEDBACK_STATIC：[选择器, 为什么]。 */
+const FEEDBACK_STATIC = [["[data-finish-preview] *", "按钮质感的样品：只给看平面 / 立体两种材质，上面的主演示有结果"]];
 const FEEDBACK_INIT = `(() => {
   window.alert = () => (window.__fbDialogs = (window.__fbDialogs || 0) + 1);
   window.confirm = () => ((window.__fbDialogs = (window.__fbDialogs || 0) + 1), true);
@@ -2096,19 +2096,18 @@ async function feedbackAudit() {
   let clicked = 0;
   let checkedToasts = 0;
   const skipped = [];
-  const exempt = (page, impl, label) => FEEDBACK_STATIC.some(([re, why]) => why && re.test(`${page} ${impl} ${label}`));
   const showReact = async (tab, st) => {
     await tab.click(`#${st.tab}`);
     await tab.waitForFunction((id) => { const s = document.getElementById(id); return s && !s.hidden && !s.querySelector("astro-island[ssr]"); }, st.id, { timeout: 8000 }).catch(() => {});
     await tab.waitForTimeout(300);
   };
-  const tag = (tab, st) => tab.evaluate(({ id, sel, n }) => {
+  const tag = (tab, st) => tab.evaluate(({ id, sel, n, statics }) => {
     const stage = document.getElementById(id);
     if (!stage) return [];
     const seen = new Set();
     const out = [];
     for (const el of stage.querySelectorAll(sel)) {
-      if (el.closest("[inert], [hidden], .site-demo__preview, [aria-hidden=true]") || el.matches(":disabled, [aria-disabled=true], [type=file], [aria-checked=true], [aria-selected=true], [aria-current]:not([aria-current=false]), [type=radio]:checked") || !el.checkVisibility()) continue;
+      if (statics.some((x) => el.matches(x)) || el.closest("[inert], [hidden], .site-demo__preview, [aria-hidden=true]") || el.matches(":disabled, [aria-disabled=true], [type=file], [aria-checked=true], [aria-selected=true], [aria-current]:not([aria-current=false]), [type=radio]:checked") || !el.checkVisibility()) continue;
       const r = el.getBoundingClientRect();
       if (r.width < 4 || r.height < 4) continue;
       const label = (el.getAttribute("aria-label") || el.textContent || el.value || el.closest("label")?.textContent || "").replace(/\s+/g, " ").trim().slice(0, 24);
@@ -2120,7 +2119,7 @@ async function feedbackAudit() {
       if (out.length >= n) break;
     }
     return out;
-  }, { id: st.id, sel: TARGETS, n: 16 });
+  }, { id: st.id, sel: TARGETS, n: 16, statics: FEEDBACK_STATIC.filter(([, why]) => why).map(([x]) => x) });
   async function onePage(page) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
     await ctx.grantPermissions(["clipboard-read", "clipboard-write"], { origin });
@@ -2145,7 +2144,6 @@ async function feedbackAudit() {
       for (let i = 0; i < labels.length; i++) {
         const { label, main } = labels[i];
         const mustChange = main || page.startsWith("/patterns/");
-        if (exempt(page, st.impl, label)) continue;
         const sel = `[data-fb="${st.id}:${i}"]`;
         const ok = await tab.evaluate((sel) => { const el = document.querySelector(sel); if (!el || !el.checkVisibility() || el.matches(":disabled, [aria-disabled=true]")) return false; window.__fb.arm(el); return true; }, sel);
         if (!ok) continue;
