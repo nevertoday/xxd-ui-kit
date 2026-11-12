@@ -24,7 +24,9 @@
 //   15. 动效（MOTION-REVIEW-PLAN D90）：按下的同一刻就有看得见的变化；减少动效下只剩慢淡入淡出，进行中的按钮不定住。
 //   16. 状态（ACCEPTANCE-REVIEW）：选中 / 禁用 / 出错叠上悬停、聚焦后按优先级不变。
 //   17. 截断（TRUNCATION-REVIEW-PLAN D96）：长文字不硬裁、内容和数字不省略、省略的悬停能看到全文、字不互相压；React 不伸出格子。
-// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch|chart|diagram]
+//   22. 点了有没有结果（FEEDBACK-ALIGN-PLAN D182）：组件页、模式页每个演示（原生和 React）里能点的都点一下，0 / 100 / 1100ms 取样：
+//       1.1 秒内看不到变化、焦点掉到 body、进行中在 150ms 前露出来、toast 时长短于 D87、React 出错的 toast 不是 assertive。
+// 用法：pnpm --filter @xxd/site build && pnpm --filter @xxd/site run audit [--only=axe|long|shadow|forced|en|polish|overlay|smoke|sr|parity|spec|inset|contrast|focus|motion|states|trunc|form|dark|touch|chart|diagram|sizes|feedback]
 // 需要 Chromium：CHROME_EXE=<chrome-headless-shell 路径>（缺省用 Playwright 自带的）。
 import { createServer } from "node:http";
 import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -2001,7 +2003,222 @@ async function sizesAudit() {
   console.log(`尺寸：${n} 种环境（标准 / 紧凑 / 触屏）× xs / sm / 缺省 / lg × 10 种控件，同一档一样高`);
 }
 
-const sections = { sizes: sizesAudit, axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit };
+/* ── 22. 点了有没有结果（FEEDBACK-ALIGN-PLAN D182）──
+ * 组件页、模式页每个演示（原生和 React）里能点的东西都真的点一下，在 0 / 100 / 1100ms 取样（1.1 秒时还在进行中的再看 3000ms）：
+ *   · 1.1 秒内看不到任何变化：看得见的 DOM 变了、勾选 / 按下 / 展开变了、焦点进了新出现的东西、toast、下载、选文件、弹窗、跳转都算；
+ *   · 焦点掉到 body（D178）；
+ *   · 进行中在 150ms 前就露出来（转圈、字变透明，D85）；进行中写成 disabled；
+ *   · toast 留的时间短于 D87（按字数、出错至少 6 秒、带操作 10 秒），或者不自己消失；出错的 React toast 不是 assertive。
+ * 模式页是一段流程，每个操作都要有结果；组件页的演示是样品（尺寸、变体、位置），只要求主操作和危险操作
+ * （实心的 primary / danger，React 是 Kumo 的实心按钮）有结果，其余的照样查焦点、进行中和 toast。
+ * 已经选中 / 当前的那一项再点一下不变是对的，不点；链接不点（跳转就是它的结果）。
+ * 本来就不该有结果的写进 FEEDBACK_STATIC：[正则（「页 实现 字」）, 为什么]。 */
+const FEEDBACK_STATIC = [];
+const FEEDBACK_INIT = `(() => {
+  window.alert = () => (window.__fbDialogs = (window.__fbDialogs || 0) + 1);
+  window.confirm = () => ((window.__fbDialogs = (window.__fbDialogs || 0) + 1), true);
+  window.prompt = () => ((window.__fbDialogs = (window.__fbDialogs || 0) + 1), null);
+  const fb = (window.__fb = { target: null, muts: [], toasts: [], before: null, prev: null, dialogs: 0 });
+  const IGN = /^(aria-describedby|data-pressed|data-highlighted|data-focus|data-focused|data-focus-visible|data-hover|data-hovered|data-instant|data-fb|data-audit-[a-z-]+)$/;
+  // 展示站自己的框（顶栏、左栏、目录跟着滚动高亮）、读屏才听得到的、提示气泡都不算「点了的结果」
+  const SILENT = "head, script, style, body > header, nav, aside, .xxd-tooltip, [role=tooltip], .xxd-announcer, .xxd-sr-only, .sr-only, .site-demo__code, .site-demo__preview";
+  const shown = (n) => {
+    let el = n && (n.nodeType === 1 ? n : n.parentElement);
+    while (el && el.nodeType === 1 && getComputedStyle(el).display === "contents") el = el.parentElement;
+    if (!el || el.nodeType !== 1 || !el.isConnected || el === document.documentElement || el === document.body || el.closest(SILENT)) return false;
+    return el.checkVisibility ? el.checkVisibility({ visibilityProperty: true }) : el.getClientRects().length > 0;
+  };
+  const TOAST = ".xxd-toast, [role=dialog][aria-modal=false], [role=alertdialog][aria-modal=false]";
+  const track = (el) => {
+    if (!fb.armed || el.closest("[inert], .site-demo__preview")) return;
+    const t = fb.toasts.find((x) => x.el === el);
+    if (t) { if (!t.end) t.start = performance.now(); return; }
+    fb.toasts.push({ el, start: performance.now(), end: 0 });
+  };
+  new MutationObserver((ms) => {
+    for (const m of ms) {
+      if (m.type === "childList") {
+        for (const a of m.addedNodes) {
+          if (a.nodeType !== 1) continue;
+          if (a.matches(TOAST)) track(a);
+          a.querySelectorAll(TOAST).forEach(track);
+        }
+        for (const r of m.removedNodes) for (const t of fb.toasts) if (!t.end && (t.el === r || (r.nodeType === 1 && r.contains(t.el)))) t.end = performance.now();
+      } else if (m.type === "attributes" && (m.attributeName === "data-leaving" || m.attributeName === "data-ending-style") && m.target.hasAttribute(m.attributeName)) {
+        const t = fb.toasts.find((x) => x.el === m.target);
+        if (t && !t.end) t.end = performance.now();
+      }
+      if (!fb.target) continue;
+      if (m.type === "attributes" && IGN.test(m.attributeName)) continue;
+      // 藏起来（hidden、data-open 去掉）也是看得见的变化：那时它自己已经看不见了，看它的父元素
+      const node = m.type === "childList" ? [...m.addedNodes].find(shown) || (m.removedNodes.length && shown(m.target) ? m.target : null) : shown(m.target) ? m.target : m.type === "attributes" ? m.target.parentElement : m.target;
+      if (node && shown(node) && fb.muts.length < 8) fb.muts.push(m.type === "attributes" ? m.target.tagName.toLowerCase() + "[" + m.attributeName + "]" : m.type);
+    }
+  }).observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+  const state = (el) => [el.checked, el.value, ...["aria-checked", "aria-pressed", "aria-expanded", "aria-selected", "aria-busy", "data-done", "data-confirming"].map((a) => el.getAttribute(a))].join("|");
+  fb.arm = (el) => { fb.armed = true; fb.muts = []; fb.target = el; fb.before = state(el); fb.prev = document.activeElement; fb.dialogs = window.__fbDialogs || 0; };
+  fb.busyShown = (b) => {
+    if (!b || !b.isConnected) return false;
+    if (b.getAttribute("aria-busy") !== "true" && !(b.disabled && b.querySelector("svg[role=status]"))) return false;
+    if (getComputedStyle(b).color === "rgba(0, 0, 0, 0)") return true;
+    const be = getComputedStyle(b, "::before");
+    if (!/^(none|normal)$/.test(be.content) && +be.opacity > 0.05) return true;
+    return [...b.querySelectorAll("svg[role=status], .xxd-spinner, [data-kumo-part=spinner]")].some((s) => { const cs = getComputedStyle(s); return s.getClientRects().length && cs.visibility !== "hidden" && +cs.opacity > 0.05; });
+  };
+  fb.snap = () => {
+    const b = fb.target, a = document.activeElement;
+    const live = !!(b && b.isConnected);
+    return {
+      muts: fb.muts.slice(),
+      changed: fb.muts.length > 0 || (live && state(b) !== fb.before) || (window.__fbDialogs || 0) > fb.dialogs || !!(a && a !== b && a !== fb.prev && a !== document.body),
+      body: !a || a === document.body,
+      busy: live && b.getAttribute("aria-busy") === "true",
+      loading: live && b.disabled && !!b.querySelector("svg[role=status]"),
+      shown: fb.busyShown(b),
+    };
+  };
+  fb.toastReport = () => fb.toasts.map((t) => {
+    const el = t.el;
+    const kumo = !el.matches(".xxd-toast");
+    const parts = kumo ? [el.querySelector("[data-toast-title]"), el.querySelector("[data-toast-title] ~ *:not(div)") ].filter(Boolean).map((n) => n.textContent.trim()) : [];
+    const text = kumo ? (parts.join("") || el.textContent.trim()) : (el.querySelector(":scope > span") || el).textContent.trim();
+    const tone = kumo ? (/ring-kumo-danger/.test(el.className) ? "danger" : "") : el.dataset.tone;
+    const action = kumo ? [...el.querySelectorAll("button")].some((x) => !x.matches("[data-kumo-part=close]")) : !!el.querySelector(".xxd-toast__action");
+    return { kumo, text, tone, action, role: el.getAttribute("role"), age: performance.now() - t.start, life: t.end ? t.end - t.start : 0 };
+  });
+})()`;
+async function feedbackAudit() {
+  const { toastDuration, BUSY_DELAY } = await import("@xxd/css/timing");
+  const TARGETS = "button, input[type=checkbox], input[type=radio], [role=switch]:not(button), [role=tab]:not(button), [role=option]:not(button), [role=menuitem]:not(button)";
+  // FEEDBACK_PAGES=/components/button/,/patterns/history/：只查这几页（改一处时快速复查）
+  const only = process.env.FEEDBACK_PAGES?.split(",");
+  const list = pages.filter((p) => /^\/(components|patterns)\/[^/]+\/$/.test(p) && (!only || only.includes(p)));
+  let clicked = 0;
+  let checkedToasts = 0;
+  const skipped = [];
+  const exempt = (page, impl, label) => FEEDBACK_STATIC.some(([re, why]) => why && re.test(`${page} ${impl} ${label}`));
+  const showReact = async (tab, st) => {
+    await tab.click(`#${st.tab}`);
+    await tab.waitForFunction((id) => { const s = document.getElementById(id); return s && !s.hidden && !s.querySelector("astro-island[ssr]"); }, st.id, { timeout: 8000 }).catch(() => {});
+    await tab.waitForTimeout(300);
+  };
+  const tag = (tab, st) => tab.evaluate(({ id, sel, n }) => {
+    const stage = document.getElementById(id);
+    if (!stage) return [];
+    const seen = new Set();
+    const out = [];
+    for (const el of stage.querySelectorAll(sel)) {
+      if (el.closest("[inert], [hidden], .site-demo__preview, [aria-hidden=true]") || el.matches(":disabled, [aria-disabled=true], [type=file], [aria-checked=true], [aria-selected=true], [aria-current]:not([aria-current=false]), [type=radio]:checked") || !el.checkVisibility()) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) continue;
+      const label = (el.getAttribute("aria-label") || el.textContent || el.value || el.closest("label")?.textContent || "").replace(/\s+/g, " ").trim().slice(0, 24);
+      const key = label + "|" + el.className;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      el.setAttribute("data-fb", `${id}:${out.length}`);
+      out.push({ label, main: el.matches("[data-variant=primary], [data-variant=danger]") || /kumo-button-emphasis-bg/.test(el.className) });
+      if (out.length >= n) break;
+    }
+    return out;
+  }, { id: st.id, sel: TARGETS, n: 16 });
+  async function onePage(page) {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+    await ctx.grantPermissions(["clipboard-read", "clipboard-write"], { origin });
+    await ctx.addInitScript(FEEDBACK_INIT);
+    const tab = await ctx.newPage();
+    const errors = [];
+    const events = [];
+    tab.on("pageerror", (e) => errors.push(e.message));
+    tab.on("download", () => events.push("download"));
+    tab.on("filechooser", () => events.push("filechooser"));
+    tab.on("popup", () => events.push("popup"));
+    const url = origin + page;
+    await tab.goto(url, { waitUntil: "load" });
+    await tab.waitForTimeout(250);
+    const demos = await tab.evaluate(() => [...document.querySelectorAll("main .site-demo")].map((d) => ({ native: d.querySelector(":scope > [id$='-native']")?.id, react: d.querySelector(":scope > [id$='-react']")?.id, tab: d.querySelector(".site-demo__bar [role=tab][aria-controls*='-react']")?.id })));
+    const stages = [];
+    for (const d of demos) if (d.native) stages.push({ impl: "HTML", id: d.native });
+    for (const d of demos) if (d.react && d.tab) stages.push({ impl: "React", id: d.react, tab: d.tab });
+    for (const st of stages) {
+      if (st.tab) await showReact(tab, st);
+      const labels = await tag(tab, st);
+      for (let i = 0; i < labels.length; i++) {
+        const { label, main } = labels[i];
+        const mustChange = main || page.startsWith("/patterns/");
+        if (exempt(page, st.impl, label)) continue;
+        const sel = `[data-fb="${st.id}:${i}"]`;
+        const ok = await tab.evaluate((sel) => { const el = document.querySelector(sel); if (!el || !el.checkVisibility() || el.matches(":disabled, [aria-disabled=true]")) return false; window.__fb.arm(el); return true; }, sel);
+        if (!ok) continue;
+        events.length = 0;
+        const before = tab.url();
+        try {
+          await tab.click(sel, { timeout: 1500 });
+        } catch (e) {
+          skipped.push(`${page} ${st.impl}「${label}」${e.message.split("\n")[0].slice(0, 60)}`);
+          await tab.evaluate(() => (window.__fb.target = null));
+          continue;
+        }
+        clicked += 1;
+        const t0 = Date.now();
+        const rows = [];
+        for (const t of [0, 100, 1100, 3000]) {
+          if (t === 3000 && !(rows[2]?.busy || rows[2]?.loading)) break;
+          const d = t - (Date.now() - t0);
+          if (d > 0) await tab.waitForTimeout(d);
+          if (tab.url() !== before) break;
+          rows.push({ t, ...(await tab.evaluate(() => window.__fb.snap())) });
+        }
+        const where = `${page} ${st.impl}「${label}」`;
+        if (process.env.FEEDBACK_DEBUG) console.log(where, events.join(","), JSON.stringify(rows));
+        const navigated = tab.url().split("#")[0] !== before.split("#")[0];
+        if (!navigated) {
+          if (mustChange && !events.length && !rows.some((r) => r.t <= 1100 && r.changed)) fail("反馈", `${where} 点了 1.1 秒内看不到任何变化`);
+          const lost = rows.find((r) => r.t >= 100 && r.body);
+          if (lost) fail("反馈", `${where} 点了以后焦点掉到 body（${lost.t}ms）`);
+          const early = rows.find((r) => r.t > 0 && r.t < BUSY_DELAY && (r.busy || r.loading) && r.shown);
+          if (early) fail("反馈", `${where} 进行中在 ${BUSY_DELAY}ms 前就露出来了（${early.t}ms 时已经转圈 / 字变透明）`);
+          if (rows.some((r) => r.loading && !r.busy)) fail("反馈", `${where} 进行中写成了 disabled（没有 aria-busy）`);
+        }
+        await tab.evaluate(() => (window.__fb.target = null));
+        if (navigated) {
+          await tab.goto(url, { waitUntil: "load" });
+          await tab.waitForTimeout(250);
+          if (st.tab) await showReact(tab, st);
+          await tag(tab, st);
+          continue;
+        }
+        await tab.keyboard.press("Escape");
+        await tab.evaluate(() => document.querySelectorAll("dialog[open]").forEach((d) => d.close()));
+        await tab.mouse.move(2, 2);
+        await tab.waitForTimeout(120);
+      }
+    }
+    // toast 留的时间：等都走完（最多等到应有的时长再多 6 秒）
+    const until = Date.now() + 16000;
+    let report = [];
+    for (;;) {
+      report = await tab.evaluate(() => window.__fb.toastReport());
+      if (report.every((t) => t.life || t.age > toastDuration(t.text, t) + 6000) || Date.now() > until) break;
+      await tab.waitForTimeout(400);
+    }
+    for (const t of report) {
+      checkedToasts += 1;
+      const want = toastDuration(t.text, { tone: t.tone, action: t.action });
+      const name = `${page} ${t.kumo ? "React" : "HTML"} toast「${t.text.slice(0, 20)}」`;
+      if (t.life && t.life < want - 500) fail("反馈", `${name} 只留了 ${(t.life / 1000).toFixed(1)}s，应该 ${(want / 1000).toFixed(1)}s（D87${t.action ? "：带操作 10 秒" : t.tone === "danger" ? "：出错至少 6 秒" : "：按字数"}）`);
+      if (!t.life && t.age > want + 6000) fail("反馈", `${name} ${(t.age / 1000).toFixed(1)}s 了还没自己消失`);
+      if (t.kumo && t.tone === "danger" && t.role !== "alertdialog") fail("反馈", `${name} 出错用 polite 播报（应该 assertive）`);
+    }
+    for (const e of errors) fail("反馈", `${page} 脚本出错：${e}`);
+    await ctx.close();
+  }
+  const queue = list.slice();
+  await Promise.all(Array.from({ length: 4 }, async () => { for (let p; (p = queue.shift()); ) await onePage(p); }));
+  if (skipped.length) console.log(`反馈：${skipped.length} 个点不到（被盖住 / 动了），没算：\n  ${skipped.slice(0, 12).join("\n  ")}`);
+  console.log(`反馈：${list.length} 页、${clicked} 个操作点了一遍（原生 + React），量了 ${checkedToasts} 张 toast 的时长`);
+}
+
+const sections = { sizes: sizesAudit, axe: axeAudit, long: longAudit, shadow: hostileAudit, forced: forcedAudit, en: englishAudit, polish: polishAudit, overlay: overlayAudit, smoke: smokeAudit, sr: srSection, parity: paritySection, spec: specSection, inset: insetAudit, contrast: contrastAudit, focus: focusAudit, motion: motionAudit, states: statesAudit, trunc: truncAudit, form: formAudit, dark: darkAudit, touch: touchAudit, chart: chartAudit, diagram: diagramAudit, feedback: feedbackAudit };
 // --only 拼错了：以前一项都不跑，照样打印「全部通过」、退出码 0
 if (only && !Object.hasOwn(sections, only)) {
   console.error(`没有叫 ${only} 的检查。可以用：${Object.keys(sections).join(" ")}`);

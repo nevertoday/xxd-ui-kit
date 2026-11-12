@@ -5,6 +5,7 @@ import { ICON } from "./icons-min.js";
 import { t } from "./i18n.js";
 import { announce } from "./announce.js";
 import { AUTO_TIP } from "./truncate.js";
+import { DONE_FOR, toastDuration } from "./timing.js";
 
 /* ── Tooltip：[data-tooltip="说明"]，可选 data-tooltip-placement="bottom" ── */
 let tip = null;
@@ -192,9 +193,8 @@ const timers = new WeakMap();
  * stack: false 时一张张排开（旧行为）。
  */
 export function toast(message, { tone = "neutral", within, duration, action, stack = true } = {}) {
-  // 时长按内容算（MOTION-REVIEW-PLAN D87）：带操作（撤销、重试）10 秒（键盘用户还要按 Alt+T 跳过来）；
-  // 只是告知的 2.6 秒起、每个字加 0.1 秒、最多 8 秒；出错的至少 6 秒（以前一律 2.6 秒，40 个字的话和出错都来不及读）
-  duration ??= action?.label ? 10000 : Math.max(tone === "danger" ? 6000 : 0, Math.min(8000, Math.max(2600, 1200 + [...String(message)].length * 100)));
+  // 时长按内容算（MOTION-REVIEW-PLAN D87，timing.js）：以前一律 2.6 秒，40 个字的话和出错都来不及读
+  duration ??= toastDuration(message, { tone, action: Boolean(action?.label) });
   const region = regionFor(within);
   region.toggleAttribute("data-stack", stack);
   const key = `${tone}\u0000${message}`;
@@ -438,7 +438,7 @@ export function showBubble(anchor, text, { duration = 1200 } = {}) {
 
 /* ── 进行中的按钮（I9）：await Xxd.runBusy(btn, () => save()) —— 宽度不跳，成功后第一个图标变勾 1s ── */
 const running = new WeakMap();
-export async function runBusy(button, task, { doneFor = 1000 } = {}) {
+export async function runBusy(button, task, { doneFor = DONE_FOR } = {}) {
   // 进行中再点：返回正在跑的那一个（以前返回 undefined，调用方 .then 会以为已经好了，ACCEPTANCE-REVIEW）
   if (button.getAttribute("aria-busy") === "true") return running.get(button);
   // 上一次的「完成」还没收起就又开始：先收起，免得进行中和完成同时出现

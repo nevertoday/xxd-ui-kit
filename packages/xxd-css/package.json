@@ -41,6 +41,10 @@
       "types": "./src/js/gauge.d.ts",
       "import": "./src/js/gauge.js"
     },
+    "./timing": {
+      "types": "./src/js/timing.d.ts",
+      "import": "./src/js/timing.js"
+    },
     "./viz": {
       "types": "./src/js/viz.d.ts",
       "import": "./src/js/viz.js"
