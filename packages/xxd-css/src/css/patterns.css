@@ -358,6 +358,15 @@
     align-self: center;
   }
 
+  /* 只有图标按钮：没有基线（按基线排会让图标的底贴着字的基线，比名字高 3px），占一行高、贴着这一排的顶，和名字那一行同一条中线 */
+  .xxd-account:has(> .xxd-btn):not(:has(> .xxd-btn:not([data-icon-only]))) {
+    align-items: flex-start;
+  }
+
+  .xxd-account:has(> .xxd-btn):not(:has(> .xxd-btn:not([data-icon-only]))) > .xxd-btn[data-icon-only] {
+    margin-block: calc((var(--leading-sm) - var(--btn-box)) / 2);
+  }
+
   .xxd-account__name {
     overflow: hidden;
     font: var(--weight-medium) var(--text-sm) / var(--leading-sm) var(--font-body);

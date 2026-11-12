@@ -66,6 +66,13 @@
     align-self: flex-start;
   }
 
+  /* 只有图标按钮（没有带字的按钮）：它没有字、也就没有基线，比一行高时按 D171 往上下各伸出（行高 − 边长）/ 2，
+   * 占的高正好一行，中线就是第一行的中线（以前贴着第一行的顶，说明两行时比标题低 7–15px） */
+  .xxd-row:not([data-stack]) > .xxd-row__control:not(:has(> .xxd-btn:not([data-icon-only]))) > .xxd-btn[data-icon-only],
+  .xxd-list > .xxd-list__item:not(:has(> .xxd-btn:not([data-icon-only]))) > .xxd-btn[data-icon-only] {
+    margin-block: calc((var(--leading-sm) - var(--btn-box)) / 2);
+  }
+
   .xxd-row + .xxd-row {
     border-top: 1px solid var(--line);
   }
@@ -188,6 +195,16 @@
 
   .xxd-list > .xxd-list__item:has(> .xxd-btn:not([data-icon-only])) > .xxd-btn[data-icon-only] {
     align-self: flex-start;
+  }
+
+  /* 只有图标按钮：正文贴着这一排的顶，图标按钮占一行高（见上面设置行那条），缩略图、头像照旧对着整块居中 */
+  .xxd-list > .xxd-list__item:has(> .xxd-btn[data-icon-only]):not(:has(> .xxd-btn:not([data-icon-only]))) {
+    align-items: flex-start;
+    align-content: center;
+  }
+
+  .xxd-list > .xxd-list__item:has(> .xxd-btn[data-icon-only]):not(:has(> .xxd-btn:not([data-icon-only]))) > :is(i, svg, img, .xxd-avatar, .xxd-thumbs, .xxd-sort-handle, .xxd-dot, .xxd-spinner, .xxd-badge) {
+    align-self: center;
   }
 
   .xxd-list[data-interactive] > .xxd-list__item {
