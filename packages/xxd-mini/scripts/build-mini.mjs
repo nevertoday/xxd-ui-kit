@@ -641,7 +641,10 @@ ${sizes.map(([n, s]) => `| ${n} | ${s} |`).join("\n")}
 // 线全是伪元素的边框，每段线、每个箭头都要一条规则；网页版窄了换排法的容器查询小程序里已经去掉。四个组件各自一个文件，用到哪个才打进哪个。
 // 2026-11-02 从 108 KB 调到 110 KB：控件那把尺（COMPONENT-JURY-PLAN J1）——分段、chip、输入组、标签输入补齐 xs / sm / lg 的高度，
 // 令牌多了 --control-h-lg；评审团的修正（滑块禁用、chip 和代码块的边、对话框只滚正文、禁用的箭头和输入组）约 1.1 KB。
-export const SIZE_BUDGET = 110 * 1024;
+// 2026-11-12 从 110 KB 调到 111 KB：操作反馈和对齐（FEEDBACK-ALIGN-PLAN D171、D174）——列表行的控件对齐标题那一行、加减的基线、
+// 按钮完成的勾放回正中、有图标的按钮完成换勾，网页版只有图标按钮占一行高的那条也改写进来，约 0.4 KB；按钮里多余的转圈规则已经删掉。
+// 改之前只剩 64 字节，网页版再加一条设置行的规则构建就过不去。
+export const SIZE_BUDGET = 111 * 1024;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tokensJson = join(tokensDir, "dist/tokens.json");
