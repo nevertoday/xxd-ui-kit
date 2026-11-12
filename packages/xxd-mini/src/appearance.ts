@@ -19,7 +19,9 @@ if (IS_H5 && typeof document !== "undefined") {
       "taro-view-core,taro-text-core,taro-button-core,taro-input-core,taro-textarea-core,taro-image-core,taro-scroll-view-core{box-sizing:border-box}",
       // Taro H5 的按钮自带按下变灰、禁用变淡：交给 .xxd-btn 自己的样式
       "taro-button-core.xxd-btn:not([disabled]):active{color:var(--btn-fg);background-color:var(--btn-bg-active,var(--wash-strong))}",
-      "taro-button-core.xxd-btn[disabled]{color:var(--btn-fg);background-color:var(--btn-bg)}",
+      // 进行中的按钮原生也是 disabled（表单不再提交一次），但字要透明（.is-busy）：这条比它具体，不能把字色写回来
+      "taro-button-core.xxd-btn[disabled]{background-color:var(--btn-bg)}",
+      "taro-button-core.xxd-btn[disabled]:not(.is-busy){color:var(--btn-fg)}",
       // 输入框里真正的 <input> / <textarea> 占满外壳，字的样式跟外壳走
       "taro-input-core.xxd-input>input,taro-textarea-core.xxd-textarea>textarea{display:block;width:100%;height:100%;margin:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;line-height:inherit;outline:0;resize:none}",
       "taro-input-core.xxd-input{display:flex;align-items:center}",

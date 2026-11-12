@@ -52,6 +52,17 @@ test("按钮刚做完：中间一个勾（is-done），进行中时不打勾", a
   v.unmount();
 });
 
+test("按钮进行中不是禁用、不多塞一个转圈（宽度不跳、字是透明的不是灰的，D85、D88）", async () => {
+  const v = render(app(h(mini.Button, { loading: true }, "导出"), h(mini.Button, { loading: true, disabled: true }, "导出")));
+  const [busy, off] = v.byClass("xxd-btn");
+  assert.match(cls(busy), /\bis-busy\b/);
+  assert.doesNotMatch(cls(busy), /\bis-disabled\b/, "禁用的字色会盖过进行中的透明");
+  assert.equal(busy.props.disabled, true, "原生按钮照样不能点（表单不会再提交一次）");
+  assert.match(cls(off), /\bis-disabled\b/);
+  assert.equal(v.byClass("xxd-spinner").length, 0, "转圈是 ::before 画在正中，晚 150ms 露出来");
+  v.unmount();
+});
+
 test("轻提示：弹一条提示，用外观的组件不重画；最多三条；只在看得见的页面画；手动关掉不留定时器", async () => {
   let renders = 0;
   let toast;

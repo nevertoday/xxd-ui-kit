@@ -1,9 +1,9 @@
 // 按钮：实心（primary）/ 次要（缺省）/ 幽灵（ghost）/ 危险（danger）；加载中；整行宽。和网页版 .xxd-btn 同一套样式。
 // 用的是小程序原生 button：openType（分享、手机号、客服……）和 formType 照样能用。
 import { Button as TaroButton, View, type ButtonProps as TaroButtonProps } from "@tarojs/components";
+import { Check } from "@xxd/icons/each";
 import type { ReactNode } from "react";
 import "../styles/button.mini.css";
-import "../styles/loading.mini.css";
 import { a11y } from "./aria";
 import { Icon, type IconNode } from "./icon";
 import { cx, mods } from "./util";
@@ -14,9 +14,9 @@ export interface ButtonProps {
   size?: "xs" | "sm" | "md" | "lg";
   /** 占满一行（手机上的主操作常用） */
   block?: boolean;
-  /** 进行中：转圈，点了不触发 */
+  /** 进行中：150ms 后字变透明、正中一个转圈（宽度不跳），点了不触发 */
   loading?: boolean;
-  /** 刚做完：中间一个勾（和网页版 Xxd.runBusy 一样，1 秒后自己把它关掉，FEEDBACK-ALIGN-PLAN D174） */
+  /** 刚做完：有图标的换成勾，没有图标的字变透明、中间一个勾（和网页版 Xxd.runBusy 一样）。留 DONE_FOR（1 秒）后由调用的人关掉（FEEDBACK-ALIGN-PLAN D174） */
   done?: boolean;
   disabled?: boolean;
   /** 开关按钮：按下 / 没按下 */
@@ -39,10 +39,12 @@ export function Button({ children, variant, size, block, loading, done, disabled
   const iconOnly = !children && Boolean(icon);
   if (iconOnly && !label && process.env.NODE_ENV !== "production") console.warn("[@xxd/mini] 只有图标的按钮要给 label（读屏要念出来）");
   const off = disabled || loading;
+  const isDone = done && !loading;
+  // 进行中不是禁用（状态优先级：禁用 > 进行中，ACCEPTANCE-REVIEW）：不加 is-disabled，否则禁用的字色盖过透明的字。原生的 disabled 照样写，表单不会再提交一次
   return (
     <TaroButton
       {...(rest as Record<string, unknown>)}
-      className={cx("xxd-btn", mods({ variant: variant === "secondary" ? undefined : variant, size: size === "md" ? undefined : size, block, "icon-only": iconOnly, busy: loading, done: done && !loading, pressed, disabled: off, shape }), className)}
+      className={cx("xxd-btn", mods({ variant: variant === "secondary" ? undefined : variant, size: size === "md" ? undefined : size, block, "icon-only": iconOnly, "with-icon": Boolean(icon), busy: loading, done: isDone, pressed, disabled, shape }), className)}
       style={style}
       hoverClass={off ? "none" : "is-hover is-active"}
       hoverStayTime={60}
@@ -52,7 +54,7 @@ export function Button({ children, variant, size, block, loading, done, disabled
       onClick={off ? undefined : onClick}
       {...a11y({ role: "button", label, disabled: off, pressed, busy: loading })}
     >
-      {loading ? <View className="xxd-spinner" /> : icon ? <Icon icon={icon} size={size === "xs" ? 14 : 16} /> : null}
+      {icon ? <Icon icon={isDone ? Check : icon} size={size === "xs" ? 14 : 16} /> : null}
       {children}
     </TaroButton>
   );

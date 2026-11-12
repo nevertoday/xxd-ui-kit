@@ -781,6 +781,7 @@
     ":has( + [data-upcoming])": "is-before-upcoming",
     ":has(.xxd-tree__group .xxd-tree__group)": "is-outline",
     ":has( > .xxd-row__control :is(button, input, select, textarea))": "is-with-control",
-    ":has( > :is(.xxd-switch, .xxd-check, .xxd-radio, [role=\"switch\"], [data-icon-only]))": "is-toggle"
+    ":has( > :is(.xxd-switch, .xxd-check, .xxd-radio, [role=\"switch\"], [data-icon-only]))": "is-toggle",
+    ":has( > .ui-icon)": "is-with-icon"
   }
 }

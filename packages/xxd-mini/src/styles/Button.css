@@ -21,6 +21,15 @@ button.xxd-btn.xxd-btn:after {
   transform: translate(-50%, -50%);
 }
 
+/* 完成的勾和网页版一样画在 ::after 上：上面那条点按区写在后面、更具体，会把勾撑到 44px、挪到左上角。完成时按勾的大小放回正中 */
+.xxd-btn.xxd-btn.is-done:not(.is-with-icon):after {
+  inset: 0;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  margin: auto;
+  transform: none;
+}
+
 /* 只有图标的按钮没有字要截断：不裁，点按区才撑得出去 */
 .xxd-btn.is-icon-only {
   overflow: visible;
@@ -28,13 +37,6 @@ button.xxd-btn.xxd-btn:after {
 .xxd-btn.is-block {
   display: flex;
   width: 100%;
-}
-
-/* 加载中：转圈代替图标，字照样留着（宽度不跳） */
-.xxd-btn > .xxd-spinner {
-  width: 14px;
-  height: 14px;
-  color: inherit;
 }
 
 /* 原生 button 被禁用时，微信会把字变灰、底变浅：网页版的禁用令牌（--disabled-*）已经改写过来，这里只要不再叠半透明 */
