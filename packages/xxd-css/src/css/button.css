@@ -257,6 +257,8 @@
     width: var(--icon-lg);
     height: var(--icon-lg);
     margin: auto;
+    /* 这个 ::after 平时是点击热区，带着 translate: -50% -50%；不清掉勾会偏到左上 */
+    translate: none;
     background: var(--btn-fg);
     -webkit-mask: var(--xxd-check) center / contain no-repeat;
     mask: var(--xxd-check) center / contain no-repeat;
