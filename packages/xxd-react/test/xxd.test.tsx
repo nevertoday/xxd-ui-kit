@@ -279,17 +279,18 @@ describe("AppearanceSettings 说存没存上（D177、F12）", () => {
     expect(corners.checked).toBe(true);
     expect(screen.getByText("已保存", { selector: ".xxd-help" })).toBeTruthy();
 
-    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new DOMException("quota", "QuotaExceededError");
+    // 换一个写就抛错的存储（只 spy Storage.prototype 不行：Node 24 的 happy-dom localStorage 不走原型上的 setItem）
+    const real = localStorage;
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => real.getItem(k),
+      setItem: () => {
+        throw new DOMException("quota", "QuotaExceededError");
+      },
     });
-    const spied = localStorage.setItem !== Storage.prototype.setItem ? vi.spyOn(localStorage, "setItem").mockImplementation(() => {
-      throw new DOMException("quota", "QuotaExceededError");
-    }) : null;
     await act(async () => fireEvent.click(corners));
     expect(corners.checked).toBe(true);
     expect(screen.getByText(/没有保存/, { selector: ".xxd-error" })).toBeTruthy();
-    setItem.mockRestore();
-    spied?.mockRestore();
+    vi.unstubAllGlobals();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "重试" })));
     expect(screen.getByText("已保存", { selector: ".xxd-help" })).toBeTruthy();
   });
