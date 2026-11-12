@@ -217,18 +217,27 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
     from: "Long-form publisher",
     summary: "A search box pinned to the top of the settings page (⌘F jumps there, Esc clears): filters to matching rows and marks the text; each row carries a few words people might search for (dark / night / theme all find Theme).",
     markup: `<div style="max-width:440px">
-  <div class="xxd-input-wrap" style="margin-bottom:var(--space-4)"><i data-xxd-icon="Search" data-size="16"></i><input class="xxd-input" type="search" id="ss-input" placeholder="Search settings (⌘F)" aria-label="Search settings"><button class="xxd-input-clear" aria-label="Clear"><i data-xxd-icon="X" data-size="14"></i></button></div>
+  <div class="xxd-input-wrap" style="margin-bottom:var(--space-2)"><i data-xxd-icon="Search" data-size="16"></i><input class="xxd-input" type="search" id="ss-input" placeholder="Search settings (⌘F)" aria-label="Search settings"><button class="xxd-input-clear" aria-label="Clear"><i data-xxd-icon="X" data-size="14"></i></button></div>
+  <p class="xxd-help" style="margin:0 0 var(--space-4)">Changes save automatically</p>
   <div class="xxd-settings" id="ss-box">
     <section class="xxd-group"><h2 class="xxd-group__title">Appearance</h2><div class="xxd-group__body">
       <div class="xxd-row" data-keywords="dark night mode theme"><div class="xxd-row__text"><div class="xxd-row__title">Theme</div><div class="xxd-row__desc">Light · Dark · System</div></div></div>
       <div class="xxd-row" data-keywords="rounded corners square radius"><div class="xxd-row__text"><div class="xxd-row__title">Rounded corners</div></div><div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" aria-label="Rounded corners"></div></div>
-    </div></section>
+    </div><p class="xxd-help" data-save-status hidden></p></section>
     <section class="xxd-group"><h2 class="xxd-group__title">Writing</h2><div class="xxd-group__body">
       <div class="xxd-row" data-keywords="punctuation quotes typography"><div class="xxd-row__text"><div class="xxd-row__title">Smart punctuation</div></div><div class="xxd-row__control"><input type="checkbox" role="switch" class="xxd-switch" checked aria-label="Smart punctuation"></div></div>
-    </div></section>
+    </div><p class="xxd-help" data-save-status hidden></p></section>
   </div>
 </div>
-<script>Xxd.bindSettingsSearch(document.getElementById("ss-input"), document.getElementById("ss-box"), { hotkey: false });</script>`,
+<script>
+  Xxd.bindSettingsSearch(document.getElementById("ss-input"), document.getElementById("ss-box"), { hotkey: false });
+  // Saved as soon as it changes; the line under the group says whether it was (D177). Each save takes 400ms in the demo
+  document.getElementById("ss-box").addEventListener("change", (e) => {
+    const sw = e.target;
+    const flip = () => (sw.checked = !sw.checked);
+    Xxd.saveSetting(() => new Promise((r) => setTimeout(r, 400)), { status: sw.closest(".xxd-group").querySelector("[data-save-status]"), undo: flip, redo: flip });
+  });
+</script>`,
     rules: ["Rows and whole groups with no match are hidden", "Settings that live elsewhere also show up in results as shortcuts"],
   },
   AccountCard: {

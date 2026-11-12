@@ -266,6 +266,35 @@ describe("O5 小小东组件", () => {
   });
 });
 
+describe("AppearanceSettings 说存没存上（D177、F12）", () => {
+  it("note 写「改动自动保存」；改了说「已保存」；存不进去开关退回去、说没有保存并给重试，重试存上了说已保存", async () => {
+    render(
+      <XxdAppearanceProvider storageKey="test-ui-save">
+        <AppearanceSettings note />
+      </XxdAppearanceProvider>,
+    );
+    expect(screen.getByText("改动自动保存")).toBeTruthy();
+    const corners = screen.getByRole("switch", { name: "圆角" }) as HTMLInputElement;
+    await act(async () => fireEvent.click(corners));
+    expect(corners.checked).toBe(true);
+    expect(screen.getByText("已保存")).toBeTruthy();
+
+    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("quota", "QuotaExceededError");
+    });
+    const spied = localStorage.setItem !== Storage.prototype.setItem ? vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new DOMException("quota", "QuotaExceededError");
+    }) : null;
+    await act(async () => fireEvent.click(corners));
+    expect(corners.checked).toBe(true);
+    expect(screen.getByText(/没有保存/)).toBeTruthy();
+    setItem.mockRestore();
+    spied?.mockRestore();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "重试" })));
+    expect(screen.getByText("已保存")).toBeTruthy();
+  });
+});
+
 describe("O8 每个小小东组件", () => {
   it("Settings / SettingsGroup / SettingsRow：组名缺省 h2，可改级别；行可以是链接；关键词给设置搜索", () => {
     const { container, rerender } = render(

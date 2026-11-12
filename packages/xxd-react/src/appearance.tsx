@@ -10,7 +10,8 @@ import {
   type XxdSettings,
 } from "@xxd/tokens";
 
-type Ctx = { settings: Required<XxdSettings>; update: (patch: XxdSettings) => void; presets: typeof ACCENT_PRESETS };
+/** update 返回存没存进去（存储满了、被禁用时 false，界面跟着存储里真实的样子，不会停在没存上的值） */
+type Ctx = { settings: Required<XxdSettings>; update: (patch: XxdSettings) => boolean; presets: typeof ACCENT_PRESETS };
 const AppearanceContext = createContext<Ctx | null>(null);
 
 /**
@@ -68,7 +69,10 @@ export function XxdAppearanceProvider({
   const update = useCallback(
     (patch: XxdSettings) => {
       rememberSettings(patch, storageKey);
-      setState(fromStorage());
+      const next = fromStorage();
+      setState(next);
+      const stored = readSettings(storageKey) as Record<string, unknown>;
+      return Object.entries(patch).every(([k, v]) => stored[k] === v);
     },
     [storageKey, fromStorage],
   );

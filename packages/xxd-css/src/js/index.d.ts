@@ -85,6 +85,8 @@ export declare function mountAppearance(
     lockCorners?: boolean;
     showDensity?: boolean;
     showFinish?: boolean;
+    /** 组标题下面一行字：true 是这种语言的「改动自动保存」 */
+    note?: boolean | string;
     languages?: { value: string; label: string }[];
     language?: string;
     onLanguage?: (value: string) => void;

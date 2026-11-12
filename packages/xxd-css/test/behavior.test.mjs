@@ -206,6 +206,20 @@ describe("外观设置组", () => {
     Xxd.mountAppearance(locked, { get: () => state, set, presets, lockCorners: true, locale: "en" });
     expect(locked.querySelector(".xxd-switch")).toBeNull();
     expect(locked.querySelector(".xxd-group__title").textContent).toBe("Appearance");
+    expect(locked.querySelector(".xxd-group__note")).toBeNull();
+  });
+
+  it("note: true 在组标题下写这种语言的「改动自动保存」（F12），也可以自己写一句", () => {
+    const get = () => ({ theme: "light" });
+    const say = (opts) => {
+      const host = document.createElement("div");
+      Xxd.mountAppearance(host, { get, set: () => {}, ...opts });
+      return host.querySelector(".xxd-group__title + .xxd-group__note")?.textContent;
+    };
+    expect(say({ note: true, locale: "zh-CN" })).toBe("改动自动保存");
+    expect(say({ note: true, locale: "zh-Hant" })).toBe("變更會自動儲存");
+    expect(say({ note: true, locale: "en" })).toBe("Changes save automatically");
+    expect(say({ note: "只影响这个插件", locale: "zh-CN" })).toBe("只影响这个插件");
   });
 });
 

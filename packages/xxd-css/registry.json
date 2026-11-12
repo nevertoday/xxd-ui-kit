@@ -1363,12 +1363,13 @@
         "xxd-swatches",
         "xxd-swatch"
       ],
-      "markup": "<div id=\"appearance\" style=\"width:100%;max-width:440px\"></div>\n<script>Xxd.mountAppearance(document.getElementById(\"appearance\"), { showDensity: true, showFinish: true });</script>",
-      "js": "Xxd.mountAppearance(el, { locale: \"zh-CN\", showDensity: false, lockCorners: false, languages, onLanguage })\n// 插件里：get/set 接 XxdExtension.createAppearanceStore({ key })",
+      "markup": "<div id=\"appearance\" style=\"width:100%;max-width:440px\"></div>\n<script>Xxd.mountAppearance(document.getElementById(\"appearance\"), { showDensity: true, showFinish: true, note: true });</script>",
+      "js": "Xxd.mountAppearance(el, { locale: \"zh-CN\", showDensity: false, lockCorners: false, note: true, languages, onLanguage })\n// 插件里：get/set 接 XxdExtension.createAppearanceStore({ key })",
       "rules": [
         "主题 · 圆角 · 主色 ·（密度）·（语言）—— 每个插件都要的那一组",
         "会员站 lockCorners: true",
-        "主色那一组带 data-balance：放不下一行时各行一样多（12 个是 6 + 6）；自己写的色块组要这样也加上"
+        "主色那一组带 data-balance：放不下一行时各行一样多（12 个是 6 + 6）；自己写的色块组要这样也加上",
+        "改了马上存：存的时候说「正在保存」、存好说「已保存」，存不进去退回原来的值并给重试；note: true 在组标题下写「改动自动保存」（D177）"
       ],
       "summary": "主题、圆角、主色、密度、质感的现成设置组：Xxd.mountAppearance(container)。",
       "a11y": [

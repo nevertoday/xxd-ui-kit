@@ -17,9 +17,10 @@ import {
   type ReactNode,
 } from "react";
 import { Icon } from "@xxd/icons/react";
-import { ACCENT_PRESETS } from "@xxd/tokens";
+import { ACCENT_PRESETS, type XxdSettings } from "@xxd/tokens";
 import { barsModel, calendarModel, dumbbellModel, gaugeModel, matrixModel, proportionModel, quadrantModel, radarModel, waffleModel } from "@xxd/css/viz";
 import { useXxdAppearance } from "./appearance";
+import { useSettingSave } from "./feedback";
 import { useXxdLocale } from "./locale";
 
 const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
@@ -324,32 +325,45 @@ export function Swatches({ value, onValueChange, presets = ACCENT_PRESETS, label
 }
 
 /* ── AppearanceSettings：完整的「外观」设置组（读写 XxdAppearanceProvider） ── */
-export function AppearanceSettings({ showDensity = true, showFinish = false, lockCorners = false }: { showDensity?: boolean; showFinish?: boolean; lockCorners?: boolean }) {
-  const { settings, update } = useXxdAppearance();
+/** note：组下面一行字，true 是「改动自动保存」（三语）。改了马上存，存好说「已保存」，存不进去退回原来的值并给重试（D177）。 */
+export function AppearanceSettings({ showDensity = true, showFinish = false, lockCorners = false, note }: { showDensity?: boolean; showFinish?: boolean; lockCorners?: boolean; note?: ReactNode | boolean }) {
+  const { settings, update: store } = useXxdAppearance();
   const { t } = useXxdLocale();
+  const saving = useSettingSave();
+  // 存不进去时 Provider 已经按存储里真实的样子退回去了，不用再 undo；重试就是再存一次
+  const update = (patch: XxdSettings) =>
+    void saving.save(
+      () => {
+        if (!store(patch)) throw new Error("not stored");
+      },
+      { redo: () => {} },
+    );
   return (
-    <SettingsGroup title={t.appearance}>
-      <SettingsRow
-        title={t.theme}
-        keywords="dark light 暗色 夜间 主题 theme"
-        control={<Segmented label={t.theme} value={settings.theme} onValueChange={(theme) => update({ theme })} options={[{ value: "light", label: t.light }, { value: "dark", label: t.dark }, { value: "system", label: t.system }]} />}
-      />
-      {!lockCorners && (
+    <>
+      <SettingsGroup title={t.appearance} note={note === true ? t.autoSave : note || undefined}>
         <SettingsRow
-          title={t.corners}
-          description={t.cornersDesc}
-          keywords="rounded square 圆角 直角"
-          control={<input type="checkbox" role="switch" className="xxd-switch" aria-label={t.corners} checked={settings.corners === "rounded"} onChange={(e) => update({ corners: e.target.checked ? "rounded" : "square" })} />}
+          title={t.theme}
+          keywords="dark light 暗色 夜间 主题 theme"
+          control={<Segmented label={t.theme} value={settings.theme} onValueChange={(theme) => update({ theme })} options={[{ value: "light", label: t.light }, { value: "dark", label: t.dark }, { value: "system", label: t.system }]} />}
         />
-      )}
-      <SettingsRow title={t.accent} keywords="accent color 颜色 主色" stack control={<Swatches value={settings.accent} onValueChange={(accent) => update({ accent })} />} />
-      {showDensity && (
-        <SettingsRow title={t.density} keywords="density compact 紧凑" control={<Segmented label={t.density} value={settings.density} onValueChange={(density) => update({ density })} options={[{ value: "comfortable", label: t.comfortable }, { value: "compact", label: t.compact }]} />} />
-      )}
-      {showFinish && (
-        <SettingsRow title={t.finish} keywords="finish material flat 质感" control={<Segmented label={t.finish} value={settings.finish} onValueChange={(finish) => update({ finish })} options={[{ value: "flat", label: t.flat }, { value: "material", label: t.material }]} />} />
-      )}
-    </SettingsGroup>
+        {!lockCorners && (
+          <SettingsRow
+            title={t.corners}
+            description={t.cornersDesc}
+            keywords="rounded square 圆角 直角"
+            control={<input type="checkbox" role="switch" className="xxd-switch" aria-label={t.corners} checked={settings.corners === "rounded"} onChange={(e) => update({ corners: e.target.checked ? "rounded" : "square" })} />}
+          />
+        )}
+        <SettingsRow title={t.accent} keywords="accent color 颜色 主色" stack control={<Swatches value={settings.accent} onValueChange={(accent) => update({ accent })} />} />
+        {showDensity && (
+          <SettingsRow title={t.density} keywords="density compact 紧凑" control={<Segmented label={t.density} value={settings.density} onValueChange={(density) => update({ density })} options={[{ value: "comfortable", label: t.comfortable }, { value: "compact", label: t.compact }]} />} />
+        )}
+        {showFinish && (
+          <SettingsRow title={t.finish} keywords="finish material flat 质感" control={<Segmented label={t.finish} value={settings.finish} onValueChange={(finish) => update({ finish })} options={[{ value: "flat", label: t.flat }, { value: "material", label: t.material }]} />} />
+        )}
+      </SettingsGroup>
+      {saving.line}
+    </>
   );
 }
 

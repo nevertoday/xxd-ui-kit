@@ -4,7 +4,7 @@
 // 读写默认走 window.XxdTheme（@xxd/tokens/dist/boot.js）；插件里可以传 get / set 接到 chrome.storage。
 import { emit } from "./dom.js";
 import { getLocale, resolveLocale } from "./i18n.js";
-import { APPEARANCE_LABELS } from "./labels.js";
+import { APPEARANCE_LABELS, FEEDBACK_LABELS } from "./labels.js";
 import { saveSetting } from "./feedback.js";
 
 const PRESETS_FALLBACK = [{ id: "", name: "Ink", zh: "墨色" }];
@@ -65,6 +65,7 @@ export function mountAppearance(container, options = {}) {
     lockCorners = Boolean(theme?.lock?.corners),
     showDensity = false,
     showFinish = false,
+    note,
     languages,
     language,
     onLanguage,
@@ -82,7 +83,15 @@ export function mountAppearance(container, options = {}) {
   title.textContent = L.group;
   const body = doc.createElement("div");
   body.className = "xxd-group__body";
-  group.append(title, body);
+  group.append(title);
+  // 「改动自动保存」（§11、D177）：note: true 用这一种语言的那句，也可以自己写一句
+  if (note) {
+    const line = doc.createElement("p");
+    line.className = "xxd-group__note";
+    line.textContent = note === true ? (FEEDBACK_LABELS[locale] || FEEDBACK_LABELS["zh-CN"]).autoSave : note;
+    group.append(line);
+  }
+  group.append(body);
   // 存的状态（D177）：正在保存 / 已保存 / 没有保存 + 重试。存不进去（插件的 sync 配额满了、插件刚更新过）时，
   // 控件跟着存储里真实的样子退回去（以前开关还开着，什么都不说，F7）
   const status = doc.createElement("p");

@@ -568,7 +568,7 @@ export function AppearanceDemo() {
   return (
     <XxdAppearanceProvider storageKey="xxd-site">
       <Settings style={{ maxWidth: 440 }}>
-        <AppearanceSettings showFinish />
+        <AppearanceSettings showFinish note />
       </Settings>
     </XxdAppearanceProvider>
   );

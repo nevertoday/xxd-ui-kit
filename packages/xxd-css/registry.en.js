@@ -704,12 +704,13 @@ Xxd.validateForm(form)  // works without data-xxd-validate too; returns the cont
     avoid: ["Writing your own theme switch: people would have to relearn it in each product", "Only following the system light/dark mode: no setting needed, boot.js follows the system by default"],
     title: "Appearance settings",
     summary: "A ready-made settings group for theme, corners, accent, density and finish: Xxd.mountAppearance(container).",
-    js: `Xxd.mountAppearance(el, { locale: "en", showDensity: false, lockCorners: false, languages, onLanguage })
+    js: `Xxd.mountAppearance(el, { locale: "en", showDensity: false, lockCorners: false, note: true, languages, onLanguage })
 // In an extension: wire get/set to XxdExtension.createAppearanceStore({ key })`,
     rules: [
       "Theme · corners · accent · (density) · (language) — the group every extension needs",
       "The member site uses lockCorners: true",
       "The accent group has data-balance: when it wraps, every row holds the same number (12 is 6 + 6); add it to a swatch group of your own for the same",
+      "Saved as soon as it changes: “Saving…” while it saves, “Saved” once it has; if it can’t be saved the control goes back and offers Retry. note: true puts “Changes save automatically” under the group title (D177)",
     ],
     a11y: [
       "Every option is a segmented control or a switch with an aria-label; swatches are radios with readable names",
