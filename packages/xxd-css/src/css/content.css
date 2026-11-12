@@ -535,6 +535,7 @@
     overflow-x: auto;
     border-collapse: collapse;
     font-size: var(--text-sm);
+    line-height: var(--leading-sm);
   }
 
   .xxd-prose th {

@@ -42,7 +42,7 @@
   .xxd-chart-card__note {
     margin: 0;
     font-size: var(--text-xs);
-    line-height: var(--leading-xs);
+    line-height: var(--leading-sm);
     color: var(--muted);
   }
 
@@ -91,6 +91,7 @@
     margin-inline-start: var(--space-0-5);
     overflow-wrap: anywhere;
     font-size: var(--text-xs);
+    line-height: var(--leading-sm);
     font-weight: var(--weight-regular);
     color: var(--muted);
   }
@@ -236,18 +237,19 @@
     max-width: 100%;
     /* 地方小的大数已经缩写（viz）；还放不下就断开，不截（D94） */
     overflow-wrap: break-word;
-    font: var(--weight-strong) var(--text-xl) / var(--leading-md) var(--font-body);
+    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-body);
     /* 从 0 跳到目标值时宽度不变，不左右晃（TYPE-REVIEW-PLAN D72） */
     font-variant-numeric: tabular-nums;
   }
 
   .xxd-gauge[data-size="sm"] .xxd-gauge__value {
     font-size: var(--text-lg);
+    line-height: var(--leading-md);
   }
 
   .xxd-gauge[data-size="lg"] .xxd-gauge__value {
     font-size: var(--text-xxl);
-    line-height: var(--leading-lg);
+    line-height: var(--leading-xl);
   }
 
   .xxd-gauge__unit {
@@ -263,6 +265,7 @@
     /* 内容放不下就折行，不省略（TRUNCATION-REVIEW-PLAN D91） */
     overflow-wrap: anywhere;
     font-size: var(--text-xs);
+    line-height: var(--leading-sm);
     color: var(--muted);
   }
 
@@ -490,7 +493,7 @@
     margin-inline-start: auto;
     white-space: normal;
     font-size: var(--text-xs);
-    line-height: var(--leading-xs);
+    line-height: var(--leading-sm);
     color: var(--muted);
   }
 
@@ -765,7 +768,7 @@
   .xxd-waffle__note {
     margin: 0;
     font-size: var(--text-xs);
-    line-height: var(--leading-xs);
+    line-height: var(--leading-sm);
     color: var(--muted);
   }
 

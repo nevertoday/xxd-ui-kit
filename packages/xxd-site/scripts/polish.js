@@ -7,7 +7,7 @@
 //   挤成一字一行 文字被旁边的按钮、图挤到不到 3 个字宽，竖着排
 //   重叠      文字、按钮、图标互相压住
 //   图标没对齐 图标和旁边第一行字的垂直中心差太多
-//   行高不在网格（设计师评审 V2-7） 组件里的字，行高不是 --leading-*（16 / 20 / 24 / 28 / 32 / 36），也不是单行控件的「行高 = 字号」
+//   行高和字号不成对（LEADING-REVIEW-PLAN） 字号 / 行高不在用途表里（normal 也不算），或者只给一行的那几对（11 / 16、12 / 16、行高 = 字号）折了行
 //   同一行文字不齐（V2-7） 表格同一行里各格的字不在一条基线上（差 1.5px 以上）
 //   同一行控件高度不一（V2-7） 一排并列的控件（按钮、输入框、下拉、chip、分段）高度不一样
 //   差一点没对齐（SPACING-REVIEW-PLAN D57） 一摞竖排的东西，左边差 0.75–3px：要么对齐，要么明显缩进
@@ -160,21 +160,49 @@ globalThis.xxdPolish = function xxdPolish(root = document.body, { orphans = true
     const blockDiff = block ? ir.top + ir.height / 2 - (block.top + block.height / 2) : Infinity;
     if (Math.abs(diff) > 2.5 && Math.abs(blockDiff) > 2.5) out.push({ kind: "图标没对齐", where: name(row), detail: `图标中心比第一行字${diff > 0 ? "低" : "高"} ${Math.abs(diff).toFixed(1)}px` });
   }
-  // 5. 行高不在网格：只看组件（最近的带类名的祖先是 xxd- 开头，不是展示站自己的 site-）
-  const LEADING = new Set([16, 20, 24, 28, 32, 36]);
+  // 5. 行高和字号成对（LEADING-REVIEW-PLAN D162、D167）：一张表，按用途列字号 / 行高，wraps 是这一对能不能折行。
+  //    单行控件的「行高 = 字号」也是一对，只能一行。组件（xxd-）、展示站（site-）、Kumo（[data-kumo-component] 里，或者带 kumo- 的类名：横幅、字段没有那个属性）都看
+  const PAIRS = [
+    { role: "角标", size: 11, leading: 16, wraps: false },
+    { role: "标签", size: 12, leading: 16, wraps: false },
+    { role: "说明", size: 12, leading: 20, wraps: true },
+    { role: "界面", size: 13, leading: 20, wraps: true },
+    { role: "界面", size: 14, leading: 20, wraps: true },
+    { role: "文档段落", size: 14, leading: 24, wraps: true },
+    { role: "标题", size: 16, leading: 24, wraps: true },
+    { role: "阅读", size: 16, leading: 28, wraps: true },
+    { role: "节标题", size: 20, leading: 28, wraps: true },
+    { role: "页标题", size: 24, leading: 32, wraps: true },
+    { role: "展示", size: 28, leading: 36, wraps: true },
+  ];
+  const pairOf = (fs, lh) => (Math.abs(lh - fs) < 0.5 ? { role: "单行控件", wraps: false } : PAIRS.find((p) => Math.abs(p.size - fs) < 0.25 && Math.abs(p.leading - lh) < 0.25));
+  const ownLines = (el, fs) => {
+    const tops = [];
+    for (const n of el.childNodes) {
+      if (n.nodeType !== 3 || !n.nodeValue.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const r of range.getClientRects()) if (r.width > 0.5 && !tops.some((t) => Math.abs(t - r.top) < fs * 0.6)) tops.push(r.top);
+    }
+    return tops.length;
+  };
   for (const el of root.querySelectorAll("*")) {
     if (el.matches("input, textarea, select, option, svg, svg *") || el.closest("pre, code, .xxd-code, .xxd-kbd, svg, .xxd-sr-only")) continue;
     if (![...el.childNodes].some((n) => n.nodeType === 3 && n.nodeValue.trim())) continue;
     const owner = el.closest("[class]");
     const cls = owner && typeof owner.className === "string" ? owner.className : "";
-    // 展示站自己的字也要在网格上（TYPE-REVIEW-PLAN D72）：组件（xxd-）和展示站（site-）都看
-    if (!/(^|\s)(xxd|site)-/.test(cls) || !shown(el) || el.closest('[data-kind="dont"]')) continue;
+    if ((!/(^|\s)(xxd|site)-/.test(cls) && !el.closest('[data-kumo-component], [class*="kumo-"]')) || !shown(el) || el.closest('[data-kind="dont"]')) continue;
     const cs = getComputedStyle(el);
     if (cs.display === "inline") continue; // 行内的字跟着所在的段落走，看段落本身
-    const lh = parseFloat(cs.lineHeight);
     const fs = parseFloat(cs.fontSize);
-    if (cs.lineHeight === "normal" || Math.abs(lh - fs) < 0.5 || LEADING.has(Math.round(lh * 100) / 100)) continue;
-    out.push({ kind: "行高不在网格", where: name(el), detail: `${fs}px / ${Math.round(lh * 100) / 100}px` });
+    if (cs.lineHeight === "normal") {
+      out.push({ kind: "行高和字号不成对", where: name(el), detail: `${fs}px / normal` });
+      continue;
+    }
+    const lh = Math.round(parseFloat(cs.lineHeight) * 100) / 100;
+    const pair = pairOf(fs, lh);
+    if (!pair) out.push({ kind: "行高和字号不成对", where: name(el), detail: `${fs}px / ${lh}px` });
+    else if (!pair.wraps && ownLines(el, fs) >= 2) out.push({ kind: "单行的行高折了行", where: name(el), detail: `${fs}px / ${lh}px（${pair.role}）折成 ${ownLines(el, fs)} 行` });
   }
 
   // 6. 同一行文字不齐：表格同一行，各格第一行字的基线差 1.5px 以上。

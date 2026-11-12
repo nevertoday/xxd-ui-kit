@@ -347,7 +347,7 @@
     display: block;
     color: var(--muted);
     font-size: var(--text-xs);
-    line-height: var(--leading-xs);
+    line-height: var(--leading-sm);
   }
 
   .xxd-option > .ui-icon {

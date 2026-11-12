@@ -29,7 +29,7 @@ const T = en
   <h2 class="site-h2" id="scale">{T.scale}</h2>
   <div class="site-swatches">
     {steps.map(([n, v, use]) => (
-      <div class="site-swatch"><i data-radius-sample style={`border-radius:var(${n});margin:12px;height:48px;border:1px solid var(--line-strong);background:var(--wash)`}></i><div><b class="xxd-text" data-variant="mono" style="font-size:11px">{n}</b><code>{T.inRounded} {v}</code><span class="xxd-text" data-variant="caption">{use}</span></div></div>
+      <div class="site-swatch"><i data-radius-sample style={`border-radius:var(${n});margin:12px;height:48px;border:1px solid var(--line-strong);background:var(--wash)`}></i><div><b class="xxd-text" data-variant="mono" style="font:var(--text-2xs) / var(--leading-xs) var(--font-mono)">{n}</b><code>{T.inRounded} {v}</code><span class="xxd-text" data-variant="caption">{use}</span></div></div>
     ))}
   </div>
   <h2 class="site-h2" id="compare">{T.compare}</h2>

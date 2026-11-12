@@ -119,7 +119,7 @@ const LINES = [
       {T.groupNotes[id] && <p class="site-p">{T.groupNotes[id]}</p>}
       <div class="site-swatches">
         {names.map((n) => { const s = swatch(n); return (
-          <div class="site-swatch"><i style={`background:var(${n})`}></i><div><b class="xxd-text" data-variant="mono" style="font-size:11px">{n}</b><code>{T.light} {s.light}</code><code>{T.dark} {s.dark}</code></div></div>
+          <div class="site-swatch"><i style={`background:var(${n})`}></i><div><b class="xxd-text" data-variant="mono" style="font:var(--text-2xs) / var(--leading-xs) var(--font-mono)">{n}</b><code>{T.light} {s.light}</code><code>{T.dark} {s.dark}</code></div></div>
         ); })}
       </div>
     </section>

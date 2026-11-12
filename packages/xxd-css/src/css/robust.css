@@ -144,6 +144,15 @@
     line-height: var(--leading-xs);
   }
 
+  /* 标志的名字比 12 大：16 不成对，换成这一档字号配的行高 */
+  .xxd-logo > span:not([class]) {
+    line-height: var(--leading-sm);
+  }
+
+  .xxd-logo[data-size="lg"] > span:not([class]) {
+    line-height: var(--leading-md);
+  }
+
   .xxd-breadcrumbs > li > :is(a, span) {
     min-width: 0;
     overflow: hidden;

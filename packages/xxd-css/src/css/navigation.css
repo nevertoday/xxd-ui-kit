@@ -180,6 +180,7 @@
     padding: 0;
     color: var(--muted);
     font-size: var(--text-xs);
+    line-height: var(--leading-sm);
     list-style: none;
   }
 
@@ -319,14 +320,14 @@
     justify-items: center;
     gap: var(--space-1);
     width: 48px;
-    /* 标签居中、不贴边（J16：以前「Bookma / rks」左对齐、贴着两边）；一个词放不下 48 宽时照旧断开，不伸出去 */
+    /* 标签居中、不贴边（J16：以前「Bookma / rks」左对齐、贴着两边）；一个词放不下 48 宽时照旧断开，不伸出去，所以配会折行的 12 / 20（D168） */
     padding: var(--space-1-5) var(--space-0-5) var(--space-1);
     text-align: center;
     border: 0;
     border-radius: var(--r-sm);
     background: transparent;
     color: var(--muted);
-    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    font: var(--weight-medium) var(--text-xs) / var(--leading-sm) var(--font-body);
     text-decoration: none;
     cursor: pointer;
   }

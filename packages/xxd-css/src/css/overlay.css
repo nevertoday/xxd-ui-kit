@@ -174,7 +174,7 @@
     min-width: 0;
     color: var(--muted);
     font-size: var(--text-xs);
-    line-height: var(--leading-xs);
+    line-height: var(--leading-sm);
     /* 状态是内容（D91）：放不下就折行，dock 跟着变高；以前省略，「2,410 …」截掉的是数字 */
     overflow-wrap: anywhere;
   }

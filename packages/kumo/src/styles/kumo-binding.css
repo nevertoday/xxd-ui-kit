@@ -590,6 +590,13 @@
     font-size: var(--text-xs, 12px);
     line-height: var(--leading-sm, 20px);
   }
+  /* 上游的 leading-snug（1.375）、leading-normal（1.5）不在网格上（LEADING-REVIEW-PLAN）：
+     只用在下拉的说明、横幅的标题和说明、空状态的说明上，都是 12–14px，配 20 */
+  .text-sm.leading-snug.text-kumo-subtle,
+  [class*="bg-kumo-"] .leading-snug,
+  .text-kumo-subtle.text-balance.leading-normal {
+    line-height: var(--leading-sm, 20px);
+  }
   .col-span-full.text-kumo-danger.text-sm,
   p.text-sm.text-kumo-danger {
     position: relative;
@@ -755,7 +762,7 @@
     color: var(--muted, #6d6b67);
     font-size: var(--text-xs, 12px);
     font-weight: var(--weight-medium, 500);
-    line-height: 1.3;
+    line-height: var(--leading-xs, 16px);
   }
   table:has(> thead.group\/header) td {
     height: 44px;
@@ -813,7 +820,7 @@
     border-radius: var(--r-xs, 0px);
     font-size: var(--text-xs, 12px);
     font-weight: var(--weight-medium, 500);
-    line-height: 1.3;
+    line-height: var(--leading-xs, 16px);
   }
   [data-kumo-component="DropdownMenu"][data-kumo-part="item"][data-kumo-component][data-highlighted]:not(.text-kumo-danger) {
     background: var(--wash, #f6f4f1);

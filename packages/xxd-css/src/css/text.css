@@ -33,7 +33,7 @@
   .xxd-text[data-variant="caption"] {
     color: var(--muted);
     font-size: var(--text-xs);
-    line-height: var(--leading-xs);
+    line-height: var(--leading-sm);
   }
 
   .xxd-text[data-variant="mono"],
@@ -60,18 +60,22 @@
 
   .xxd-text[data-size="xs"] {
     font-size: var(--text-xs);
+    line-height: var(--leading-sm);
   }
 
   .xxd-text[data-size="sm"] {
     font-size: var(--text-sm);
+    line-height: var(--leading-sm);
   }
 
   .xxd-text[data-size="base"] {
     font-size: var(--text-base);
+    line-height: var(--leading-sm);
   }
 
   .xxd-text[data-size="lg"] {
     font-size: var(--text-lg);
+    line-height: var(--leading-md);
   }
 
   .xxd-text[data-truncate] {

@@ -113,9 +113,15 @@
     cursor: pointer;
   }
 
+  /* 占位字是标签：一行，放不下在末尾省略（以前行高 1 折成两行，两行字贴在一起） */
   .site-search span {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
     text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: var(--leading-xs);
   }
 
   .site-search:hover {
