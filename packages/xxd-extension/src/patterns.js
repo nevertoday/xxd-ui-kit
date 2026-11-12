@@ -14,10 +14,15 @@ const STRINGS = {
     denied: "没有允许：用不了这个功能。可以再点一次，或者在插件的详情页里打开。",
     shortcutNone: "没设置",
     shortcutEdit: "改快捷键",
-    exported: "已导出设置",
+    shortcutWhere: "快捷键在 chrome://extensions/shortcuts 里改",
+    exported: "已导出设置，文件在下载里",
+    exportFailed: "没有导出：读不到设置，可以重试",
     imported: "已导入 {n} 项设置",
+    importNone: "这个文件里没有可导入的设置",
+    importFailed: "没有导入：写不进设置，原来的设置没动",
     importBad: "这个文件不是导出的设置",
     importUndo: "撤销",
+    retry: "重试",
     importUndone: "已恢复导入前的设置",
     whatsNewClose: "知道了",
     reloadText: "插件刚更新过，刷新这个页面后才能继续用。",
@@ -28,10 +33,15 @@ const STRINGS = {
     denied: "沒有允許：用不了這個功能。可以再點一次，或者在擴充功能的詳細資料頁裡開啟。",
     shortcutNone: "未設定",
     shortcutEdit: "修改快捷鍵",
-    exported: "已匯出設定",
+    shortcutWhere: "快捷鍵在 chrome://extensions/shortcuts 裡修改",
+    exported: "已匯出設定，檔案在下載項目裡",
+    exportFailed: "沒有匯出：讀不到設定，可以重試",
     imported: "已匯入 {n} 項設定",
+    importNone: "這個檔案裡沒有可匯入的設定",
+    importFailed: "沒有匯入：寫不進設定，原本的設定沒有變",
     importBad: "這個檔案不是匯出的設定",
     importUndo: "復原",
+    retry: "重試",
     importUndone: "已恢復匯入前的設定",
     whatsNewClose: "知道了",
     reloadText: "擴充功能剛更新過，重新整理這個頁面後才能繼續使用。",
@@ -42,10 +52,15 @@ const STRINGS = {
     denied: "Not allowed, so this feature can't work. Click again, or turn it on from the extension's details page.",
     shortcutNone: "Not set",
     shortcutEdit: "Change shortcuts",
-    exported: "Settings exported",
+    shortcutWhere: "Shortcuts are changed at chrome://extensions/shortcuts",
+    exported: "Settings exported to your downloads",
+    exportFailed: "Not exported: couldn't read the settings. You can retry.",
     imported: "Imported {n} settings",
+    importNone: "There are no settings to import in this file",
+    importFailed: "Not imported: couldn't write the settings. Nothing changed.",
     importBad: "This file isn't exported settings",
     importUndo: "Undo",
+    retry: "Retry",
     importUndone: "Settings restored to before the import",
     whatsNewClose: "Got it",
     reloadText: "The extension was just updated. Reload this page to keep using it.",
@@ -59,6 +74,13 @@ const s = (key, vars, locale = uiLocale()) => {
 const chromeApi = () => globalThis.chrome;
 const toast = (msg, opts) => xxd()?.toast?.(msg, opts);
 
+/** 焦点在 el 里、el 马上要被删掉或藏起来：交给 to（没有能聚焦的就让它 tabindex=-1），不掉到 body（D178）。 */
+function keepFocus(el, to) {
+  if (!to || !el.contains(el.ownerDocument.activeElement)) return;
+  if (!to.matches("a[href], button:not([disabled]), input, select, textarea, [tabindex]")) to.tabIndex = -1;
+  to.focus({ preventScroll: true });
+}
+
 /* ── 需要权限 ── */
 /**
  * bindPermission(button, { permissions: ["tabs"], origins: ["https://*.example.com/*"], status, onChange })
@@ -67,14 +89,17 @@ const toast = (msg, opts) => xxd()?.toast?.(msg, opts);
 export async function bindPermission(button, { permissions = [], origins = [], status, onChange } = {}) {
   const api = chromeApi()?.permissions;
   const want = { permissions, origins };
+  // 允许了不写 disabled：焦点留在按钮上（以前掉到 body，F8），aria-disabled 让读屏知道不用再点
   const show = (granted, denied = false) => {
-    button.toggleAttribute("disabled", granted);
+    if (granted) button.setAttribute("aria-disabled", "true");
+    else button.removeAttribute("aria-disabled");
     button.setAttribute("aria-pressed", String(granted));
     if (status) status.textContent = granted ? s("granted") : denied ? s("denied") : "";
     onChange?.(granted);
   };
   if (api?.contains) show(await api.contains(want));
   button.addEventListener("click", async () => {
+    if (button.getAttribute("aria-disabled") === "true") return;
     // 演示：没有 chrome.permissions 时假装用户同意了
     const granted = api?.request ? await api.request(want) : true;
     show(granted, !granted);
@@ -129,6 +154,8 @@ export async function mountShortcuts(container, { names = {} } = {}) {
   btn.textContent = s("shortcutEdit");
   btn.addEventListener("click", () => {
     if (chromeApi()?.tabs?.create) chromeApi().tabs.create({ url: "chrome://extensions/shortcuts" });
+    // 不在插件里（展示站、普通网页）：打不开那一页，说一声在哪儿改，别点了没反应
+    else toast(s("shortcutWhere"), { tone: "info" });
   });
   edit.append(btn);
   container.append(edit);
@@ -142,8 +169,14 @@ const storageArea = (area) => chromeApi()?.storage?.[area] ?? null;
 export async function exportSettings({ keys = null, area = "sync", filename = "settings.json" } = {}) {
   const storage = storageArea(area);
   let data;
-  if (storage) data = await storage.get(keys);
-  else data = Object.fromEntries((keys ?? Object.keys(localStorage)).map((k) => [k, localStorage.getItem(k)]));
+  try {
+    if (storage) data = await storage.get(keys);
+    else data = Object.fromEntries((keys ?? Object.keys(localStorage)).map((k) => [k, localStorage.getItem(k)]));
+  } catch {
+    // 读不到（插件刚更新过、存储被禁用）：以前什么都不说，也没有文件（F14）
+    toast(s("exportFailed"), { tone: "danger", action: { label: s("retry"), onClick: () => exportSettings({ keys, area, filename }) } });
+    return null;
+  }
   const file = { format: "xxd-settings", version: 1, exportedAt: new Date().toISOString(), data };
   const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
   const a = Object.assign(document.createElement("a"), { href: url, download: filename });
@@ -168,12 +201,24 @@ export async function importSettings(file, { keys = null, area = "sync" } = {}) 
     return 0;
   }
   const entries = Object.entries(parsed.data).filter(([k]) => !keys || keys.includes(k));
+  // 一项都没有：不说「已导入 0 项」，也不给撤销（F14）
+  if (!entries.length) {
+    toast(s("importNone"), { tone: "warning" });
+    return 0;
+  }
   const storage = storageArea(area);
   const names = entries.map(([k]) => k);
   // 覆盖前先存一份，toast 里给「撤销」（ACCEPTANCE-REVIEW：以前直接覆盖，没有回头路）
-  const before = storage ? await storage.get(names) : Object.fromEntries(names.filter((k) => localStorage.getItem(k) !== null).map((k) => [k, localStorage.getItem(k)]));
-  if (storage) await storage.set(Object.fromEntries(entries));
-  else for (const [k, v] of entries) localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v));
+  let before;
+  try {
+    before = storage ? await storage.get(names) : Object.fromEntries(names.filter((k) => localStorage.getItem(k) !== null).map((k) => [k, localStorage.getItem(k)]));
+    if (storage) await storage.set(Object.fromEntries(entries));
+    else for (const [k, v] of entries) localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v));
+  } catch {
+    // 写不进去（超出配额、插件刚更新过）：以前抛错没人接，用户以为导入了
+    toast(s("importFailed"), { tone: "danger" });
+    return 0;
+  }
   const undo = async () => {
     const gone = names.filter((k) => !(k in before));
     if (storage) {
@@ -223,6 +268,9 @@ export async function showWhatsNew(container, { version = chromeApi()?.runtime?.
   close.addEventListener("click", async () => {
     if (local) await local.set({ [key]: version });
     else localStorage.setItem(key, version);
+    // 横幅没了，焦点交给它后面的东西（或者放它的容器），不掉到 body（F9）
+    const next = [...container.querySelectorAll("a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex='-1'])")].find((el) => !banner.contains(el));
+    keepFocus(banner, next ?? container);
     banner.remove();
   });
   const actions = doc.createElement("div");

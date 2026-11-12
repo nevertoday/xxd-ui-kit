@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { createAppearanceStore } from "../src/settings.js";
 import { mountXxdUI } from "../src/shadow.js";
 import { applyI18n, t, uiLocale } from "../src/i18n.js";
-import { guardContext } from "../src/patterns.js";
+import { bindPermission, guardContext, importSettings, showWhatsNew } from "../src/patterns.js";
 import { adoptTokens, applyBlocks, buildExtension, create, docComponent, listComponents, dropDeclarations, findFallbackConflicts, status, sync, upsertRegion } from "../scripts/cli.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -211,6 +211,64 @@ describe("mountXxdUI", () => {
     ui.destroy();
     expect(calls.at(-1)).toBeNull();
     delete globalThis.Xxd;
+  });
+});
+
+describe("操作之后焦点不掉、结果说实话（FEEDBACK-ALIGN-PLAN D178、D180）", () => {
+  const toasts = [];
+  const withToasts = () => {
+    toasts.length = 0;
+    globalThis.Xxd = { toast: (message, opts = {}) => toasts.push({ message, ...opts }) };
+  };
+  afterEach(() => {
+    delete globalThis.Xxd;
+    document.body.replaceChildren();
+  });
+
+  it("允许了权限：焦点还在按钮上，按钮说已允许、不能再点", async () => {
+    const button = Object.assign(document.createElement("button"), { textContent: "允许读取" });
+    document.body.append(button);
+    await bindPermission(button, { permissions: ["tabs"] });
+    button.focus();
+    button.click();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(document.activeElement).toBe(button);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("更新说明点「知道了」：横幅没了，焦点交给后面的东西，不掉到 body", async () => {
+    const box = document.createElement("div");
+    const after = Object.assign(document.createElement("button"), { textContent: "下一项" });
+    box.append(after);
+    document.body.append(box);
+    const banner = await showWhatsNew(box, { version: "9.9." + Math.random(), notes: ["一条"] });
+    const close = banner.querySelector("button");
+    close.focus();
+    close.click();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(box.contains(banner)).toBe(false);
+    expect(document.activeElement).toBe(after);
+  });
+
+  it("导入一个没有设置的文件：不说「已导入 0 项」，也不给撤销", async () => {
+    withToasts();
+    const file = { text: async () => JSON.stringify({ format: "xxd-settings", version: 1, data: {} }) };
+    expect(await importSettings(file)).toBe(0);
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].action).toBeUndefined();
+    expect(toasts[0].message).not.toMatch(/0/);
+  });
+
+  it("写不进存储：说没有导入（出错的），不说已导入", async () => {
+    withToasts();
+    mockChrome();
+    globalThis.chrome.storage.sync.set = vi.fn(async () => {
+      throw new Error("QUOTA_BYTES quota exceeded");
+    });
+    const file = { text: async () => JSON.stringify({ format: "xxd-settings", version: 1, data: { "a-ui": { theme: "dark" } } }) };
+    expect(await importSettings(file)).toBe(0);
+    expect(toasts.map((t) => t.tone)).toEqual(["danger"]);
   });
 });
 
