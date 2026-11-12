@@ -1,15 +1,13 @@
 # Windows 字体下的对齐（FEEDBACK-ALIGN-PLAN §5）：对齐和控件高度只在 macOS 的系统字体下量过。
-# 这里在 windows-latest 上（中文是微软雅黑、西文是 Segoe UI）构建展示站，跑「细节」（含控件和标题不在一条线）和「控件同一档一样高」。
+# 展示站在 Linux 上构建（Kumo 在 Windows 上构建不了：rolldown 报 293 处 MISSING_EXPORT，我们也不支持在 Windows 上开发），
+# 构建好的 dist 交给 windows-latest（中文是微软雅黑、西文是 Segoe UI）跑「细节」（含控件和标题不在一条线）和「控件同一档一样高」。
 # 只手动跑（Actions → xxd-windows-fonts → Run workflow），不随推送运行；结果在 artifact「windows-fonts」里。
 name: xxd-windows-fonts
 on:
   workflow_dispatch:
 jobs:
-  audit:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -21,6 +19,30 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build # Kumo → 各包 → 展示站
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: packages/xxd-site/dist
+  audit:
+    needs: build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: packages/xxd-site/dist
       # windows-latest 自带 Google Chrome。第一项报了问题第二项照样跑（if: always()），有一项报了这次运行就是红的
       - run: pnpm --filter @xxd/site run audit --only=polish 2>&1 | tee polish.log
         env:

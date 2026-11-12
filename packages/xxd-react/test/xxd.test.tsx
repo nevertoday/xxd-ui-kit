@@ -277,7 +277,7 @@ describe("AppearanceSettings 说存没存上（D177、F12）", () => {
     const corners = screen.getByRole("switch", { name: "圆角" }) as HTMLInputElement;
     await act(async () => fireEvent.click(corners));
     expect(corners.checked).toBe(true);
-    expect(screen.getByText("已保存")).toBeTruthy();
+    expect(screen.getByText("已保存", { selector: ".xxd-help" })).toBeTruthy();
 
     const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new DOMException("quota", "QuotaExceededError");
@@ -287,11 +287,11 @@ describe("AppearanceSettings 说存没存上（D177、F12）", () => {
     }) : null;
     await act(async () => fireEvent.click(corners));
     expect(corners.checked).toBe(true);
-    expect(screen.getByText(/没有保存/)).toBeTruthy();
+    expect(screen.getByText(/没有保存/, { selector: ".xxd-error" })).toBeTruthy();
     setItem.mockRestore();
     spied?.mockRestore();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "重试" })));
-    expect(screen.getByText("已保存")).toBeTruthy();
+    expect(screen.getByText("已保存", { selector: ".xxd-help" })).toBeTruthy();
   });
 });
 
@@ -884,11 +884,11 @@ describe("操作反馈（FEEDBACK-ALIGN-PLAN D174–D179）：和网页版一样
     render(<Row />);
     const sw = screen.getByRole("switch") as HTMLInputElement;
     fireEvent.click(sw);
-    await screen.findByText("没有保存，已退回原来的设置");
+    await screen.findByText("没有保存，已退回原来的设置", { selector: ".xxd-error" });
     expect(sw.checked).toBe(false);
     fail = false;
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
-    await screen.findByText("已保存");
+    await screen.findByText("已保存", { selector: ".xxd-help" });
     expect(sw.checked).toBe(true);
     expect(write).toHaveBeenCalledTimes(2);
   });
