@@ -15,6 +15,7 @@ import {
   Checkbox,
   Cluster,
   Dialog,
+  DONE_FOR,
   Dot,
   Empty,
   Field,
@@ -40,8 +41,24 @@ import {
   Textarea,
   useToast,
 } from "@xxd/mini";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Demo } from "./types";
+
+/** 演示里「点了做一件事」：进行中 → 做完打勾 1 秒（DONE_FOR，D174）→ 复原；离开页面时定时器一起清掉 */
+function useFakeTask(ms: number) {
+  const [state, setState] = useState<"idle" | "busy" | "done">("idle");
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const start = () => {
+    clearTimeout(timer.current);
+    setState("busy");
+    timer.current = setTimeout(() => {
+      setState("done");
+      timer.current = setTimeout(() => setState("idle"), DONE_FOR);
+    }, ms);
+  };
+  return { start, buttonProps: { loading: state === "busy", done: state === "done" } };
+}
 
 // 演示用的图（纯色块 SVG，不依赖网络）
 const swatch = (color: string) => `data:image/svg+xml;base64,${btoaAscii(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 3"><rect width="4" height="3" fill="${color}"/></svg>`)}`;
@@ -57,7 +74,7 @@ function btoaAscii(s: string) {
 export const IMAGES = ["#d8d4cb", "#c9c3b6", "#b9b2a4", "#a7a194", "#e7e4dd", "#cfc9bd"].map(swatch);
 
 function ButtonDemo({ tr }: { tr: (zh: string, en: string) => string }) {
-  const [loading, setLoading] = useState(false);
+  const submit = useFakeTask(900);
   return (
     <Stack>
       <Cluster>
@@ -71,14 +88,7 @@ function ButtonDemo({ tr }: { tr: (zh: string, en: string) => string }) {
           {tr("新建", "New")}
         </Button>
         <Button size="sm" icon={Share} label={tr("分享", "Share")} />
-        <Button
-          size="sm"
-          loading={loading}
-          onClick={() => {
-            setLoading(true);
-            setTimeout(() => setLoading(false), 1500);
-          }}
-        >
+        <Button size="sm" {...submit.buttonProps} onClick={submit.start}>
           {tr("提交", "Submit")}
         </Button>
       </Cluster>
@@ -95,12 +105,24 @@ function ButtonDemo({ tr }: { tr: (zh: string, en: string) => string }) {
 
 function CellDemo({ tr }: { tr: (zh: string, en: string) => string }) {
   const [sound, setSound] = useState(true);
+  const exporting = useFakeTask(900);
   return (
     <Stack gap={20}>
       <CellGroup title={tr("通知", "Notifications")} note={tr("关掉以后，写入完成时不再响。", "Turn this off to stop the sound when a post is saved.")}>
         <Cell title={tr("完成音效", "Done sound")} control={<Switch checked={sound} onCheckedChange={setSound} label={tr("完成音效", "Done sound")} />} />
         <Cell title={tr("提醒时间", "Reminder")} value="21:00" arrow onClick={() => {}} />
         <Cell leading={<Icon icon={User} size={20} />} title={tr("账号", "Account")} description={tr("小小东 · 会员", "Xiaoxiaodong · Member")} arrow onClick={() => {}} />
+      </CellGroup>
+      <CellGroup title={tr("数据", "Data")}>
+        <Cell
+          title={tr("导出数据", "Export data")}
+          description={tr("待办和外观设置存成一个文件，换手机时导入。", "Saves your to-dos and appearance to one file you can import on a new phone.")}
+          control={
+            <Button size="sm" {...exporting.buttonProps} onClick={exporting.start}>
+              {tr("导出", "Export")}
+            </Button>
+          }
+        />
       </CellGroup>
       <CellGroup inset>
         <Cell title={tr("退出登录", "Sign out")} danger onClick={() => {}} />
