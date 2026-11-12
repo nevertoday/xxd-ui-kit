@@ -44,7 +44,16 @@ export declare function showTooltip(anchor: HTMLElement): void;
 export declare function fitText(el: HTMLElement): void;
 export declare function hideTooltip(): void;
 export declare function showBubble(anchor: Element, text: string, options?: { duration?: number }): HTMLElement;
-export declare function runBusy<T>(button: HTMLElement, task: () => T | Promise<T>, options?: { doneFor?: number }): Promise<T | undefined>;
+/**
+ * 进行中的按钮：宽度不跳，150ms 后才露出转圈，成功打勾 1 秒并念 done（缺省「已完成」，false 不念）；
+ * 失败弹出错的 toast（failed，缺省「没有完成，可以重试」，false 不弹），带「重试」（再跑一次同一个 task），然后照样抛错。
+ */
+export declare function runBusy<T>(button: HTMLElement, task: () => T | Promise<T>, options?: { doneFor?: number; done?: string | false; failed?: string | false }): Promise<T | undefined>;
+/**
+ * 改了马上存的设置：150ms 后说「正在保存…」，好了说「已保存」；失败调 undo 退回原值、说「没有保存」并给「重试」（redo 后再存）。
+ * status 是设置行下面 / 状态条里的一行字，没给就只在失败时弹 toast。返回存没存上。
+ */
+export declare function saveSetting(write: () => unknown, options?: { status?: HTMLElement | null; undo?: () => void; redo?: () => void }): Promise<boolean>;
 
 export declare function openLayer(layer: HTMLElement): void;
 export declare function closeLayer(layer: HTMLElement): void;

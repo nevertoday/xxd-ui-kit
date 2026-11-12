@@ -5,7 +5,7 @@ import { ICON } from "./icons-min.js";
 import { t } from "./i18n.js";
 import { announce } from "./announce.js";
 import { AUTO_TIP } from "./truncate.js";
-import { DONE_FOR, toastDuration } from "./timing.js";
+import { BUSY_DELAY, DONE_FOR, toastDuration } from "./timing.js";
 
 /* ── Tooltip：[data-tooltip="说明"]，可选 data-tooltip-placement="bottom" ── */
 let tip = null;
@@ -436,9 +436,13 @@ export function showBubble(anchor, text, { duration = 1200 } = {}) {
   return bubble;
 }
 
-/* ── 进行中的按钮（I9）：await Xxd.runBusy(btn, () => save()) —— 宽度不跳，成功后第一个图标变勾 1s ── */
+/* ── 进行中的按钮（I9）：await Xxd.runBusy(btn, () => save()) —— 宽度不跳，成功后第一个图标变勾 1s ──
+ * 成功和失败都念出来（FEEDBACK-ALIGN-PLAN D176）：成功 polite（done，缺省「已完成」；false 不念，比如后面马上有一张 toast），
+ * 失败 assertive，并弹一张出错的 toast（failed，缺省「没有完成，可以重试」；false 不弹，自己处理），带「重试」：再跑一次同一个任务。
+ * 焦点一直在按钮上（进行中不写 disabled）。成功后要做的事写进 task 里，重试成功时也会做。 */
 const running = new WeakMap();
-export async function runBusy(button, task, { doneFor = DONE_FOR } = {}) {
+export async function runBusy(button, task, options = {}) {
+  const { doneFor = DONE_FOR, done, failed } = options;
   // 进行中再点：返回正在跑的那一个（以前返回 undefined，调用方 .then 会以为已经好了，ACCEPTANCE-REVIEW）
   if (button.getAttribute("aria-busy") === "true") return running.get(button);
   // 上一次的「完成」还没收起就又开始：先收起，免得进行中和完成同时出现
@@ -450,9 +454,17 @@ export async function runBusy(button, task, { doneFor = DONE_FOR } = {}) {
       button.removeAttribute("aria-busy");
       // 完成：有图标的把图标换成勾；没图标的靠 data-done 在中间画一个勾（MOTION-REVIEW-PLAN D86）
       flashDone(button, ":scope > .ui-icon", doneFor);
+      if (done !== false) announce(done || t("done", null, button), { within: button });
       return result;
     } catch (error) {
       button.removeAttribute("aria-busy");
+      // 以前按钮悄悄复原，用户以为成功了（F10）。toast 自己会 assertive 地念
+      if (failed !== false) {
+        toast(failed || t("failed", null, button), {
+          tone: "danger",
+          action: { label: t("retry", null, button), onClick: () => runBusy(button, task, options).catch(() => {}) },
+        });
+      }
       throw error;
     } finally {
       running.delete(button);
@@ -460,4 +472,64 @@ export async function runBusy(button, task, { doneFor = DONE_FOR } = {}) {
   })();
   running.set(button, job);
   return job;
+}
+
+/* ── 设置的保存状态（D177）：改了马上存的设置（开关、复选、下拉）——
+ *   await Xxd.saveSetting(() => storage.set(value), { status: lineEl, undo: () => (sw.checked = !sw.checked), redo: () => (sw.checked = !sw.checked) })
+ * 存了 150ms 还没好说「正在保存…」，存好说「已保存」（2 秒后收起），存不进去调 undo 把控件退回原来的值，说「没有保存，已退回原来的设置」
+ * 并给「重试」（先 redo 再存一次）。status 是设置行下面或底部状态条里的一行字；没给就只在失败时弹 toast。
+ * 读屏：已保存 polite，失败 assertive。返回 true / false（不抛错：设置的写入没有人在等结果）。 */
+const saveTurns = new WeakMap();
+export async function saveSetting(write, { status, undo, redo } = {}) {
+  const turn = {};
+  if (status) saveTurns.set(status, turn);
+  const mine = () => !status || saveTurns.get(status) === turn;
+  const say = (text, tone, action) => {
+    if (!status || !mine()) return;
+    clearTimeout(status._saveTimer);
+    status.className = tone === "danger" ? "xxd-error" : "xxd-help";
+    status.hidden = !text;
+    status.textContent = text;
+    if (action) {
+      const btn = status.ownerDocument.createElement("button");
+      btn.type = "button";
+      btn.className = "xxd-link";
+      btn.textContent = action.label;
+      btn.addEventListener("click", action.onClick);
+      status.append(" ", btn);
+    }
+  };
+  const slow = setTimeout(() => say(t("saving", null, status)), BUSY_DELAY);
+  try {
+    await write();
+    clearTimeout(slow);
+    if (!mine()) return true;
+    say(t("saved", null, status));
+    if (status) {
+      announce(t("saved", null, status), { within: status });
+      status._saveTimer = setTimeout(() => mine() && say(""), 2000);
+    }
+    return true;
+  } catch {
+    clearTimeout(slow);
+    if (!mine()) return false;
+    undo?.();
+    const retry = redo && {
+      label: t("retry", null, status),
+      onClick: () => {
+        // 「重试」马上被换成「正在保存…」：焦点挪到这一行字上，不掉到 body（D178）
+        if (status?.contains(status.ownerDocument.activeElement)) {
+          status.tabIndex = -1;
+          status.focus({ preventScroll: true });
+        }
+        redo();
+        saveSetting(write, { status, undo, redo });
+      },
+    };
+    if (status) {
+      say(t("notSaved", null, status), "danger", retry);
+      announce(t("notSaved", null, status), { within: status, assertive: true });
+    } else toast(t("notSaved"), { tone: "danger", action: retry });
+    return false;
+  }
 }

@@ -5,6 +5,7 @@
 import { emit } from "./dom.js";
 import { getLocale, resolveLocale } from "./i18n.js";
 import { APPEARANCE_LABELS } from "./labels.js";
+import { saveSetting } from "./feedback.js";
 
 const PRESETS_FALLBACK = [{ id: "", name: "Ink", zh: "墨色" }];
 
@@ -82,6 +83,20 @@ export function mountAppearance(container, options = {}) {
   const body = doc.createElement("div");
   body.className = "xxd-group__body";
   group.append(title, body);
+  // 存的状态（D177）：正在保存 / 已保存 / 没有保存 + 重试。存不进去（插件的 sync 配额满了、插件刚更新过）时，
+  // 控件跟着存储里真实的样子退回去（以前开关还开着，什么都不说，F7）
+  const status = doc.createElement("p");
+  status.className = "xxd-help";
+  status.hidden = true;
+  group.append(status);
+  const persist = (patch) =>
+    saveSetting(
+      async () => {
+        await set(patch);
+        sync();
+      },
+      { status, undo: () => sync(), redo: () => {} },
+    );
 
   body.append(row(doc, L.theme, "", segmented(doc, "theme", [["light", L.light], ["dark", L.dark], ["system", L.system]], s.theme || "light", L.theme)));
 
@@ -93,7 +108,7 @@ export function mountAppearance(container, options = {}) {
     sw.setAttribute("aria-label", L.corners);
     sw.checked = s.corners === "rounded";
     sw.addEventListener("change", () => {
-      set({ corners: sw.checked ? "rounded" : "square" });
+      persist({ corners: sw.checked ? "rounded" : "square" });
       emit(group, "xxd:appearance", get());
     });
     body.append(row(doc, L.corners, L.cornersDesc, sw));
@@ -137,7 +152,7 @@ export function mountAppearance(container, options = {}) {
   current.textContent = nameOf(s.accent);
   swatches.addEventListener("xxd:change", (event) => {
     event.stopPropagation();
-    set({ accent: event.detail.value });
+    persist({ accent: event.detail.value });
     current.textContent = nameOf(event.detail.value);
     emit(group, "xxd:appearance", get());
   });
@@ -173,7 +188,7 @@ export function mountAppearance(container, options = {}) {
   group.addEventListener("xxd:change", (event) => {
     const name = event.target?.dataset?.name;
     if (!name) return;
-    set({ [name]: event.detail.value });
+    persist({ [name]: event.detail.value });
     emit(group, "xxd:appearance", get());
   });
 

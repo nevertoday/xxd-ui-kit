@@ -406,10 +406,10 @@ export function installConfirmTwice(root, closestFrom) {
     // 确认的字比原来长、按钮又到了最宽：重量一次，放不下就出省略号
     fitText(btn);
     btn.setAttribute("data-confirming", "");
-    // 读屏用户看不见按钮变了：念一句；5 秒没再点才复原，焦点还在按钮上时不复原（等离开再说）
+    // 读屏用户看不见按钮变了：念一句；5 秒没再点才复原，焦点或鼠标还在按钮上时不复原（等离开再说，React 版同样，D179）
     announce(t("confirmTwiceHint", { label: text }, btn), { within: btn, assertive: true });
     const later = () => {
-      if (btn.matches(":focus") && btn.hasAttribute("data-confirming")) {
+      if (btn.matches(":focus, :hover") && btn.hasAttribute("data-confirming")) {
         btn._confirmTimer = setTimeout(later, 1000);
         return;
       }

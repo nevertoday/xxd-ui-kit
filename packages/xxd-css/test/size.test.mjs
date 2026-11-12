@@ -30,7 +30,9 @@ import { describe, expect, it } from "vitest";
 // xxd.js 2026-11-02 从 39 调到 40、xxd.shadow.css.js 从 31 调到 32：评审团（COMPONENT-JURY-PLAN）——多选下拉的列表跟着整个框（J7）、
 //   一开始选中的 tab 滚进视野（J13）、按钮里 <span> 标签的全文提示（J28）、面包屑的全文提示，约 0.2 KB；Shadow 样式和 xxd.min.css 是同一份（J1 的尺、J3–J27）。
 //   本地量 38.95 / 30.96 时 CI 已经超（CI 比本地大 0.2 左右），留出余量
-const BUDGET_KB = { "xxd.min.css": 32, "xxd.js": 40, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 32 };
+// xxd.js 2026-11-11 从 40 调到 41：操作反馈（FEEDBACK-ALIGN-PLAN D176、D177）——runBusy 失败的 toast 和「重试」、成功和失败的播报、
+//   设置的保存状态 saveSetting（外观设置组用它），约 0.5 KB。都是行为，拆不进 viz.js
+const BUDGET_KB = { "xxd.min.css": 32, "xxd.js": 41, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 32 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {

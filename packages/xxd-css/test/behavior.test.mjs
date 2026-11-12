@@ -1299,3 +1299,72 @@ describe("隐式状态机（定时器、共用的东西、半路结束）", () =
     }
   });
 });
+
+describe("操作反馈（FEEDBACK-ALIGN-PLAN D176、D177）", () => {
+  const polite = () => document.querySelector(".xxd-announcer[aria-live=polite]")?.textContent;
+
+  it("runBusy 成功：打勾，读屏念「已完成」（polite）", async () => {
+    html(`<button class="xxd-btn" id="ok">保存</button>`);
+    const btn = document.getElementById("ok");
+    await Xxd.runBusy(btn, async () => 1);
+    expect(btn.hasAttribute("data-done")).toBe(true);
+    await until(() => polite() === "已完成");
+    expect(polite()).toBe("已完成");
+  });
+
+  it("runBusy 失败：出错的 toast 带「重试」，重试就是再跑一次同一个任务；焦点一直在按钮上", async () => {
+    html(`<button class="xxd-btn" id="bad">导出</button>`);
+    const btn = document.getElementById("bad");
+    btn.focus();
+    let calls = 0;
+    const task = vi.fn(async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("network");
+      return "ok";
+    });
+    await expect(Xxd.runBusy(btn, task)).rejects.toThrow("network");
+    expect(btn.hasAttribute("aria-busy")).toBe(false);
+    expect(btn.hasAttribute("data-done")).toBe(false);
+    expect(document.activeElement).toBe(btn);
+    const toast = [...document.querySelectorAll(".xxd-toast[data-tone=danger]")].pop();
+    expect(toast?.textContent).toContain("没有完成");
+    const retry = toast.querySelector("button");
+    expect(retry.textContent).toBe("重试");
+    retry.click();
+    await until(() => btn.hasAttribute("data-done"));
+    expect(task).toHaveBeenCalledTimes(2);
+    expect(btn.hasAttribute("data-done")).toBe(true);
+  });
+
+  it("外观设置存不进去：控件退回存着的值，设置下面说「没有保存」并给「重试」；重试存上了说「已保存」", async () => {
+    let stored = { theme: "light", corners: "square", accent: "" };
+    let fail = true;
+    let view = { ...stored };
+    const set = vi.fn(async (patch) => {
+      view = { ...view, ...patch };
+      if (fail) {
+        view = { ...stored };
+        throw new Error("QUOTA_BYTES quota exceeded");
+      }
+      stored = { ...view };
+    });
+    const host = document.createElement("div");
+    document.body.append(host);
+    Xxd.mountAppearance(host, { get: () => view, set, presets: [{ id: "", name: "Ink", zh: "墨色" }] });
+    const sw = host.querySelector(".xxd-switch");
+    sw.checked = true;
+    sw.dispatchEvent(new Event("change", { bubbles: true }));
+    const status = host.querySelector(".xxd-group > p");
+    await until(() => status.textContent.includes("没有保存"));
+    expect(sw.checked).toBe(false);
+    expect(status.className).toBe("xxd-error");
+    const retry = status.querySelector("button");
+    expect(retry.textContent).toBe("重试");
+    fail = false;
+    retry.click();
+    await until(() => status.textContent === "已保存");
+    expect(set).toHaveBeenCalledTimes(2);
+    expect(stored.corners).toBe("rounded");
+    expect(sw.checked).toBe(true);
+  });
+});

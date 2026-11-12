@@ -2,8 +2,11 @@
 // 缺省跟 <html lang>（插件里由 i18n 写好）；Xxd.setLocale("en") 可以固定。
 // 每个函数的参数、元素上的 data-* 文案仍然优先。
 
+import { FEEDBACK_LABELS } from "./labels.js";
+
 const STRINGS = {
   "zh-CN": {
+    ...FEEDBACK_LABELS["zh-CN"],
     confirm: "确定",
     cancel: "取消",
     close: "关闭",
@@ -17,7 +20,6 @@ const STRINGS = {
     nextPage: "下一页",
     pagination: "分页",
     copied: "已复制",
-    copyFailed: "复制失败",
     showLevels: "显示 {n} 级",
     dropVeil: "松手，放进来",
     imageViewer: "图片查看器",
@@ -91,6 +93,7 @@ const STRINGS = {
     chartEnd: "。",
   },
   "zh-Hant": {
+    ...FEEDBACK_LABELS["zh-Hant"],
     confirm: "確定",
     cancel: "取消",
     close: "關閉",
@@ -104,7 +107,6 @@ const STRINGS = {
     nextPage: "下一頁",
     pagination: "分頁",
     copied: "已複製",
-    copyFailed: "複製失敗",
     showLevels: "顯示 {n} 層",
     dropVeil: "放開，放進來",
     imageViewer: "圖片檢視器",
@@ -178,6 +180,7 @@ const STRINGS = {
     chartEnd: "。",
   },
   en: {
+    ...FEEDBACK_LABELS.en,
     confirm: "OK",
     cancel: "Cancel",
     close: "Close",
@@ -191,7 +194,6 @@ const STRINGS = {
     nextPage: "Next page",
     pagination: "Pagination",
     copied: "Copied",
-    copyFailed: "Couldn’t copy",
     showLevels: "Show {n} more",
     dropVeil: "Drop to add",
     imageViewer: "Image viewer",

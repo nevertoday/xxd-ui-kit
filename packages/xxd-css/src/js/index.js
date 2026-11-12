@@ -28,7 +28,7 @@ export { showFloating, hideFloating, openSubmenu, closeSubmenu } from "./menu.js
 export { openPicker, closePicker, choose as choosePickerOption } from "./picker.js";
 export { place } from "./floating.js";
 export { selectTab, selectRadio, moveInk } from "./choice.js";
-export { toast, copyText, showTooltip, hideTooltip, showBubble, runBusy } from "./feedback.js";
+export { toast, copyText, showTooltip, hideTooltip, showBubble, runBusy, saveSetting } from "./feedback.js";
 export { fitText } from "./truncate.js";
 export { openSheet, closeSheet, openPanel, closePanel, openLayer, closeLayer } from "./layers.js";
 export { bindSearch, markMatches, clearMarks, addTag, tagValues, openCommandPalette, bindCommandPalette } from "./inputs.js";

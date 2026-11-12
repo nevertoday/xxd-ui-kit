@@ -16,3 +16,10 @@ export const APPEARANCE_LABELS = {
     density: "Density", comfortable: "Comfortable", compact: "Compact", finish: "Button style", flat: "Flat", material: "Material", language: "Language", ink: "Ink",
   },
 };
+
+// 操作反馈的文案（FEEDBACK-ALIGN-PLAN D175–D177）：网页版（i18n.js）、React（@xxd/react 的 locale）共用。
+export const FEEDBACK_LABELS = {
+  "zh-CN": { retry: "重试", done: "已完成", failed: "没有完成，可以重试", saving: "正在保存…", saved: "已保存", notSaved: "没有保存，已退回原来的设置", autoSave: "改动自动保存", copyFailed: "复制失败" },
+  "zh-Hant": { retry: "重試", done: "已完成", failed: "沒有完成，可以重試", saving: "正在儲存…", saved: "已儲存", notSaved: "沒有儲存，已退回原本的設定", autoSave: "變更會自動儲存", copyFailed: "複製失敗" },
+  en: { retry: "Retry", done: "Done", failed: "That didn’t finish. You can retry.", saving: "Saving…", saved: "Saved", notSaved: "Not saved. The setting is back to what it was.", autoSave: "Changes save automatically", copyFailed: "Couldn’t copy" },
+};
