@@ -16,7 +16,10 @@ const STRINGS = {
     shortcutEdit: "改快捷键",
     shortcutWhere: "快捷键在 chrome://extensions/shortcuts 里改",
     exported: "已导出设置，文件在下载里",
+    exportSaved: "已导出设置",
+    exportStarted: "已开始下载设置文件",
     exportFailed: "没有导出：读不到设置，可以重试",
+    exportNotSaved: "没有导出：文件没有存下来，可以重试",
     imported: "已导入 {n} 项设置",
     importNone: "这个文件里没有可导入的设置",
     importFailed: "没有导入：写不进设置，原来的设置没动",
@@ -35,7 +38,10 @@ const STRINGS = {
     shortcutEdit: "修改快捷鍵",
     shortcutWhere: "快捷鍵在 chrome://extensions/shortcuts 裡修改",
     exported: "已匯出設定，檔案在下載項目裡",
+    exportSaved: "已匯出設定",
+    exportStarted: "已開始下載設定檔",
     exportFailed: "沒有匯出：讀不到設定，可以重試",
+    exportNotSaved: "沒有匯出：檔案沒有存下來，可以重試",
     imported: "已匯入 {n} 項設定",
     importNone: "這個檔案裡沒有可匯入的設定",
     importFailed: "沒有匯入：寫不進設定，原本的設定沒有變",
@@ -54,7 +60,10 @@ const STRINGS = {
     shortcutEdit: "Change shortcuts",
     shortcutWhere: "Shortcuts are changed at chrome://extensions/shortcuts",
     exported: "Settings exported to your downloads",
+    exportSaved: "Settings exported",
+    exportStarted: "Settings download started",
     exportFailed: "Not exported: couldn't read the settings. You can retry.",
+    exportNotSaved: "Not exported: the file wasn't saved. You can retry.",
     imported: "Imported {n} settings",
     importNone: "There are no settings to import in this file",
     importFailed: "Not imported: couldn't write the settings. Nothing changed.",
@@ -165,8 +174,79 @@ export async function mountShortcuts(container, { names = {} } = {}) {
 /* ── 导入导出设置 ── */
 const storageArea = (area) => chromeApi()?.storage?.[area] ?? null;
 
-/** 把这些键的设置下载成 JSON 文件。keys 不写就是这个区域的全部。 */
+/* 把文件存下来，说的是知道的那么多（F14：以前下载还没开始就说「已导出」）：
+ *   chrome.downloads（插件有 downloads 权限）：等下载真的完成才算存好，中断了算失败，用户在另存为里取消就算了；
+ *   showSaveFilePicker（网页、没有 downloads 权限的插件页）：用户选好位置、写完才算存好，取消就算了；打不开（不在点击里、被策略禁了）退到下一条；
+ *   都没有：交给浏览器下载（<a download>），拿不到结果，只能说「已开始下载」。
+ * 返回 "saved"（在下载里）、"picked"（存在用户选的位置）、"started" 或 "cancelled"；存不下来就抛错。 */
+function viaDownloads(api, url, filename) {
+  return new Promise((resolve, reject) => {
+    let id = null;
+    const early = [];
+    const stop = () => api.onChanged?.removeListener(listen);
+    const settle = (delta) => {
+      if (delta.id !== id) return;
+      const state = delta.state?.current;
+      if (state !== "complete" && state !== "interrupted") return;
+      stop();
+      const error = delta.error?.current;
+      if (state === "complete") resolve("saved");
+      else if (error === "USER_CANCELED") resolve("cancelled");
+      else reject(new Error(error || "interrupted"));
+    };
+    // 小文件可能在 download() 回来之前就下完了：先听着，拿到 id 再对
+    const listen = (delta) => (id === null ? early.push(delta) : settle(delta));
+    api.onChanged?.addListener(listen);
+    Promise.resolve(api.download({ url, filename, conflictAction: "uniquify" }))
+      .then((got) => {
+        if (got == null) throw new Error(chromeApi()?.runtime?.lastError?.message || "download failed");
+        id = got;
+        if (api.onChanged) early.splice(0).forEach(settle);
+        else resolve("started");
+      })
+      .catch((error) => {
+        stop();
+        reject(error);
+      });
+  });
+}
+
+async function saveFile(text, filename) {
+  const downloads = chromeApi()?.downloads;
+  if (downloads?.download) {
+    const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    try {
+      return await viaDownloads(downloads, url, filename);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  if (typeof globalThis.showSaveFilePicker === "function") {
+    let handle = null;
+    try {
+      handle = await globalThis.showSaveFilePicker({ suggestedName: filename, types: [{ description: "JSON", accept: { "application/json": [".json"] } }] });
+    } catch (error) {
+      if (error?.name === "AbortError") return "cancelled";
+    }
+    if (handle) {
+      const writable = await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      return "picked";
+    }
+  }
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return "started";
+}
+
+/** 把这些键的设置存成 JSON 文件。keys 不写就是这个区域的全部。返回导出的内容；取消了、没存下来返回 null。 */
 export async function exportSettings({ keys = null, area = "sync", filename = "settings.json" } = {}) {
+  const retry = { label: s("retry"), onClick: () => exportSettings({ keys, area, filename }) };
   const storage = storageArea(area);
   let data;
   try {
@@ -174,17 +254,20 @@ export async function exportSettings({ keys = null, area = "sync", filename = "s
     else data = Object.fromEntries((keys ?? Object.keys(localStorage)).map((k) => [k, localStorage.getItem(k)]));
   } catch {
     // 读不到（插件刚更新过、存储被禁用）：以前什么都不说，也没有文件（F14）
-    toast(s("exportFailed"), { tone: "danger", action: { label: s("retry"), onClick: () => exportSettings({ keys, area, filename }) } });
+    toast(s("exportFailed"), { tone: "danger", action: retry });
     return null;
   }
   const file = { format: "xxd-settings", version: 1, exportedAt: new Date().toISOString(), data };
-  const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
-  const a = Object.assign(document.createElement("a"), { href: url, download: filename });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast(s("exported"), { tone: "success" });
+  let result;
+  try {
+    result = await saveFile(JSON.stringify(file, null, 2), filename);
+  } catch {
+    toast(s("exportNotSaved"), { tone: "danger", action: retry });
+    return null;
+  }
+  if (result === "cancelled") return null;
+  if (result === "started") toast(s("exportStarted"), { tone: "info" });
+  else toast(s(result === "saved" ? "exported" : "exportSaved"), { tone: "success" });
   return file;
 }
 

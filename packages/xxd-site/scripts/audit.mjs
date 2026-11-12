@@ -2039,7 +2039,10 @@ async function sizesAudit() {
  * （实心的 primary / danger，React 是 Kumo 的实心按钮）有结果，其余的照样查焦点、进行中和 toast。
  * 已经选中 / 当前的那一项再点一下不变是对的，不点；链接不点（跳转就是它的结果）。
  * 本来就不该有结果的写进 FEEDBACK_STATIC：[选择器, 为什么]。 */
-const FEEDBACK_STATIC = [["[data-finish-preview] *", "按钮质感的样品：只给看平面 / 立体两种材质，上面的主演示有结果"]];
+const FEEDBACK_STATIC = [
+  ["[data-finish-preview] *", "按钮质感的样品：只给看平面 / 立体两种材质，上面的主演示有结果"],
+  ["#export-btn", "导出设置在网页里打开系统的存储框（F14），结果在页面外面；无头浏览器里存储框直接当取消，取消本来就什么都不说（单测查了存好、取消、失败三种）"],
+];
 const FEEDBACK_INIT = `(() => {
   window.alert = () => (window.__fbDialogs = (window.__fbDialogs || 0) + 1);
   window.confirm = () => ((window.__fbDialogs = (window.__fbDialogs || 0) + 1), true);

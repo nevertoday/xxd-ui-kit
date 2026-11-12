@@ -288,7 +288,7 @@ await Xxd.flip(container, () => reorderDom())  // the general “slide into the 
     input.click();
   });
 </script>`,
-    rules: ["Only import files whose format is xxd-settings; pass keys to accept only the ones you know", "After an import every page updates itself through chrome.storage.onChanged; nothing needs reopening"],
+    rules: ["Only import files whose format is xxd-settings; pass keys to accept only the ones you know", "After an import every page updates itself through chrome.storage.onChanged; nothing needs reopening", "Say “exported” only when you know the file is saved: with the downloads permission wait for the download to complete, otherwise use the save dialog and wait for the write; with neither, all you can say is “download started”. Say nothing on cancel; offer Retry when it couldn’t be saved"],
     a11y: ["The result is announced with a toast"],
   },
   WhatsNew: {

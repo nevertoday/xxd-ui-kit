@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { createAppearanceStore } from "../src/settings.js";
 import { mountXxdUI } from "../src/shadow.js";
 import { applyI18n, t, uiLocale } from "../src/i18n.js";
-import { bindPermission, guardContext, importSettings, showWhatsNew } from "../src/patterns.js";
+import { bindPermission, exportSettings, guardContext, importSettings, showWhatsNew } from "../src/patterns.js";
 import { adoptTokens, applyBlocks, buildExtension, create, docComponent, listComponents, dropDeclarations, findFallbackConflicts, status, sync, upsertRegion } from "../scripts/cli.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -269,6 +269,127 @@ describe("操作之后焦点不掉、结果说实话（FEEDBACK-ALIGN-PLAN D178�
     const file = { text: async () => JSON.stringify({ format: "xxd-settings", version: 1, data: { "a-ui": { theme: "dark" } } }) };
     expect(await importSettings(file)).toBe(0);
     expect(toasts.map((t) => t.tone)).toEqual(["danger"]);
+  });
+});
+
+describe("导出只在知道存好了才说「已导出」（FEEDBACK-ALIGN-PLAN F14）", () => {
+  const toasts = [];
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  const lang = document.documentElement.lang;
+  const withChrome = (extra) => {
+    mockChrome();
+    Object.assign(globalThis.chrome, extra);
+  };
+  const fakeDownloads = (download) => {
+    const listeners = new Set();
+    return {
+      api: { download: vi.fn(download), onChanged: { addListener: (fn) => listeners.add(fn), removeListener: (fn) => listeners.delete(fn) } },
+      emit: (delta) => listeners.forEach((fn) => fn(delta)),
+      listening: () => listeners.size,
+    };
+  };
+  const picker = (impl) => Object.defineProperty(globalThis, "showSaveFilePicker", { value: vi.fn(impl), configurable: true, writable: true });
+  const clicks = [];
+  const realClick = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, "click");
+  afterEach(() => {
+    delete globalThis.Xxd;
+    delete globalThis.showSaveFilePicker;
+    if (realClick) Object.defineProperty(HTMLAnchorElement.prototype, "click", realClick);
+    else delete HTMLAnchorElement.prototype.click;
+    document.documentElement.lang = lang;
+  });
+  const setup = (l = "zh-CN") => {
+    toasts.length = 0;
+    clicks.length = 0;
+    document.documentElement.lang = l;
+    globalThis.Xxd = { toast: (message, opts = {}) => toasts.push({ message, ...opts }) };
+    HTMLAnchorElement.prototype.click = function () {
+      clicks.push(this.download);
+    };
+  };
+
+  it("chrome.downloads：下载真的完成才说已导出；还在下载时什么都不说", async () => {
+    setup();
+    const d = fakeDownloads(async () => 7);
+    withChrome({ downloads: d.api });
+    const job = exportSettings({ filename: "today.json" });
+    await tick();
+    expect(d.api.download).toHaveBeenCalledWith(expect.objectContaining({ filename: "today.json" }));
+    expect(toasts).toEqual([]);
+    d.emit({ id: 8, state: { current: "complete" } });
+    d.emit({ id: 7, state: { current: "in_progress" } });
+    await tick();
+    expect(toasts).toEqual([]);
+    d.emit({ id: 7, state: { current: "complete" } });
+    expect((await job).format).toBe("xxd-settings");
+    expect(toasts.map((t) => [t.message, t.tone])).toEqual([["已导出设置，文件在下载里", "success"]]);
+    expect(d.listening()).toBe(0);
+  });
+
+  it("chrome.downloads：下载中断说没有导出、给重试，重试再下一次；用户自己取消什么都不说", async () => {
+    setup();
+    let n = 0;
+    const d = fakeDownloads(async () => ++n);
+    withChrome({ downloads: d.api });
+    const job = exportSettings();
+    await tick();
+    d.emit({ id: 1, state: { current: "interrupted" }, error: { current: "FILE_NO_SPACE" } });
+    expect(await job).toBeNull();
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].tone).toBe("danger");
+    expect(toasts[0].message).toMatch(/没有导出/);
+    expect(toasts[0].action.label).toBe("重试");
+    toasts[0].action.onClick();
+    await tick();
+    expect(d.api.download).toHaveBeenCalledTimes(2);
+    d.emit({ id: 2, state: { current: "interrupted" }, error: { current: "USER_CANCELED" } });
+    await tick();
+    expect(toasts).toHaveLength(1);
+  });
+
+  it("chrome.downloads 开始不了（返回出错）：说没有导出、给重试", async () => {
+    setup();
+    const d = fakeDownloads(async () => {
+      throw new Error("Invalid filename");
+    });
+    withChrome({ downloads: d.api });
+    expect(await exportSettings()).toBeNull();
+    expect(toasts.map((t) => [t.tone, !!t.action])).toEqual([["danger", true]]);
+    expect(clicks).toEqual([]);
+  });
+
+  it("存储框：取消什么都不说；存好了说已导出（不说「在下载里」）；写不进去说没有导出、给重试", async () => {
+    setup();
+    picker(async () => {
+      throw Object.assign(new Error("The user aborted a request."), { name: "AbortError" });
+    });
+    expect(await exportSettings()).toBeNull();
+    expect(toasts).toEqual([]);
+    expect(clicks).toEqual([]);
+
+    const written = [];
+    picker(async () => ({ createWritable: async () => ({ write: async (x) => written.push(x), close: async () => {} }) }));
+    expect((await exportSettings()).format).toBe("xxd-settings");
+    expect(JSON.parse(written[0]).format).toBe("xxd-settings");
+    expect(toasts.map((t) => [t.message, t.tone])).toEqual([["已导出设置", "success"]]);
+
+    toasts.length = 0;
+    picker(async () => ({ createWritable: async () => ({ write: async () => { throw new Error("NoModificationAllowedError"); }, close: async () => {} }) }));
+    expect(await exportSettings()).toBeNull();
+    expect(toasts.map((t) => [t.tone, t.action?.label])).toEqual([["danger", "重试"]]);
+    expect(toasts[0].message).not.toMatch(/已导出/);
+  });
+
+  it("什么都没有（普通网页）：只能交给浏览器下载，说已开始下载，不说已导出（三种语言）", async () => {
+    for (const [l, word] of [["zh-CN", "已开始下载"], ["zh-Hant", "已開始下載"], ["en", "download started"]]) {
+      setup(l);
+      expect((await exportSettings({ filename: "today.json" })).format).toBe("xxd-settings");
+      expect(clicks).toEqual(["today.json"]);
+      expect(toasts).toHaveLength(1);
+      expect(toasts[0].message).toContain(word);
+      expect(toasts[0].message).not.toMatch(/已导出|已匯出|exported/i);
+      expect(toasts[0].tone).not.toBe("success");
+    }
   });
 });
 

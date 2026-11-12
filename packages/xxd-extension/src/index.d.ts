@@ -72,7 +72,8 @@ export interface ExportedSettings {
   exportedAt: string;
   data: Record<string, unknown>;
 }
-export declare function exportSettings(options?: { keys?: string[] | null; area?: "sync" | "local"; filename?: string }): Promise<ExportedSettings>;
+/** 用 chrome.downloads（等下载完成）、showSaveFilePicker（等写完）或浏览器下载（只能说已开始）存文件；取消了、没存下来返回 null。 */
+export declare function exportSettings(options?: { keys?: string[] | null; area?: "sync" | "local"; filename?: string }): Promise<ExportedSettings | null>;
 export declare function importSettings(file: Blob, options?: { keys?: string[] | null; area?: "sync" | "local" }): Promise<number>;
 export declare function showWhatsNew(
   container: HTMLElement,

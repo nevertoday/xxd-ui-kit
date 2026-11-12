@@ -276,7 +276,8 @@
       "markup": "<div class=\"xxd-row\" style=\"width:100%\">\n  <div class=\"xxd-row__text\"><div class=\"xxd-row__title\">设置备份</div><div class=\"xxd-row__desc\">导出成文件，换电脑后导入</div></div>\n  <div class=\"xxd-row__control xxd-cluster\"><button class=\"xxd-btn\" data-size=\"sm\" id=\"export-btn\">导出</button><button class=\"xxd-btn\" data-size=\"sm\" id=\"import-btn\">导入…</button></div>\n</div>\n<script>\n  document.getElementById(\"export-btn\").addEventListener(\"click\", () => XxdExtension.exportSettings({ filename: \"today-settings.json\" }));\n  document.getElementById(\"import-btn\").addEventListener(\"click\", () => {\n    const input = Object.assign(document.createElement(\"input\"), { type: \"file\", accept: \"application/json\" });\n    input.addEventListener(\"change\", () => input.files[0] && XxdExtension.importSettings(input.files[0]));\n    input.click();\n  });\n</script>",
       "rules": [
         "只导入 format 是 xxd-settings 的文件；传 keys 只收认得的键",
-        "导入以后各页面通过 chrome.storage.onChanged 自己更新，不要求重开"
+        "导入以后各页面通过 chrome.storage.onChanged 自己更新，不要求重开",
+        "只在知道存好了才说「已导出」：有 downloads 权限等下载完成，否则用存储框等写完；两样都没有只能说「已开始下载」。取消了什么都不说，存不下来给重试"
       ],
       "a11y": [
         "结果用 toast 说（读屏会念）"
