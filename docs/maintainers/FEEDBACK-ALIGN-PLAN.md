@@ -116,6 +116,6 @@
 
 ## 5. 没改的
 
-- Windows 上组件墙的修法是在 Mac 上照着复现验证的，要推送后再手动跑一次 `xxd-windows-fonts` 才算确认。
+- （已确认）Windows 上组件墙：67310179 推送后跑 `xxd-windows-fonts`（run 43370682407），polish 和 sizes 都 0 处。
 - 小程序真机上要看的（WebView 和 Chromium 的基线是不是一样、Skyline 认不认 `align-items: baseline`、进行中的按钮会不会带出微信自己的灰色和边、按 Home 键 toast 停不停）写在 `MINI-DEVICE-CHECKLIST.md` 第 8 节。
 - 默认尺寸（40）的图标按钮挨着两行字的列表行，按钮会伸进行的内边距 2px（幽灵按钮看不出来）。
