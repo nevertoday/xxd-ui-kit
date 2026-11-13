@@ -91,7 +91,7 @@ const wall = componentsFor(lang).filter((c) => c.wall !== false && !WALL_HIDE.ha
     // 组件墙排版：每格占几列、几行按组件自己的大小算。
     //   列：格子里每个元素都放得下自己的自然宽度（不被挤窄、不截字）；整行宽的组件（data-block）至少按 data-wide 给的列数。
     //   行：在算好的宽度下，内容的实际高度 + 名字 + 上下留白，按 40px 一档向上取整，至少 4 档（160px）。
-    // 换窗口宽度、换外观（密度、圆角、质感会改尺寸）时重算。只有一列（手机）时不排，按内容自然长高。
+    // 换窗口宽度、换外观（密度、圆角、质感会改尺寸）、格子里的内容排完又变了尺寸时重算。只有一列（手机）时不排，按内容自然长高。
     (() => {
       const wall = document.querySelector(".site-wall");
       if (!wall) return;
@@ -246,23 +246,57 @@ const wall = componentsFor(lang).filter((c) => c.wall !== false && !WALL_HIDE.ha
         if (last !== best[1]) place(best[1]);
         // 还有洞（洞四周的格子都已经最矮、让不出来）：洞旁边的格子挨个高一行，重排一次，哪次没洞就用哪次
         if (best[0]) {
+          let filled = false;
           for (const cell of [...holeNeighbors]) {
             const s = spans.find((x) => x[0] === cell);
             s[2] += 1;
-            if (!place(best[1])) return;
+            if (!place(best[1])) { filled = true; break; }
             s[2] -= 1;
+          }
+          if (!filled) place(best[1]);
+        }
+        // 最后在真格子里核一遍：补洞会把格子缩回估算的行数，估算比真实矮就会截掉（Windows 字体下截过 55 处，2026-11-12）。
+        // 截到的格子按差多少加高、重排，最多三轮
+        for (let round = 0; round < 3; round += 1) {
+          const over = spans.filter(([cell]) => { const st = cell.querySelector(".site-wall__stage"); return st.scrollHeight > st.clientHeight + 1; });
+          if (!over.length) break;
+          for (const s of over) {
+            const st = s[0].querySelector(".site-wall__stage");
+            const more = Math.ceil((st.scrollHeight - st.clientHeight) / row);
+            s[2] += more;
+            s[3] += more;
           }
           place(best[1]);
         }
       }
-      layout();
+      // 排完以后格子里的内容又变了尺寸（字体晚到、图后画）：再排一次。每次排完记下每块内容的大小，真变了才排；
+      // 由它接连触发的重排最多 3 次，两种排法来回倒也停得下来（2026-10-23 卡死过一次）
+      const sizes = new WeakMap();
+      const sizeOf = (el) => { const r = el.getBoundingClientRect(); return Math.round(r.width) + "x" + Math.round(r.height); };
+      let chained = 0;
+      const content = new ResizeObserver((entries) => {
+        if (chained >= 3 || !entries.some((e) => sizes.has(e.target) && sizes.get(e.target) !== sizeOf(e.target))) return;
+        chained += 1;
+        again();
+      });
+      function run() {
+        layout();
+        for (const stage of wall.querySelectorAll(".site-wall__stage")) {
+          for (const el of stage.children) {
+            sizes.set(el, sizeOf(el));
+            content.observe(el);
+          }
+        }
+      }
+      run();
       let frame = 0;
-      const again = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(layout); };
-      document.addEventListener("DOMContentLoaded", again);
-      addEventListener("load", again);
-      document.addEventListener("xxd:appearance", again);
+      const again = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(run); };
+      const fresh = () => { chained = 0; again(); };
+      document.addEventListener("DOMContentLoaded", fresh);
+      addEventListener("load", fresh);
+      document.addEventListener("xxd:appearance", fresh);
       let lastW = wall.clientWidth;
-      new ResizeObserver(() => { if (wall.clientWidth !== lastW) { lastW = wall.clientWidth; again(); } }).observe(wall);
+      new ResizeObserver(() => { if (wall.clientWidth !== lastW) { lastW = wall.clientWidth; fresh(); } }).observe(wall);
     })();
   </script>
 </Site>

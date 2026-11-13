@@ -109,9 +109,13 @@
       - 顺带修掉：网页版没图标的按钮完成时勾偏左上 8px（勾和点击热区共用 ::after，继承了 translate；门禁「点了有没有结果」加查勾在不在正中，5 处 → 0）；
         小程序导航栏返回键的框伸到屏幕外 6px（左边距改用顶栏的 16，check-h5 4 处 → 0）；
       - Windows 字体：加了只能手动触发的 CI `.github/workflows/windows-fonts.yml`（windows-latest 上跑 polish、sizes），推送后才能跑。
+- [x] L5 Windows 字体量了（2026-11-12）：Kumo 在 Windows 上构建不了（rolldown 293 处 MISSING_EXPORT），改成 Linux 上构建、Windows 上只跑 audit。
+      微软雅黑和 Segoe UI 下「控件和标题不在一条线」0 处，「控件同一档一样高」全过；只有首页组件墙截掉 55 处（雷达图、百格图、四象限……，中英文、1440 / 1100 / 820）、挤窄 3 处。
+      墙在排完以后内容又变了尺寸就不重排：Mac 上排完再换宽字体能复现（截 9 处）。改成两层：每次排完记下每格内容的大小，变了再排（接连最多 3 次）；
+      排完在真格子里核一遍，截到的格子加高重排（最多三轮）。复现 9 → 0，挤窄、空洞 0；页面不动时不重排，换字体后 250ms 内排完停住。
 
 ## 5. 没改的
 
-- Windows 字体下的偏移还没真的量：CI 任务写好了，要推送后手动跑一次。
+- Windows 上组件墙的修法是在 Mac 上照着复现验证的，要推送后再手动跑一次 `xxd-windows-fonts` 才算确认。
 - 小程序真机上要看的（WebView 和 Chromium 的基线是不是一样、Skyline 认不认 `align-items: baseline`、进行中的按钮会不会带出微信自己的灰色和边、按 Home 键 toast 停不停）写在 `MINI-DEVICE-CHECKLIST.md` 第 8 节。
 - 默认尺寸（40）的图标按钮挨着两行字的列表行，按钮会伸进行的内边距 2px（幽灵按钮看不出来）。
