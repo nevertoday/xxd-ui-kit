@@ -115,7 +115,7 @@ export function checkCss(css) {
       add("radius", say(`${prop}: ${value} —— ${circle ? "圆用 var(--r-circle)，胶囊用 var(--r-pill)" : "圆角只用 var(--r-xs / sm / md / lg / pill)"}`, `${prop}: ${value} — ${circle ? "circles use var(--r-circle), pills var(--r-pill)" : "radii use var(--r-xs / sm / md / lg / pill) only"}`));
     }
     if (/^transition(-property)?$/.test(prop) && /\b(all|width|height|max-height|min-height|top|left|right|bottom|margin[a-z-]*|padding[a-z-]*|inset)\b/.test(value)) add("motion", say(`${prop}: ${value.slice(0, 40)} —— 动效只动 opacity / transform`, `${prop}: ${value.slice(0, 40)} — animate opacity / transform only`));
-    if (prop === "font-family" && !/var\(--font-/.test(value) && (/(^|[\s,"'])serif\b/.test(value.replace(/sans-serif/g, "")) || /宋体|simsun|songti|georgia|times|garamond|mincho/i.test(value))) add("font", say(`font-family: ${value.slice(0, 40)} —— 只用系统无衬线（var(--font-body)）`, `font-family: ${value.slice(0, 40)} — system sans-serif only (var(--font-body))`));
+    if (prop === "font-family" && !/var\(--font-/.test(value) && (/(^|[\s,"'])serif\b/.test(value.replace(/sans-serif/g, "")) || /宋体|simsun|songti|georgia|times|garamond|mincho/i.test(value))) add("font", say(`font-family: ${value.slice(0, 40)} —— 字体只从令牌来（正文 var(--font-body)，英文页标题的衬线在 var(--font-title) 里）`, `font-family: ${value.slice(0, 40)} — fonts come from tokens only (var(--font-body); the English title serif lives in var(--font-title))`));
   };
   for (let i = 0; i < text.length; i += 1) {
     const ch = text[i];

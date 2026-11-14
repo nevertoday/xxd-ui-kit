@@ -195,5 +195,5 @@ export const DOCTOR_CHECKS = [
   { rule: "weight", zh: "字重：只有 400 / 500 / 600", en: "Weights: 400 / 500 / 600 only" },
   { rule: "radius", zh: "圆角：只用 var(--r-*)，圆用 --r-circle", en: "Radius: var(--r-*) only, circles use --r-circle" },
   { rule: "motion", zh: "动效：transition 只动 opacity / transform（不写 all、width、height、top……）", en: "Motion: transitions only on opacity / transform (no all, width, height, top…)" },
-  { rule: "font", zh: "字体：不用衬线、不加载网络字体", en: "Fonts: no serif, no web fonts" },
+  { rule: "font", zh: "字体：不写死衬线、不加载网络字体（英文标题的衬线在 var(--font-title) 里）", en: "Fonts: no hard-coded serif, no web fonts (English titles get their serif from var(--font-title))" },
 ];

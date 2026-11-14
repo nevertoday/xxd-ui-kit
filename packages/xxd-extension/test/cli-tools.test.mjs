@@ -93,6 +93,7 @@ describe("体检规则", () => {
     expect(rules(".a { box-shadow: var(--focus-ring) } .b { box-shadow: 0 0 0 1px var(--line) } .c { box-shadow: none !important }")).toEqual([]);
     expect(rules(".menu { box-shadow: var(--shadow-popover) }")).toEqual([]);
     expect(rules(".a { font-family: system-ui, sans-serif; border-radius: var(--r-md); transition: opacity .2s, transform .2s }")).toEqual([]);
+    expect(rules(".title { font-family: var(--font-title); letter-spacing: var(--tracking-title) } .th { font-family: var(--font-label) }")).toEqual([]);
     expect(rules("/* .a { color: #333 } */ .b { --x: #fff }")).toEqual([]);
     expect(rules("/* xxd:tokens:start */ :root { color: #fff } /* xxd:tokens:end */")).toEqual([]);
     expect(checkCss(".a {\n  color: #333;\n}")[0].line).toBe(2);

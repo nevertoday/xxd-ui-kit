@@ -114,7 +114,7 @@ Only a few things change: light / dark, square / rounded, accent color, density.
 
 <p align="center"><img src="docs/assets/readme/looks.en.webp" alt="The same extension side panel four ways: light square, dark square, light rounded blue, dark rounded amber" width="900"></p>
 
-The default is square corners, black, white and gray, with emphasis carried by ink rather than color. No shadows, and only the system's own sans-serif fonts. Changing the accent and the corners is enough to make it yours.
+The default is square corners, black, white and gray, with emphasis carried by ink rather than color. No shadows, and only the system's own fonts: sans-serif for Chinese and the interface, a system serif for English page titles. Changing the accent and the corners is enough to make it yours.
 
 ## How it compares
 
