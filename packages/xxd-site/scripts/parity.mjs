@@ -1,5 +1,5 @@
 // 两种实现对照（设计师评审 V1）：读 /tools/parity/，同一对的 HTML 和 React 逐项比较。以 HTML 为准（D19）。
-// 比较的是看得见的东西：尺寸、字号、字重、文字颜色、底色、边（border 或 Kumo 用的 ring）、圆角、内边距、对齐。
+// 比较的是看得见的东西：尺寸、字号、字重、字体（第一个字体名）、字距、大小写、文字颜色、底色、边（border 或 Kumo 用的 ring）、圆角、内边距、对齐。
 // 用法：audit 的 --only=parity，也可以单独 node scripts/parity.mjs <origin>。
 
 /** 每一对：[部位, HTML 里的选择器, React 里的选择器, 要比的属性] */
@@ -37,7 +37,7 @@ export const PARTS = {
   table: [
     // 外框只比底色：原生的 .xxd-table-wrap 另有「还能横向滑」的渐隐提示（背景图），React 的表格外框是用的人自己写的
     ["外框", ".xxd-table-wrap", "div:has(> table)", ["edge", "radius", "backgroundColor"]],
-    ["表头", "th", "th", ["height", "paddingLeft", "fontSize", "fontWeight", "color", "background"]],
+    ["表头", "th", "th", ["height", "paddingLeft", "fontSize", "fontWeight", "color", "background", "typeface", "letterSpacing", "textTransform"]],
     ["单元格", "td", "td", ["height", "paddingLeft", "fontSize", "fontWeight", "color"]],
     ["数字列", "td:last-child", "td:last-child", ["textAlign", "numeric"]],
     ["行线", "tbody tr", "tbody tr", ["rowLine"]],
@@ -118,6 +118,9 @@ function measure([cellSel, sel, props]) {
     else if (p === "paddingLeft") out.paddingLeft = s.paddingLeft;
     else if (p === "fontSize") out.fontSize = s.fontSize;
     else if (p === "fontWeight") out.fontWeight = s.fontWeight;
+    else if (p === "typeface") out.typeface = s.fontFamily.split(",")[0].trim().replace(/["']/g, "");
+    else if (p === "letterSpacing") out.letterSpacing = s.letterSpacing;
+    else if (p === "textTransform") out.textTransform = s.textTransform;
     else if (p === "color") out.color = norm(s.color);
     else if (p === "highlight") {
       // 质感的内高光：box-shadow 里有一层 inset、颜色不透明度 > 0

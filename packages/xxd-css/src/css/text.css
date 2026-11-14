@@ -1,4 +1,4 @@
-/* 文字层级。字重只有 400 / 500 / 600；不改字距；相关的字靠得更近。
+/* 文字层级。字重只有 400 / 500 / 600；中文不改字距，英文页的整屏标题换系统衬线（EN-TYPE-PLAN D183）；相关的字靠得更近。
  *   <h2 class="xxd-text" data-variant="heading2">外观</h2>
  *   variant: display | heading1 | heading2 | heading3 | body（缺省）| secondary | caption | mono | mono-secondary | success | danger | warning
  *   size（只用于 body / secondary）: xs | sm | base | lg */
@@ -11,15 +11,18 @@
 
   /* 字号阶梯：28 / 24 / 20 / 16 / 13，每一档差 1.2 倍左右，标题之间、标题和正文之间都分得开 */
   .xxd-text[data-variant="display"] {
-    font: var(--weight-strong) var(--text-display) / var(--leading-display) var(--font-title);
+    font: var(--weight-title) var(--text-display) / var(--leading-display) var(--font-title);
+    letter-spacing: var(--tracking-title);
   }
 
   .xxd-text[data-variant="heading1"] {
-    font: var(--weight-strong) var(--text-xxl) / var(--leading-xl) var(--font-body);
+    font: var(--weight-title) var(--text-xxl) / var(--leading-xl) var(--font-title);
+    letter-spacing: var(--tracking-title);
   }
 
   .xxd-text[data-variant="heading2"] {
-    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-body);
+    font: var(--weight-title) var(--text-xl) / var(--leading-lg) var(--font-title);
+    letter-spacing: var(--tracking-title);
   }
 
   .xxd-text[data-variant="heading3"] {

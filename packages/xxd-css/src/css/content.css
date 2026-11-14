@@ -441,9 +441,15 @@
   .xxd-prose h2,
   .xxd-prose h3 {
     color: var(--ink);
-    font-family: var(--font-title);
     font-weight: var(--weight-strong);
     line-height: var(--leading-lg);
+  }
+
+  .xxd-prose h1,
+  .xxd-prose h2 {
+    font-family: var(--font-title);
+    font-weight: var(--weight-title);
+    letter-spacing: var(--tracking-title);
   }
 
   .xxd-prose h1 {

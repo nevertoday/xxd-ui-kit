@@ -52,7 +52,7 @@
   --shadow-2xl: var(--shadow-dialog, 0 28px 76px rgba(17, 17, 17, 0.24));
 
   --font-sans: var(--font-body, "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
-  /* 小小东不用衬线：Tailwind 的 font-serif 也落到同一套无衬线上 */
+  /* font-serif 是「标题的声音」：中文页和正文同一套无衬线，英文页是系统衬线（EN-TYPE-PLAN D183） */
   --font-serif: var(--font-title, var(--font-sans));
 }
 
@@ -771,6 +771,20 @@
     font-size: var(--text-xs, 12px);
     font-weight: var(--weight-medium, 500);
     line-height: var(--leading-xs, 16px);
+  }
+  /* 表头是标签：英文页等宽大写、小一档（EN-TYPE-PLAN D187–D189），对着 .xxd-table thead th */
+  table:has(> thead.group\/header) > thead th {
+    font-family: var(--font-label, inherit);
+    font-size: var(--text-label, var(--text-xs, 12px));
+    letter-spacing: var(--tracking-label, normal);
+    text-transform: var(--case-label, none);
+  }
+  /* ── 整屏的标题（Text 的 heading1、heading2、heading size="lg"，20px 以上；块里的 16px 标题不算）：
+     对着 .xxd-text 的 display / heading1 / heading2，英文页是系统衬线 500（EN-TYPE-PLAN D183、D185、D186） ── */
+  .text-kumo-default.font-semibold:is(.text-xl, .text-2xl, .text-3xl) {
+    font-family: var(--font-title, inherit);
+    font-weight: var(--weight-title, 600);
+    letter-spacing: var(--tracking-title, normal);
   }
   table:has(> thead.group\/header) td {
     height: 44px;

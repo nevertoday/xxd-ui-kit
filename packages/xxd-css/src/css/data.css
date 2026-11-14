@@ -46,8 +46,13 @@
     box-shadow: inset 1px 0 0 var(--line);
   }
 
+  /* 表头是标签：英文页等宽大写、小一档（EN-TYPE-PLAN D187–D189），中文页照旧 12 / 16 */
   .xxd-table thead th {
     position: relative;
+    font-family: var(--font-label);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: var(--case-label);
   }
 
   .xxd-table[data-sticky-head] thead th {
@@ -69,6 +74,8 @@
     background: transparent;
     color: inherit;
     font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit; /* 浏览器给按钮写了 none：排序表头和旁边的表头一个样子（英文页大写，D188） */
     cursor: pointer;
     transition: background-color var(--motion-quick) ease, color var(--motion-quick) ease;
   }

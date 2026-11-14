@@ -67,7 +67,7 @@ describe("字重只有 400 / 500 / 600", () => {
     const bad = [];
     for (const r of all)
       for (const [p, v] of r.decls) {
-        if (p === "font-weight" && !/^(var\(--weight-(regular|medium|strong)\)|400|500|600|inherit)$/.test(v)) bad.push(`${r.selector} ${v}`);
+        if (p === "font-weight" && !/^(var\(--weight-(regular|medium|strong|title)\)|400|500|600|inherit)$/.test(v)) bad.push(`${r.selector} ${v}`);
         if (p === "font" && /^\d{3}\b/.test(v) && !/^(400|500|600)\b/.test(v)) bad.push(`${r.selector} ${v}`);
       }
     expect(bad).toEqual([]);

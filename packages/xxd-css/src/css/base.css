@@ -123,7 +123,8 @@
   /* 文字层级 */
   .xxd-title {
     margin: 0;
-    font: var(--weight-strong) var(--text-display) / var(--leading-display) var(--font-title);
+    font: var(--weight-title) var(--text-display) / var(--leading-display) var(--font-title);
+    letter-spacing: var(--tracking-title);
     color: var(--ink);
   }
 

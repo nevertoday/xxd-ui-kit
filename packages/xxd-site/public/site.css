@@ -304,7 +304,9 @@
     margin: 0 0 var(--space-1);
     padding: 0 var(--space-2);
     color: var(--muted);
-    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    font: var(--weight-medium) var(--text-label) / var(--leading-xs) var(--font-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: var(--case-label);
   }
 
   .site-nav ul {
@@ -369,7 +371,9 @@
   .site-toc h2 {
     margin: 0 0 var(--space-1);
     color: var(--muted);
-    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    font: var(--weight-medium) var(--text-label) / var(--leading-xs) var(--font-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: var(--case-label);
   }
 
   .site-toc .xxd-toc {
@@ -400,6 +404,7 @@
     max-width: 640px;
     margin: 0;
     color: var(--muted);
+    font-family: var(--font-title); /* 导语和标题同一个声音（英文页是衬线，EN-TYPE-PLAN D184），字重照旧 400 */
     font-size: var(--text-lg);
     line-height: var(--leading-lg);
   }
@@ -408,7 +413,8 @@
   .site-h2 {
     margin: var(--space-8) 0 var(--space-3);
     padding-top: var(--space-2);
-    font: var(--weight-strong) var(--text-xl) / var(--leading-lg) var(--font-title);
+    font: var(--weight-title) var(--text-xl) / var(--leading-lg) var(--font-title);
+    letter-spacing: var(--tracking-title);
   }
 
   .site-h3 {
@@ -949,7 +955,11 @@
 
   .site-props th {
     color: var(--muted);
+    font-family: var(--font-label);
+    font-size: var(--text-label);
     font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: var(--case-label);
     white-space: nowrap;
   }
 
@@ -1312,7 +1322,16 @@
   .site-parity__head {
     padding-block: 0 var(--space-2);
     color: var(--muted);
-    font-size: var(--text-xs);
+    font-family: var(--font-label);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: var(--case-label);
+  }
+
+  /* 英文页的大写标签是 11 / 16（D189）；这两处中文页继承的是 12 / 20，中文页照旧，只在英文页配成一对 */
+  .site-props th:lang(en),
+  .site-parity__head:lang(en) {
+    line-height: var(--leading-xs);
   }
 
   .site-parity__name {
@@ -1783,7 +1802,9 @@
   .site-more__label {
     margin: 0 0 var(--space-1);
     color: var(--muted);
-    font: var(--weight-medium) var(--text-xs) / var(--leading-xs) var(--font-body);
+    font: var(--weight-medium) var(--text-label) / var(--leading-xs) var(--font-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: var(--case-label);
   }
 
   .site-more .site-more__label {
