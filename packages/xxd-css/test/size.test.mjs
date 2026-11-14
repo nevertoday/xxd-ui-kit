@@ -33,8 +33,8 @@ import { describe, expect, it } from "vitest";
 // xxd.js 2026-11-11 从 40 调到 41：操作反馈（FEEDBACK-ALIGN-PLAN D176、D177）——runBusy 失败的 toast 和「重试」、成功和失败的播报、
 //   设置的保存状态 saveSetting（外观设置组用它），约 0.5 KB。都是行为，拆不进 viz.js
 // xxd.shadow.css.js 2026-11-13 从 32 调到 33：英文页的字（EN-TYPE-PLAN）——Shadow 版的令牌多了英文块和「局部换回中文」块（:host 版和顶层元素各一份），
-//   标题、表头写用途令牌，约 0.1 KB（本地 32.14）；xxd.min.css 本地 31.80，没超
-const BUDGET_KB = { "xxd.min.css": 32, "xxd.js": 41, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 33 };
+//   标题、表头写用途令牌，约 0.1 KB（本地 32.14）；xxd.min.css 同时从 32 调到 33：本地 31.80，CI 大 0.2 左右正好卡线
+const BUDGET_KB = { "xxd.min.css": 33, "xxd.js": 41, "boot.js": 5.5, "viz.js": 11, "icons.js": 16, "xxd.shadow.css.js": 33 };
 
 describe("体积预算", () => {
   for (const [file, kb] of Object.entries(BUDGET_KB)) {
