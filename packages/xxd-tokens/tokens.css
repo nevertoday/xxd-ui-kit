@@ -226,14 +226,23 @@
   --shadow-sheet: -18px 0 54px rgba(var(--shadow-rgb), 0.14);
   --backdrop: rgba(5, 5, 5, 0.52);
 
-  /* ── 字体：只用系统里已有的无衬线字体，不加载网络字体；字重只用 400 / 500 / 600 ──
+  /* ── 字体：只用系统里已有的字体，不加载网络字体；字重只用 400 / 500 / 600 ──
    * 顺序有讲究：先英文字体，再中文字体。浏览器逐字找字体，英文字母落在 Avenir Next / Segoe UI，
    * 中文落在苹方 / 微软雅黑 / 思源黑体。把中文字体放前面，Windows 上的英文就会用雅黑的西文，难看。
    *   macOS / iOS：Avenir Next + 苹方    Windows：Segoe UI + 微软雅黑    Android / Linux：思源黑体（Noto Sans CJK）
-   * 标题和正文同一家族，层级只靠字号和字重。繁体页面换成繁体字形，见文件末尾的 :lang(zh-Hant)。 */
+   * 中文页标题和正文同一家族，层级只靠字号和字重。繁体页面换成繁体字形，见文件末尾的 :lang(zh-Hant)。
+   * 英文页的整屏标题用系统衬线、小标签用等宽大写（EN-TYPE-PLAN），见文件末尾的 :lang(en)。 */
   --font-body: "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", system-ui, sans-serif;
-  --font-title: var(--font-body);
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", "PingFang SC", "Microsoft YaHei", monospace;
+  /* 两个用途（EN-TYPE-PLAN D183–D189）：整屏的标题（display / heading1 / heading2、页面标题、阅读里的 h1 h2）和一行的小标签（表头、侧栏分组名）。
+   * 中文页就是正文字体、正文字号、不改字距；英文页在文件末尾换掉。 */
+  --font-title: var(--font-body);
+  --weight-title: var(--weight-strong);
+  --tracking-title: normal;
+  --font-label: var(--font-body);
+  --text-label: var(--text-xs);
+  --case-label: none;
+  --tracking-label: normal;
   --text-2xs: 11px; /* tooltip、角标 */
   --text-xs: 12px;  /* 菜单、次要信息 */
   --text-sm: 13px;  /* 导航、控件（最常用） */
@@ -943,6 +952,31 @@
     --line-strong: #8a8478;
     --line-control: #a39d90;
   }
+}
+
+/* 英文页面（<html lang="en">，或页面里写了 lang="en" 的一块）：整屏标题用系统衬线，小标签用等宽大写（EN-TYPE-PLAN）。
+ * 衬线没有半粗，600 会拿到 Bold，所以标题是 500。中文字体排在 serif 前面：英文页里夹的中文落到黑体，不落到宋体。
+ * 标签小一档（等宽比周围小一档，D69）；11px 只给不会出现中文的字（D71），英文页的标签就是。 */
+:root:lang(en),
+[lang]:lang(en) {
+  --font-title: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", serif;
+  --weight-title: var(--weight-medium);
+  --tracking-title: -0.01em;
+  --font-label: var(--font-mono);
+  --text-label: var(--text-2xs);
+  --case-label: uppercase;
+  --tracking-label: 0.08em;
+}
+
+/* 英文页里写了别的语言（lang="zh-CN" 的一块）：换回中文的样子 */
+:root [lang]:not(:lang(en)) {
+  --font-title: var(--font-body);
+  --weight-title: var(--weight-strong);
+  --tracking-title: normal;
+  --font-label: var(--font-body);
+  --text-label: var(--text-xs);
+  --case-label: none;
+  --tracking-label: normal;
 }
 
 /* 繁体中文页面（<html lang="zh-Hant"> 或 zh-TW / zh-HK）：同一套字体的繁体字形。

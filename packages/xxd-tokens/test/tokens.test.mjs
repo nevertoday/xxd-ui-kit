@@ -101,12 +101,16 @@ test("默认直角：五档矩形圆角都是 0；圆角模式 4/6/10/14/999；�
   assert.ok(!("--r-circle" in rounded));
 });
 
-test("字重只有 400 / 500 / 600", () => {
-  const weights = Object.entries(base).filter(([k]) => k.startsWith("--weight-")).map(([, v]) => v);
+test("字重只有 400 / 500 / 600；用途字重（--weight-title）指向其中一档", () => {
+  const entries = Object.entries(base).filter(([k]) => k.startsWith("--weight-"));
+  const weights = entries.filter(([, v]) => !v.startsWith("var(")).map(([, v]) => v);
   assert.deepEqual(weights.sort((a, b) => a.localeCompare(b)), ["400", "500", "600"]);
+  for (const block of Object.values(blocks)) for (const [k, v] of Object.entries(block)) {
+    if (k.startsWith("--weight-") && v.startsWith("var(")) assert.match(v, /^var\(--weight-(regular|medium|strong)\)$/, `${k}: ${v}`);
+  }
 });
 
-test("字体：只用无衬线；标题和正文同一家族；先英文字体再中文字体；繁体页面换繁体字形", () => {
+test("字体：正文和等宽只用无衬线；中文页标题和正文同一家族；先英文字体再中文字体；繁体页面换繁体字形", () => {
   const stacks = { body: base["--font-body"], mono: base["--font-mono"] };
   assert.equal(base["--font-title"], "var(--font-body)");
   for (const [name, stack] of Object.entries(stacks)) {
@@ -123,6 +127,37 @@ test("字体：只用无衬线；标题和正文同一家族；先英文字体�
   assert.match(shadow, /:host\(:lang\(zh-Hant\)\),\n:host\(:lang\(zh-Hant\)\) > \*/);
   // layered 版本：老项目自己在 :root 上的字体优先（不写到每个元素上）
   assert.match(toLayered(css), /:where\(:root:lang\(zh-Hant\)\)/);
+});
+
+test("英文页：整屏标题用系统衬线、标签用等宽大写；中文页照旧（EN-TYPE-PLAN）", () => {
+  const en = blocks[":root:lang(en),\n[lang]:lang(en)"];
+  const back = blocks[":root [lang]:not(:lang(en))"];
+  assert.ok(en && back, "要有英文块和「局部换回中文」的块");
+  const fonts = en["--font-title"].split(",").map((f) => f.trim().replace(/"/g, ""));
+  assert.match(fonts[0], /Iowan|Palatino|Georgia|Charter|Times/, `第一个字体是衬线：${fonts[0]}`);
+  assert.equal(fonts.at(-1), "serif");
+  const firstCjk = fonts.findIndex((f) => /PingFang|YaHei|Hiragino|Noto Sans SC|Source Han Sans/.test(f));
+  assert.ok(firstCjk > 0 && firstCjk < fonts.indexOf("serif"), "中文黑体排在 serif 前面，夹在英文里的中文不落到宋体");
+  assert.ok(!fonts.some((f) => /Song|Mincho|Serif SC|Noto Serif|Source Han Serif|url\(/i.test(f)), "没有宋体、没有网络字体");
+  assert.ok(!/@font-face|url\(/.test(css), "令牌里不加载字体");
+  assert.deepEqual(
+    ["--weight-title", "--tracking-title", "--font-label", "--text-label", "--case-label", "--tracking-label"].map((k) => [k, base[k], en[k]]),
+    [
+      ["--weight-title", "var(--weight-strong)", "var(--weight-medium)"],
+      ["--tracking-title", "normal", "-0.01em"],
+      ["--font-label", "var(--font-body)", "var(--font-mono)"],
+      ["--text-label", "var(--text-xs)", "var(--text-2xs)"],
+      ["--case-label", "none", "uppercase"],
+      ["--tracking-label", "normal", "0.08em"],
+    ],
+  );
+  // 局部写了别的语言的一块换回中文页的值
+  for (const [k, v] of Object.entries(back)) assert.equal(v, base[k], `${k} 换回 :root 的值`);
+  assert.deepEqual(Object.keys(back).sort(), Object.keys(en).sort());
+  // Shadow 里：host 的语言、host 里写了 lang 的一块
+  const shadow = toShadow(css);
+  assert.match(shadow, /:host\(:lang\(en\)\),\n:host\(:lang\(en\)\) > \*,\n\[lang\]:lang\(en\) \{/);
+  assert.match(shadow, /:host \[lang\]:not\(:lang\(en\)\) \{/);
 });
 
 test("暗色是暖黑", () => {
